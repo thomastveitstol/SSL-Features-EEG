@@ -1,3 +1,4 @@
+README.md
 pyproject.toml
 setup.cfg
 setup.py
@@ -7,4 +8,18 @@ src/elecssl.egg-info/dependency_links.txt
 src/elecssl.egg-info/not-zip-safe
 src/elecssl.egg-info/requires.txt
 src/elecssl.egg-info/top_level.txt
+src/elecssl/data/__init__.py
+src/elecssl/data/subject_split.py
+src/elecssl/data/datasets/__init__.py
+src/elecssl/models/__init__.py
+src/elecssl/models/losses.py
+src/elecssl/models/sampling_distributions.py
+src/elecssl/models/utils.py
+src/elecssl/models/mts_modules/__init__.py
+src/elecssl/models/mts_modules/braindecode_models.py
+src/elecssl/models/mts_modules/getter.py
+src/elecssl/models/mts_modules/inception_network.py
+src/elecssl/models/mts_modules/mts_module_base.py
+src/elecssl/models/region_based_pooling/__init__.py
+src/elecssl/models/region_based_pooling/utils.py
 tests/test_fake.py
