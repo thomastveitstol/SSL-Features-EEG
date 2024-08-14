@@ -1,0 +1,27 @@
+Metadata-Version: 2.1
+Name: elecssl
+Version: 0.0.0
+Summary: Project for self supervised learning on EEG data
+Author: Thomas Tveitstøl
+Platform: unix
+Platform: linux
+Platform: osx
+Platform: cygwin
+Platform: win32
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.8
+Requires-Dist: requests>=2
+Requires-Dist: numpy>=1.2
+Requires-Dist: inflection~=0.5.1
+Provides-Extra: testing
+Requires-Dist: pytest>=8.3; extra == "testing"
+Requires-Dist: pytest-cov>=5.0; extra == "testing"
+Requires-Dist: mypy>=1.11; extra == "testing"
+Requires-Dist: flake8>=7.1; extra == "testing"
+Requires-Dist: tox>=4.18; extra == "testing"

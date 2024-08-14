@@ -1,0 +1,10 @@
+pyproject.toml
+setup.cfg
+setup.py
+src/elecssl.egg-info/PKG-INFO
+src/elecssl.egg-info/SOURCES.txt
+src/elecssl.egg-info/dependency_links.txt
+src/elecssl.egg-info/not-zip-safe
+src/elecssl.egg-info/requires.txt
+src/elecssl.egg-info/top_level.txt
+tests/test_fake.py
