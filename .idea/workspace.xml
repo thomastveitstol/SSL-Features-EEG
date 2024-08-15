@@ -4,16 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="automatic change after update">
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/models/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/models/mts_modules/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/models/mts_modules/braindecode_models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/models/mts_modules/getter.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/models/mts_modules/inception_network.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/models/mts_modules/mts_module_base.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/models/sampling_distributions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="copies from CDL project">
+      <change afterPath="$PROJECT_DIR$/src/elecssl/data/data_generators/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/data/data_generators/data_generator.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,55 +46,72 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python tests.Doctest get_montage_split.executor": "Run",
     "Python tests.Doctest get_mts_module.executor": "Run",
+    "Python tests.Doctest project_to_2d.executor": "Run",
+    "Python tests.Doctest sex_to_int.executor": "Run",
+    "Python tests.Doctest strip_tensors.executor": "Run",
+    "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
     "Python tests.Doctests in braindecode_models.executor": "Run",
     "Python tests.Doctests in getter.executor": "Run",
     "Python tests.Doctests in inception_network.executor": "Run",
+    "Python tests.Doctests in interpolate_datasets.executor": "Run",
+    "Python tests.Doctests in lemon.executor": "Run",
+    "Python tests.Doctests in losses.executor": "Run",
+    "Python tests.Doctests in miltiadous.executor": "Run",
+    "Python tests.Doctests in paths.executor": "Run",
     "Python tests.Doctests in sampling_distributions.executor": "Run",
+    "Python tests.Doctests in srm.executor": "Run",
+    "Python tests.Doctests in td_brain.executor": "Run",
+    "Python tests.Doctests in utils.executor": "Run",
+    "Python tests.Doctests in wang.executor": "Run",
     "Python.mts_module_base.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/src/elecssl/models/mts_modules",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/src/elecssl/data",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
+      <recent name="$PROJECT_DIR$/src/elecssl/data" />
+      <recent name="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <recent name="$PROJECT_DIR$/src/elecssl/models" />
+      <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
+      <recent name="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctests in getter">
-    <configuration name="Doctest get_mts_module" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.Doctest strip_tensors">
+    <configuration name="Doctest strip_tensors" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/data_generators" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/mts_modules/getter.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/data_generators/data_generator.py" />
       <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="get_mts_module" />
+      <option name="METHOD_NAME" value="strip_tensors" />
       <option name="FOLDER_NAME" value="" />
       <option name="TEST_TYPE" value="TEST_FUNCTION" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in braindecode_models" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in lemon" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/mts_modules/braindecode_models.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/lemon.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -110,17 +120,17 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in getter" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in miltiadous" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/mts_modules/getter.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/miltiadous.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -129,17 +139,17 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in inception_network" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in td_brain" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/mts_modules/inception_network.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/td_brain.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -148,17 +158,17 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in sampling_distributions" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in wang" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/sampling_distributions.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/wang.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -169,11 +179,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Doctests in getter" />
-        <item itemvalue="Python tests.Doctest get_mts_module" />
-        <item itemvalue="Python tests.Doctests in inception_network" />
-        <item itemvalue="Python tests.Doctests in braindecode_models" />
-        <item itemvalue="Python tests.Doctests in sampling_distributions" />
+        <item itemvalue="Python tests.Doctest strip_tensors" />
+        <item itemvalue="Python tests.Doctests in miltiadous" />
+        <item itemvalue="Python tests.Doctests in wang" />
+        <item itemvalue="Python tests.Doctests in td_brain" />
+        <item itemvalue="Python tests.Doctests in lemon" />
       </list>
     </recent_temporary>
   </component>
@@ -225,7 +235,39 @@
       <option name="project" value="LOCAL" />
       <updated>1723637485373</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="copied from CDL project">
+      <option name="closed" value="true" />
+      <created>1723638930782</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1723638930782</updated>
+    </task>
+    <task id="LOCAL-00006" summary="automatic update">
+      <option name="closed" value="true" />
+      <created>1723638937579</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1723638937579</updated>
+    </task>
+    <task id="LOCAL-00007" summary="copies from CDL project">
+      <option name="closed" value="true" />
+      <created>1723642183333</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1723642183333</updated>
+    </task>
+    <task id="LOCAL-00008" summary="copies from CDL project">
+      <option name="closed" value="true" />
+      <created>1723648802923</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1723648802923</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -243,6 +285,9 @@
     <MESSAGE value="set up configuration files" />
     <MESSAGE value="minor fix to tox configuration file" />
     <MESSAGE value="automatic change after update" />
-    <option name="LAST_COMMIT_MESSAGE" value="automatic change after update" />
+    <MESSAGE value="copied from CDL project" />
+    <MESSAGE value="automatic update" />
+    <MESSAGE value="copies from CDL project" />
+    <option name="LAST_COMMIT_MESSAGE" value="copies from CDL project" />
   </component>
 </project>
