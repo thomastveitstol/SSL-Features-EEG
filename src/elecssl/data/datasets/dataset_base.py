@@ -2,6 +2,7 @@ import abc
 import dataclasses
 import os
 import warnings
+from pathlib import Path
 from typing import Dict, Tuple, List, Optional
 
 import enlighten
@@ -299,6 +300,11 @@ class EEGDatasetBase(abc.ABC):
         participants.tsv file"""
         return tuple(pandas.read_csv(self.get_participants_tsv_path(), sep="\t")["participant_id"])
 
+    @classmethod
+    def download(cls):
+        """Method for downloading the dataset"""
+        raise NotImplementedError
+
     # ----------------
     # Target methods
     # ----------------
@@ -390,8 +396,9 @@ class EEGDatasetBase(abc.ABC):
     # ----------------
     # Path methods
     # ----------------
-    def get_mne_path(self):
-        return os.path.join(get_raw_data_storage_path(), self.name)
+    @classmethod
+    def get_mne_path(cls):
+        return get_raw_data_storage_path() / cls.__name__
 
     def get_numpy_arrays_path(self, pre_processed_version=None):
         if pre_processed_version is None:

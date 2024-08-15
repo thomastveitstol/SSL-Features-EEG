@@ -2,6 +2,7 @@ import os
 
 import mne
 import numpy
+import openneuro
 import pandas
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method
@@ -101,6 +102,15 @@ class SRM(EEGDatasetBase):
 
         # Load MNE object and return
         return mne.io.read_epochs_eeglab(input_fname=path, verbose=False)
+
+    @classmethod
+    def download(cls):
+        # Make directory
+        path = cls.get_mne_path()
+        os.mkdir(path)
+
+        # Download from OpenNeuro
+        openneuro.download(dataset="ds003775", target_dir=path)
 
     # ----------------
     # Targets
