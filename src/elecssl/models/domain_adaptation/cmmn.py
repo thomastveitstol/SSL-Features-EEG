@@ -380,7 +380,6 @@ class RBPConvMMN:
         # ---------------
         # Set attributes
         # ---------------
-        # todo: would it be interesting to try different kernel sizes for different montage splits?
         # There will be one ConvMMN per montage split
         self._cmmn_layers = tuple(ConvMMN(kernel_size=kernel_size, sampling_freq=sampling_freq)
                                   for _ in range(num_montage_splits))
@@ -709,9 +708,6 @@ def _aggregate_subject_psds(psds):
     >>> _aggregate_subject_psds(my_psds).shape
     (32, 65)
     """
-    # todo: Would be cool to support different aggregation methods, and in particular to support different weights
-    #  for different sub-groups
-    # todo: I think it should be the mean, due to 2.2 Welch estimation in the paper, but I'm not 100% sure
     if psds.ndim == 3:
         return numpy.mean(psds, axis=0)
     elif psds.ndim == 4:
