@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="automatic update">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="changed paths">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/config_paths.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/config_paths.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/paths.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/paths.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/dataset_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/dataset_base.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,6 +36,9 @@
     &quot;accountId&quot;: &quot;6e00e39e-d5ea-4da4-b4b6-a8bd1b2cb938&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
 }</component>
@@ -45,52 +48,53 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python tests.Doctest FCModule.forward.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest PolygonGraph.line_intersection.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest get_domain_discriminator.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest get_montage_split.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest get_mts_module.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest project_to_2d.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest sex_to_int.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest strip_tensors.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in CustomWeightedLoss.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in FCModule.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in MainFixedChannelsModel.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in MultiMSMean.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in braindecode_models.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in centroid_polygon.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in cmmn.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in fc_modules.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in getter.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in head_region.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in inception_network.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in interpolate_datasets.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in lemon.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in losses.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in main_fixed_channels_model.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in main_rbp_model.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in mean.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in metrics.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in miltiadous.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in paths.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in region_based_pooling.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in sampling_distributions.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in srm.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in td_brain.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in univariate_rocket.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in wang.executor&quot;: &quot;Run&quot;,
-    &quot;Python.mts_module_base.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/thomas/PycharmProjects/SSL-Features-EEG/src/elecssl/models/region_based_pooling&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.Doctest FCModule.forward.executor": "Run",
+    "Python tests.Doctest PolygonGraph.line_intersection.executor": "Run",
+    "Python tests.Doctest get_domain_discriminator.executor": "Run",
+    "Python tests.Doctest get_montage_split.executor": "Run",
+    "Python tests.Doctest get_mts_module.executor": "Run",
+    "Python tests.Doctest project_to_2d.executor": "Run",
+    "Python tests.Doctest sex_to_int.executor": "Run",
+    "Python tests.Doctest strip_tensors.executor": "Run",
+    "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
+    "Python tests.Doctests in FCModule.executor": "Run",
+    "Python tests.Doctests in MainFixedChannelsModel.executor": "Run",
+    "Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor": "Run",
+    "Python tests.Doctests in MultiMSMean.executor": "Run",
+    "Python tests.Doctests in SRM.executor": "Run",
+    "Python tests.Doctests in braindecode_models.executor": "Run",
+    "Python tests.Doctests in centroid_polygon.executor": "Run",
+    "Python tests.Doctests in cmmn.executor": "Run",
+    "Python tests.Doctests in fc_modules.executor": "Run",
+    "Python tests.Doctests in getter.executor": "Run",
+    "Python tests.Doctests in head_region.executor": "Run",
+    "Python tests.Doctests in inception_network.executor": "Run",
+    "Python tests.Doctests in interpolate_datasets.executor": "Run",
+    "Python tests.Doctests in lemon.executor": "Run",
+    "Python tests.Doctests in losses.executor": "Run",
+    "Python tests.Doctests in main_fixed_channels_model.executor": "Run",
+    "Python tests.Doctests in main_rbp_model.executor": "Run",
+    "Python tests.Doctests in mean.executor": "Run",
+    "Python tests.Doctests in metrics.executor": "Run",
+    "Python tests.Doctests in miltiadous.executor": "Run",
+    "Python tests.Doctests in paths.executor": "Run",
+    "Python tests.Doctests in region_based_pooling.executor": "Run",
+    "Python tests.Doctests in sampling_distributions.executor": "Run",
+    "Python tests.Doctests in srm.executor": "Run",
+    "Python tests.Doctests in td_brain.executor": "Run",
+    "Python tests.Doctests in univariate_rocket.executor": "Run",
+    "Python tests.Doctests in utils.executor": "Run",
+    "Python tests.Doctests in wang.executor": "Run",
+    "Python.mts_module_base.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/src/elecssl/models/region_based_pooling",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
@@ -100,7 +104,7 @@
       <recent name="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctests in paths">
+  <component name="RunManager" selected="Python tests.Doctests in SRM">
     <configuration name="Doctests in MainFixedChannelsModel" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -113,6 +117,25 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/main_models/main_fixed_channels_model.py" />
       <option name="CLASS_NAME" value="MainFixedChannelsModel" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctests in SRM" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/srm.py" />
+      <option name="CLASS_NAME" value="SRM" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
       <option name="TEST_TYPE" value="TEST_CLASS" />
@@ -177,32 +200,13 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in region_based_pooling" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/region_based_pooling.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Doctests in SRM" />
         <item itemvalue="Python tests.Doctests in paths" />
         <item itemvalue="Python tests.Doctests in main_fixed_channels_model" />
         <item itemvalue="Python tests.Doctests in MainFixedChannelsModel" />
         <item itemvalue="Python tests.Doctests in main_rbp_model" />
-        <item itemvalue="Python tests.Doctests in region_based_pooling" />
       </list>
     </recent_temporary>
   </component>
@@ -398,7 +402,15 @@
       <option name="project" value="LOCAL" />
       <updated>1723718588892</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="changed paths">
+      <option name="closed" value="true" />
+      <created>1723721530425</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1723721530425</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -429,6 +441,7 @@
     <MESSAGE value="flake8 fix" />
     <MESSAGE value="updated requirements" />
     <MESSAGE value="automatic update" />
-    <option name="LAST_COMMIT_MESSAGE" value="automatic update" />
+    <MESSAGE value="changed paths" />
+    <option name="LAST_COMMIT_MESSAGE" value="changed paths" />
   </component>
 </project>

@@ -7,10 +7,11 @@ from typing import Dict, Tuple, List, Optional
 import enlighten
 import numpy
 import pandas
+import yaml
 from matplotlib import pyplot
 from mne.transforms import _cart_to_sph, _pol_to_cart
 
-from elecssl.data.paths import get_raw_data_storage_path, get_numpy_data_storage_path
+from elecssl.data.paths import get_raw_data_storage_path, get_numpy_data_storage_path, get_eeg_features_storage_path
 from elecssl.data.preprocessing import save_preprocessed_epochs
 from elecssl.models.region_based_pooling.utils import ELECTRODES_3D
 
@@ -329,7 +330,9 @@ class EEGDatasetBase(abc.ABC):
     def get_available_targets(cls):
         """Get all target methods available for the class. The target method must be decorated by @target_method to be
         properly registered"""
-        # Get all target methods
+        # -------------
+        # Get all implemented target methods
+        # -------------
         target_methods: List[str] = []
         for method in dir(cls):
             attribute = getattr(cls, method)
@@ -338,8 +341,35 @@ class EEGDatasetBase(abc.ABC):
             if callable(attribute) and getattr(attribute, "_is_target_method", False):
                 target_methods.append(method)
 
+        # -------------
+        # Get all SSL implemented methods
+        # -------------
+        try:
+            ssl_features = cls._get_available_self_supervised_targets()
+        except FileNotFoundError:
+            ssl_features = ()
+
         # Convert to tuple and return
-        return tuple(target_methods)
+        return tuple(target_methods) + ssl_features
+
+    @classmethod
+    def _get_available_self_supervised_targets(cls):
+        """Get all available SSL targets. They need to exist in the correct folder"""
+        # The feature names should identical to folder names inside the EEG features folder
+        root_features_path = get_eeg_features_storage_path()
+
+        # Check all features for this specific dataset
+        available_features: List[str] = []
+        for feature in os.listdir(root_features_path):
+            # Which datasets are available for a given feature should be specified in the config file
+            with open(os.path.join(root_features_path, feature)) as f:
+                config = yaml.safe_load(f)
+
+            if cls.__name__ in config["DatasetAvailability"]:
+                available_features.append(feature)
+
+        # Return available SSL features as a tuple
+        return tuple(available_features)
 
     # ----------------
     # Properties
