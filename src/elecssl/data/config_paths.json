@@ -1,3 +1,5 @@
 {
-  "MNEPath": "/media/thomas/AI-Mind - Anonymised data/ELECSSL/Datasets"
+  "MNEPath": "/media/thomas/AI-Mind - Anonymised data/ELECSSL/Data/Originals",
+  "PreprocessedDataPath": "/media/thomas/AI-Mind - Anonymised data/ELECSSL/Data/PreprocessedEEG",
+  "FeaturesDataPath": "/media/thomas/AI-Mind - Anonymised data/ELECSSL/Data/Features"
 }

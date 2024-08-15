@@ -3,6 +3,7 @@ Functions for getting the path to different files related to the data and result
 """
 import json
 import os
+from pathlib import Path
 
 
 def get_results_dir():
@@ -11,14 +12,14 @@ def get_results_dir():
 
     Returns
     -------
-    str
+    Path
 
     Examples
     --------
     >>> get_results_dir()  # doctest: +ELLIPSIS
-    '.../SSL-Features-EEG/src/elecssl/data/results'
+    PosixPath('.../SSL-Features-EEG/src/elecssl/data/results')
     """
-    return os.path.join(os.path.dirname(__file__), "results")
+    return Path(os.path.join(os.path.dirname(__file__), "results"))
 
 
 def get_raw_data_storage_path():
@@ -28,7 +29,7 @@ def get_raw_data_storage_path():
 
     Returns
     -------
-    str
+    Path
         The path to where the data is stored, or to be stored (e.g. in the scripts for downloading)
     """
     # Load the config file for paths
@@ -36,7 +37,7 @@ def get_raw_data_storage_path():
     with open(config_path) as f:
         config = json.load(f)
 
-    return config["MNEPath"]
+    return Path(config["MNEPath"])
 
 
 def get_numpy_data_storage_path():
@@ -47,8 +48,29 @@ def get_numpy_data_storage_path():
     require too much memory
     Returns
     -------
-    str
+    Path
         The path to where the data is stored as numpy arrays, or to be stored (e.g. in the scripts for saving as numpy
         arrays)
     """
-    return os.path.join(get_raw_data_storage_path(), "numpy_arrays")
+    # Load the config file for paths
+    config_path = os.path.join(os.path.dirname(__file__), "config_paths.json")
+    with open(config_path) as f:
+        config = json.load(f)
+
+    return Path(config["PreprocessedDataPath"])
+
+
+def get_eeg_features_storage_path():
+    """
+    Get the path to where the computed features supposed to be stored.
+
+    Returns
+    -------
+    Path
+    """
+    # Load the config file for paths
+    config_path = os.path.join(os.path.dirname(__file__), "config_paths.json")
+    with open(config_path) as f:
+        config = json.load(f)
+
+    return Path(config["FeaturesDataPath"])
