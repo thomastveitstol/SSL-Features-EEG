@@ -7,7 +7,7 @@ from typing import Dict, Tuple, List, Optional
 import enlighten
 import numpy
 import pandas
-import yaml
+import yaml  # type: ignore[import-untyped]
 from matplotlib import pyplot
 from mne.transforms import _cart_to_sph, _pol_to_cart
 
