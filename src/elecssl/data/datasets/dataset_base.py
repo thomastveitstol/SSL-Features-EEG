@@ -2,7 +2,6 @@ import abc
 import dataclasses
 import os
 import warnings
-from pathlib import Path
 from typing import Dict, Tuple, List, Optional
 
 import enlighten
