@@ -51,9 +51,18 @@ class FCModule(DomainDiscriminatorBase):
         (6): Linear(in_features=6, out_features=5, bias=True)
       )
     )
+
+    Not specifying an activation function is fine when there are not hidden layers, but a requirement if there are
+
+    >>> _ = FCModule(7, 5)
+    >>> _ = FCModule(7, 5, hidden_units=(2,))  # doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    ValueError: Not providing an activation function is only allowed when there are no hidden layers, but the hidden
+    layers have the following numbers of units: (2,)
     """
 
-    def __init__(self, in_features, num_classes, *, hidden_units=(), activation_function,
+    def __init__(self, in_features, num_classes, *, hidden_units=(), activation_function=None,
                  activation_function_kwargs=None):
         """
         Initialise
@@ -65,6 +74,11 @@ class FCModule(DomainDiscriminatorBase):
         hidden_units : tuple[int, ...]
         """
         super().__init__()
+
+        # Not providing activation function is only allowed when there are no hidden layers
+        if hidden_units and activation_function is None:
+            raise ValueError(f"Not providing an activation function is only allowed when there are no hidden layers, "
+                             f"but the hidden layers have the following numbers of units: {hidden_units}")
 
         # Set default
         activation_function_kwargs = dict() if activation_function_kwargs is None else activation_function_kwargs
@@ -114,7 +128,6 @@ class FCModule(DomainDiscriminatorBase):
 
         # Loop through all layers
         for i, layer in enumerate(self._model):
-            # Pass through layer
             x = layer(x)
 
         return x
