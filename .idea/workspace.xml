@@ -4,10 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="automatic change">
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/scalers/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/scalers/scaler_base.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/scalers/target_scalers.py" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="updated rewuirements and ran tox">
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/main_models/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/main_models/main_fixed_channels_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/main_models/main_rbp_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/metrics.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits/centroid_polygon.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits/getter.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits/montage_split_base.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/pooling_modules/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/pooling_modules/getter.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/pooling_modules/head_region.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/pooling_modules/mean.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/pooling_modules/pooling_base.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/pooling_modules/univariate_rocket.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/region_based_pooling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,72 +62,109 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python tests.Doctest FCModule.forward.executor": "Run",
+    "Python tests.Doctest PolygonGraph.line_intersection.executor": "Run",
+    "Python tests.Doctest get_domain_discriminator.executor": "Run",
     "Python tests.Doctest get_montage_split.executor": "Run",
     "Python tests.Doctest get_mts_module.executor": "Run",
     "Python tests.Doctest project_to_2d.executor": "Run",
     "Python tests.Doctest sex_to_int.executor": "Run",
     "Python tests.Doctest strip_tensors.executor": "Run",
     "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
+    "Python tests.Doctests in FCModule.executor": "Run",
+    "Python tests.Doctests in MainFixedChannelsModel.executor": "Run",
+    "Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor": "Run",
+    "Python tests.Doctests in MultiMSMean.executor": "Run",
     "Python tests.Doctests in braindecode_models.executor": "Run",
+    "Python tests.Doctests in centroid_polygon.executor": "Run",
+    "Python tests.Doctests in cmmn.executor": "Run",
+    "Python tests.Doctests in fc_modules.executor": "Run",
     "Python tests.Doctests in getter.executor": "Run",
+    "Python tests.Doctests in head_region.executor": "Run",
     "Python tests.Doctests in inception_network.executor": "Run",
     "Python tests.Doctests in interpolate_datasets.executor": "Run",
     "Python tests.Doctests in lemon.executor": "Run",
     "Python tests.Doctests in losses.executor": "Run",
+    "Python tests.Doctests in main_fixed_channels_model.executor": "Run",
+    "Python tests.Doctests in main_rbp_model.executor": "Run",
+    "Python tests.Doctests in mean.executor": "Run",
+    "Python tests.Doctests in metrics.executor": "Run",
     "Python tests.Doctests in miltiadous.executor": "Run",
     "Python tests.Doctests in paths.executor": "Run",
+    "Python tests.Doctests in region_based_pooling.executor": "Run",
     "Python tests.Doctests in sampling_distributions.executor": "Run",
     "Python tests.Doctests in srm.executor": "Run",
     "Python tests.Doctests in td_brain.executor": "Run",
+    "Python tests.Doctests in univariate_rocket.executor": "Run",
     "Python tests.Doctests in utils.executor": "Run",
     "Python tests.Doctests in wang.executor": "Run",
     "Python.mts_module_base.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/src/elecssl/data",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/src/elecssl/models/region_based_pooling",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
+      <recent name="$PROJECT_DIR$/src/elecssl/models" />
       <recent name="$PROJECT_DIR$/src/elecssl/data" />
       <recent name="$PROJECT_DIR$/src/elecssl/data/datasets" />
-      <recent name="$PROJECT_DIR$/src/elecssl/models" />
-      <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
       <recent name="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctest strip_tensors">
-    <configuration name="Doctest strip_tensors" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.Doctests in main_fixed_channels_model">
+    <configuration name="Doctests in MainFixedChannelsModel" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/data_generators" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/main_models" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/data_generators/data_generator.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="strip_tensors" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/main_models/main_fixed_channels_model.py" />
+      <option name="CLASS_NAME" value="MainFixedChannelsModel" />
+      <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_FUNCTION" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in lemon" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in MultiChannelSplitsRegionBasedPooling" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/lemon.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/region_based_pooling.py" />
+      <option name="CLASS_NAME" value="MultiChannelSplitsRegionBasedPooling" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctests in main_fixed_channels_model" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/main_models" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/main_models/main_fixed_channels_model.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -121,17 +173,17 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in miltiadous" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in main_rbp_model" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/main_models" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/miltiadous.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/main_models/main_rbp_model.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -140,36 +192,17 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in td_brain" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in region_based_pooling" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/td_brain.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Doctests in wang" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/wang.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/region_based_pooling.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -180,11 +213,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Doctest strip_tensors" />
-        <item itemvalue="Python tests.Doctests in miltiadous" />
-        <item itemvalue="Python tests.Doctests in wang" />
-        <item itemvalue="Python tests.Doctests in td_brain" />
-        <item itemvalue="Python tests.Doctests in lemon" />
+        <item itemvalue="Python tests.Doctests in main_fixed_channels_model" />
+        <item itemvalue="Python tests.Doctests in MainFixedChannelsModel" />
+        <item itemvalue="Python tests.Doctests in main_rbp_model" />
+        <item itemvalue="Python tests.Doctests in region_based_pooling" />
+        <item itemvalue="Python tests.Doctests in MultiChannelSplitsRegionBasedPooling" />
       </list>
     </recent_temporary>
   </component>
@@ -284,7 +317,55 @@
       <option name="project" value="LOCAL" />
       <updated>1723707196155</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="copies from CDL">
+      <option name="closed" value="true" />
+      <created>1723707641965</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1723707641965</updated>
+    </task>
+    <task id="LOCAL-00012" summary="copies from CDL">
+      <option name="closed" value="true" />
+      <created>1723708611352</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1723708611352</updated>
+    </task>
+    <task id="LOCAL-00013" summary="removed todo">
+      <option name="closed" value="true" />
+      <created>1723709056730</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1723709056730</updated>
+    </task>
+    <task id="LOCAL-00014" summary="fixed imports">
+      <option name="closed" value="true" />
+      <created>1723709500601</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1723709500601</updated>
+    </task>
+    <task id="LOCAL-00015" summary="improved domain discriminator">
+      <option name="closed" value="true" />
+      <created>1723709534951</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1723709534951</updated>
+    </task>
+    <task id="LOCAL-00016" summary="updated rewuirements and ran tox">
+      <option name="closed" value="true" />
+      <created>1723710016300</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1723710016300</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -306,6 +387,11 @@
     <MESSAGE value="automatic update" />
     <MESSAGE value="copies from CDL project" />
     <MESSAGE value="automatic change" />
-    <option name="LAST_COMMIT_MESSAGE" value="automatic change" />
+    <MESSAGE value="copies from CDL" />
+    <MESSAGE value="removed todo" />
+    <MESSAGE value="fixed imports" />
+    <MESSAGE value="improved domain discriminator" />
+    <MESSAGE value="updated rewuirements and ran tox" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated rewuirements and ran tox" />
   </component>
 </project>
