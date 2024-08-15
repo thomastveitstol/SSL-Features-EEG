@@ -1,7 +1,7 @@
 from typing import Type
 
-from cdl_eeg.models.domain_adaptation.domain_discriminators.domain_discriminator_base import DomainDiscriminatorBase
-from cdl_eeg.models.domain_adaptation.domain_discriminators.fc_modules import FCModule
+from elecssl.models.domain_adaptation.domain_discriminators.domain_discriminator_base import DomainDiscriminatorBase
+from elecssl.models.domain_adaptation.domain_discriminators.fc_modules import FCModule
 
 
 def get_domain_discriminator(name, **kwargs):
