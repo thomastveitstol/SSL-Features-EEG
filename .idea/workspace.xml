@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="copies from CDL project">
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/data_generators/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/data_generators/data_generator.py" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="automatic change">
+      <change afterPath="$PROJECT_DIR$/src/elecssl/data/scalers/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/data/scalers/scaler_base.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/elecssl/data/scalers/target_scalers.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -267,7 +268,23 @@
       <option name="project" value="LOCAL" />
       <updated>1723648802923</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="copies from CDL project">
+      <option name="closed" value="true" />
+      <created>1723707120012</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1723707120012</updated>
+    </task>
+    <task id="LOCAL-00010" summary="automatic change">
+      <option name="closed" value="true" />
+      <created>1723707196155</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1723707196155</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -288,6 +305,7 @@
     <MESSAGE value="copied from CDL project" />
     <MESSAGE value="automatic update" />
     <MESSAGE value="copies from CDL project" />
-    <option name="LAST_COMMIT_MESSAGE" value="copies from CDL project" />
+    <MESSAGE value="automatic change" />
+    <option name="LAST_COMMIT_MESSAGE" value="automatic change" />
   </component>
 </project>
