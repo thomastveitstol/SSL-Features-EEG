@@ -23,7 +23,7 @@ class MontageSplitBase(abc.ABC):
         """
 
     @abc.abstractmethod
-    def plot(self, **kwargs):
+    def plot(self, *args, **kwargs):
         """
         Method for plotting the regions. Although not mathematically crucial, implementing plotting is important for
         both debugging and visualisation (needed to explain other people)
