@@ -107,24 +107,19 @@ class LEMON(EEGDatasetBase):
 
         return raw
 
-    def download(self, to_path=None):
+    @classmethod
+    def download(cls):
         """
         Method for downloading the MPI Lemon dataset, eyes closed EEG data only
 
         Created by Mats Tveter and Thomas Tveitstøl
-
-        Parameters
-        ----------
-        to_path : str, optional
-            Path of where to store the data. Defaults to None (recommended), as it will then download to the expected
-            path provided by the .get_mne_path() method.
 
         Returns
         -------
         None
         """
         # Make root directory
-        to_path = self.get_mne_path() if to_path is None else to_path
+        to_path = cls.get_mne_path()
         os.mkdir(to_path)
 
         # MPI Lemon specifications
