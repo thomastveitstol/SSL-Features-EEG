@@ -128,7 +128,7 @@ class Wang(EEGDatasetBase):
         os.mkdir(path)
 
         # Download from OpenNeuro
-        openneuro.download(dataset="ds004148", target_dir=path)
+        openneuro.download(dataset="ds004148", target_dir=path)  # todo: downloading more than resting state now...
 
     # ----------------
     # Targets
