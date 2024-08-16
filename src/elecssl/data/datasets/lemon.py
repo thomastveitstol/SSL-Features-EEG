@@ -46,14 +46,15 @@ class LEMON(EEGDatasetBase):
     # Loading methods
     # ----------------
     def get_participants_tsv_path(self):
-        return os.path.join(self.get_mne_path(), "Participants_MPILMBB_LEMON.csv")
+        # Doesn't matter if we specify EC or EO
+        return self.get_mne_path() / "EC" / "Participants_MPILMBB_LEMON.csv"
 
     def _get_subject_ids(self) -> Tuple[str, ...]:
         # Get the subject IDs from participants file
         participants = pandas.read_csv(self.get_participants_tsv_path())["ID"]
 
         # Keep only the ones in the downloaded EEG data
-        _eeg_availables = os.listdir(self.get_mne_path())
+        _eeg_availables = self.get_mne_path() / "EC"  # todo: would it matter if we wrote EO?
         return tuple(participant for participant in participants if participant in _eeg_availables)
 
     def _load_single_raw_mne_object(self, subject_id, *, ocular_state, interpolation_method, preload=True):
