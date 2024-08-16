@@ -179,23 +179,6 @@ class LEMON(EEGDatasetBase):
     # ----------------
     # Channel system
     # ----------------
-    def _get_electrode_positions(self, subject_id=None):
-        # -----------------
-        # Get electrodes from .fdt file
-        # -----------------
-        # Create path
-        path = os.path.join(self.get_mne_path(), subject_id, f"{subject_id}.set")
-
-        # Load MNE object, but not the data. The 'info' object should contain information from the .tsv file
-        ch_names = mne.io.read_raw_eeglab(path, preload=False, verbose=False).info["ch_names"]
-
-        # Use MNE montage
-        montage = mne.channels.make_standard_montage("standard_1020")
-        channel_positions = montage.get_positions()["ch_pos"]
-
-        # Return dict with channel positions, keeping only the ones in the data
-        return {ch_name: tuple(pos) for ch_name, pos in channel_positions.items() if ch_name in ch_names}
-
     def _get_template_electrode_positions(self):
         # Following the standard 10-20 system according to the original article
         montage = mne.channels.make_standard_montage(self._montage_name)
