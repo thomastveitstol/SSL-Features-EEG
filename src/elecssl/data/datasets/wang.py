@@ -6,6 +6,7 @@ import warnings
 
 import mne
 import numpy
+import openneuro
 import pandas
 from pymatreader import read_mat
 
@@ -61,7 +62,7 @@ class Wang(EEGDatasetBase):
     # ----------------
     # Methods for loading
     # ----------------
-    def _load_single_raw_mne_object(self, subject_id, *, visit, recording, preload=True):
+    def _load_single_raw_mne_object(self, subject_id, *, ocular_state, visit, recording, preload=True):
         # Create path
         subject_path = pathlib.Path(f"{subject_id}/ses-session{visit}/eeg/"
                                     f"{subject_id}_ses-session{visit}_task-{recording}_eeg")
@@ -88,7 +89,7 @@ class Wang(EEGDatasetBase):
 
         return raw
 
-    def _load_single_cleaned_mne_object(self, subject_id, *, visit, recording, preload=True):
+    def _load_single_cleaned_mne_object(self, subject_id, *, ocular_state, visit, recording, preload=True):
         # Create path
         path_to_cleaned = "derivatives/preprocessed data/preprocessed_data"
         subject_path = pathlib.Path(f"{str(subject_id).zfill(2).replace('-', '')}_{str(visit).zfill(2)}_{recording}")
@@ -111,6 +112,15 @@ class Wang(EEGDatasetBase):
             raw.add_reference_channels("FCz")
 
         return raw
+
+    @classmethod
+    def download(cls):
+        # Make directory
+        path = cls.get_mne_path()
+        os.mkdir(path)
+
+        # Download from OpenNeuro
+        openneuro.download(dataset="ds004148", target_dir=path)
 
     # ----------------
     # Targets
