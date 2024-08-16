@@ -26,6 +26,8 @@ src/elecssl/data/datasets/srm.py
 src/elecssl/data/datasets/td_brain.py
 src/elecssl/data/datasets/utils.py
 src/elecssl/data/datasets/wang.py
+src/elecssl/data/feature_computations/__init__.py
+src/elecssl/data/feature_computations/band_power.py
 src/elecssl/data/scalers/__init__.py
 src/elecssl/data/scalers/scaler_base.py
 src/elecssl/data/scalers/target_scalers.py
