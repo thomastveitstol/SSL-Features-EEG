@@ -9,14 +9,10 @@ from elecssl.data.feature_computations.band_power import compute_band_powers, Da
 from elecssl.data.paths import get_eeg_features_storage_path
 
 
-def main():
+def _single_ocular_state(config):
     # ---------------
     # Get all info
     # ---------------
-    # Read config file
-    with open(os.path.join(os.path.dirname(__file__), "config_files", "band_power.yml")) as file:
-        config: Dict[str, Any] = yaml.safe_load(file)
-
     # Get datasets and info
     datasets: List[DatasetInfo] = []
     for dataset_name, info in config["Datasets"].items():
@@ -54,13 +50,37 @@ def main():
         folder = folder_root_path / feature_name
         os.mkdir(folder)
 
-        # Save config file
+        # Save config file (but remove info about the other frequency bands)
+        freq_band_config = config.copy()
+        del freq_band_config["FrequencyBands"]
+        freq_band_config["FrequencyBand"] = {feature: config["FrequencyBands"][feature]}
+
         with open(folder / "config.yml", "w") as file:
-            yaml.safe_dump(config, file)
+            yaml.safe_dump(freq_band_config, file)
 
         # Save the feature matrix
         band_powers[["Dataset", "Subject-ID", feature]].to_csv((folder / feature_name).with_suffix(".csv"), index=False)
 
+
+def main():
+    # ---------------
+    # Read config file
+    # ---------------
+    with open(os.path.join(os.path.dirname(__file__), "config_files", "band_power.yml")) as file:
+        config: Dict[str, Any] = yaml.safe_load(file)
+
+    # ---------------
+    # Loop through the ocular states
+    # ---------------
+    for ocular_state, dataset_config in config["OcularStates"].items():
+        # Fix config file for current ocular state
+        ocular_state_config = config.copy()
+        ocular_state_config["OcularState"] = ocular_state
+        ocular_state_config["Datasets"] = dataset_config["Datasets"]
+        del ocular_state_config["OcularStates"]
+
+        # Create features for current ocular state
+        _single_ocular_state(ocular_state_config)
 
 
 if __name__ == "__main__":

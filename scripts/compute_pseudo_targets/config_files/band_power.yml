@@ -1,19 +1,29 @@
-OcularState: EC
-Datasets:
-  SRM:
-    num_subjects: 7
-    kwargs:
-      session: "t1"
-      derivatives: true
-  Miltiadous:
-    num_subjects: 11
-    kwargs:
-      derivatives: true
-  LEMON:
-    num_subjects: 8
-    kwargs:
-      derivatives: false
-      interpolation_method: MNE
+OcularStates:
+  EC:
+    Datasets:
+      SRM:
+        num_subjects: all
+        kwargs:
+          session: "t1"
+          derivatives: true
+      Miltiadous:
+        num_subjects: all
+        kwargs:
+          derivatives: true
+      LEMON: &LEMON
+        num_subjects: all
+        kwargs:
+          derivatives: false
+          interpolation_method: MNE
+      Wang: &Wang
+        num_subjects: all
+        kwargs:
+          visit: 1
+          derivatives: true
+  EO:
+    Datasets:
+      LEMON: *LEMON
+      Wang: *Wang
 FrequencyBands:
   delta: [ 1, 4 ]
   theta: [ 4, 8 ]
