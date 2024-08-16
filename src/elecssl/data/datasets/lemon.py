@@ -54,7 +54,7 @@ class LEMON(EEGDatasetBase):
         participants = pandas.read_csv(self.get_participants_tsv_path())["ID"]
 
         # Keep only the ones in the downloaded EEG data
-        _eeg_availables = self.get_mne_path() / "EC"  # todo: would it matter if we wrote EO?
+        _eeg_availables = os.listdir(self.get_mne_path() / "EC")  # todo: would it matter if we wrote EO?
         return tuple(participant for participant in participants if participant in _eeg_availables)
 
     def _load_single_raw_mne_object(self, subject_id, *, ocular_state, interpolation_method, preload=True):
