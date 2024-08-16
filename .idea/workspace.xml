@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="minor update">
-      <change afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/feature_computations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="implemented band power computations and improvements for using pseudo labels">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,10 +63,12 @@
     "Python tests.Doctests in MainFixedChannelsModel.executor": "Run",
     "Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor": "Run",
     "Python tests.Doctests in MultiMSMean.executor": "Run",
+    "Python tests.Doctests in SRM (1).executor": "Run",
     "Python tests.Doctests in SRM.executor": "Run",
     "Python tests.Doctests in braindecode_models.executor": "Run",
     "Python tests.Doctests in centroid_polygon.executor": "Run",
     "Python tests.Doctests in cmmn.executor": "Run",
+    "Python tests.Doctests in dataset_base.executor": "Run",
     "Python tests.Doctests in fc_modules.executor": "Run",
     "Python tests.Doctests in getter.executor": "Run",
     "Python tests.Doctests in head_region.executor": "Run",
@@ -107,7 +108,7 @@
       <recent name="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctests in SRM (1)">
+  <component name="RunManager" selected="Python.band_power">
     <configuration name="band_power" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -171,7 +172,7 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in SRM" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in dataset_base" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -181,11 +182,11 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/srm.py" />
-      <option name="CLASS_NAME" value="SRM" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/dataset_base.py" />
+      <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
@@ -211,11 +212,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.band_power" />
         <item itemvalue="Python tests.Doctests in SRM (1)" />
         <item itemvalue="Python tests.Doctests in srm" />
-        <item itemvalue="Python.band_power" />
+        <item itemvalue="Python tests.Doctests in dataset_base" />
         <item itemvalue="Python.srm" />
-        <item itemvalue="Python tests.Doctests in SRM" />
       </list>
     </recent_temporary>
   </component>
@@ -507,7 +508,23 @@
       <option name="project" value="LOCAL" />
       <updated>1723799526996</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="minor update">
+      <option name="closed" value="true" />
+      <created>1723799662499</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1723799662499</updated>
+    </task>
+    <task id="LOCAL-00036" summary="implemented band power computations and improvements for using pseudo labels">
+      <option name="closed" value="true" />
+      <created>1723800059600</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1723800059600</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -522,7 +539,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="set up configuration files" />
     <MESSAGE value="minor fix to tox configuration file" />
     <MESSAGE value="automatic change after update" />
     <MESSAGE value="copied from CDL project" />
@@ -547,6 +563,7 @@
     <MESSAGE value="added dataset to getter" />
     <MESSAGE value="auto update" />
     <MESSAGE value="minor update" />
-    <option name="LAST_COMMIT_MESSAGE" value="minor update" />
+    <MESSAGE value="implemented band power computations and improvements for using pseudo labels" />
+    <option name="LAST_COMMIT_MESSAGE" value="implemented band power computations and improvements for using pseudo labels" />
   </component>
 </project>

@@ -1,12 +1,12 @@
 Datasets:
   # todo: I need to specify EO or EC. Loading methods must also be updated accordingly
   SRM:
-    num_subjects: 6
+    num_subjects: all
     kwargs:
       session: "t1"
       derivatives: true
   Miltiadous:
-    num_subjects: 6
+    num_subjects: all
     kwargs:
       derivatives: true
 FrequencyBands:

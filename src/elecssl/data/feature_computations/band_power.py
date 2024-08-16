@@ -46,8 +46,8 @@ def _compute_band_power_from_psd(psd, f_min, f_max, aggregation_method):
     else:
         raise ValueError(f"Could not recognise aggregation method: {aggregation_method}")
 
-    # Return power
-    return agg(power)
+    # Return power with sensible unit  todo: what should the unit be?
+    return agg(power) * 10**12
 
 
 def _compute_band_power(eeg, frequency_bands, aggregation_method):
