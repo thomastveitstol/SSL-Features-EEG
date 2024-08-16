@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="fixed comment and added script for downloading LEMON">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added download method to dataset">
+      <change afterPath="$PROJECT_DIR$/scripts/dataset_downloads/wang.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/wang.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/wang.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -572,7 +573,15 @@
       <option name="project" value="LOCAL" />
       <updated>1723807656870</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="added download method to dataset">
+      <option name="closed" value="true" />
+      <created>1723809488702</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1723809488702</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -587,7 +596,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="copies from CDL" />
     <MESSAGE value="removed todo" />
     <MESSAGE value="fixed imports" />
     <MESSAGE value="improved domain discriminator" />
@@ -612,6 +620,7 @@
     <MESSAGE value="fixes for handling loading of both ocular states" />
     <MESSAGE value="flake8 fix" />
     <MESSAGE value="fixed comment and added script for downloading LEMON" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed comment and added script for downloading LEMON" />
+    <MESSAGE value="added download method to dataset" />
+    <option name="LAST_COMMIT_MESSAGE" value="added download method to dataset" />
   </component>
 </project>

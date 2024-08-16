@@ -10,7 +10,7 @@ import openneuro
 import pandas
 from pymatreader import read_mat
 
-from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method
+from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method, OcularState
 from elecssl.data.datasets.utils import sex_to_int
 
 
@@ -50,7 +50,7 @@ class Wang(EEGDatasetBase):
       'Fp2': 32, 'AF4': 33, 'AF8': 34, 'F2': 35, 'F4': 36, 'F6': 37, 'F8': 38, 'FC2': 39, 'FC4': 40, 'FC6': 41,
       'FT8': 42, 'C2': 43, 'C4': 44, 'C6': 45, 'T8': 46, 'CPz': 47, 'CP2': 48, 'CP4': 49, 'CP6': 50, 'TP8': 51,
       'TP10': 52, 'P2': 53, 'P4': 54, 'P6': 55, 'P8': 56, 'POz': 57, 'PO4': 58, 'PO8': 59, 'O2': 60, 'FCz': 61}
-     >>> my_raw = Wang()._load_single_cleaned_mne_object(visit=1, recording="EC", subject_id="sub-01")
+     >>> my_raw = Wang()._load_single_cleaned_mne_object(visit=1, ocular_state=OcularState.EC, subject_id="sub-01")
      >>> tuple(my_raw.info["ch_names"] ) == my_channels
      True
     """
@@ -58,12 +58,19 @@ class Wang(EEGDatasetBase):
     __slots__ = ()
 
     _montage_name = "standard_1020"  # See 'EEG acquisition' in the original paper
+    _ocular_states = (OcularState.EC, OcularState.EO)
 
     # ----------------
     # Methods for loading
     # ----------------
-    def _load_single_raw_mne_object(self, subject_id, *, ocular_state, visit, recording, preload=True):
+    def _load_single_raw_mne_object(self, subject_id, *, ocular_state, visit, preload=True):
         # Create path
+        if ocular_state == OcularState.EC:
+            recording = "eyesclosed"
+        elif ocular_state == OcularState.EO:
+            recording = "eyesopen"
+        else:
+            raise ValueError(f"Ocular state not recognised: {ocular_state}")
         subject_path = pathlib.Path(f"{subject_id}/ses-session{visit}/eeg/"
                                     f"{subject_id}_ses-session{visit}_task-{recording}_eeg")
         subject_path = subject_path.with_suffix(".vhdr")
@@ -89,9 +96,10 @@ class Wang(EEGDatasetBase):
 
         return raw
 
-    def _load_single_cleaned_mne_object(self, subject_id, *, ocular_state, visit, recording, preload=True):
+    def _load_single_cleaned_mne_object(self, subject_id, *, ocular_state: OcularState, visit, preload=True):
         # Create path
         path_to_cleaned = "derivatives/preprocessed data/preprocessed_data"
+        recording = ocular_state.value
         subject_path = pathlib.Path(f"{str(subject_id).zfill(2).replace('-', '')}_{str(visit).zfill(2)}_{recording}")
         subject_path = subject_path.with_suffix(".set")
         path = os.path.join(self.get_mne_path(), path_to_cleaned, subject_path)
