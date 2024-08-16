@@ -201,7 +201,7 @@ class SRM(EEGDatasetBase):
                             "BioSemi_SRM_template_64_locs.xyz")
 
         # Make pandas dataframe
-        df = pandas.read_table(path, header=None, delim_whitespace=True).rename(columns={0: "idx", 4: "ch_name"})
+        df = pandas.read_table(path, header=None, sep='\s+').rename(columns={0: "idx", 4: "ch_name"})
 
         # Extract the needed values
         indices = df["idx"].to_numpy() - 1  # Need to subtract 1 due to python 0 zero indexing
