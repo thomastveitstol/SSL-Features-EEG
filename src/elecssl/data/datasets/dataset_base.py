@@ -326,15 +326,18 @@ class EEGDatasetBase(abc.ABC):
         if target not in self.get_available_targets():
             raise ValueError(f"Target '{target}' was not recognised. Make sure that the method passed shares the name "
                              f"with the implemented method you want to use. The targets available for this class "
-                             f"({type(self).__name__}) are: {self.get_available_targets()}")
+                             f"({type(self).__name__}) are: {self.get_available_targets(exclude_ssl=False)}")
 
         # Return the targets  todo: check if 'subject_ids' can be a required input for the decorated methods
         return getattr(self, target)(subject_ids=subject_ids)
 
     @classmethod
-    def get_available_targets(cls):
+    def get_available_targets(cls, exclude_ssl):
         """Get all target methods available for the class. The target method must be decorated by @target_method to be
         properly registered"""
+        if not isinstance(exclude_ssl, bool):
+            raise TypeError(f"Expected input argument 'exclude_ssl' to be bool, but found {type(exclude_ssl)}")
+
         # -------------
         # Get all implemented target methods
         # -------------
@@ -345,6 +348,9 @@ class EEGDatasetBase(abc.ABC):
             # Append (as type 'str') if it is a target method
             if callable(attribute) and getattr(attribute, "_is_target_method", False):
                 target_methods.append(method)
+
+        if exclude_ssl:
+            return tuple(target_methods)
 
         # -------------
         # Get all SSL implemented methods
@@ -367,10 +373,10 @@ class EEGDatasetBase(abc.ABC):
         available_features: List[str] = []
         for feature in os.listdir(root_features_path):
             # Which datasets are available for a given feature should be specified in the config file
-            with open(os.path.join(root_features_path, feature)) as f:
+            with open(root_features_path / feature / "config.yml") as f:
                 config = yaml.safe_load(f)
 
-            if cls.__name__ in config["DatasetAvailability"]:
+            if cls.__name__ in config["Datasets"]:
                 available_features.append(feature)
 
         # Return available SSL features as a tuple

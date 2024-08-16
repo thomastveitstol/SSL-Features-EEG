@@ -28,7 +28,7 @@ class Miltiadous(EEGDatasetBase):
     ----------
     >>> Miltiadous().name
     'Miltiadous'
-    >>> Miltiadous.get_available_targets()
+    >>> Miltiadous.get_available_targets(exclude_ssl=True)
     ('age', 'mmse', 'sex')
     >>> len(Miltiadous().get_subject_ids())
     88

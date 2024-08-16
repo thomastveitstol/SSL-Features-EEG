@@ -25,7 +25,7 @@ class SRM(EEGDatasetBase):
     ----------
     >>> SRM().name
     'SRM'
-    >>> SRM.get_available_targets()
+    >>> SRM.get_available_targets(exclude_ssl=True)
     ('age', 'ravlt_del', 'ravlt_rec', 'ravlt_tot', 'sex')
     >>> len(SRM().get_subject_ids())
     111

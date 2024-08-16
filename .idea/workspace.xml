@@ -9,8 +9,6 @@
       <change afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/elecssl/data/feature_computations/__init__.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/getter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/getter.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,7 +107,7 @@
       <recent name="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.band_power">
+  <component name="RunManager" selected="Python tests.Doctests in SRM (1)">
     <configuration name="band_power" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -154,6 +152,25 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="Doctests in SRM (1)" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/srm.py" />
+      <option name="CLASS_NAME" value="SRM" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
     <configuration name="Doctests in SRM" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -173,36 +190,17 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in main_fixed_channels_model" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in srm" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/main_models" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/main_models/main_fixed_channels_model.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Doctests in paths" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/paths.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/srm.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -213,11 +211,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Doctests in SRM (1)" />
+        <item itemvalue="Python tests.Doctests in srm" />
         <item itemvalue="Python.band_power" />
         <item itemvalue="Python.srm" />
         <item itemvalue="Python tests.Doctests in SRM" />
-        <item itemvalue="Python tests.Doctests in paths" />
-        <item itemvalue="Python tests.Doctests in main_fixed_channels_model" />
       </list>
     </recent_temporary>
   </component>
@@ -477,7 +475,39 @@
       <option name="project" value="LOCAL" />
       <updated>1723799074022</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="added dataset to getter">
+      <option name="closed" value="true" />
+      <created>1723799170908</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1723799170908</updated>
+    </task>
+    <task id="LOCAL-00032" summary="auto update">
+      <option name="closed" value="true" />
+      <created>1723799179372</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1723799179372</updated>
+    </task>
+    <task id="LOCAL-00033" summary="minor update">
+      <option name="closed" value="true" />
+      <created>1723799442449</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1723799442449</updated>
+    </task>
+    <task id="LOCAL-00034" summary="minor update">
+      <option name="closed" value="true" />
+      <created>1723799526996</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1723799526996</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -514,6 +544,8 @@
     <MESSAGE value="optimised imports" />
     <MESSAGE value="muted mypy import error" />
     <MESSAGE value="automatic update" />
+    <MESSAGE value="added dataset to getter" />
+    <MESSAGE value="auto update" />
     <MESSAGE value="minor update" />
     <option name="LAST_COMMIT_MESSAGE" value="minor update" />
   </component>

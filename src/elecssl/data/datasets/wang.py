@@ -28,7 +28,7 @@ class Wang(EEGDatasetBase):
     --------
     >>> Wang().name
     'Wang'
-    >>> Wang.get_available_targets()
+    >>> Wang.get_available_targets(exclude_ssl=True)
     ('age', 'sex')
     >>> len(Wang().get_subject_ids())
     60
