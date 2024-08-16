@@ -156,8 +156,7 @@ class LEMON(EEGDatasetBase):
                 # e.g. data/Projects/.../EEG_Preprocessed/sub-032514/sub-032514_EO.set
                 file_path = obj['Key']
 
-                # Download only eyes closed .set and .fdt files. If, in the future, we want to include eyes open, this
-                # is where to change the code
+                # Download EEG data, ensuring correct ocular state
                 if f"_{ocular_state.value}.set" == file_path[-7:] or f"_{ocular_state.value}.fdt" in file_path[-7:]:
                     # Get subject ID and file type from the folder name
                     subject_id = file_path.split("/")[-2]
