@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Dict, Tuple, Any
+from typing import Dict, Tuple, Any, List
 
 import numpy
 import pandas
@@ -103,8 +103,8 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method):
     pandas.DataFrame
     """
     # Initialise what will eventually be converted to a pandas DataFrame
-    _f_bands = {band_name: [] for band_name in frequency_bands}
-    results: Dict[str, list] = {"Dataset": [], "Subject-ID": [], **_f_bands}
+    _f_bands = {band_name: [] for band_name in frequency_bands}  # type: ignore[var-annotated]
+    results: Dict[str, List[Any]] = {"Dataset": [], "Subject-ID": [], **_f_bands}
 
     # Loop though all datasets
     for info in datasets:

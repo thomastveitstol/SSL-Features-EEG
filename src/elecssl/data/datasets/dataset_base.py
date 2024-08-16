@@ -323,7 +323,7 @@ class EEGDatasetBase(abc.ABC):
         subject_ids = self.get_subject_ids() if subject_ids is None else subject_ids
 
         # Input check
-        if target not in self.get_available_targets():
+        if target not in self.get_available_targets(exclude_ssl=False):
             raise ValueError(f"Target '{target}' was not recognised. Make sure that the method passed shares the name "
                              f"with the implemented method you want to use. The targets available for this class "
                              f"({type(self).__name__}) are: {self.get_available_targets(exclude_ssl=False)}")
