@@ -124,7 +124,6 @@ class LEMON(EEGDatasetBase):
             # Download
             cls._download(to_path, ocular_state=ocular_state)
 
-
     @classmethod
     def _download(cls, to_path, ocular_state: OcularState):
         """
