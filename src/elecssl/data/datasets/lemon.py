@@ -9,7 +9,7 @@ from botocore import UNSIGNED
 from botocore.client import Config
 import mne
 
-from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method
+from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method, OcularState
 from elecssl.data.datasets.utils import sex_to_int
 
 
@@ -40,6 +40,7 @@ class LEMON(EEGDatasetBase):
                       "C1", "C2", "C6", "TP7", "CP3", "CPz", "CP4", "TP8", "P5", "P1", "P2", "P6", "PO7", "PO3", "POz",
                       "PO4", "PO8")
     _montage_name = "standard_1020"
+    _ocular_states = (OcularState.EC, OcularState.EO)
 
     # ----------------
     # Loading methods
@@ -55,12 +56,12 @@ class LEMON(EEGDatasetBase):
         _eeg_availables = os.listdir(self.get_mne_path())
         return tuple(participant for participant in participants if participant in _eeg_availables)
 
-    def _load_single_raw_mne_object(self, subject_id, *, interpolation_method, preload=True):
+    def _load_single_raw_mne_object(self, subject_id, *, ocular_state, interpolation_method, preload=True):
         # -------------
         # Load object
         # -------------
         # Create path
-        path = os.path.join(self.get_mne_path(), subject_id, f"{subject_id}.set")
+        path = (self.get_mne_path() / ocular_state.value / subject_id / subject_id).with_suffix(".set")
 
         # Load MNE object
         with warnings.catch_warnings():
@@ -109,6 +110,23 @@ class LEMON(EEGDatasetBase):
 
     @classmethod
     def download(cls):
+        # Make root directory
+        root_dir = cls.get_mne_path()
+        os.mkdir(root_dir)
+
+        # Download EEG for both ocular states
+        for ocular_state in (OcularState.EC, OcularState.EO):
+            to_path = root_dir / ocular_state.value
+
+            # Make directory
+            os.mkdir(to_path)
+
+            # Download
+            cls._download(to_path, ocular_state=ocular_state)
+
+
+    @classmethod
+    def _download(cls, to_path, ocular_state: OcularState):
         """
         Method for downloading the MPI Lemon dataset, eyes closed EEG data only
 
@@ -118,10 +136,6 @@ class LEMON(EEGDatasetBase):
         -------
         None
         """
-        # Make root directory
-        to_path = cls.get_mne_path()
-        os.mkdir(to_path)
-
         # MPI Lemon specifications
         bucket = 'fcp-indi'
         prefix = "data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Preprocessed"
@@ -145,7 +159,7 @@ class LEMON(EEGDatasetBase):
 
                 # Download only eyes closed .set and .fdt files. If, in the future, we want to include eyes open, this
                 # is where to change the code
-                if "_EC.set" == file_path[-7:] or "_EC.fdt" in file_path[-7:]:
+                if f"_{ocular_state.value}.set" == file_path[-7:] or f"_{ocular_state.value}.fdt" in file_path[-7:]:
                     # Get subject ID and file type from the folder name
                     subject_id = file_path.split("/")[-2]
                     file_type = file_path.split(".")[-1]  # either .set or .fdt

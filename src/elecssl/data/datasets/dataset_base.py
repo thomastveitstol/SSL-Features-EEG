@@ -2,7 +2,8 @@ import abc
 import dataclasses
 import os
 import warnings
-from typing import Dict, Tuple, List, Optional
+from enum import Enum
+from typing import Dict, Tuple, List, Optional, Union
 
 import enlighten
 import numpy
@@ -27,6 +28,15 @@ def target_method(func):
 # --------------------
 # Classes
 # --------------------
+class UnavailableOcularStateError(Exception):
+    ...
+
+
+class OcularState(Enum):
+    EC = "EC"
+    EO = "EO"
+
+
 @dataclasses.dataclass(frozen=True)
 class ChannelSystem:
     """Data class for channel systems"""
@@ -43,6 +53,7 @@ class EEGDatasetBase(abc.ABC):
 
     __slots__ = "_name"
 
+    _ocular_states: Union[Tuple[OcularState], Tuple[OcularState, OcularState]]
     _montage_name: Optional[str] = None
 
     def __init__(self, name=None):
@@ -59,7 +70,7 @@ class EEGDatasetBase(abc.ABC):
     # ----------------
     # Loading methods
     # ----------------
-    def load_single_mne_object(self, subject_id, derivatives=False, **kwargs):
+    def load_single_mne_object(self, subject_id, ocular_state, derivatives=False, **kwargs):
         """
         Method for loading MNE raw object of a single subject
 
@@ -67,6 +78,8 @@ class EEGDatasetBase(abc.ABC):
         ----------
         subject_id : str
             Subject ID
+        ocular_state : OcularState
+            The ocular state of which to load.
         derivatives : bool
             For datasets where an already cleaned version is available. If True, the cleaned version will be used,
             otherwise the non-cleaned data is loaded
@@ -76,9 +89,14 @@ class EEGDatasetBase(abc.ABC):
         mne.io.base.BaseRaw
             MNE object of the subject
         """
+        # Check if the ocular state is available
+        if ocular_state not in self._ocular_states:
+            raise UnavailableOcularStateError(f"Tried to load data from the ocular state {ocular_state}, but only "
+                                              f"{self._ocular_states} are available")
+
         # Load raw object
-        raw = self._load_single_cleaned_mne_object(subject_id, **kwargs) if derivatives \
-            else self._load_single_raw_mne_object(subject_id, **kwargs)
+        raw = self._load_single_cleaned_mne_object(subject_id, ocular_state=ocular_state, **kwargs) if derivatives \
+            else self._load_single_raw_mne_object(subject_id, ocular_state=ocular_state, **kwargs)
 
         # Set montage
         raw.set_montage(self.channel_system.montage_name)

@@ -5,7 +5,7 @@ import numpy
 import openneuro
 import pandas
 
-from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method
+from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method, OcularState
 from elecssl.data.datasets.utils import sex_to_int
 
 
@@ -41,18 +41,19 @@ class Miltiadous(EEGDatasetBase):
     _channel_names = ("Fp1", "Fp2", "F3", "F4", "C3", "C4", "P3", "P4", "O1", "O2", "F7", "F8", "T3", "T4", "T5", "T6",
                       "Fz", "Cz", "Pz")
     _montage_name = "standard_1020"
+    _ocular_states = (OcularState.EC,)
 
     # ----------------
     # Methods for loading
     # ----------------
-    def _load_single_raw_mne_object(self, subject_id, *, preload=True):
+    def _load_single_raw_mne_object(self, subject_id, *, ocular_state, preload=True):
         # Create path
         path = os.path.join(self.get_mne_path(), subject_id, "eeg", f"{subject_id}_task-eyesclosed_eeg.set")
 
         # Load MNE object and return
         return mne.io.read_raw_eeglab(input_fname=path, preload=preload, verbose=False)
 
-    def _load_single_cleaned_mne_object(self, subject_id, *, preload=True):
+    def _load_single_cleaned_mne_object(self, subject_id, *, ocular_state, preload=True):
         # Create path
         path = os.path.join(self.get_mne_path(), "derivatives", subject_id, "eeg",
                             f"{subject_id}_task-eyesclosed_eeg.set")
