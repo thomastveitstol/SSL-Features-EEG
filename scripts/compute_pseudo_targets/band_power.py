@@ -3,6 +3,7 @@ from typing import List, Any, Dict
 
 import yaml
 
+from elecssl.data.datasets.dataset_base import OcularState
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.feature_computations.band_power import compute_band_powers, DatasetInfo
 from elecssl.data.paths import get_eeg_features_storage_path
@@ -28,7 +29,10 @@ def main():
             subjects = subjects[:info["num_subjects"]]
 
         # Add dataset info
-        datasets.append(DatasetInfo(dataset=dataset, subjects=subjects, kwargs=info["kwargs"]))
+        datasets.append(
+            DatasetInfo(dataset=dataset, subjects=subjects,
+                        kwargs={"ocular_state": OcularState(config["OcularState"]),**info["kwargs"]})
+        )
 
     # ---------------
     # Compute band powers
@@ -46,7 +50,7 @@ def main():
             continue
 
         # Make directory
-        feature_name = f"band_power_{feature}"
+        feature_name = f"band_power_{feature}_{config["OcularState"].lower()}"
         folder = folder_root_path / feature_name
         os.mkdir(folder)
 

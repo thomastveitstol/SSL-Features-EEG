@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added download method to dataset">
-      <change afterPath="$PROJECT_DIR$/scripts/dataset_downloads/wang.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/wang.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/wang.py" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="updated bash script">
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/lemon.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/lemon.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -581,7 +580,31 @@
       <option name="project" value="LOCAL" />
       <updated>1723809488702</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="fixed loading of both ocular state in dataset">
+      <option name="closed" value="true" />
+      <created>1723809941648</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1723809941648</updated>
+    </task>
+    <task id="LOCAL-00045" summary="added script for loading dataset">
+      <option name="closed" value="true" />
+      <created>1723810039921</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1723810039921</updated>
+    </task>
+    <task id="LOCAL-00046" summary="updated bash script">
+      <option name="closed" value="true" />
+      <created>1723810071239</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1723810071239</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -596,9 +619,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed todo" />
-    <MESSAGE value="fixed imports" />
-    <MESSAGE value="improved domain discriminator" />
     <MESSAGE value="updated rewuirements and ran tox" />
     <MESSAGE value="copies and improvements from CDL project" />
     <MESSAGE value="mypy fix" />
@@ -621,6 +641,9 @@
     <MESSAGE value="flake8 fix" />
     <MESSAGE value="fixed comment and added script for downloading LEMON" />
     <MESSAGE value="added download method to dataset" />
-    <option name="LAST_COMMIT_MESSAGE" value="added download method to dataset" />
+    <MESSAGE value="fixed loading of both ocular state in dataset" />
+    <MESSAGE value="added script for loading dataset" />
+    <MESSAGE value="updated bash script" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated bash script" />
   </component>
 </project>
