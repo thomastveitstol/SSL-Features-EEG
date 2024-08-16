@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="updated bash script">
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/lemon.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/lemon.py" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added todo">
+      <change afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/compute_pseudo_targets.bash" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/data_preparation.bash" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,6 +93,7 @@
     "Python.lemon.executor": "Run",
     "Python.mts_module_base.executor": "Run",
     "Python.srm.executor": "Run",
+    "Python.wang.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
@@ -108,7 +110,7 @@
       <recent name="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.lemon">
+  <component name="RunManager" selected="Python.band_power">
     <configuration name="band_power" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -153,6 +155,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="wang" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/dataset_downloads" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/dataset_downloads/wang.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="Doctests in LEMON" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -172,7 +196,7 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in SRM (1)" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in lemon" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -182,26 +206,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/srm.py" />
-      <option name="CLASS_NAME" value="SRM" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_CLASS" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Doctests in srm" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/srm.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/lemon.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -212,11 +217,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.lemon" />
-        <item itemvalue="Python tests.Doctests in LEMON" />
         <item itemvalue="Python.band_power" />
-        <item itemvalue="Python tests.Doctests in SRM (1)" />
-        <item itemvalue="Python tests.Doctests in srm" />
+        <item itemvalue="Python.wang" />
+        <item itemvalue="Python tests.Doctests in LEMON" />
+        <item itemvalue="Python tests.Doctests in lemon" />
+        <item itemvalue="Python.lemon" />
       </list>
     </recent_temporary>
   </component>
@@ -235,30 +240,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00001" summary="set up configuration files">
-      <option name="closed" value="true" />
-      <created>1723633090612</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1723633090612</updated>
-    </task>
-    <task id="LOCAL-00002" summary="minor fix to tox configuration file">
-      <option name="closed" value="true" />
-      <created>1723633244412</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1723633244412</updated>
-    </task>
-    <task id="LOCAL-00003" summary="automatic change after update">
-      <option name="closed" value="true" />
-      <created>1723633576433</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1723633576433</updated>
     </task>
     <task id="LOCAL-00004" summary="automatic change after update">
       <option name="closed" value="true" />
@@ -604,7 +585,55 @@
       <option name="project" value="LOCAL" />
       <updated>1723810071239</updated>
     </task>
-    <option name="localTasksCounter" value="47" />
+    <task id="LOCAL-00047" summary="path fixes and added todo">
+      <option name="closed" value="true" />
+      <created>1723811686641</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1723811686641</updated>
+    </task>
+    <task id="LOCAL-00048" summary="removed unnecessary method">
+      <option name="closed" value="true" />
+      <created>1723811781272</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1723811781272</updated>
+    </task>
+    <task id="LOCAL-00049" summary="path fix">
+      <option name="closed" value="true" />
+      <created>1723811884292</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1723811884292</updated>
+    </task>
+    <task id="LOCAL-00050" summary="imrpovements for feature compuatition">
+      <option name="closed" value="true" />
+      <created>1723812487780</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1723812487780</updated>
+    </task>
+    <task id="LOCAL-00051" summary="imrpovements for feature compuatition">
+      <option name="closed" value="true" />
+      <created>1723815408073</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1723815408073</updated>
+    </task>
+    <task id="LOCAL-00052" summary="added todo">
+      <option name="closed" value="true" />
+      <created>1723815413929</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1723815413929</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -619,11 +648,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="updated rewuirements and ran tox" />
-    <MESSAGE value="copies and improvements from CDL project" />
-    <MESSAGE value="mypy fix" />
-    <MESSAGE value="updated requirements" />
-    <MESSAGE value="changed paths" />
     <MESSAGE value="updates for using SSL targets" />
     <MESSAGE value="updates for dataset downloading" />
     <MESSAGE value="signature fix" />
@@ -644,6 +668,11 @@
     <MESSAGE value="fixed loading of both ocular state in dataset" />
     <MESSAGE value="added script for loading dataset" />
     <MESSAGE value="updated bash script" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated bash script" />
+    <MESSAGE value="path fixes and added todo" />
+    <MESSAGE value="removed unnecessary method" />
+    <MESSAGE value="path fix" />
+    <MESSAGE value="imrpovements for feature compuatition" />
+    <MESSAGE value="added todo" />
+    <option name="LAST_COMMIT_MESSAGE" value="added todo" />
   </component>
 </project>
