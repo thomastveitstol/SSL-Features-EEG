@@ -5,7 +5,7 @@ import numpy
 import pandas
 from scipy import integrate
 
-from elecssl.data.datasets.dataset_base import EEGDatasetBase
+from elecssl.data.datasets.dataset_base import EEGDatasetBase, MNELoadingError
 
 
 # -------------------
@@ -111,7 +111,10 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method):
         # Loop though all provided subjects for the dataset
         for subject in info.subjects:
             # Load the EEG
-            eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
+            try:
+                eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
+            except MNELoadingError:
+                continue
 
             # Compute power for all frequency bands of interest
             power = _compute_band_power(eeg=eeg, frequency_bands=frequency_bands, aggregation_method=aggregation_method)
