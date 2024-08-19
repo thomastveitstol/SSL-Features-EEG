@@ -43,7 +43,7 @@ class BandPass(TransformationBase):
         # --------------
         # Create main folder
         # --------------
-        root_path = self._get_path()
+        root_path = self._get_path(ocular_state=config["OcularState"])
         os.mkdir(root_path)
 
         # Save the config file
@@ -145,7 +145,7 @@ class BandPass(TransformationBase):
                 epochs=epochs.copy(), band_name=band_name, l_freq=l_freq, h_freq=h_freq,
                 resample_fmax_multiples=config["Details"]["resample_multiples"], subject_id=subject.subject_id,
                 is_autorejected=False, plot_data=plot_data, dataset_name=subject.dataset_name, save_data=save_data,
-                epoch_duration=epoch_duration
+                epoch_duration=epoch_duration, ocular_state=config["OcularState"]
             )
 
             # (Maybe) save with autoreject
@@ -154,11 +154,12 @@ class BandPass(TransformationBase):
                     epochs=autoreject_epochs.copy(), band_name=band_name, l_freq=l_freq, h_freq=h_freq,
                     resample_fmax_multiples=config["Details"]["resample_multiples"], subject_id=subject.subject_id,
                     is_autorejected=True, plot_data=plot_data, dataset_name=subject.dataset_name, save_data=save_data,
-                    epoch_duration=epoch_duration
+                    epoch_duration=epoch_duration, ocular_state=config["OcularState"]
                 )
 
     def _save_eeg_with_specifics(self, epochs: mne.Epochs, band_name, l_freq, h_freq, resample_fmax_multiples,
-                                 subject_id, is_autorejected, dataset_name: str, plot_data, save_data, epoch_duration):
+                                 subject_id, is_autorejected, dataset_name: str, plot_data, save_data, epoch_duration,
+                                 ocular_state):
         """Function for saving EEG data as numpy arrays, which has already been pre-processed to some extent"""
         # Perform band-pass filtering
         epochs.filter(l_freq=l_freq, h_freq=h_freq, verbose=False)
@@ -195,7 +196,7 @@ class BandPass(TransformationBase):
 
             # Save numpy array
             if save_data:
-                root_path = self._get_path()
+                root_path = self._get_path(ocular_state=ocular_state)
                 _folder_name = self._get_folder_name(freq_band=band_name, is_autorejected=is_autorejected,
                                                      resample_multiple=resample_multiple, input_length=epoch_duration)
                 array_path = root_path / _folder_name / dataset_name / f"{subject_id}.npy"

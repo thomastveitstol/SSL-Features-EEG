@@ -82,8 +82,8 @@ class TransformationBase(abc.ABC):
     # -----------------
     # Path methods
     # -----------------
-    def _get_path(self):
-        return get_numpy_data_storage_path() / f"preprocessed_{self._augmentation_name}"
+    def _get_path(self, ocular_state):
+        return get_numpy_data_storage_path() / f"preprocessed_{self._augmentation_name}_{ocular_state.lower()}"
 
     @abc.abstractmethod
     def _get_folder_name(self, *args, **kwargs):
