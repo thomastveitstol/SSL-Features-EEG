@@ -33,7 +33,7 @@ class BandPass(TransformationBase):
 
         Examples
         --------
-        >>> BandPass._get_folder_name(band_pass="delta", is_autorejected=True, resample_multiple=5.5, input_length=4)
+        >>> BandPass._get_folder_name(freq_band="delta", is_autorejected=True, resample_multiple=5.5, input_length=4)
         PosixPath('data--band_pass-delta--input_length-4s--autoreject-True--sfreq-5.5fmax')
         """
         return Path(f"data--band_pass-{freq_band}--input_length-{input_length}s--autoreject-{is_autorejected}--"
