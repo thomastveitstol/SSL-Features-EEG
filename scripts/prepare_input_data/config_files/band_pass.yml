@@ -6,21 +6,21 @@ OcularStates:
   EC:
     Datasets:
       SRM:
-        num_subjects: 2
+        num_subjects: all
         kwargs:
           session: "t1"
           derivatives: true
       Miltiadous:
-        num_subjects: 3
+        num_subjects: all
         kwargs:
           derivatives: true
       LEMON: &LEMON
-        num_subjects: 3
+        num_subjects: all
         kwargs:
           derivatives: false
           interpolation_method: MNE
       Wang: &Wang
-        num_subjects: 2
+        num_subjects: all
         kwargs:
           visit: 1
           derivatives: true
@@ -29,7 +29,7 @@ OcularStates:
       LEMON: *LEMON
       Wang: *Wang
 Details:
-  num_epochs: 5
+  num_epochs: 3
   epoch_overlap: 0
   resample_multiples: [ 2, 3, 4 ]
   input_length: [ 5, 10, 20 ]
@@ -39,9 +39,9 @@ FrequencyBands:
   alpha: [ 8, 12 ]
   beta: [ 12, 30 ]
   gamma: [ 30, 45 ]
+  all: [ 1, 45 ]
 InitialPreprocessing:  # todo: should be dataset specific
   excluded_channels: null
   time_series_start_secs: 30
   band_pass: null
   notch_filter: 50
-OcularState: EC
