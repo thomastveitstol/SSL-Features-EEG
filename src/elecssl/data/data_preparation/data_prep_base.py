@@ -78,7 +78,6 @@ class TransformationBase(abc.ABC):
 
                 pbar.update()
 
-
     # -----------------
     # Path methods
     # -----------------
