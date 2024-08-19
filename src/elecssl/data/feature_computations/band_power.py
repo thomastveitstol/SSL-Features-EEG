@@ -90,7 +90,7 @@ class DatasetInfo:
 
 def compute_band_powers(datasets, frequency_bands, aggregation_method):
     """
-    Function for computing band powers of entire
+    Function for computing band powers of entire datasets
 
     Parameters
     ----------
