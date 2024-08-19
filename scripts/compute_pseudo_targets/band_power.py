@@ -3,9 +3,9 @@ from typing import List, Any, Dict
 
 import yaml
 
-from elecssl.data.datasets.dataset_base import OcularState
+from elecssl.data.datasets.dataset_base import OcularState, DatasetInfo
 from elecssl.data.datasets.getter import get_dataset
-from elecssl.data.feature_computations.band_power import compute_band_powers, DatasetInfo
+from elecssl.data.feature_computations.band_power import compute_band_powers
 from elecssl.data.paths import get_eeg_features_storage_path
 
 

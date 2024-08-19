@@ -3,7 +3,7 @@ import dataclasses
 import os
 import warnings
 from enum import Enum
-from typing import Dict, Tuple, List, Optional, Union
+from typing import Dict, Tuple, List, Optional, Union, Any
 
 import enlighten
 import numpy
@@ -672,8 +672,8 @@ def channel_names_to_indices(ch_names, channel_name_to_index):
     return tuple(channel_name_to_index[channel_name] for channel_name in ch_names)
 
 
-# ------------------
-# Errors
-# ------------------
-class DataError(Exception):
-    ...
+@dataclasses.dataclass
+class DatasetInfo:
+    dataset: EEGDatasetBase
+    subjects: Tuple[str, ...]
+    kwargs: Dict[str, Any]

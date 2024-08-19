@@ -1,11 +1,10 @@
-import dataclasses
-from typing import Dict, Tuple, Any, List
+from typing import Dict, Any, List
 
 import numpy
 import pandas
 from scipy import integrate
 
-from elecssl.data.datasets.dataset_base import EEGDatasetBase, MNELoadingError
+from elecssl.data.datasets.dataset_base import MNELoadingError
 
 
 # -------------------
@@ -81,13 +80,6 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method):
 # -------------------
 # Computations made on dataset level
 # -------------------
-@dataclasses.dataclass
-class DatasetInfo:
-    dataset: EEGDatasetBase
-    subjects: Tuple[str, ...]
-    kwargs: Dict[str, Any]
-
-
 def compute_band_powers(datasets, frequency_bands, aggregation_method):
     """
     Function for computing band powers of entire datasets
