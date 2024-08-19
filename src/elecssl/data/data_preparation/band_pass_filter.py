@@ -5,7 +5,7 @@ from pathlib import Path
 import autoreject
 import mne
 import numpy
-import yaml  # type: ignore[imports]
+import yaml  # type: ignore[import-untyped]
 from matplotlib import pyplot
 
 from elecssl.data.data_preparation.data_prep_base import TransformationBase, InsufficientNumEpochsError
