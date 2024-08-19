@@ -32,6 +32,11 @@ class UnavailableOcularStateError(Exception):
     ...
 
 
+class MNELoadingError(Exception):
+    """This exception should be raised if there are anomalies in a dataset, which prevents loading an MNE object that
+    was expected to work"""
+
+
 class OcularState(Enum):
     EC = "EC"
     EO = "EO"

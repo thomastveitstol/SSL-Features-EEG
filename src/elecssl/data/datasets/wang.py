@@ -10,7 +10,7 @@ import openneuro
 import pandas
 from pymatreader import read_mat
 
-from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method, OcularState
+from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method, OcularState, MNELoadingError
 from elecssl.data.datasets.utils import sex_to_int
 
 
@@ -96,7 +96,30 @@ class Wang(EEGDatasetBase):
 
         return raw
 
-    def _load_single_cleaned_mne_object(self, subject_id, *, ocular_state: OcularState, visit, preload=True):
+    def _load_single_cleaned_mne_object(self, subject_id, *, ocular_state, visit, preload=True):
+        """
+        Method for loading from derivatives folder
+
+        Parameters
+        ----------
+        subject_id : str
+        ocular_state : OcularState
+        visit : int
+        preload : bool
+
+        Returns
+        -------
+        mne.io.eeglab.eeglab.RawEEGLAB
+
+        Examples
+        --------
+        >>> Wang()._load_single_cleaned_mne_object("sub-28", ocular_state=OcularState.EO, visit=1,
+        ...                                        preload=True)  # doctest: +NORMALIZE_WHITESPACE
+        Traceback (most recent call last):
+        ...
+        elecssl.data.datasets.dataset_base.MNELoadingError: Could not load the data from subject sub-28. See above for
+            original traceback
+        """
         # Create path
         path_to_cleaned = "derivatives/preprocessed data/preprocessed_data"
         recording = ocular_state.value
@@ -105,7 +128,12 @@ class Wang(EEGDatasetBase):
         path = os.path.join(self.get_mne_path(), path_to_cleaned, subject_path)
 
         # Make MNE raw object
-        raw = mne.io.read_raw_eeglab(input_fname=path, preload=preload, verbose=False)
+        try:
+            raw = mne.io.read_raw_eeglab(input_fname=path, preload=preload, verbose=False)
+        except OSError as e:
+            # This happens for subject 28, derivatives, EO
+            raise MNELoadingError(f"Could not load the data from subject {subject_id}. See above for original "
+                                  f"traceback") from e
 
         # Maybe rename channels
         if "Cpz" in raw.info["ch_names"]:
