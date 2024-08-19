@@ -2,16 +2,32 @@ Autoreject:
   seed: 1
   default_num_splits: 10
   autoreject_resample: 180
-Datasets:
-  Wang:
-    num_subjects: 5
-    kwargs:
-      visit: 1
-      derivatives: true
-  LEMON:
-    num_subjects: 5
-    kwargs:
-      derivatives: false
+OcularStates:
+  EC:
+    Datasets:
+      SRM:
+        num_subjects: 2
+        kwargs:
+          session: "t1"
+          derivatives: true
+      Miltiadous:
+        num_subjects: 3
+        kwargs:
+          derivatives: true
+      LEMON: &LEMON
+        num_subjects: 3
+        kwargs:
+          derivatives: false
+          interpolation_method: MNE
+      Wang: &Wang
+        num_subjects: 2
+        kwargs:
+          visit: 1
+          derivatives: true
+  EO:
+    Datasets:
+      LEMON: *LEMON
+      Wang: *Wang
 Details:
   num_epochs: 5
   epoch_overlap: 0
