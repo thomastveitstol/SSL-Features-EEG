@@ -30,10 +30,10 @@ class CombinedDatasets:
     efficient, but more time efficient
     """
 
-    __slots__ = "_subject_ids", "_data", "_targets", "_datasets"
+    __slots__ = "_subject_ids", "_data", "_targets", "_datasets", "_variables"
 
-    def __init__(self, datasets, load_details=None, target=None, interpolation_method=None, main_channel_system=None,
-                 sampling_freq=None, required_target=None):
+    def __init__(self, datasets, variables, load_details=None, target=None, interpolation_method=None,
+                 main_channel_system=None, sampling_freq=None, required_target=None):
         """
         Initialise
 
@@ -127,6 +127,18 @@ class CombinedDatasets:
         # Convenient for e.g. extracting channel systems
         self._datasets: Tuple[EEGDatasetBase, ...] = datasets
 
+        # --------------
+        # Extract variables to be used for e.g. correlations after pretext training
+        # --------------
+        # E.g., {"SRM": {"age": array, "ravlt_tot": array}}
+        downstream_variables: Dict[str, Dict[str, numpy.ndarray]] = {}  # type: ignore[type-arg]
+        for dataset, details in zip(datasets, load_details):
+            downstream_variables[dataset.name] = {var_name: dataset.load_targets(details.subject_ids, target=var_name)
+                                                  for var_name in variables[dataset.name].items()}
+        self._variables = downstream_variables
+
+
+
     @classmethod
     def from_config(cls, config, interpolation_config, target=None, sampling_freq=None, required_target=None):
         """
@@ -174,7 +186,8 @@ class CombinedDatasets:
         # Load all data and return object
         return cls(datasets=tuple(datasets), load_details=tuple(load_details), target=target,
                    interpolation_method=interpolation_method, main_channel_system=main_channel_system,
-                   sampling_freq=sampling_freq, required_target=required_target)
+                   sampling_freq=sampling_freq, required_target=required_target,
+                   variables=config["DownstreamVariables"])
 
     def get_data(self, subjects):
         """
@@ -218,7 +231,7 @@ class CombinedDatasets:
 
         Parameters
         ----------
-        subjects : tuple[cdl_eeg.data.data_split.Subject, ...]
+        subjects : tuple[elecssl.data.data_split.Subject, ...]
             Subjects to extract
 
         Returns
@@ -247,6 +260,35 @@ class CombinedDatasets:
         # Convert to numpy arrays and return (here, we assume that the data matrices can be concatenated)
         return {dataset_name: numpy.concatenate(numpy.expand_dims(data_matrix, axis=0), axis=0)
                 for dataset_name, data_matrix in data.items()}
+
+    def get_variables(self, subjects):
+        """
+        Method for getting the variables for investigations
+
+        Parameters
+        ----------
+        subjects : tuple[elecssl.data.subject_split.Subject, ...]
+
+        Returns
+        -------
+        dict[str, dict[str, numpy.ndarray]]
+        """
+        # Loop through all subjects
+        data: Dict[str, Dict[str, List[numpy.ndarray]]] = dict()  # type: ignore[type-arg]
+        for subject in subjects:
+            dataset_name = subject.dataset_name
+            if dataset_name not in data:
+                data[dataset_name] = {var_name: [] for var_name in self._variables[dataset_name]}
+
+            # Get all variables available
+            idx = self._subject_ids[dataset_name][subject.subject_id]
+            for var_name, var_values in data[dataset_name]:
+                var_values.append(self._variables[dataset_name][var_name][idx])
+
+        # Convert to numpy arrays and return (here, we assume that the data matrices can be concatenated)
+        return {dataset_name: {var_name: numpy.concatenate(numpy.expand_dims(data_matrix, axis=0), axis=0)}
+                for dataset_name, var_data in data.items() for var_name, data_matrix in var_data.items()}
+
 
     @staticmethod
     def get_subjects_dict(subjects):
