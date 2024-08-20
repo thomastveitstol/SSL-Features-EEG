@@ -4,6 +4,8 @@ import itertools
 import random
 from typing import List, Tuple
 
+import numpy
+
 
 # -----------------
 # Convenient dataclasses
@@ -45,9 +47,9 @@ class DataSplitBase(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def folds(self):
+    def splits(self):
         """
-        Get the folds
+        Get the splits
 
         Returns
         -------
@@ -68,8 +70,8 @@ class KFoldDataSplit(DataSplitBase):
     ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
     >>> de_vries_points = 0
-    >>> my_folds = KFoldDataSplit(num_folds=3, dataset_subjects=f1_drivers, seed=de_vries_points).folds
-    >>> my_folds  # doctest: +NORMALIZE_WHITESPACE
+    >>> my_splits = KFoldDataSplit(num_folds=3, dataset_subjects=f1_drivers, seed=de_vries_points).splits
+    >>> my_splits  # doctest: +NORMALIZE_WHITESPACE
     ((Subject(subject_id='Russel', dataset_name='Mercedes'), Subject(subject_id='Stroll', dataset_name='Aston Martin'),
       Subject(subject_id='Alonso', dataset_name='Aston Martin'), Subject(subject_id='Leclerc', dataset_name='Ferrari'),
       Subject(subject_id='Magnussen', dataset_name='Haas')),
@@ -80,7 +82,7 @@ class KFoldDataSplit(DataSplitBase):
       Subject(subject_id='Smooth Sainz', dataset_name='Ferrari')))
     """
 
-    __slots__ = "_folds",
+    __slots__ = "_splits",
 
     def __init__(self, *, num_folds, dataset_subjects, seed=None):
         """
@@ -116,14 +118,14 @@ class KFoldDataSplit(DataSplitBase):
         folds: List[Tuple[Subject, ...]] = []
         for fold in split:
             folds.append(tuple(fold))
-        self._folds = tuple(folds)
+        self._splits = tuple(folds)
 
     # ---------------
     # Properties
     # ---------------
     @property
-    def folds(self):
-        return self._folds
+    def splits(self):
+        return self._splits
 
 
 class SplitOnDataset(DataSplitBase):
@@ -134,8 +136,8 @@ class SplitOnDataset(DataSplitBase):
     ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
     >>> de_vries_points = 0
-    >>> my_folds = SplitOnDataset(dataset_subjects=f1_drivers, seed=de_vries_points).folds
-    >>> my_folds  # doctest: +NORMALIZE_WHITESPACE
+    >>> my_splits = SplitOnDataset(dataset_subjects=f1_drivers, seed=de_vries_points).splits
+    >>> my_splits  # doctest: +NORMALIZE_WHITESPACE
     ((Subject(subject_id='Magnussen', dataset_name='Haas'), Subject(subject_id='Hülkenberg', dataset_name='Haas')),
      (Subject(subject_id='Hamilton', dataset_name='Mercedes'), Subject(subject_id='Wolff', dataset_name='Mercedes'),
       Subject(subject_id='Russel', dataset_name='Mercedes')),
@@ -178,14 +180,14 @@ class SplitOnDataset(DataSplitBase):
         random.shuffle(folds)
 
         # Set attribute
-        self._folds = tuple(folds)
+        self._splits = tuple(folds)
 
     # ---------------
     # Properties
     # ---------------
     @property
-    def folds(self):
-        return self._folds
+    def splits(self):
+        return self._splits
 
 
 class TrainValBase(DataSplitBase, abc.ABC):
@@ -197,10 +199,9 @@ class TrainValBase(DataSplitBase, abc.ABC):
 
     @property
     @abc.abstractmethod
-    def folds(self):
+    def splits(self):
         """
-        Get the folds. The first 'fold' is meant for training, the last for validation. Not the nicest way to do things,
-        so todo: this could benefit from a refactoring
+        Get the splits. The first split is meant for training, the last for validation
 
         Returns
         -------
@@ -217,32 +218,31 @@ class DatasetBalancedTrainValSplit(TrainValBase):
     >>> my_subjects = {"d1": tuple(f"s{i}" for i in range(10)), # type: ignore[attr-defined]
     ...                "d2": tuple(f"s{i}" for i in range(20)),  # type: ignore[attr-defined]
     ...                "d3": tuple(f"s{i}" for i in range(15))}  # type: ignore[attr-defined]
-    >>> my_folds = DatasetBalancedTrainValSplit(my_subjects, val_split=0.2, seed=2).folds
+    >>> my_splits = DatasetBalancedTrainValSplit(my_subjects, val_split=0.2, seed=2).splits
 
     Check dataset sizes in train and validation set
 
-    >>> {dataset: len(tuple(sub for sub in my_folds[0] if sub.dataset_name == dataset))   # type: ignore[attr-defined]
+    >>> {dataset: len(tuple(sub for sub in my_splits[0] if sub.dataset_name == dataset))   # type: ignore[attr-defined]
     ...  for dataset in my_subjects}
     {'d1': 8, 'd2': 16, 'd3': 12}
-    >>> {dataset: len(tuple(sub for sub in my_folds[1] if sub.dataset_name == dataset))   # type: ignore[attr-defined]
+    >>> {dataset: len(tuple(sub for sub in my_splits[1] if sub.dataset_name == dataset))   # type: ignore[attr-defined]
     ...  for dataset in my_subjects}
     {'d1': 2, 'd2': 4, 'd3': 3}
 
     Train and validation are not overlapping
 
-    >>> any(sub in my_folds[0] for sub in my_folds[1])  # type: ignore[attr-defined]
+    >>> any(sub in my_splits[0] for sub in my_splits[1])  # type: ignore[attr-defined]
     False
 
     No problem if there is only one dataset
 
     >>> DatasetBalancedTrainValSplit({"d1": tuple(f"s{i}" for i in range(10))},  # type: ignore[attr-defined]
-    ...                              val_split=0.2, seed=2).folds  # doctest: +NORMALIZE_WHITESPACE
+    ...                              val_split=0.2, seed=2).splits  # doctest: +NORMALIZE_WHITESPACE
     ((Subject(subject_id='s5', dataset_name='d1'), Subject(subject_id='s9', dataset_name='d1'),
       Subject(subject_id='s3', dataset_name='d1'), Subject(subject_id='s4', dataset_name='d1'),
       Subject(subject_id='s6', dataset_name='d1'), Subject(subject_id='s7', dataset_name='d1'),
       Subject(subject_id='s2', dataset_name='d1'), Subject(subject_id='s8', dataset_name='d1')),
      (Subject(subject_id='s1', dataset_name='d1'), Subject(subject_id='s0', dataset_name='d1')))
-
     """
 
     __slots__ = "_train_subjects", "_val_subjects"
@@ -266,7 +266,7 @@ class DatasetBalancedTrainValSplit(TrainValBase):
         self._val_subjects = tuple(val_subjects)
 
     @property
-    def folds(self):
+    def splits(self):
         return self._train_subjects, self._val_subjects
 
 
@@ -301,7 +301,7 @@ def get_data_split(split, **kwargs):
 
 def leave_1_fold_out(i, folds):
     """
-    Method for selecting all subject except for one fold (the i-th fold)
+    Method for selecting all subjects except for one fold (the i-th fold)
 
     Parameters
     ----------
@@ -315,15 +315,15 @@ def leave_1_fold_out(i, folds):
 
     Examples
     --------
-    >>> my_folds = ((Subject("TW", "Merc"), Subject("MV", "RB"), Subject("LN", "McL")),
-    ...             (Subject("YT", "AT"), Subject("CS", "F")), (Subject("CL", "F"), Subject("VB", "AR")),
-    ...             (Subject("FA", "AM"), Subject("LS", "AM"), Subject("DH", "RB")))
-    >>> leave_1_fold_out(2, my_folds)  # doctest: +NORMALIZE_WHITESPACE
+    >>> my_splits = ((Subject("TW", "Merc"), Subject("MV", "RB"), Subject("LN", "McL")),
+    ...              (Subject("YT", "AT"), Subject("CS", "F")), (Subject("CL", "F"), Subject("VB", "AR")),
+    ...              (Subject("FA", "AM"), Subject("LS", "AM"), Subject("DH", "RB")))
+    >>> leave_1_fold_out(2, my_splits)  # doctest: +NORMALIZE_WHITESPACE
     (Subject(subject_id='TW', dataset_name='Merc'), Subject(subject_id='MV', dataset_name='RB'),
      Subject(subject_id='LN', dataset_name='McL'), Subject(subject_id='YT', dataset_name='AT'),
      Subject(subject_id='CS', dataset_name='F'), Subject(subject_id='FA', dataset_name='AM'),
      Subject(subject_id='LS', dataset_name='AM'), Subject(subject_id='DH', dataset_name='RB'))
-    >>> leave_1_fold_out(-1, my_folds)  # doctest: +NORMALIZE_WHITESPACE
+    >>> leave_1_fold_out(-1, my_splits)  # doctest: +NORMALIZE_WHITESPACE
     (Subject(subject_id='TW', dataset_name='Merc'), Subject(subject_id='MV', dataset_name='RB'),
      Subject(subject_id='LN', dataset_name='McL'), Subject(subject_id='YT', dataset_name='AT'),
      Subject(subject_id='CS', dataset_name='F'), Subject(subject_id='CL', dataset_name='F'),
