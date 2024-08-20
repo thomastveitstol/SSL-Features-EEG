@@ -1,0 +1,27 @@
+PretextTraining:
+  Augmentation:  # The augmentation to use
+    - BandPass
+  OcularStates:  # First element is ocular state for input (O_1), second element is ocular state for target (O_2)
+    - [ EC, EO ]
+    - [ EO, EC ]
+    - [ EC, EO ]
+    - [ EO, EC ]
+    - [ EC, EC ]
+    - [ EO, EO ]
+  TargetFeature:
+    - BandPower
+DownstreamVariables:
+  Miltiadous:
+    - mmse
+    - age
+  LEMON:
+    - age
+  SRM:
+    - age
+    - ravlt_tot
+  Wang:
+    - sex
+
+# -----------------
+# DL architecture related
+# -----------------
