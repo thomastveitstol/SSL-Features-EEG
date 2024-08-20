@@ -13,7 +13,6 @@ from matplotlib import pyplot
 from mne.transforms import _cart_to_sph, _pol_to_cart
 
 from elecssl.data.paths import get_raw_data_storage_path, get_numpy_data_storage_path, get_eeg_features_storage_path
-from elecssl.data.preprocessing import save_preprocessed_epochs
 from elecssl.models.region_based_pooling.utils import ELECTRODES_3D
 
 
@@ -216,89 +215,6 @@ class EEGDatasetBase(abc.ABC):
 
         # Concatenate to a single numpy ndarray
         return numpy.concatenate(data, axis=0)
-
-    def save_epochs_as_numpy_arrays(self, path, *, subject_ids, derivatives, excluded_channels, main_band_pass,
-                                    frequency_bands, notch_filter, num_epochs, epoch_duration, epoch_overlap,
-                                    time_series_start_secs, autoreject_resample, resample_fmax_multiples, seed,
-                                    plot_data=False, **kwargs):
-        """
-        Method for saving data as numpy arrays
-
-        Parameters
-        ----------
-        path : str
-            Where to store the data
-        subject_ids : tuple[str, ...]
-            Subject IDs of which to save numpy arrays of
-        derivatives : bool
-            To use cleaned versions or not
-        excluded_channels : tuple[str, ...]
-            Channels to exclude
-        main_band_pass : tuple[float, float]
-            Band-pass filtering
-        frequency_bands : tuple[tuple[float, float], ...]
-            All frequency bands to save
-        notch_filter : float, optional
-            Frequency of notch filter. If None, no notch filter will be used
-        num_epochs : int
-            Number of epochs to use per subject
-        epoch_duration : float
-            Duration of each epoch in seconds
-        epoch_overlap : float
-            Duration of epoch overlap in seconds
-        time_series_start_secs : float
-            Start of the time series in seconds
-        autoreject_resample : tuple[float, float], optional
-            Sampling frqeuency before applying autoreject
-        resample_fmax_multiples : float
-            The resampling frequency will be this parameter multiplied with f_max
-        seed : int
-            Seed for reproducability
-        plot_data : bool
-            To plot the data or not (useful for debugging purposes)
-        kwargs
-
-        Returns
-        -------
-        None
-        """
-        subject_ids = self.get_subject_ids(preprocessed_version=None) if subject_ids is None else subject_ids
-
-        # ------------------
-        # Input checks
-        # ------------------
-        # Check if all subjects are passed only once
-        if len(set(subject_ids)) != len(subject_ids):
-            _num_non_unique_subjects = len(subject_ids) - len(set(subject_ids))
-            raise ValueError(f"Expected all subject IDs to be unique, but there were {_num_non_unique_subjects} "
-                             f"subject IDs which were passed more than once")
-
-        # Check if all subjects are actually available
-        available_subjects = self.get_subject_ids(preprocessed_version=None)
-        if not all(sub_id in available_subjects for sub_id in subject_ids):
-            _unexpected_subjects = tuple(sub_id for sub_id in self.get_subject_ids() if sub_id not in subject_ids)
-            raise ValueError(f"Unexpected subject IDs (N={len(_unexpected_subjects)}): {_unexpected_subjects}")
-
-        # ------------------
-        # Loop through all subjects
-        # ------------------
-        pbar = enlighten.Counter(total=len(subject_ids), desc=type(self).__name__, unit="subjects")
-        for sub_id in subject_ids:
-            # Load the EEG data as MNE object
-            raw = self.load_single_mne_object(subject_id=sub_id, derivatives=derivatives, **kwargs)
-
-            # Save preprocessed versions
-            save_preprocessed_epochs(
-                raw, excluded_channels=excluded_channels, main_band_pass=main_band_pass,
-                frequency_bands=frequency_bands, notch_filter=notch_filter, num_epochs=num_epochs,
-                epoch_duration=epoch_duration, epoch_overlap=epoch_overlap,
-                time_series_start_secs=time_series_start_secs, autoreject_resample=autoreject_resample,
-                resample_fmax_multiples=resample_fmax_multiples, subject_id=sub_id, path=path,
-                plot_data=plot_data, dataset_name=type(self).__name__, seed=seed
-            )
-
-            # Update progress bar
-            pbar.update()
 
     def get_subject_ids(self, preprocessed_version=None) -> Tuple[str, ...]:
         """Get the subject IDs available. If a preprocessed version is specified (not None), it only returns the IDs

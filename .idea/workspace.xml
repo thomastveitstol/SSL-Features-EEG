@@ -4,13 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="refactoring">
-      <change afterPath="$PROJECT_DIR$/scripts/prepare_input_data/band_pass.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/prepare_input_data/config_files/band_pass.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/prepare_input_data/prepare_input_data.bash" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/data_preparation/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/data_preparation/band_pass_filter.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/elecssl/data/data_preparation/data_prep_base.py" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="updated yml file">
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/dataset_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/dataset_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/preprocessing.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,6 +69,7 @@
     "Python tests.Doctests in MultiMSMean.executor": "Run",
     "Python tests.Doctests in SRM (1).executor": "Run",
     "Python tests.Doctests in SRM.executor": "Run",
+    "Python tests.Doctests in band_pass_filter.executor": "Run",
     "Python tests.Doctests in braindecode_models.executor": "Run",
     "Python tests.Doctests in centroid_polygon.executor": "Run",
     "Python tests.Doctests in cmmn.executor": "Run",
@@ -105,7 +103,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/CrossDatasetLearningEEG",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
@@ -118,7 +116,7 @@
       <recent name="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.band_pass">
+  <component name="RunManager" selected="Python tests.Doctest BandPass._get_folder_name">
     <configuration name="band_pass" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -133,28 +131,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/prepare_input_data/band_pass.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="band_power" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/compute_pseudo_targets" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -220,13 +196,32 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="Doctests in band_pass_filter" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/data_preparation" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/data_preparation/band_pass_filter.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.band_pass" />
         <item itemvalue="Python tests.Doctest BandPass._get_folder_name" />
+        <item itemvalue="Python tests.Doctests in band_pass_filter" />
+        <item itemvalue="Python.band_pass" />
         <item itemvalue="Python tests.Doctests in BandPass" />
         <item itemvalue="Python tests.Doctest Wang._load_single_cleaned_mne_object" />
-        <item itemvalue="Python.band_power" />
       </list>
     </recent_temporary>
   </component>
@@ -245,78 +240,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00012" summary="copies from CDL">
-      <option name="closed" value="true" />
-      <created>1723708611352</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1723708611352</updated>
-    </task>
-    <task id="LOCAL-00013" summary="removed todo">
-      <option name="closed" value="true" />
-      <created>1723709056730</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1723709056730</updated>
-    </task>
-    <task id="LOCAL-00014" summary="fixed imports">
-      <option name="closed" value="true" />
-      <created>1723709500601</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1723709500601</updated>
-    </task>
-    <task id="LOCAL-00015" summary="improved domain discriminator">
-      <option name="closed" value="true" />
-      <created>1723709534951</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1723709534951</updated>
-    </task>
-    <task id="LOCAL-00016" summary="updated rewuirements and ran tox">
-      <option name="closed" value="true" />
-      <created>1723710016300</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1723710016300</updated>
-    </task>
-    <task id="LOCAL-00017" summary="copies and improvements from CDL project">
-      <option name="closed" value="true" />
-      <created>1723711709287</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1723711709287</updated>
-    </task>
-    <task id="LOCAL-00018" summary="mypy fix">
-      <option name="closed" value="true" />
-      <created>1723712499918</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1723712499918</updated>
-    </task>
-    <task id="LOCAL-00019" summary="flake8 fix">
-      <option name="closed" value="true" />
-      <created>1723714531683</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1723714531683</updated>
-    </task>
-    <task id="LOCAL-00020" summary="updated requirements">
-      <option name="closed" value="true" />
-      <created>1723714917982</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1723714917982</updated>
     </task>
     <task id="LOCAL-00021" summary="automatic update">
       <option name="closed" value="true" />
@@ -638,7 +561,79 @@
       <option name="project" value="LOCAL" />
       <updated>1724072414621</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="added transformation of input data">
+      <option name="closed" value="true" />
+      <created>1724076886850</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1724076886850</updated>
+    </task>
+    <task id="LOCAL-00062" summary="updates for working with both ocular states">
+      <option name="closed" value="true" />
+      <created>1724077161877</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1724077161877</updated>
+    </task>
+    <task id="LOCAL-00063" summary="update to bash script">
+      <option name="closed" value="true" />
+      <created>1724077193628</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1724077193628</updated>
+    </task>
+    <task id="LOCAL-00064" summary="flake8 fixes">
+      <option name="closed" value="true" />
+      <created>1724077308369</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1724077308369</updated>
+    </task>
+    <task id="LOCAL-00065" summary="mypy mute">
+      <option name="closed" value="true" />
+      <created>1724077385997</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1724077385998</updated>
+    </task>
+    <task id="LOCAL-00066" summary="mypy mute">
+      <option name="closed" value="true" />
+      <created>1724077514876</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1724077514876</updated>
+    </task>
+    <task id="LOCAL-00067" summary="updates for both ocular states">
+      <option name="closed" value="true" />
+      <created>1724079523224</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1724079523224</updated>
+    </task>
+    <task id="LOCAL-00068" summary="set value explicitly to avoid warning">
+      <option name="closed" value="true" />
+      <created>1724079822331</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1724079822331</updated>
+    </task>
+    <task id="LOCAL-00069" summary="updated yml file">
+      <option name="closed" value="true" />
+      <created>1724080589959</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1724080589959</updated>
+    </task>
+    <option name="localTasksCounter" value="70" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -653,14 +648,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="minor update" />
-    <MESSAGE value="implemented band power computations and improvements for using pseudo labels" />
-    <MESSAGE value="changed unit of band power and changed yml file" />
-    <MESSAGE value="argument fix and mypy and flake8 fixes" />
-    <MESSAGE value="ran tox" />
-    <MESSAGE value="fixes for handling loading of both ocular states" />
-    <MESSAGE value="flake8 fix" />
-    <MESSAGE value="fixed comment and added script for downloading LEMON" />
     <MESSAGE value="added download method to dataset" />
     <MESSAGE value="fixed loading of both ocular state in dataset" />
     <MESSAGE value="added script for loading dataset" />
@@ -678,6 +665,14 @@
     <MESSAGE value="improved docstring" />
     <MESSAGE value="added handling unloadable data for feature extraction" />
     <MESSAGE value="refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactoring" />
+    <MESSAGE value="added transformation of input data" />
+    <MESSAGE value="updates for working with both ocular states" />
+    <MESSAGE value="update to bash script" />
+    <MESSAGE value="flake8 fixes" />
+    <MESSAGE value="mypy mute" />
+    <MESSAGE value="updates for both ocular states" />
+    <MESSAGE value="set value explicitly to avoid warning" />
+    <MESSAGE value="updated yml file" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated yml file" />
   </component>
 </project>
