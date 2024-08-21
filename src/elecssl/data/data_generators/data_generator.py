@@ -18,7 +18,7 @@ class RBPDataGenerator(Dataset):  # type: ignore[type-arg]
     # --------------
     # Magic/dunder methods
     # --------------
-    def __init__(self, data, targets, subjects, *, pre_computed=None):
+    def __init__(self, data, targets, subjects, *, pre_computed=None, subjects_info):
         """
         Initialise
 
@@ -28,6 +28,8 @@ class RBPDataGenerator(Dataset):  # type: ignore[type-arg]
         targets : dict[str, numpy.ndarray]
         subjects : dict[str, tuple[str, ...]]
         pre_computed : tuple[dict[str, typing.Any], ...]
+        subjects_info : dict[Subject, dict[str, typing.Any]]
+            To be passed into .on_epoch_end method of Histories class
         """
         # Input check
         if not all(x.ndim == 4 for x in data.values()):
@@ -41,6 +43,7 @@ class RBPDataGenerator(Dataset):  # type: ignore[type-arg]
         self._targets = targets
         self._subjects = subjects
         self._pre_computed = pre_computed
+        self._subjects_info = subjects_info
 
     def __len__(self):
         return sum(x.shape[0] * x.shape[1] for x in self._data.values())
@@ -159,6 +162,10 @@ class RBPDataGenerator(Dataset):  # type: ignore[type-arg]
         """Get a dictionary mapping the dataset name to the dataset index"""
         return {dataset_name: i for i, dataset_name in enumerate(self._data)}
 
+    @property
+    def subjects_info(self):
+        return self._subjects_info
+
 
 class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
     """
@@ -188,7 +195,7 @@ class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
     # --------------
     # Magic/dunder methods
     # --------------
-    def __init__(self, data, targets, subjects):
+    def __init__(self, data, targets, subjects, subjects_info):
         """
         Initialise
 
@@ -198,6 +205,7 @@ class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
             The data should be interpolated prior to passing them to this method
         targets : dict[str, numpy.ndarray]
         subjects : dict[str, tuple[str, ...]]
+        subjects_info : dict[Subject, dict[str, typing.Any]]
         """
         # Input check (data should already be interpolated). Thus checking spatial dimension consistency
         if not len(set(eeg_data.shape[1] for eeg_data in data.values())) == 1:
@@ -210,6 +218,7 @@ class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
         self._data = data
         self._targets = targets
         self._subjects = subjects
+        self._subjects_info = subjects_info
 
     def __len__(self):
         return sum(x.shape[0] * x.shape[1] for x in self._data.values())
@@ -306,6 +315,10 @@ class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
     def dataset_indices(self):
         """Get a dictionary mapping the dataset name to the dataset index"""
         return {dataset_name: i for i, dataset_name in enumerate(self._data)}
+
+    @property
+    def subjects_info(self):
+        return self._subjects_info
 
 
 # ----------------
