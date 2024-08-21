@@ -75,9 +75,9 @@ class Histories:
     """
 
     __slots__ = ("_history", "_prediction_history", "_subgroup_histories", "_epoch_y_pred", "_epoch_y_true",
-                 "_epoch_subjects", "_name")
+                 "_epoch_subjects", "_name", "_variables_history", "_variable_metrics")
 
-    def __init__(self, metrics, *, name=None, splits):
+    def __init__(self, metrics, *, name=None, splits, expected_variables=None, variable_metrics=None):
         """
         Initialise
 
@@ -92,6 +92,8 @@ class Histories:
             Splits for computing metrics per subgroup. Each 'split' must be an attribute of the Subject objects passed
             to 'store_batch_evaluation'. Note that this should also work for any class inheriting from Subject, allowing
             for more customised subgroup splitting
+        expected_variables : dict[str, tuple[str, ...]] | None
+        variable_metrics : dict[str, str | tuple[str, ...]] | None
         """
         # Maybe set metrics
         if metrics == "regression":
@@ -138,6 +140,33 @@ class Histories:
         else:
             _sub_hist = None
         self._subgroup_histories = _sub_hist
+
+        # For storing variables such as age, ravlt_tot etc., which we will (e.g.) correlate with the difference between
+        # y_pred and y_true. I think it'll be best to have variable name first, then the datasets. Should consider
+        # cleaning up here, a little unreadable...
+        self._variables_history: Optional[Dict[str, Dict[str, Dict[str, List[float]]]]]
+        self._variable_metrics: Optional[Dict[str, Tuple[str, ...]]]
+        if expected_variables is not None:
+            self._variables_history = {
+                var_name: {dataset_name: {metric: [] for metric in variable_metrics[var_name]}
+                           for dataset_name in itertools.chain(("All",), dataset_names)}
+                for var_name, dataset_names in expected_variables.items()
+            }
+
+            _metrics: Dict[str, Tuple[str, ...]] = {}
+            for var_name, var_metrics in variable_metrics.items():
+                if metrics == "regression":
+                    _metrics[var_name] = self.get_available_regression_metrics()
+                elif metrics == "classification":
+                    _metrics[var_name] = self.get_available_classification_metrics()
+                elif metrics == "multiclass_classification":
+                    _metrics[var_name] = self.get_available_multiclass_classification_metrics()
+                else:
+                    _metrics[var_name] = var_metrics
+            self._variable_metrics = _metrics
+        else:
+            self._variables_history = None
+            self._variable_metrics = None
 
         # ----------------
         # Initialise epochs predictions and targets.
@@ -187,9 +216,42 @@ class Histories:
         if subjects is not None:
             self._epoch_subjects.extend(subjects)
 
-    def on_epoch_end(self, verbose=True, verbose_sub_groups=False) -> None:
-        """Updates the metrics, and should be called after each epoch"""
-        self._update_metrics()
+    def on_epoch_end(self, *, subjects_info=None, verbose=True, verbose_sub_groups=False) -> None:
+        """
+        Updates the metrics, and should be called after each epoch
+
+        Parameters
+        ----------
+        subjects_info
+        verbose
+        verbose_sub_groups
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        >>> my_history = Histories(metrics="regression", splits={"dataset_name": ("D1", "D2", "D3")},
+        ...                        expected_variables={"age": ("D1", "D3"), "ravlt": ("D2", "D3")},
+        ...                        variable_metrics={"age": ("pearson_r",), "ravlt": ("spearman_rho",)})
+        >>> my_y = torch.unsqueeze(torch.tensor([1.0, 3.7, 9.3, 0.2, 3.8, 4.4, 9.8, 2.3, 3.3, 2.3]), dim=-1)
+        >>> my_yhat = torch.unsqueeze(torch.tensor([1.8, 5.0, 6.8, 9.6, 8.6, 4.6, 9.0, 4.2, 9.6, 1.9]), dim=-1)
+        >>> my_subjects = (Subject("P1", "D1"), Subject("P3", "D3"), Subject("P2", "D1"), Subject("P4", "D2"),
+        ...                Subject("P2", "D2"), Subject("P3", "D2"), Subject("P3", "D1"), Subject("P1", "D2"),
+        ...                Subject("P2", "D3"), Subject("P1", "D3"))
+        >>> my_info = {Subject("P1", "D1"): {"age": 37}, Subject("P2", "D1"): {"age": 34},
+        ...            Subject("P3", "D1"): {"age": 15}, Subject("P1", "D2"): {"ravlt": 3},
+        ...            Subject("P2", "D2"): {"ravlt": 14}, Subject("P3", "D2"): {"ravlt": 11},
+        ...            Subject("P4", "D2"): {"ravlt": 15}, Subject("P1", "D3"): {"age": 36, "ravlt": 10},
+        ...            Subject("P2", "D3"): {"age": 23, "ravlt": 7}, Subject("P3", "D3"): {"age": 85, "ravlt": 4}}
+        >>> # Fake two batches
+        >>> my_history.store_batch_evaluation(y_pred=my_yhat[:6], y_true=my_y[:6], subjects=my_subjects[:6])
+        >>> my_history.store_batch_evaluation(y_pred=my_yhat[6:], y_true=my_y[6:], subjects=my_subjects[6:])
+        >>> my_history.on_epoch_end(subjects_info=my_info, verbose=False)
+        >>> my_history._variables_history  # doctest: +SKIP
+        """
+        self._update_metrics(subjects_info=subjects_info)
 
         # Create an empty list for the next epoch for the prediction history
         if self._subgroup_histories is not None:
@@ -242,7 +304,7 @@ class Histories:
                                 print(f"{self._name}_{sub_group_name}_{metric_name}: {metric_values[-1]:.3f}\t\t",
                                       end="")
 
-    def _update_metrics(self):
+    def _update_metrics(self, subjects_info):
         # Concatenate torch tenors
         y_pred = torch.cat(self._epoch_y_pred, dim=0)
         y_true = torch.cat(self._epoch_y_true, dim=0)
@@ -251,7 +313,7 @@ class Histories:
         # Update all metrics of the 'normal' history dict
         # -------------
         # We need to aggregate the predictions by averaging, and reducing the targets
-        y_pred_per_subject, y_true_per_subject = _aggregate_predictions_and_ground_truths(
+        y_pred_per_subject, y_true_per_subject, subjects = _aggregate_predictions_and_ground_truths(
             subjects=self._epoch_subjects, y_true=y_true, y_pred=y_pred,
         )
 
@@ -319,11 +381,104 @@ class Histories:
                                                                   y_true=sub_group_y_true))
 
         # -------------
+        # Build the dicts and lists for the different features to correlate with the delta
+        # -------------
+        if subjects_info is not None and self._variables_history is not None:
+            data_matrices = self._build_delta_and_info_objects(
+                y_pred_per_subject=y_pred_per_subject, y_true_per_subject=y_true_per_subject, subjects=subjects,
+                subjects_info=subjects_info
+            )
+            for var_name, epoch_history in data_matrices.items():
+                for dataset_name, tensor_list in epoch_history.items():
+                    for metric in self._variable_metrics[var_name]:  # type: ignore[index]
+                        # Compute metric
+                        _tensor = torch.cat(tensor_list, dim=0)
+                        metric_value = self._compute_metric(metric=metric, y_pred=_tensor[:, 0], y_true=_tensor[:, 1])
+
+                        # Add results
+                        self._variables_history[var_name][dataset_name][metric].append(metric_value)
+
+        # -------------
         # Remove the epoch histories
         # -------------
         self._epoch_y_pred = []
         self._epoch_y_true = []
         self._epoch_subjects = []
+
+    def _build_delta_and_info_objects(self, *, y_pred_per_subject, y_true_per_subject, subjects, subjects_info):
+        """
+        Method for extracting delta values and info of which to (e.g.) correlate with, in a dict which makes it more
+        feasible for computing these metrics
+
+        Parameters
+        ----------
+        y_pred_per_subject : torch.Tensor
+        y_true_per_subject : torch.Tensor
+        subjects : tuple[Subject, ...]
+        subjects_info : dict[Subject, dict[str, typing.Any]]
+
+        Returns
+        -------
+        dict[str, dict[str, list[torch.Tensor]]]
+
+        Examples
+        --------
+        >>> my_history = Histories(metrics="regression", splits={"dataset_name": ("D1", "D2", "D3")},
+        ...                        expected_variables={"age": ("D1", "D3"), "ravlt": ("D2", "D3")},
+        ...                        variable_metrics={"age": ("pearson_r",), "ravlt": ("spearman_rho",)})
+        >>> my_y = torch.tensor([1.0, 3.7, 9.3, 0.2, 3.8, 4.4, 9.8, 2.3, 3.3, 2.3])
+        >>> my_yhat = torch.tensor([1.8, 5.0, 6.8, 9.6, 8.6, 4.6, 9.0, 4.2, 9.6, 1.9])
+        >>> my_subjects = (Subject("P1", "D1"), Subject("P3", "D3"), Subject("P2", "D1"), Subject("P4", "D2"),
+        ...                Subject("P2", "D2"), Subject("P3", "D2"), Subject("P3", "D1"), Subject("P1", "D2"),
+        ...                Subject("P2", "D3"), Subject("P1", "D3"))
+        >>> my_info = {Subject("P1", "D1"): {"age": 37}, Subject("P2", "D1"): {"age": 34},
+        ...            Subject("P3", "D1"): {"age": 15}, Subject("P1", "D2"): {"ravlt": 3},
+        ...            Subject("P2", "D2"): {"ravlt": 14}, Subject("P3", "D2"): {"ravlt": 11},
+        ...            Subject("P4", "D2"): {"ravlt": 15}, Subject("P1", "D3"): {"age": 36, "ravlt": 10},
+        ...            Subject("P2", "D3"): {"age": 23, "ravlt": 7}, Subject("P3", "D3"): {"age": 85, "ravlt": 4}}
+        >>> my_history._build_delta_and_info_objects(
+        ...     y_pred_per_subject=my_yhat, y_true_per_subject=my_y, subjects=my_subjects, subjects_info=my_info
+        ... )  # doctest: +NORMALIZE_WHITESPACE
+        {'age': {'All': [tensor([[ 0.8000, 37.0000]]), tensor([[ 1.3000, 85.0000]]), tensor([[-2.5000, 34.0000]]),
+                         tensor([[-0.8000, 15.0000]]), tensor([[ 6.3000, 23.0000]]), tensor([[-0.4000, 36.0000]])],
+                 'D1': [tensor([[ 0.8000, 37.0000]]), tensor([[-2.5000, 34.0000]]), tensor([[-0.8000, 15.0000]])],
+                 'D3': [tensor([[ 1.3000, 85.0000]]), tensor([[ 6.3000, 23.0000]]), tensor([[-0.4000, 36.0000]])]},
+         'ravlt': {'All': [tensor([[1.3000, 4.0000]]), tensor([[ 9.4000, 15.0000]]), tensor([[ 4.8000, 14.0000]]),
+                           tensor([[ 0.2000, 11.0000]]), tensor([[1.9000, 3.0000]]), tensor([[6.3000, 7.0000]]),
+                           tensor([[-0.4000, 10.0000]])],
+                   'D2': [tensor([[ 9.4000, 15.0000]]), tensor([[ 4.8000, 14.0000]]), tensor([[ 0.2000, 11.0000]]),
+                          tensor([[1.9000, 3.0000]])],
+                   'D3': [tensor([[1.3000, 4.0000]]), tensor([[6.3000, 7.0000]]), tensor([[-0.4000, 10.0000]])]}}
+        """
+        if self._variables_history is None:
+            raise RuntimeError("Cannot collate prediction errors and variables when no variables are expected")
+
+        # I have to stay compatible with Python 3.8, so I'll do a length check instead of strict=True in zip. Could
+        # probably remove the check though...
+        if not (y_pred_per_subject.size()[0] == y_true_per_subject.size()[0] == len(subjects)):
+            raise ValueError(f"Expected number of predictions, number of ground truths, and number of subjects, to be "
+                             f"the same, but found {y_pred_per_subject.size()[0]}, {y_true_per_subject.size()[0]}, and "
+                             f"{len(subjects)}")
+        # E.g. {"age": {"All": [tensor(0.4, 45), tensor(0.6, 34)], "SRM": [tensor(0.4, 45)], "Lemon": [tensor(0.6, 34)},
+        #       "ravlt: {"All": [tensor(0.4, 14)], "SRM": [tensor(0.4, 14)]}}
+        # That is, the first element of the tensor is the delta y, the second element is the variable value
+        data_matrices: Dict[str, Dict[str, List[torch.Tensor]]] = {
+            var_name: {dataset_name: [] for dataset_name in dataset_histories}
+            for var_name, dataset_histories in self._variables_history.items()
+        }
+        for delta_y, subject in zip(y_pred_per_subject - y_true_per_subject, subjects):
+            for var_name, dataset_names in self._variables_history.items():
+                if subject.dataset_name in dataset_names:
+                    # Add to the dataset
+                    data_matrices[var_name][subject.dataset_name].append(
+                        torch.tensor([[delta_y, subjects_info[subject][var_name]]])
+                    )
+
+                    # Add to the "All" dataset as well
+                    data_matrices[var_name]["All"].append(
+                        torch.tensor([[delta_y, subjects_info[subject][var_name]]])
+                    )
+        return data_matrices
 
     @classmethod
     def _compute_metric(cls, metric: str, *, y_pred: torch.Tensor, y_true: torch.Tensor):
@@ -714,7 +869,8 @@ def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true):
     # Maybe remove redundant dimension
     all_y_pred = torch.squeeze(all_y_pred, dim=-1)
 
-    return all_y_pred, all_y_true
+    # Return predictions, truths, and subjects (i-th prediction and truth comes from the i-th subject)
+    return all_y_pred, all_y_true, tuple(subjects_pred_and_true.keys())
 
 
 def save_discriminator_histories_plots(path, histories):
