@@ -935,7 +935,7 @@ def save_test_histories_plots(path, histories):
     todo: now we have two...
     Parameters
     ----------
-    path : str
+    path : str | pathlib.Path
     histories : dict[str, Histories]
 
     Returns
