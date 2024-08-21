@@ -281,9 +281,6 @@ class CombinedDatasets:
         -------
         dict[elecssl.data.subject_split.Subject, dict[str, typing.Any]]
         """
-        for subject in subjects:
-            if subject not in self._subjects_info:
-                raise ValueError(f"Damn, this wasn't expected: {self._subjects_info}")
         return {subject: self._subjects_info[subject] for subject in subjects}
 
     @staticmethod
