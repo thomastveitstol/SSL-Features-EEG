@@ -1,12 +1,13 @@
 import dataclasses
 import itertools
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, Any
 
 import numpy
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, ChannelSystem
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.interpolate_datasets import interpolate_datasets
+from elecssl.data.subject_split import Subject
 
 
 # -----------------
@@ -30,7 +31,7 @@ class CombinedDatasets:
     efficient, but more time efficient
     """
 
-    __slots__ = "_subject_ids", "_data", "_targets", "_datasets", "_variables"
+    __slots__ = "_subject_ids", "_data", "_targets", "_datasets", "_subjects_info"
 
     def __init__(self, datasets, variables, load_details=None, target=None, interpolation_method=None,
                  main_channel_system=None, sampling_freq=None, required_target=None):
@@ -128,16 +129,21 @@ class CombinedDatasets:
         self._datasets: Tuple[EEGDatasetBase, ...] = datasets
 
         # --------------
-        # Extract variables to be used for e.g. correlations after pretext training
+        # Extract subject info to be used for e.g. correlations after pretext training
         # --------------
-        # E.g., {"SRM": {"age": array, "ravlt_tot": array}}
-        downstream_variables: Dict[str, Dict[str, numpy.ndarray]] = {}  # type: ignore[type-arg]
+        subject_info: Dict[Subject, Dict[str, Any]] = {}
         for dataset, details in zip(datasets, load_details):
-            downstream_variables[dataset.name] = {var_name: dataset.load_targets(details.subject_ids, target=var_name)
-                                                  for var_name in variables[dataset.name].items()}
-        self._variables = downstream_variables
+            dataset_subjects = details.subject_ids
+            for variable in variables[dataset.name]:
+                info_targets = dataset.load_targets(subject_ids=dataset_subjects, target=variable)
 
+                for info_target, subject in zip(info_targets, dataset_subjects):
+                    if subject not in subject_info:
+                        subject_info[subject] = {}
+                    # i-th loaded target corresponds to the i-th subject
+                    subject_info[subject][variable] = info_target
 
+        self._subjects_info = subject_info
 
     @classmethod
     def from_config(cls, config, interpolation_config, target=None, sampling_freq=None, required_target=None):
@@ -261,9 +267,9 @@ class CombinedDatasets:
         return {dataset_name: numpy.concatenate(numpy.expand_dims(data_matrix, axis=0), axis=0)
                 for dataset_name, data_matrix in data.items()}
 
-    def get_variables(self, subjects):
+    def get_subjects_info(self, subjects):
         """
-        Method for getting the variables for investigations
+        Method for getting the subject information for investigations
 
         Parameters
         ----------
@@ -271,24 +277,9 @@ class CombinedDatasets:
 
         Returns
         -------
-        dict[str, dict[str, numpy.ndarray]]
+        dict[elecssl.data.subject_split.Subject, dict[str, typing.Any]]
         """
-        # Loop through all subjects
-        data: Dict[str, Dict[str, List[numpy.ndarray]]] = dict()  # type: ignore[type-arg]
-        for subject in subjects:
-            dataset_name = subject.dataset_name
-            if dataset_name not in data:
-                data[dataset_name] = {var_name: [] for var_name in self._variables[dataset_name]}
-
-            # Get all variables available
-            idx = self._subject_ids[dataset_name][subject.subject_id]
-            for var_name, var_values in data[dataset_name]:
-                var_values.append(self._variables[dataset_name][var_name][idx])
-
-        # Convert to numpy arrays and return (here, we assume that the data matrices can be concatenated)
-        return {dataset_name: {var_name: numpy.concatenate(numpy.expand_dims(data_matrix, axis=0), axis=0)}
-                for dataset_name, var_data in data.items() for var_name, data_matrix in var_data.items()}
-
+        return {subject: self._subjects_info[subject] for subject in subjects}
 
     @staticmethod
     def get_subjects_dict(subjects):
