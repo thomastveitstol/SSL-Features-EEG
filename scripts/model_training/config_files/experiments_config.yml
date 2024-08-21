@@ -22,6 +22,27 @@ DownstreamVariables:
   Wang:
     - sex
 
+Datasets:
+  SRM:
+    num_subjects: all
+    kwargs:
+      session: "t1"
+      derivatives: true
+  Miltiadous:
+    num_subjects: all
+    kwargs:
+      derivatives: true
+  LEMON:
+    num_subjects: all
+    kwargs:
+      derivatives: false
+      interpolation_method: MNE
+  Wang:
+    num_subjects: all
+    kwargs:
+      visit: 1
+      derivatives: true
+
 # -----------------
 # DL architecture related
 # -----------------
