@@ -137,8 +137,9 @@ class CombinedDatasets:
             for variable in variables[dataset.name]:
                 info_targets = dataset.load_targets(subject_ids=dataset_subjects, target=variable)
 
-                for info_target, subject in zip(info_targets, dataset_subjects):
-                    if subject not in subject_info:
+                for info_target, subject_id in zip(info_targets, dataset_subjects):
+                    subject = Subject(subject_id=subject_id, dataset_name=dataset.name)
+                    if subject_id not in subject_info:
                         subject_info[subject] = {}
                     # i-th loaded target corresponds to the i-th subject
                     subject_info[subject][variable] = info_target
@@ -146,13 +147,14 @@ class CombinedDatasets:
         self._subjects_info = subject_info
 
     @classmethod
-    def from_config(cls, config, interpolation_config, target=None, sampling_freq=None, required_target=None):
+    def from_config(cls, config, interpolation_config, variables, target=None, sampling_freq=None, required_target=None):
         """
         Method for initialising directly from a config file
 
         Parameters
         ----------
         config : dict[str, typing.Any]
+        variables
         interpolation_config : dict[str, typing.Any] | None
         target : str, optional
         sampling_freq : float
@@ -193,7 +195,7 @@ class CombinedDatasets:
         return cls(datasets=tuple(datasets), load_details=tuple(load_details), target=target,
                    interpolation_method=interpolation_method, main_channel_system=main_channel_system,
                    sampling_freq=sampling_freq, required_target=required_target,
-                   variables=config["DownstreamVariables"])
+                   variables=variables)
 
     def get_data(self, subjects):
         """
@@ -279,6 +281,9 @@ class CombinedDatasets:
         -------
         dict[elecssl.data.subject_split.Subject, dict[str, typing.Any]]
         """
+        for subject in subjects:
+            if subject not in self._subjects_info:
+                raise ValueError(f"Damn, this wasn't expected: {self._subjects_info}")
         return {subject: self._subjects_info[subject] for subject in subjects}
 
     @staticmethod
