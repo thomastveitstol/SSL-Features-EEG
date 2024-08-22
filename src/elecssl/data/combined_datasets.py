@@ -147,7 +147,8 @@ class CombinedDatasets:
         self._subjects_info = subject_info
 
     @classmethod
-    def from_config(cls, config, interpolation_config, variables, target=None, sampling_freq=None, required_target=None):
+    def from_config(cls, config, interpolation_config, variables, target=None, sampling_freq=None,
+                    required_target=None):
         """
         Method for initialising directly from a config file
 
