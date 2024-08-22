@@ -1,1 +1,10 @@
 python3 -m elecssl_experiments
+python3 -m elecssl_experiments
+python3 -m elecssl_experiments
+python3 -m elecssl_experiments
+python3 -m elecssl_experiments
+python3 -m elecssl_experiments
+python3 -m elecssl_experiments
+python3 -m elecssl_experiments
+python3 -m elecssl_experiments
+python3 -m elecssl_experiments

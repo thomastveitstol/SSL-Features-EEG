@@ -2,17 +2,17 @@ Datasets:
   SRM:
     num_subjects: 111
     num_time_steps: null
-    pre_processed_version: preprocessed_band_pass_ec/data--band_pass-all--input_length-5s--autoreject-False--sfreq-2fmax
+    pre_processed_version: preprocessed_band_pass_ec/data--band_pass-beta--input_length-10s--autoreject-False--sfreq-2fmax
     time_series_start: null
   LEMON:
     num_subjects: 160
     num_time_steps: null
-    pre_processed_version: preprocessed_band_pass_ec/data--band_pass-all--input_length-5s--autoreject-False--sfreq-2fmax
+    pre_processed_version: preprocessed_band_pass_ec/data--band_pass-beta--input_length-10s--autoreject-False--sfreq-2fmax
     time_series_start: null
   Miltiadous:
     num_subjects: 88
     num_time_steps: null
-    pre_processed_version: preprocessed_band_pass_ec/data--band_pass-all--input_length-5s--autoreject-False--sfreq-2fmax
+    pre_processed_version: preprocessed_band_pass_ec/data--band_pass-beta--input_length-10s--autoreject-False--sfreq-2fmax
     time_series_start: null
 Training:
   Loss:
@@ -51,9 +51,7 @@ Varied Numbers of Channels:
           latent_search_features: 23
           max_receptive_field: 141
           num_kernels: 321
-          share_search_receiver_modules:
-          - true
-          - false
+          share_search_receiver_modules: true
         pooling_type: multi_cs
         split_methods:
         - CentroidPolygons
