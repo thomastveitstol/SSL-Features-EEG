@@ -315,7 +315,7 @@ class MainRBPModel(nn.Module):
 
             # Finalise epoch for train history objects
             train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                       verbose_variables=verbose_variables)
+                                       verbose_variables=verbose_variables, subjects_info=train_loader.subjects_info)
             dd_train_history.on_epoch_end(verbose=verbose)
 
             # ----------------
@@ -370,7 +370,7 @@ class MainRBPModel(nn.Module):
 
                 # Finalise epoch for validation history objects
                 val_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                         verbose_variables=verbose_variables)
+                                         verbose_variables=verbose_variables, subjects_info=val_loader.subjects_info)
                 dd_val_history.on_epoch_end(verbose=verbose)
 
             # ----------------
@@ -417,7 +417,8 @@ class MainRBPModel(nn.Module):
 
                     # Finalise epoch for test history object
                     test_history.on_epoch_end(  # type: ignore[union-attr]
-                        verbose=verbose, verbose_sub_groups=sub_groups_verbose, verbose_variables=verbose_variables
+                        verbose=verbose, verbose_sub_groups=sub_groups_verbose, verbose_variables=verbose_variables,
+                        subjects_info=test_loader.subjects_info
                     )
 
             # ----------------
@@ -526,7 +527,7 @@ class MainRBPModel(nn.Module):
 
             # Finalise epoch for train history object
             train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                       verbose_variables=verbose_variables)
+                                       verbose_variables=verbose_variables, subjects_info=train_loader.subjects_info)
 
             # ----------------
             # Validation
@@ -570,7 +571,7 @@ class MainRBPModel(nn.Module):
 
                 # Finalise epoch for validation history object
                 val_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                         verbose_variables=verbose_variables)
+                                         verbose_variables=verbose_variables, subjects_info=val_loader.subjects_info)
 
             # ----------------
             # (Maybe) testing
@@ -616,7 +617,8 @@ class MainRBPModel(nn.Module):
 
                     # Finalise epoch for test history object
                     test_history.on_epoch_end(  # type: ignore[union-attr]
-                        verbose=verbose, verbose_sub_groups=sub_groups_verbose, verbose_variables=verbose_variables
+                        verbose=verbose, verbose_sub_groups=sub_groups_verbose, verbose_variables=verbose_variables,
+                        subjects_info=test_loader.subjects_info
                     )
 
             # ----------------
@@ -678,7 +680,7 @@ class MainRBPModel(nn.Module):
 
             # Finalise epoch for validation history object
             history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                 verbose_variables=verbose_variables)
+                                 verbose_variables=verbose_variables, subjects_info=data_loader.subjects_info)
 
         return history
 

@@ -359,7 +359,7 @@ class MainFixedChannelsModel(nn.Module):
 
             # Finalise epoch for train history object
             train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                       verbose_variables=verbose_variables)
+                                       verbose_variables=verbose_variables, subjects_info=train_loader.subjects_info)
 
             # ---------------
             # Validation
@@ -396,7 +396,7 @@ class MainFixedChannelsModel(nn.Module):
 
                 # Finalise epoch for validation history object
                 val_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                         verbose_variables=verbose_variables)
+                                         verbose_variables=verbose_variables, subjects_info=val_loader.subjects_info)
 
             # ----------------
             # (Maybe) testing
@@ -435,7 +435,8 @@ class MainFixedChannelsModel(nn.Module):
                     # Finalise epoch for validation history object
                     test_history.on_epoch_end(verbose=verbose,  # type: ignore[union-attr]
                                               verbose_sub_groups=sub_groups_verbose,
-                                              verbose_variables=verbose_variables)
+                                              verbose_variables=verbose_variables,
+                                              subjects_info=test_loader.subjects_info)
 
             # ----------------
             # If this is the highest performing model, as evaluated on the validation set, store it
@@ -526,7 +527,7 @@ class MainFixedChannelsModel(nn.Module):
 
             # Finalise epoch for train history object
             train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                       verbose_variables=verbose_variables)
+                                       verbose_variables=verbose_variables, subjects_info=train_loader.subjects_info)
             dd_train_history.on_epoch_end(verbose=verbose)
 
             # ---------------
@@ -572,7 +573,7 @@ class MainFixedChannelsModel(nn.Module):
 
                 # Finalise epoch for validation history object
                 val_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                         verbose_variables=verbose_variables)
+                                         verbose_variables=verbose_variables, subjects_info=val_loader.subjects_info)
                 dd_val_history.on_epoch_end(verbose=verbose)
 
             # ----------------
@@ -612,7 +613,8 @@ class MainFixedChannelsModel(nn.Module):
                     # Finalise epoch for validation history object
                     test_history.on_epoch_end(verbose=verbose,  # type: ignore[union-attr]
                                               verbose_sub_groups=sub_groups_verbose,
-                                              verbose_variables=verbose_variables)
+                                              verbose_variables=verbose_variables,
+                                              subjects_info=test_loader.subjects_info)
 
             # ----------------
             # If this is the highest performing model, as evaluated on the validation set, store it
@@ -667,7 +669,7 @@ class MainFixedChannelsModel(nn.Module):
 
             # Finalise epoch for validation history object
             history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                 verbose_variables=verbose_variables)
+                                 verbose_variables=verbose_variables, subjects_info=data_loader.subjects_info)
 
         return history
 
