@@ -37,7 +37,7 @@ Training:
   num_epochs: 10
   prediction_activation_function: null
   main_metric: pearson_r  # this should not be required
-  target: age
+  target: band_power_alpha_ec
   verbose: true
 Varied Numbers of Channels:
   kwargs:

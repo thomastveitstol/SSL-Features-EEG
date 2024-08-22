@@ -27,6 +27,8 @@ class SRM(EEGDatasetBase):
     'SRM'
     >>> SRM.get_available_targets(exclude_ssl=True)
     ('age', 'ravlt_del', 'ravlt_rec', 'ravlt_tot', 'sex')
+    >>> SRM().load_targets(subject_ids=("sub-007", "sub-002", "sub-003"), target="band_power_alpha_ec")
+    array([14.82652106, 35.10007211,  3.87483359])
     >>> len(SRM().get_subject_ids())
     111
     >>> len(SRM().channel_name_to_index())

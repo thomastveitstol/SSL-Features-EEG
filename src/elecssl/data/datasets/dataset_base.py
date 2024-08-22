@@ -261,14 +261,31 @@ class EEGDatasetBase(abc.ABC):
         """
         subject_ids = self.get_subject_ids() if subject_ids is None else subject_ids
 
-        # Input check
-        if target not in self.get_available_targets(exclude_ssl=False):
+        # Return the targets
+        if target in self.get_available_targets(exclude_ssl=True):
+            return getattr(self, target)(subject_ids=subject_ids)
+        elif target in self._get_available_self_supervised_targets():
+            return self._load_ssl_targets(subject_ids=subject_ids, target=target)
+        else:
             raise ValueError(f"Target '{target}' was not recognised. Make sure that the method passed shares the name "
                              f"with the implemented method you want to use. The targets available for this class "
                              f"({type(self).__name__}) are: {self.get_available_targets(exclude_ssl=False)}")
 
-        # Return the targets  todo: check if 'subject_ids' can be a required input for the decorated methods
-        return getattr(self, target)(subject_ids=subject_ids)
+    def _load_ssl_targets(self, subject_ids, target):
+        # The feature names should identical to folder names inside the EEG features folder
+        features_path = (get_eeg_features_storage_path() / target / target).with_suffix(".csv")
+
+        # Load csv file
+        df = pandas.read_csv(features_path)
+
+        # Filter on dataset name and subject IDs
+        df = df[(df["Dataset"] == type(self).__name__) & df["Subject-ID"].isin(subject_ids)]
+
+        # Rearrange to ensure correct ordering
+        df = df.set_index("Subject-ID").reindex(subject_ids)
+
+        # Return numpy array
+        return df.iloc[:, -1].values  # todo: column name and target does not match!
 
     @classmethod
     def get_available_targets(cls, exclude_ssl):
