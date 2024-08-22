@@ -309,12 +309,14 @@ class Histories:
                                       end="")
 
     def _print_newest_variables_metrics(self):
-        for var_name, var_history in self._variables_history.items():
-            for dataset_name, metrics in var_history.items():
-                for metric_name, metric_value in metrics.items():
-                    _hist_name = "" if self._name is None else f"{self._name}_"
-                    print(f"{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: {metric_value[-1]:.3f}\t\t", end="")
-            print()
+        if self._variables_history is not None:
+            for var_name, var_history in self._variables_history.items():
+                for dataset_name, metrics in var_history.items():
+                    for metric_name, metric_value in metrics.items():
+                        _hist_name = "" if self._name is None else f"{self._name}_"
+                        print(f"{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: "
+                              f"{metric_value[-1]:.3f}\t\t", end="")
+                print()
 
     def _update_metrics(self, subjects_info):
         # Concatenate torch tenors

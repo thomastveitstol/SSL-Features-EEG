@@ -442,7 +442,7 @@ class MainRBPModel(nn.Module):
 
     def _train_model(self, *, train_loader, val_loader, test_loader=None, metrics, main_metric, num_epochs, criterion,
                      optimiser, device, channel_name_to_index, prediction_activation_function=None, verbose=True,
-                     target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables,variable_metrics):
+                     target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables, variable_metrics):
         """
         Method for training
 
