@@ -197,11 +197,13 @@ class SSLExperiment:
         # Create data generators
         train_gen = InterpolationDataGenerator(
             data=train_data, targets=train_targets, subjects=combined_dataset.get_subjects_dict(train_subjects),
-            subjects_info=combined_dataset.get_subjects_info(train_subjects)
+            subjects_info=combined_dataset.get_subjects_info(train_subjects),
+            expected_variables=combined_dataset.get_expected_variables(train_subjects)
         )
         val_gen = InterpolationDataGenerator(
             data=val_data, targets=val_targets, subjects=combined_dataset.get_subjects_dict(val_subjects),
-            subjects_info=combined_dataset.get_subjects_info(val_subjects)
+            subjects_info=combined_dataset.get_subjects_info(val_subjects),
+            expected_variables=combined_dataset.get_expected_variables(val_subjects)
         )
 
         # Create data loaders
@@ -221,7 +223,8 @@ class SSLExperiment:
         # Create data generators
         test_gen = InterpolationDataGenerator(
             data=test_data, targets=test_targets, subjects=combined_dataset.get_subjects_dict(test_subjects),
-            subjects_info=combined_dataset.get_subjects_info(test_subjects)
+            subjects_info=combined_dataset.get_subjects_info(test_subjects),
+            expected_variables=combined_dataset.get_expected_variables(test_subjects)
         )
 
         # Create data loader
@@ -251,12 +254,14 @@ class SSLExperiment:
         train_gen = RBPDataGenerator(
             data=train_data, targets=train_targets, pre_computed=train_pre_computed,
             subjects=combined_dataset.get_subjects_dict(train_subjects),
-            subjects_info=combined_dataset.get_subjects_info(train_subjects)
+            subjects_info=combined_dataset.get_subjects_info(train_subjects),
+            expected_variables=combined_dataset.get_expected_variables(train_subjects)
         )
         val_gen = RBPDataGenerator(
             data=val_data, targets=val_targets, pre_computed=val_pre_computed,
             subjects=combined_dataset.get_subjects_dict(val_subjects),
-            subjects_info=combined_dataset.get_subjects_info(val_subjects)
+            subjects_info=combined_dataset.get_subjects_info(val_subjects),
+            expected_variables=combined_dataset.get_expected_variables(val_subjects)
         )
 
         # Create data loaders
@@ -287,7 +292,8 @@ class SSLExperiment:
         test_gen = RBPDataGenerator(
             data=test_data, targets=test_targets, pre_computed=test_pre_computed,
             subjects=combined_dataset.get_subjects_dict(test_subjects),
-            subjects_info=combined_dataset.get_subjects_info(test_subjects)
+            subjects_info=combined_dataset.get_subjects_info(test_subjects),
+            expected_variables=combined_dataset.get_expected_variables(test_subjects)
         )
 
         # Create data loader

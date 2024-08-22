@@ -18,7 +18,7 @@ class RBPDataGenerator(Dataset):  # type: ignore[type-arg]
     # --------------
     # Magic/dunder methods
     # --------------
-    def __init__(self, data, targets, subjects, *, pre_computed=None, subjects_info):
+    def __init__(self, data, targets, subjects, *, pre_computed=None, subjects_info, expected_variables):
         """
         Initialise
 
@@ -44,6 +44,7 @@ class RBPDataGenerator(Dataset):  # type: ignore[type-arg]
         self._subjects = subjects
         self._pre_computed = pre_computed
         self._subjects_info = subjects_info
+        self._expected_variables = expected_variables
 
     def __len__(self):
         return sum(x.shape[0] * x.shape[1] for x in self._data.values())
@@ -166,6 +167,10 @@ class RBPDataGenerator(Dataset):  # type: ignore[type-arg]
     def subjects_info(self):
         return self._subjects_info
 
+    @property
+    def expected_variables(self):
+        return self._expected_variables
+
 
 class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
     """
@@ -195,7 +200,7 @@ class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
     # --------------
     # Magic/dunder methods
     # --------------
-    def __init__(self, data, targets, subjects, subjects_info):
+    def __init__(self, data, targets, subjects, subjects_info, expected_variables):
         """
         Initialise
 
@@ -219,6 +224,7 @@ class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
         self._targets = targets
         self._subjects = subjects
         self._subjects_info = subjects_info
+        self._expected_variables = expected_variables
 
     def __len__(self):
         return sum(x.shape[0] * x.shape[1] for x in self._data.values())
@@ -319,6 +325,10 @@ class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
     @property
     def subjects_info(self):
         return self._subjects_info
+
+    @property
+    def expected_variables(self):
+        return self._expected_variables
 
 
 # ----------------
