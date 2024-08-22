@@ -1,7 +1,6 @@
 import copy
 from typing import List
 
-import numpy
 import torch
 import torch.nn as nn
 from progressbar import progressbar
