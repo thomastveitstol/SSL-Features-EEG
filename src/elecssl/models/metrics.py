@@ -216,7 +216,8 @@ class Histories:
         if subjects is not None:
             self._epoch_subjects.extend(subjects)
 
-    def on_epoch_end(self, *, subjects_info=None, verbose=True, verbose_sub_groups=False) -> None:
+    def on_epoch_end(self, *, subjects_info=None, verbose=True, verbose_sub_groups=False,
+                     verbose_variables=False) -> None:
         """
         Updates the metrics, and should be called after each epoch
 
@@ -225,6 +226,7 @@ class Histories:
         subjects_info
         verbose
         verbose_sub_groups
+        verbose_variables
 
         Returns
         -------
@@ -248,8 +250,8 @@ class Histories:
         >>> # Fake two batches
         >>> my_history.store_batch_evaluation(y_pred=my_yhat[:6], y_true=my_y[:6], subjects=my_subjects[:6])
         >>> my_history.store_batch_evaluation(y_pred=my_yhat[6:], y_true=my_y[6:], subjects=my_subjects[6:])
-        >>> my_history.on_epoch_end(subjects_info=my_info, verbose=False)
-        >>> my_history._variables_history  # doctest: +SKIP
+        >>> my_history.on_epoch_end(subjects_info=my_info, verbose=False, verbose_variables=True)
+        >>> my_history._variables_history
         """
         self._update_metrics(subjects_info=subjects_info)
 
@@ -263,6 +265,8 @@ class Histories:
             self._print_newest_metrics()
         if verbose_sub_groups and self._subgroup_histories is not None:
             self._print_newest_subgroups_metrics()
+        if verbose_variables and self._variables_history is not None:
+            self._print_newest_variables_metrics()
 
     def _print_newest_metrics(self) -> None:
         """Method for printing the newest metrics"""
@@ -303,6 +307,14 @@ class Histories:
                             else:
                                 print(f"{self._name}_{sub_group_name}_{metric_name}: {metric_values[-1]:.3f}\t\t",
                                       end="")
+
+    def _print_newest_variables_metrics(self):
+        for var_name, var_history in self._variables_history.items():
+            for dataset_name, metrics in var_history.items():
+                for metric_name, metric_value in metrics.items():
+                    _hist_name = "" if self._name is None else f"{self._name}_"
+                    print(f"{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: {metric_value[-1]:.3f}\t\t", end="")
+            print()
 
     def _update_metrics(self, subjects_info):
         # Concatenate torch tenors
