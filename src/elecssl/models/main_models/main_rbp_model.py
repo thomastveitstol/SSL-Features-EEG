@@ -1,9 +1,9 @@
 import copy
 from typing import List, Dict
 
-import enlighten
 import torch
 import torch.nn as nn
+from progressbar import progressbar
 
 from elecssl.data.data_generators.data_generator import strip_tensors
 from elecssl.data.subject_split import Subject
@@ -249,15 +249,14 @@ class MainRBPModel(nn.Module):
         best_metrics = None
         best_model_state = {k: v.cpu() for k, v in self.state_dict().items()}
         for epoch in range(num_epochs):
-            # Start progress bar
-            pbar = enlighten.Counter(total=int(len(train_loader.dataset) / train_loader.batch_size + 1),
-                                     desc=f"Epoch {epoch + 1}/{num_epochs}", unit="batch")
-
             # ----------------
             # Training
             # ----------------
             self.train()
-            for x_train, train_pre_computed, y_train, subject_indices in train_loader:
+            _prefix = f"Epoch {epoch + 1}/{num_epochs} "
+            for x_train, train_pre_computed, y_train, subject_indices in progressbar(train_loader,
+                                                                                     redirect_stdout=True,
+                                                                                     prefix=_prefix):
                 # Strip the dictionaries for 'ghost tensors'
                 x_train = strip_tensors(x_train)
                 y_train = strip_tensors(y_train)
@@ -311,9 +310,6 @@ class MainRBPModel(nn.Module):
                     # Domain discriminator metrics
                     dd_train_history.store_batch_evaluation(y_pred=discriminator_output, y_true=discriminator_targets,
                                                             subjects=subjects)
-
-                # Update progress bar
-                pbar.update()
 
             # Finalise epoch for train history objects
             train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose)
@@ -476,15 +472,13 @@ class MainRBPModel(nn.Module):
         best_metrics = None
         best_model_state = {k: v.cpu() for k, v in self.state_dict().items()}
         for epoch in range(num_epochs):
-            # Start progress bar
-            pbar = enlighten.Counter(total=int(len(train_loader.dataset) / train_loader.batch_size + 1),
-                                     desc=f"Epoch {epoch + 1}/{num_epochs}", unit="batch")
-
             # ----------------
             # Training
             # ----------------
             self.train()
-            for x_train, train_pre_computed, y_train, subject_indices in train_loader:
+            _prefix = f"Epoch {epoch + 1}/{num_epochs} "
+            for x_train, train_pre_computed, y_train, subject_indices in progressbar(train_loader, redirect_stdout=True,
+                                                                                     prefix=_prefix):
                 # Strip the dictionaries for 'ghost tensors'
                 x_train = strip_tensors(x_train)
                 y_train = strip_tensors(y_train)
@@ -525,9 +519,6 @@ class MainRBPModel(nn.Module):
                         y_pred = target_scaler.inv_transform(scaled_data=y_pred)
                         y_train = target_scaler.inv_transform(scaled_data=y_train)
                     train_history.store_batch_evaluation(y_pred=y_pred, y_true=y_train, subjects=subjects)
-
-                # Update progress bar
-                pbar.update()
 
             # Finalise epoch for train history object
             train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose)

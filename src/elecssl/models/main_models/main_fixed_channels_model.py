@@ -1,10 +1,10 @@
 import copy
 from typing import List
 
-import enlighten
 import numpy
 import torch
 import torch.nn as nn
+from progressbar import progressbar
 
 from elecssl.data.data_generators.data_generator import strip_tensors
 from elecssl.models.domain_adaptation.cmmn import ConvMMN
@@ -318,15 +318,12 @@ class MainFixedChannelsModel(nn.Module):
         best_metrics = None
         best_model_state = {k: v.cpu() for k, v in self.state_dict().items()}
         for epoch in range(num_epochs):
-            # Start progress bar
-            pbar = enlighten.Counter(total=int(numpy.ceil(len(train_loader.dataset) / train_loader.batch_size)),
-                                     desc=f"Epoch {epoch + 1}/{num_epochs}", unit="batch")
-
             # ---------------
             # Training
             # ---------------
             self.train()
-            for x, y, subject_indices in train_loader:
+            for x, y, subject_indices in progressbar(train_loader, redirect_stdout=True,
+                                                     prefix=f"Epoch {epoch + 1}/{num_epochs} "):
                 # Strip the dictionaries for 'ghost tensors'
                 x = strip_tensors(x)
                 y = strip_tensors(y)
@@ -359,9 +356,6 @@ class MainFixedChannelsModel(nn.Module):
                         y_pred = target_scaler.inv_transform(scaled_data=y_pred)
                         y = target_scaler.inv_transform(scaled_data=y)
                     train_history.store_batch_evaluation(y_pred=y_pred, y_true=y, subjects=subjects)
-
-                # Update progress bar
-                pbar.update()
 
             # Finalise epoch for train history object
             train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose)
@@ -477,15 +471,12 @@ class MainFixedChannelsModel(nn.Module):
         best_metrics = None
         best_model_state = {k: v.cpu() for k, v in self.state_dict().items()}
         for epoch in range(num_epochs):
-            # Start progress bar
-            pbar = enlighten.Counter(total=int(numpy.ceil(len(train_loader.dataset) / train_loader.batch_size)),
-                                     desc=f"Epoch {epoch + 1}/{num_epochs}", unit="batch")
-
             # ---------------
             # Training
             # ---------------
             self.train()
-            for x, y, subject_indices in train_loader:
+            for x, y, subject_indices in progressbar(train_loader, redirect_stdout=True,
+                                                     prefix=f"Epoch {epoch + 1}/{num_epochs} "):
                 # Strip the dictionaries for 'ghost tensors'
                 x = strip_tensors(x)
                 y = strip_tensors(y)
@@ -528,9 +519,6 @@ class MainFixedChannelsModel(nn.Module):
                     # Domain discriminator metrics
                     dd_train_history.store_batch_evaluation(y_pred=discriminator_output, y_true=discriminator_targets,
                                                             subjects=subjects)
-
-                # Update progress bar
-                pbar.update()
 
             # Finalise epoch for train history object
             train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose)
