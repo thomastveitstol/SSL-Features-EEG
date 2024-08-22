@@ -39,6 +39,7 @@ Training:
   main_metric: pearson_r  # this should not be required
   target: band_power_alpha_ec
   verbose: true
+  variable_verbose: true
 Varied Numbers of Channels:
   kwargs:
     RBPDesigns:

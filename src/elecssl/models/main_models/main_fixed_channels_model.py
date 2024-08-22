@@ -278,7 +278,7 @@ class MainFixedChannelsModel(nn.Module):
     @train_method
     def downstream_training(self, *, train_loader, val_loader, test_loader=None, metrics, main_metric, num_epochs,
                             classifier_criterion, optimiser, device, prediction_activation_function=None,
-                            verbose=True, target_scaler=None, sub_group_splits, sub_groups_verbose):
+                            verbose=True, target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables):
         """
         Method for normal downstream training
 
@@ -300,6 +300,7 @@ class MainFixedChannelsModel(nn.Module):
         target_scaler : cdl_eeg.data.scalers.target_scalers.TargetScalerBase, optional
         sub_group_splits
         sub_groups_verbose
+        verbose_variables
 
         Returns
         -------
@@ -357,7 +358,8 @@ class MainFixedChannelsModel(nn.Module):
                     train_history.store_batch_evaluation(y_pred=y_pred, y_true=y, subjects=subjects)
 
             # Finalise epoch for train history object
-            train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose)
+            train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
+                                       verbose_variables=verbose_variables)
 
             # ---------------
             # Validation
@@ -393,7 +395,8 @@ class MainFixedChannelsModel(nn.Module):
                     val_history.store_batch_evaluation(y_pred=y_pred, y_true=y, subjects=subjects)
 
                 # Finalise epoch for validation history object
-                val_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose)
+                val_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
+                                         verbose_variables=verbose_variables)
 
             # ----------------
             # (Maybe) testing
@@ -431,7 +434,8 @@ class MainFixedChannelsModel(nn.Module):
 
                     # Finalise epoch for validation history object
                     test_history.on_epoch_end(verbose=verbose,  # type: ignore[union-attr]
-                                              verbose_sub_groups=sub_groups_verbose)
+                                              verbose_sub_groups=sub_groups_verbose,
+                                              verbose_variables=verbose_variables)
 
             # ----------------
             # If this is the highest performing model, as evaluated on the validation set, store it
@@ -454,7 +458,8 @@ class MainFixedChannelsModel(nn.Module):
     def domain_discriminator_training(
             self, *, train_loader, val_loader, test_loader=None, metrics, main_metric, num_epochs, classifier_criterion,
             optimiser, discriminator_criterion, discriminator_weight, discriminator_metrics, device,
-            prediction_activation_function=None, verbose=True, target_scaler=None, sub_group_splits, sub_groups_verbose
+            prediction_activation_function=None, verbose=True, target_scaler=None, sub_group_splits, sub_groups_verbose,
+            verbose_variables
     ):
         # Defining histories objects
         train_history = Histories(metrics=metrics, splits=sub_group_splits)
@@ -520,7 +525,8 @@ class MainFixedChannelsModel(nn.Module):
                                                             subjects=subjects)
 
             # Finalise epoch for train history object
-            train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose)
+            train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
+                                       verbose_variables=verbose_variables)
             dd_train_history.on_epoch_end(verbose=verbose)
 
             # ---------------
@@ -565,7 +571,8 @@ class MainFixedChannelsModel(nn.Module):
                                                           subjects=subjects)
 
                 # Finalise epoch for validation history object
-                val_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose)
+                val_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
+                                         verbose_variables=verbose_variables)
                 dd_val_history.on_epoch_end(verbose=verbose)
 
             # ----------------
@@ -604,7 +611,8 @@ class MainFixedChannelsModel(nn.Module):
 
                     # Finalise epoch for validation history object
                     test_history.on_epoch_end(verbose=verbose,  # type: ignore[union-attr]
-                                              verbose_sub_groups=sub_groups_verbose)
+                                              verbose_sub_groups=sub_groups_verbose,
+                                              verbose_variables=verbose_variables)
 
             # ----------------
             # If this is the highest performing model, as evaluated on the validation set, store it
@@ -624,7 +632,7 @@ class MainFixedChannelsModel(nn.Module):
         return train_history, val_history, test_history, dd_train_history, dd_val_history
 
     def test_model(self, *, data_loader, metrics, device, prediction_activation_function=None, verbose=True,
-                   target_scaler=None, sub_group_splits, sub_groups_verbose):
+                   target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables):
         # Defining histories objects
         history = Histories(metrics=metrics, name="test", splits=sub_group_splits)
 
@@ -658,7 +666,8 @@ class MainFixedChannelsModel(nn.Module):
                 )
 
             # Finalise epoch for validation history object
-            history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose)
+            history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
+                                 verbose_variables=verbose_variables)
 
         return history
 
