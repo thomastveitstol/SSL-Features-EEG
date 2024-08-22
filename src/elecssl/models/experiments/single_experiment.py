@@ -623,7 +623,7 @@ class SSLExperiment:
         return CombinedDatasets.from_config(config=self.datasets_config, target=self.train_config["target"],
                                             interpolation_config=self.interpolation_config,
                                             sampling_freq=self.shared_pre_processing_config["resample"],
-                                            required_target=self.train_config["target"])
+                                            required_target=self.train_config["target"], variables=self.variables)
 
     @staticmethod
     def _extract_dataset_details(combined_dataset: CombinedDatasets):
@@ -675,7 +675,7 @@ class SSLExperiment:
     @property
     def shared_pre_processing_config(self):
         """Get the dict of the pre-processing config file which contains all shared pre-processing configurations"""
-        return self._pre_processing_config["sampling_frequency"]  # todo
+        return self._pre_processing_config["general"]  # todo
 
     @property
     def subject_split_config(self):
@@ -713,3 +713,7 @@ class SSLExperiment:
     @property
     def sub_groups_config(self):
         return self._config["SubGroups"]
+
+    @property
+    def variables(self):
+        return self._config["DownstreamVariables"]

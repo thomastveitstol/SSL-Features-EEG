@@ -1,0 +1,82 @@
+Datasets:
+  SRM:
+    num_subjects: 10
+    num_time_steps: null
+    pre_processed_version: preprocessed_band_pass_ec/data--band_pass-all--input_length-5s--autoreject-False--sfreq-2fmax
+    time_series_start: null
+  LEMON:
+    num_subjects: 10
+    num_time_steps: null
+    pre_processed_version: preprocessed_band_pass_ec/data--band_pass-all--input_length-5s--autoreject-False--sfreq-2fmax
+    time_series_start: null
+  Miltiadous:
+    num_subjects: 10
+    num_time_steps: null
+    pre_processed_version: preprocessed_band_pass_ec/data--band_pass-all--input_length-5s--autoreject-False--sfreq-2fmax
+    time_series_start: null
+Training:
+  Loss:
+    loss: L1Loss
+    loss_kwargs:
+      reduction: mean
+    weighter: null
+    weighter_kwargs:
+      weight_power: 0.48075596115374075
+  ValSplit:
+    kwargs:
+      val_split: 0.2
+    name: DatasetBalancedTrainValSplit
+  batch_size: 128
+  beta_1: 0.8112999779681698
+  beta_2: 0.9139316349169692
+  continuous_testing: true
+  eps: 4.860032320447224e-07
+  learning_rate: 9.851810072639284e-05
+  method: downstream_training
+  metrics: regression
+  num_epochs: 10
+  prediction_activation_function: null
+  main_metric: pearson_r  # this should not be required
+  target: age
+  verbose: true
+Varied Numbers of Channels:
+  kwargs:
+    main_channel_system: SRM
+    method: MNE
+  name: Interpolation
+DownstreamVariables:
+  Miltiadous:
+    - mmse
+    - age
+  LEMON:
+    - age
+  SRM:
+    - age
+    - ravlt_tot
+SubjectSplit:
+  kwargs:
+    seed: 42
+  name: SplitOnDataset
+SubGroups:
+  sub_groups:
+    dataset_name:
+    - Miltiadous
+    - SRM
+    - LEMON
+  verbose: true
+DL Architecture:
+  CMMN:
+    kwargs:
+      kernel_size: 137
+    use_cmmn_layer: true
+  kwargs:
+    cnn_units: 22
+    depth: 51
+    num_classes: 1
+  model: InceptionNetwork
+  normalise: true
+DomainDiscriminator: null
+Scalers:
+  target:
+    kwargs: {}
+    name: ZNormalisation
