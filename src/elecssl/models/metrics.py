@@ -298,15 +298,15 @@ class Histories:
                         # Print metrics
                         if i == len(self.history) - 1:
                             if self._name is None:
-                                print(f"{sub_group_name}_{metric_name}: {metric_values[-1]:.3f}")
+                                print(f"{sub_group_name.lower()}_{metric_name}: {metric_values[-1]:.3f}")
                             else:
-                                print(f"{self._name}_{sub_group_name}_{metric_name}: {metric_values[-1]:.3f}")
+                                print(f"{self._name}_{sub_group_name.lower()}_{metric_name}: {metric_values[-1]:.3f}")
                         else:
                             if self._name is None:
-                                print(f"{sub_group_name}_{metric_name}: {metric_values[-1]:.3f}\t\t", end="")
+                                print(f"{sub_group_name.lower()}_{metric_name}: {metric_values[-1]:.3f}\t\t", end="")
                             else:
-                                print(f"{self._name}_{sub_group_name}_{metric_name}: {metric_values[-1]:.3f}\t\t",
-                                      end="")
+                                print(f"{self._name}_{sub_group_name.lower()}_{metric_name}: "
+                                      f"{metric_values[-1]:.3f}\t\t", end="")
 
     def _print_newest_variables_metrics(self):
         if self._variables_history is not None:
