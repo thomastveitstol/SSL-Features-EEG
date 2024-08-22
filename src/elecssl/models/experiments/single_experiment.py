@@ -495,7 +495,7 @@ class SSLExperiment:
             device=self._device, target_scaler=target_scaler, **channel_name_to_index_kwarg,
             prediction_activation_function=get_activation_function(self.train_config["prediction_activation_function"]),
             sub_group_splits=self.sub_groups_config["sub_groups"], sub_groups_verbose=self.sub_groups_config["verbose"],
-            verbose_variables=self.train_config["verbose_variables"]
+            verbose_variables=self.train_config["verbose_variables"], variable_metrics=self.variables_metrics
         )
 
         # -----------------
@@ -724,3 +724,7 @@ class SSLExperiment:
     @property
     def variables(self):
         return self._config["DownstreamVariables"]
+
+    @property
+    def variables_metrics(self):
+        return self._config["VariablesMetrics"]

@@ -39,7 +39,7 @@ Training:
   main_metric: pearson_r  # this should not be required
   target: band_power_alpha_ec
   verbose: true
-  variable_verbose: true
+  verbose_variables: true
 Varied Numbers of Channels:
   kwargs:
     RBPDesigns:
@@ -106,6 +106,10 @@ DownstreamVariables:
   SRM:
     - age
     - ravlt_tot
+VariablesMetrics:
+  age: [ pearson_r, spearman_rho ]
+  mmse: [ pearson_r, spearman_rho ]
+  ravlt_tot: [ pearson_r, spearman_rho ]
 SubjectSplit:
   kwargs:
     seed: 42
