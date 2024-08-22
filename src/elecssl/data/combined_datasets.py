@@ -139,7 +139,7 @@ class CombinedDatasets:
 
                 for info_target, subject_id in zip(info_targets, dataset_subjects):
                     subject = Subject(subject_id=subject_id, dataset_name=dataset.name)
-                    if subject_id not in subject_info:
+                    if subject not in subject_info:
                         subject_info[subject] = {}
                     # i-th loaded target corresponds to the i-th subject
                     subject_info[subject][variable] = info_target
