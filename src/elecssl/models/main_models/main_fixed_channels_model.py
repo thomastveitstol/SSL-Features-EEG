@@ -310,10 +310,14 @@ class MainFixedChannelsModel(nn.Module):
                     Training, validation, and maybe test histories
         """
         # Defining histories objects
-        train_history = Histories(metrics=metrics, splits=sub_group_splits, variable_metrics=variable_metrics)
-        val_history = Histories(metrics=metrics, name="val", splits=sub_group_splits, variable_metrics=variable_metrics)
-        test_history = None if test_loader is None else Histories(metrics=metrics, name="test", splits=sub_group_splits,
-                                                                  variable_metrics=variable_metrics)
+        train_history = Histories(metrics=metrics, splits=sub_group_splits, variable_metrics=variable_metrics,
+                                  expected_variables=train_loader.dataset.expected_variables)
+        val_history = Histories(metrics=metrics, name="val", splits=sub_group_splits, variable_metrics=variable_metrics,
+                                expected_variables=val_loader.dataset.expected_variables)
+        test_history = None if test_loader is None else Histories(
+            metrics=metrics, name="test", splits=sub_group_splits, variable_metrics=variable_metrics,
+            expected_variables=test_loader.dataset.expected_variables
+        )
 
         # ---------------
         # Fit model
@@ -468,10 +472,14 @@ class MainFixedChannelsModel(nn.Module):
             verbose_variables, variable_metrics
     ):
         # Defining histories objects
-        train_history = Histories(metrics=metrics, splits=sub_group_splits, variable_metrics=variable_metrics)
-        val_history = Histories(metrics=metrics, name="val", splits=sub_group_splits, variable_metrics=variable_metrics)
-        test_history = None if test_loader is None else Histories(metrics=metrics, name="test", splits=sub_group_splits,
-                                                                  variable_metrics=variable_metrics)
+        train_history = Histories(metrics=metrics, splits=sub_group_splits, variable_metrics=variable_metrics,
+                                  expected_variables=train_loader.dataset.expected_variables)
+        val_history = Histories(metrics=metrics, name="val", splits=sub_group_splits, variable_metrics=variable_metrics,
+                                expected_variables=val_loader.dataset.expected_variables)
+        test_history = None if test_loader is None else Histories(
+            metrics=metrics, name="test", splits=sub_group_splits, variable_metrics=variable_metrics,
+            expected_variables=test_loader.dataset.expected_variables
+        )
 
         dd_train_history = Histories(metrics=discriminator_metrics, name="dd", splits=None)
         dd_val_history = Histories(metrics=discriminator_metrics, name="val_dd", splits=None)
@@ -644,7 +652,8 @@ class MainFixedChannelsModel(nn.Module):
     def test_model(self, *, data_loader, metrics, device, prediction_activation_function=None, verbose=True,
                    target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables, variable_metrics):
         # Defining histories objects
-        history = Histories(metrics=metrics, name="test", splits=sub_group_splits, variable_metrics=variable_metrics)
+        history = Histories(metrics=metrics, name="test", splits=sub_group_splits, variable_metrics=variable_metrics,
+                            expected_variables=data_loader.dataset.expected_variables)
 
         # No gradients needed
         self.eval()
