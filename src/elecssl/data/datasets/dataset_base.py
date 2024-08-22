@@ -5,12 +5,12 @@ import warnings
 from enum import Enum
 from typing import Dict, Tuple, List, Optional, Union, Any
 
-import enlighten
 import numpy
 import pandas
 import yaml  # type: ignore[import-untyped]
 from matplotlib import pyplot
 from mne.transforms import _cart_to_sph, _pol_to_cart
+from progressbar import progressbar
 
 from elecssl.data.paths import get_raw_data_storage_path, get_numpy_data_storage_path, get_eeg_features_storage_path
 from elecssl.models.region_based_pooling.utils import ELECTRODES_3D
@@ -189,11 +189,8 @@ class EEGDatasetBase(abc.ABC):
         # ------------------
         # Loop through all subjects
         # ------------------
-        # Set counter
-        pbar = enlighten.Counter(total=len(subject_ids), desc="Loading", unit="subjects")
-
         data = []
-        for sub_id in subject_ids:
+        for sub_id in progressbar(subject_ids, prefix="Loading data ", redirect_stdout=True):
             # Load the numpy array
             eeg_data = numpy.load(os.path.join(path, f"{sub_id}.npy"))
 
@@ -211,7 +208,6 @@ class EEGDatasetBase(abc.ABC):
 
             # Add the data
             data.append(numpy.expand_dims(eeg_data, axis=0))
-            pbar.update()
 
         # Concatenate to a single numpy ndarray
         return numpy.concatenate(data, axis=0)
