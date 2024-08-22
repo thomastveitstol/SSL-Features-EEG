@@ -31,7 +31,7 @@ class CombinedDatasets:
     efficient, but more time efficient
     """
 
-    __slots__ = "_subject_ids", "_data", "_targets", "_datasets", "_subjects_info"
+    __slots__ = "_subject_ids", "_data", "_targets", "_datasets", "_subjects_info", "_variable_availability"
 
     def __init__(self, datasets, variables, load_details=None, target=None, interpolation_method=None,
                  main_channel_system=None, sampling_freq=None, required_target=None):
@@ -145,6 +145,7 @@ class CombinedDatasets:
                     subject_info[subject][variable] = info_target
 
         self._subjects_info = subject_info
+        self._variable_availability = variables
 
     @classmethod
     def from_config(cls, config, interpolation_config, variables, target=None, sampling_freq=None,
@@ -283,6 +284,23 @@ class CombinedDatasets:
         dict[elecssl.data.subject_split.Subject, dict[str, typing.Any]]
         """
         return {subject: self._subjects_info[subject] for subject in subjects}
+
+    def get_expected_variables(self, subjects):
+        # Get all dataset of which we will extract expected variables from
+        datasets = set(subject.dataset_name for subject in subjects)
+
+        # Get the variables as exemplified by {"age": ("SRM", "LEMON")}
+        expected_variables: Dict[str, List[str]] = {}
+        for dataset_name in datasets:
+            for var_name in self._variable_availability[dataset_name]:
+                if var_name not in expected_variables:
+                    expected_variables[var_name] = []
+
+                # Add it to the dataset name list of the variable
+                expected_variables[var_name].append(dataset_name)
+
+        # Convert from list to tuple and return
+        return {var_name: tuple(dataset_list) for var_name, dataset_list in expected_variables.items()}
 
     @staticmethod
     def get_subjects_dict(subjects):
