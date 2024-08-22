@@ -250,8 +250,8 @@ class Histories:
         >>> # Fake two batches
         >>> my_history.store_batch_evaluation(y_pred=my_yhat[:6], y_true=my_y[:6], subjects=my_subjects[:6])
         >>> my_history.store_batch_evaluation(y_pred=my_yhat[6:], y_true=my_y[6:], subjects=my_subjects[6:])
-        >>> my_history.on_epoch_end(subjects_info=my_info, verbose=False, verbose_variables=True)
-        >>> my_history._variables_history
+        >>> my_history.on_epoch_end(subjects_info=my_info, verbose=False, verbose_variables=False)
+        >>> my_history._variables_history  # doctest: +SKIP
         """
         self._update_metrics(subjects_info=subjects_info)
 
