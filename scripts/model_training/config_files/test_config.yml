@@ -1,49 +1,103 @@
 Datasets:
   SRM:
-    num_subjects: 10
+    num_subjects: 111
     num_time_steps: null
     pre_processed_version: preprocessed_band_pass_ec/data--band_pass-all--input_length-5s--autoreject-False--sfreq-2fmax
     time_series_start: null
   LEMON:
-    num_subjects: 10
+    num_subjects: 160
     num_time_steps: null
     pre_processed_version: preprocessed_band_pass_ec/data--band_pass-all--input_length-5s--autoreject-False--sfreq-2fmax
     time_series_start: null
   Miltiadous:
-    num_subjects: 10
+    num_subjects: 88
     num_time_steps: null
     pre_processed_version: preprocessed_band_pass_ec/data--band_pass-all--input_length-5s--autoreject-False--sfreq-2fmax
     time_series_start: null
 Training:
   Loss:
-    loss: L1Loss
+    loss: MSELoss
     loss_kwargs:
       reduction: mean
     weighter: null
     weighter_kwargs:
-      weight_power: 0.48075596115374075
+      weight_power: 0.952596522937169
   ValSplit:
     kwargs:
       val_split: 0.2
     name: DatasetBalancedTrainValSplit
   batch_size: 128
-  beta_1: 0.8112999779681698
-  beta_2: 0.9139316349169692
+  beta_1: 0.8724168235527647
+  beta_2: 0.9654844111673841
   continuous_testing: true
-  eps: 4.860032320447224e-07
-  learning_rate: 9.851810072639284e-05
+  eps: 2.0601109026868345e-10
+  learning_rate: 0.0003800270098590565
   method: downstream_training
   metrics: regression
-  num_epochs: 10
+  num_epochs: 100
   prediction_activation_function: null
   main_metric: pearson_r  # this should not be required
   target: band_power_alpha_ec
   verbose: true
 Varied Numbers of Channels:
   kwargs:
-    main_channel_system: SRM
-    method: MNE
-  name: Interpolation
+    RBPDesigns:
+      RBPDesign0:
+        cmmn_kwargs: null
+        num_designs: 1
+        pooling_methods: MultiMSSharedRocketHeadRegion
+        pooling_methods_kwargs:
+          bias: false
+          latent_search_features: 23
+          max_receptive_field: 141
+          num_kernels: 321
+          share_search_receiver_modules:
+          - true
+          - false
+        pooling_type: multi_cs
+        split_methods:
+        - CentroidPolygons
+        - CentroidPolygons
+        - CentroidPolygons
+        - CentroidPolygons
+        split_methods_kwargs:
+        - channel_positions: &id001
+          - Miltiadous
+          k: &id002
+          - 4
+          - 3
+          - 2
+          - 3
+          - 4
+          - 3
+          - 2
+          - 3
+          - 4
+          min_nodes: 4
+        - channel_positions: *id001
+          k:
+          - 2
+          - 2
+          - 2
+          - 2
+          - 2
+          - 2
+          - 2
+          min_nodes: 3
+        - channel_positions: *id001
+          k: *id002
+          min_nodes: 1
+        - channel_positions: *id001
+          k: *id002
+          min_nodes: 1
+        use_cmmn_layer: false
+    normalise_region_representations: true
+  name: RegionBasedPooling
+#Varied Numbers of Channels:
+#  kwargs:
+#    main_channel_system: SRM
+#    method: MNE
+#  name: Interpolation
 DownstreamVariables:
   Miltiadous:
     - mmse
@@ -65,16 +119,11 @@ SubGroups:
     - LEMON
   verbose: true
 DL Architecture:
-  CMMN:
-    kwargs:
-      kernel_size: 137
-    use_cmmn_layer: true
   kwargs:
-    cnn_units: 22
-    depth: 51
+    cnn_units: 61
+    depth: 6
     num_classes: 1
   model: InceptionNetwork
-  normalise: true
 DomainDiscriminator: null
 Scalers:
   target:
