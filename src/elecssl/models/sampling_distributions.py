@@ -5,6 +5,7 @@ import random
 from typing import List
 
 import numpy
+import yaml
 
 
 # ------------------
@@ -32,14 +33,14 @@ class _SampleDistribution:
     """
 
     @classmethod
-    def sample(cls, distribution, **kwargs):
+    def sample(cls, distribution, *args, **kwargs):
         # Input check
         if distribution not in cls.get_available_distributions():
             raise ValueError(f"The distribution {distribution} was not recognised. The available ones are: "
                              f"{cls.get_available_distributions()}")
 
         # Sample from the provided distribution
-        return getattr(cls, distribution)(**kwargs)
+        return getattr(cls, distribution)(*args, **kwargs)
 
     @classmethod
     def get_available_distributions(cls):
@@ -62,7 +63,7 @@ class _SampleDistribution:
     # ------------
     @staticmethod
     @sampling_distribution
-    def log_uniform(*, base, a, b):
+    def log_uniform(base, a, b):
         """Samples a value x uniformly from [a, b], and outputs base^x"""
         # Input checks
         assert a < b, f"Expected the value 'a' to be greater than 'b', but found {a} and {b}"
@@ -72,7 +73,7 @@ class _SampleDistribution:
 
     @staticmethod
     @sampling_distribution
-    def log_uniform_int(*, base, a, b):
+    def log_uniform_int(base, a, b):
         """Samples a value x uniformly from [a, b], and outputs round(base^x)"""
         # Input checks
         assert a < b, f"Expected the value 'a' to be greater than 'b', but found {a} and {b}"
@@ -82,7 +83,7 @@ class _SampleDistribution:
 
     @staticmethod
     @sampling_distribution
-    def n_log_uniform_int(*, n, base, a, b):
+    def n_log_uniform_int(n, base, a, b):
         """Sample a value x uniformly from [a, b], and output n*round(base^x)"""
         # Input checks
         assert a < b, f"Expected the value 'a' to be greater than 'b', but found {a} and {b}"
@@ -114,11 +115,33 @@ class _SampleDistribution:
 
     @staticmethod
     @sampling_distribution
-    def uniform_discrete(domain):
+    def random_choice(*domain):
         return random.choice(domain)
 
 
-def sample_hyperparameter(distribution, **kwargs):
+def _snake_case_to_pascal_case(string):
+    """
+    Convert string from snake_case to PascalCase
+
+    Parameters
+    ----------
+    string : str
+
+    Returns
+    -------
+    str
+
+    Examples
+    --------
+    >>> _snake_case_to_pascal_case("random_choice")
+    'RandomChoice'
+    >>> _snake_case_to_pascal_case("n_log_uniform_int")
+    'NLogUniformInt'
+    """
+    return string.replace("_", " ").title().replace(" ", "")
+
+
+def sample_hyperparameter(distribution, *args, **kwargs):
     """
     Function for sampling hyperparameters
 
@@ -131,4 +154,23 @@ def sample_hyperparameter(distribution, **kwargs):
     -------
     typing.Any
     """
-    return _SampleDistribution.sample(distribution, **kwargs)
+    return _SampleDistribution.sample(distribution, *args, **kwargs)
+
+
+def get_yaml_loader():
+    """Method for creating a loader which can interpret all distributions. Note that this only works when arguments are
+    passed as positional"""
+    yaml_loader = yaml.SafeLoader
+
+    for sampling_dist in _SampleDistribution.get_available_distributions():
+        # Create the constructor
+        def make_constructor(dist):
+            def constructor(loader, node):
+                return sample_hyperparameter(dist, *loader.construct_sequence(node))
+
+            return constructor
+
+        # Add the constructor
+        yaml_loader.add_constructor(f"!{_snake_case_to_pascal_case(sampling_dist)}", make_constructor(sampling_dist))
+
+    return yaml_loader
