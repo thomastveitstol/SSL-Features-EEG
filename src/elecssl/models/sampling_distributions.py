@@ -24,7 +24,7 @@ class _SampleDistribution:
 
     Examples
     --------
-    >>> _SampleDistribution.get_available_distribution()
+    >>> _SampleDistribution.get_available_distributions()
     ('log_uniform', 'log_uniform_int', 'n_log_uniform_int', 'normal', 'uniform', 'uniform_discrete', 'uniform_int')
     >>> numpy.random.seed(1)
     >>> round(_SampleDistribution.sample("log_uniform", base=10, a=0, b=3), 3)  # 10^x, x ~ U[a, b]
@@ -34,15 +34,15 @@ class _SampleDistribution:
     @classmethod
     def sample(cls, distribution, **kwargs):
         # Input check
-        if distribution not in cls.get_available_distribution():
+        if distribution not in cls.get_available_distributions():
             raise ValueError(f"The distribution {distribution} was not recognised. The available ones are: "
-                             f"{cls.get_available_distribution()}")
+                             f"{cls.get_available_distributions()}")
 
         # Sample from the provided distribution
         return getattr(cls, distribution)(**kwargs)
 
     @classmethod
-    def get_available_distribution(cls):
+    def get_available_distributions(cls):
         """Get all sampling distributions available for the class. The distributions must be a method decorated by
         @sampling_distribution to be properly registered"""
         # Get all regression metrics
