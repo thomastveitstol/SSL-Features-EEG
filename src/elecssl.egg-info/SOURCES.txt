@@ -45,6 +45,7 @@ src/elecssl/models/domain_adaptation/domain_discriminators/domain_discriminator_
 src/elecssl/models/domain_adaptation/domain_discriminators/fc_modules.py
 src/elecssl/models/domain_adaptation/domain_discriminators/getter.py
 src/elecssl/models/experiments/__init__.py
+src/elecssl/models/experiments/generate_config_file.py
 src/elecssl/models/experiments/single_experiment.py
 src/elecssl/models/main_models/__init__.py
 src/elecssl/models/main_models/main_fixed_channels_model.py
