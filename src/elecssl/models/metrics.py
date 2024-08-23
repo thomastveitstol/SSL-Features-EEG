@@ -681,6 +681,57 @@ class Histories:
         # Save as .csv
         df.to_csv(os.path.join(path, f"{history_name}_metrics.csv"), index=False)
 
+    def save_variables_history(self, history_name, path, decimals):
+        # If there is no history, raise a warning and do nothing
+        if self._variables_history is None:
+            warnings.warn("Tried to save results of associations with prediction error and other variables, but there "
+                          "were no such history")
+            return None
+
+        for var_name, var_history in self._variables_history.items():
+            # I'll have a new folder for every variable (e.g., age, ravlt_tot, etc.)
+            var_path = path / var_name
+            if not os.path.isdir(var_path):
+                os.mkdir(path / var_name)
+
+            # Convert to a dict which is feasible to make a Dataframe of
+            metrics_dict: Dict[str, Dict[str, List[float]]] = {}  # {"pearson_r": {"All": [...], "SRM": [...]}}
+            for dataset_name, metrics_history in var_history.items():
+                for metric, history_list in metrics_history.items():
+                    if metric not in metrics_dict:
+                        metrics_dict[metric] = {}
+
+                    metrics_dict[metric][dataset_name] = history_list
+
+            # Loop through our newly created dictionary to make plots and save DataFrames
+            for metric, dataset_histories in metrics_dict.items():
+                pyplot.figure(figsize=(12, 6))  # todo: as above, not an elegant solution...
+
+                for dataset_name, history_list in dataset_histories.items():
+                    # Plot
+                    pyplot.plot(range(1, len(history_list) + 1), history_list, label=dataset_name)
+
+                    # Plot cosmetics
+                    font_size = 15
+
+                    pyplot.title(f"Associations with prediction error: {var_name}", fontsize=font_size + 5)
+                    pyplot.xlabel("Epoch", fontsize=font_size)
+                    pyplot.ylabel(metric.capitalize(), fontsize=font_size)
+                    pyplot.tick_params(labelsize=font_size)
+                    pyplot.legend(fontsize=font_size)
+                    pyplot.grid()
+
+                # Save figure and close it
+                pyplot.savefig(var_path / f"{history_name}_{metric}.png")
+                pyplot.close()
+
+                # Make and save dataframe
+                df = pandas.DataFrame.from_dict(dataset_histories)
+
+                df = df.round(decimals)
+
+                df.to_csv(var_path / f"{history_name}_{metric}.csv", index=False)
+
     # -----------------
     # Methods for getting the available metrics
     # -----------------
