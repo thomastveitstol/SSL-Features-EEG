@@ -1,16 +1,8 @@
-PretextTraining:
-  Augmentation:  # The augmentation to use
-    - BandPass
-  OcularStates:  # First element is ocular state for input (O_1), second element is ocular state for target (O_2)
-    - [ EC, EO ]
-    - [ EO, EC ]
-    - [ EC, EO ]
-    - [ EO, EC ]
-    - [ EC, EC ]
-    - [ EO, EO ]
-  TargetFeature:
-    - BandPower
-DownstreamVariables:
+# -----------------
+# Configurations for associating prediction errors with
+# other variables
+# -----------------
+PredictionErrorAssociations:
   Miltiadous:
     - mmse
     - age
@@ -19,30 +11,182 @@ DownstreamVariables:
   SRM:
     - age
     - ravlt_tot
-  Wang:
-    - sex
+VariablesMetrics:
+  age: [ pearson_r, spearman_rho ]
+  mmse: [ pearson_r, spearman_rho ]
+  ravlt_tot: [ pearson_r, spearman_rho ]
 
+# -----------------
+# Configuration for subject splitting (related to the cross validation)
+# -----------------
+SubjectSplit:
+  kwargs:
+    seed: 42
+  name: SplitOnDataset
+SubGroups:
+  sub_groups:
+    dataset_name:
+    - Miltiadous
+    - SRM
+    - LEMON
+  verbose: true
+
+# -----------------
+# Datasets
+# -----------------
+preprocessed_version: &preprocessed_version !RandomChoice
+  - preprocessed_band_pass_ec/data--band_pass-delta--input_length-5s--autoreject-False--sfreq-2fmax
+  - preprocessed_band_pass_ec/data--band_pass-theta--input_length-5s--autoreject-False--sfreq-2fmax
+  - preprocessed_band_pass_ec/data--band_pass-alpha--input_length-5s--autoreject-False--sfreq-2fmax
+  - preprocessed_band_pass_ec/data--band_pass-beta--input_length-5s--autoreject-False--sfreq-2fmax
+  - preprocessed_band_pass_ec/data--band_pass-gamma--input_length-5s--autoreject-False--sfreq-2fmax
+  - preprocessed_band_pass_ec/data--band_pass-delta--input_length-10s--autoreject-False--sfreq-2fmax
+  - preprocessed_band_pass_ec/data--band_pass-theta--input_length-10s--autoreject-False--sfreq-2fmax
+  - preprocessed_band_pass_ec/data--band_pass-alpha--input_length-10s--autoreject-False--sfreq-2fmax
+  - preprocessed_band_pass_ec/data--band_pass-beta--input_length-10s--autoreject-False--sfreq-2fmax
+  - preprocessed_band_pass_ec/data--band_pass-gamma--input_length-10s--autoreject-False--sfreq-2fmax
 Datasets:
   SRM:
-    num_subjects: all
-    kwargs:
-      session: "t1"
-      derivatives: true
-  Miltiadous:
-    num_subjects: all
-    kwargs:
-      derivatives: true
+    num_subjects: 111
+    num_time_steps: null
+    pre_processed_version: *preprocessed_version
+    time_series_start: null
   LEMON:
-    num_subjects: all
-    kwargs:
-      derivatives: false
-      interpolation_method: MNE
-  Wang:
-    num_subjects: all
-    kwargs:
-      visit: 1
-      derivatives: true
+    num_subjects: 160
+    num_time_steps: null
+    pre_processed_version: *preprocessed_version
+    time_series_start: null
+  Miltiadous:
+    num_subjects: 88
+    num_time_steps: null
+    pre_processed_version: *preprocessed_version
+    time_series_start: null
 
 # -----------------
-# DL architecture related
+# Training configurations
 # -----------------
+Scalers:
+  target:
+    kwargs: {}
+    name: ZNormalisation
+Training:
+  batch_size: 128
+  num_epochs: 100
+  verbose: true
+  verbose_variables: true
+  continuous_testing: true
+  metrics: regression
+  method: downstream_training  # todo
+  prediction_activation_function: null
+  main_metric: pearson_r  # todo: this should not be required
+  learning_rate: !LogUniform [10, -5, -3]
+  beta_1: !Uniform [0.8, 1.0]
+  beta_2: !Uniform [0.9, 1.0]
+  eps: !LogUniform [10, -10, -6]
+  ValSplit:  # todo: a little weird to have it in Training config?
+    name: DatasetBalancedTrainValSplit
+    kwargs:
+      val_split: 0.2
+  target: !RandomChoice
+    - band_power_delta_ec
+    - band_power_theta_ec
+    - band_power_alpha_ec
+    - band_power_beta_ec
+    - band_power_gamma_ec
+  Loss:  # todo: fixing no sample re-weighting
+    loss: !RandomChoice [MSELoss, L1Loss]
+    loss_kwargs:
+      reduction: UNDETERMINED
+    weighter: !RandomChoice [ null, SamplePowerWeighter ]
+    weighter_kwargs:
+      weight_power: !Uniform [0, 1]
+
+# -----------------
+# DL architectures
+# -----------------
+InceptionNetwork: &InceptionNetwork
+  num_classes: 1
+  cnn_units: !LogUniformInt [2, 3, 6]
+  depth: !NLogUniformInt [3, 3, 0, 3]
+ShallowFBCSPNetMTS: &ShallowFBCSPNetMTS
+  num_classes: 1
+  num_time_steps: null
+  n_filters: !UniformInt [30, 51]
+  filter_time_length: !UniformInt [15, 36]
+  pool_time_stride: !UniformInt [10, 21]
+  drop_prob: !Uniform [0, 0.5]
+Deep4NetMTS: &Deep4NetMTS
+  num_classes: 1
+  num_time_steps: null
+  n_first_filters: !UniformInt [15, 36]
+  filter_length: !UniformInt [5, 16]
+  drop_prob : !Uniform [0, 0.5]
+
+DLArchitecture: !RandomChoice
+  - model: InceptionNetwork
+    kwargs: *InceptionNetwork
+  #- model: ShallowFBCSPNetMTS
+  #  kwargs: *ShallowFBCSPNetMTS
+  #- model: Deep4NetMTS
+  #  kwargs: *Deep4NetMTS
+
+# -----------------
+# Varied numbers of channels
+# -----------------
+Varied Numbers of Channels:
+  kwargs:
+    RBPDesigns:
+      RBPDesign0:
+        cmmn_kwargs: null
+        num_designs: 1
+        pooling_methods: MultiMSSharedRocketHeadRegion
+        pooling_methods_kwargs:
+          bias: false
+          latent_search_features: 23
+          max_receptive_field: 141
+          num_kernels: 321
+          share_search_receiver_modules: true
+        pooling_type: multi_cs
+        split_methods:
+        - CentroidPolygons
+        - CentroidPolygons
+        - CentroidPolygons
+        - CentroidPolygons
+        split_methods_kwargs:
+        - channel_positions: &id001
+          - Miltiadous
+          k: &id002
+          - 4
+          - 3
+          - 2
+          - 3
+          - 4
+          - 3
+          - 2
+          - 3
+          - 4
+          min_nodes: 4
+        - channel_positions: *id001
+          k:
+          - 2
+          - 2
+          - 2
+          - 2
+          - 2
+          - 2
+          - 2
+          min_nodes: 3
+        - channel_positions: *id001
+          k: *id002
+          min_nodes: 1
+        - channel_positions: *id001
+          k: *id002
+          min_nodes: 1
+        use_cmmn_layer: false
+    normalise_region_representations: true
+  name: RegionBasedPooling
+
+# -----------------
+# Domain discriminator
+# -----------------
+DomainDiscriminator: null
