@@ -5,7 +5,7 @@ import random
 from typing import List
 
 import numpy
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 
 # ------------------

@@ -4,7 +4,7 @@ import traceback
 from typing import Any, Dict, Optional
 
 import torch
-import yaml
+import yaml  # type: ignore[import-untyped]
 from torch import optim
 from torch.utils.data import DataLoader
 
