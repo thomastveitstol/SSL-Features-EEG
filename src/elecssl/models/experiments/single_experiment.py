@@ -707,7 +707,7 @@ class SSLExperiment:
 
     @property
     def dl_architecture_config(self):
-        return self._config["DL Architecture"]
+        return self._config["DLArchitecture"]
 
     @property
     def domain_discriminator_config(self):
