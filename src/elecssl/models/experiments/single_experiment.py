@@ -731,7 +731,7 @@ class SSLExperiment:
 
     @property
     def variables(self):
-        return self._config["DownstreamVariables"]
+        return self._config["PredictionErrorAssociations"]
 
     @property
     def variables_metrics(self):

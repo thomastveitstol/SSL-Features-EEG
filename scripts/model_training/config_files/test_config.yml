@@ -97,7 +97,7 @@ Varied Numbers of Channels:
 #    main_channel_system: SRM
 #    method: MNE
 #  name: Interpolation
-DownstreamVariables:
+PredictionErrorAssociations:
   Miltiadous:
     - mmse
     - age
