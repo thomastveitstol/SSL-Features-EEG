@@ -4,15 +4,23 @@ from datetime import date, datetime
 import yaml
 
 from elecssl.data.paths import get_results_dir
+from elecssl.models.experiments.generate_config_file import generate_config_file
 from elecssl.models.experiments.single_experiment import SSLExperiment
+from elecssl.models.sampling_distributions import get_yaml_loader
 
 
 def main():
     # ---------------
-    # Load config file (this will be changed later)
+    # Load config file with sampling
     # ---------------
-    with open(os.path.join(os.path.dirname(__file__), "config_files", "test_config.yml")) as file:
-        config = yaml.safe_load(file)
+    loader = get_yaml_loader()
+    with open(os.path.join(os.path.dirname(__file__), "config_files", "experiments_config.yml")) as file:
+        config = yaml.load(file, Loader=loader)
+
+    # ---------------
+    # Fix/prepare config file
+    # ---------------
+    config = generate_config_file(config)
 
     # ---------------
     # Run experiment
