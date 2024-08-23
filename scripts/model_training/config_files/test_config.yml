@@ -121,7 +121,7 @@ SubGroups:
     - SRM
     - LEMON
   verbose: true
-DL Architecture:
+DLArchitecture:
   kwargs:
     cnn_units: 61
     depth: 6
