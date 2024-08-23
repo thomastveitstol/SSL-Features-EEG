@@ -4,6 +4,7 @@ import traceback
 from typing import Any, Dict, Optional
 
 import torch
+import yaml
 from torch import optim
 from torch.utils.data import DataLoader
 
@@ -38,6 +39,10 @@ class SSLExperiment:
         """
         # Create path
         os.mkdir(results_path)
+
+        # Save config file
+        with open(results_path / "config.yml", "w") as file:
+            yaml.safe_dump(config, file)
 
         # Store attributes
         self._config = config
