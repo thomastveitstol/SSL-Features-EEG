@@ -93,7 +93,7 @@ Training:
     - band_power_alpha_ec
     - band_power_beta_ec
     - band_power_gamma_ec
-  Loss:  # todo: fixing no sample re-weighting
+  Loss:
     loss: !RandomChoice [MSELoss, L1Loss]
     loss_kwargs:
       reduction: UNDETERMINED
