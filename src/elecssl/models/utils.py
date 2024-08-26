@@ -329,6 +329,16 @@ def _yaml_select_from_dict(loader, node):
     return dict_[key_]
 
 
+def _yaml_mapping_length(loader, node):
+    """Return the length of a mapping"""
+    return len(loader.construct_mapping(node))
+
+
+def _yaml_sum(loader, node):
+    """Computes the sum of objects"""
+    return sum(loader.construct_sequence(node))
+
+
 def add_yaml_constructors(loader):
     """
     Function for adding varied needed formatters to yaml loader
@@ -344,4 +354,6 @@ def add_yaml_constructors(loader):
     loader.add_constructor("!StrFormat", _yaml_str_format)
     loader.add_constructor("!MultiplierInt", _yaml_multiplier_int)
     loader.add_constructor("!SelectFromDict", _yaml_select_from_dict)
+    loader.add_constructor("!MappingLength", _yaml_mapping_length)
+    loader.add_constructor("!Sum", _yaml_sum)
     return loader
