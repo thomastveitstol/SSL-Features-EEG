@@ -13,6 +13,7 @@ src/elecssl/data/combined_datasets.py
 src/elecssl/data/config_paths.json
 src/elecssl/data/interpolate_datasets.py
 src/elecssl/data/paths.py
+src/elecssl/data/results_analysis.py
 src/elecssl/data/subject_split.py
 src/elecssl/data/data_generators/__init__.py
 src/elecssl/data/data_generators/data_generator.py
