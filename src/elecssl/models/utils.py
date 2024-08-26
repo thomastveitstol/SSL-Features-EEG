@@ -340,6 +340,7 @@ def _yaml_sum(loader, node):
 
 
 def _yaml_if_none_else(loader, node):
+    """Returns one of two alternatives, depending on if a condition is None or not"""
     options = loader.construct_mapping(node, deep=True)
     if options["condition"] is None:
         return options[True]
