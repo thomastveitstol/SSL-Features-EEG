@@ -307,3 +307,41 @@ def get_random_distribution(distribution, **kwargs):
     # If no match, an error is raised
     raise ValueError(f"The random distribution '{distribution}' was not recognised. Please select among the following: "
                      f"{tuple(dist.__name__ for dist in available_distributions)}")
+
+
+# -------------------------
+# Functions for yaml loader
+# -------------------------
+def _yaml_str_format(loader, node):
+    """Formatting strings"""
+    string_to_format = loader.construct_mapping(node, deep=True)
+    return string_to_format["string"].format(**string_to_format["kwargs"])
+
+
+def _yaml_multiplier_int(loader, node):
+    """Multiplies all arguments together"""
+    return int(numpy.prod(loader.construct_sequence(node)))
+
+
+def _yaml_select_from_dict(loader, node):
+    """Select the correct element from a dictionary"""
+    dict_, key_ = loader.construct_sequence(node, deep=True)
+    return dict_[key_]
+
+
+def add_yaml_constructors(loader):
+    """
+    Function for adding varied needed formatters to yaml loader
+
+    Parameters
+    ----------
+    loader
+
+    Returns
+    -------
+    typing.Type[yaml.SafeLoader]
+    """
+    loader.add_constructor("!StrFormat", _yaml_str_format)
+    loader.add_constructor("!MultiplierInt", _yaml_multiplier_int)
+    loader.add_constructor("!SelectFromDict", _yaml_select_from_dict)
+    return loader

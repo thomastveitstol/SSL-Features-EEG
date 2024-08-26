@@ -32,19 +32,28 @@ SubGroups:
   verbose: true
 
 # -----------------
+# Data augmentation of input data
+# -----------------
+freq_band: &freq_band !RandomChoice [ delta, theta, alpha, beta, gamma ]
+autoreject: &autoreject !RandomChoice [ true, false ]
+input_length: &input_length !RandomChoice [ 5, 10, 20 ]
+sfreq_multiple: &sfreq_multiple !RandomChoice [ 2, 3, 4 ]
+
+band_pass_augmented: &band_pass_augmented !StrFormat
+  string: "preprocessed_band_pass_ec/data--band_pass-{freq_band}--input_length-{input_length}s--autoreject-{autoreject}\
+    --sfreq-{sfreq_multiple}fmax"
+  kwargs:
+    freq_band: *freq_band
+    autoreject: *autoreject
+    input_length: *input_length
+    sfreq_multiple: *sfreq_multiple
+
+preprocessed_version: &preprocessed_version !RandomChoice
+  - *band_pass_augmented
+
+# -----------------
 # Datasets
 # -----------------
-preprocessed_version: &preprocessed_version !RandomChoice
-  - preprocessed_band_pass_ec/data--band_pass-delta--input_length-5s--autoreject-False--sfreq-2fmax
-  - preprocessed_band_pass_ec/data--band_pass-theta--input_length-5s--autoreject-False--sfreq-2fmax
-  - preprocessed_band_pass_ec/data--band_pass-alpha--input_length-5s--autoreject-False--sfreq-2fmax
-  - preprocessed_band_pass_ec/data--band_pass-beta--input_length-5s--autoreject-False--sfreq-2fmax
-  - preprocessed_band_pass_ec/data--band_pass-gamma--input_length-5s--autoreject-False--sfreq-2fmax
-  - preprocessed_band_pass_ec/data--band_pass-delta--input_length-10s--autoreject-False--sfreq-2fmax
-  - preprocessed_band_pass_ec/data--band_pass-theta--input_length-10s--autoreject-False--sfreq-2fmax
-  - preprocessed_band_pass_ec/data--band_pass-alpha--input_length-10s--autoreject-False--sfreq-2fmax
-  - preprocessed_band_pass_ec/data--band_pass-beta--input_length-10s--autoreject-False--sfreq-2fmax
-  - preprocessed_band_pass_ec/data--band_pass-gamma--input_length-10s--autoreject-False--sfreq-2fmax
 Datasets:
   SRM:
     num_subjects: 111
@@ -104,20 +113,28 @@ Training:
 # -----------------
 # DL architectures
 # -----------------
+num_time_steps: &num_time_steps !SelectFromDict
+  - delta: !MultiplierInt [ *input_length, *sfreq_multiple, 4 ]
+    theta: !MultiplierInt [ *input_length, *sfreq_multiple, 8 ]
+    alpha: !MultiplierInt [ *input_length, *sfreq_multiple, 12 ]
+    beta: !MultiplierInt [ *input_length, *sfreq_multiple, 30 ]
+    gamma: !MultiplierInt [ *input_length, *sfreq_multiple, 45 ]
+  - *freq_band
+
 InceptionNetwork: &InceptionNetwork
   num_classes: 1
   cnn_units: !LogUniformInt [2, 3, 6]
   depth: !NLogUniformInt [3, 3, 0, 3]
 ShallowFBCSPNetMTS: &ShallowFBCSPNetMTS
   num_classes: 1
-  num_time_steps: null
+  num_time_steps: *num_time_steps
   n_filters: !UniformInt [30, 51]
   filter_time_length: !UniformInt [15, 36]
   pool_time_stride: !UniformInt [10, 21]
   drop_prob: !Uniform [0, 0.5]
 Deep4NetMTS: &Deep4NetMTS
   num_classes: 1
-  num_time_steps: null
+  num_time_steps: *num_time_steps
   n_first_filters: !UniformInt [15, 36]
   filter_length: !UniformInt [5, 16]
   drop_prob : !Uniform [0, 0.5]
@@ -125,10 +142,10 @@ Deep4NetMTS: &Deep4NetMTS
 DLArchitecture: !RandomChoice
   - model: InceptionNetwork
     kwargs: *InceptionNetwork
-  #- model: ShallowFBCSPNetMTS
-  #  kwargs: *ShallowFBCSPNetMTS
-  #- model: Deep4NetMTS
-  #  kwargs: *Deep4NetMTS
+  - model: ShallowFBCSPNetMTS
+    kwargs: *ShallowFBCSPNetMTS
+  - model: Deep4NetMTS
+    kwargs: *Deep4NetMTS
 
 # -----------------
 # Varied numbers of channels
