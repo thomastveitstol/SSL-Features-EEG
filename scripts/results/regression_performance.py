@@ -118,7 +118,7 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
     # -------------
     print(f"{' Results ':=^30}")
     for dataset, input_freq_band_results in best_models.items():
-        print(f"\n{f' {dataset} ':-^40}")
+        print(f"\n{f' {dataset} ':-^25}")
         for input_band, target_freq_band_results in input_freq_band_results.items():
             for target_band, model in target_freq_band_results.items():
                 if model is None:
