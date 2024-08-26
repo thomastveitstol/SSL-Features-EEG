@@ -34,11 +34,13 @@ SubGroups:
 # -----------------
 # Data augmentation of input data
 # -----------------
+# A few configurations
 freq_band: &freq_band !RandomChoice [ delta, theta, alpha, beta, gamma ]
 autoreject: &autoreject !RandomChoice [ true, false ]
 input_length: &input_length !RandomChoice [ 5, 10, 20 ]
 sfreq_multiple: &sfreq_multiple !RandomChoice [ 2, 3, 4 ]
 
+# Augmentations
 band_pass_augmented: &band_pass_augmented !StrFormat
   string: "preprocessed_band_pass_ec/data--band_pass-{freq_band}--input_length-{input_length}s--autoreject-{autoreject}\
     --sfreq-{sfreq_multiple}fmax"
@@ -48,6 +50,7 @@ band_pass_augmented: &band_pass_augmented !StrFormat
     input_length: *input_length
     sfreq_multiple: *sfreq_multiple
 
+# The selected preprocessed version
 preprocessed_version: &preprocessed_version !RandomChoice
   - *band_pass_augmented
 
