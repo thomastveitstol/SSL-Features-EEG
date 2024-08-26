@@ -14,6 +14,7 @@ def higher_is_better(metric):
     else:
         raise ValueError(f"Metric {metric} not recognised")
 
+
 def is_better(metric, *, old_performance, new_performance):
     # Input checks
     assert isinstance(metric, str), f"Expected metric to be string, but found {type(metric)}"
@@ -36,6 +37,7 @@ def get_successful_runs(results_dir):
 
     # Filter to get the successful ones only
     return tuple(run for run in all_runs if os.path.isfile(results_dir / run / "finished_successfully.txt"))
+
 
 def get_input_and_target_freq_bands(config):
     # -----------
@@ -64,7 +66,6 @@ def get_input_and_target_freq_bands(config):
 
     # Return tuple
     return input_freq_band, tuple(freq_band)[0]
-
 
 
 def get_test_dataset_name(path):
