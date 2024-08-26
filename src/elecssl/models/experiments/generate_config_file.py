@@ -27,7 +27,7 @@ def generate_config_file(config):
     if domain_discriminator["discriminator"] is not None:
         # Need to get and add the input dimension from the DL model
         input_dimension = get_mts_module_type(dl_architecture["model"]).get_latent_features_dim(
-            in_channels=19, **dl_architecture["kwargs"]) # this will only work if the number of features is independent
+            in_channels=19, **dl_architecture["kwargs"])  # this will only work if the number of features is independent
         # of number of input channels, otherwise an error message will be raised during the experiment. Doctests have
         # shown that number of input channels does not affect latent feature dimension
 

@@ -339,7 +339,6 @@ def _yaml_sum(loader, node):
     return sum(loader.construct_sequence(node))
 
 
-
 def _yaml_if_none_else(loader, node):
     options = loader.construct_mapping(node, deep=True)
     if options["condition"] is None:
