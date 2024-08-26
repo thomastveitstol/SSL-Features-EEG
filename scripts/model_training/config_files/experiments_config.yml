@@ -57,7 +57,7 @@ preprocessed_version: &preprocessed_version !RandomChoice
 # -----------------
 # Datasets
 # -----------------
-Datasets:
+Datasets: &Datasets
   SRM:
     num_subjects: 111
     num_time_steps: null
@@ -75,8 +75,45 @@ Datasets:
     time_series_start: null
 
 # -----------------
+# Domain discriminator
+# -----------------
+# Using an FC module
+ExponentialDecayFC: &ExponentialDecayFC
+  proposed_depth: !UniformInt [ 0, 5 ]
+  first_layer_multiple: !Uniform [ 0.5, 2 ]
+  exponential_decrease: !RandomChoice [ 2, 3 ]
+  in_features: UNDETERMINED  # Need to 'ask' the DL architecture
+  num_classes: !Sum [ !MappingLength { <<: *Datasets }, -1 ]
+  activation_function: !RandomChoice
+    - name: relu
+      kwargs: {}
+    - name: elu
+      kwargs: {alpha: !Uniform [ 0.2, 1.8 ]}
+
+FCModule: &FCModule !RandomChoice
+  - method: exponential_decay
+    kwargs: *ExponentialDecayFC
+
+# Selecting domain discriminator
+DomainDiscriminator:
+  discriminator: &discriminator !RandomChoice
+    - null
+    - name: FCModule
+      kwargs: *FCModule
+  training:
+    Loss:
+      loss: CrossEntropyLoss
+      loss_kwargs:
+        reduction: mean
+      weighter: null
+      weighter_kwargs: { }
+    metrics: !Tuple [ acc, ce_loss ]
+    lambda: !LogUniform [10, -6, -1]
+
+# -----------------
 # Training configurations
 # -----------------
+#training_method_condition: &_training_method_condition !IsNone *discriminator
 Scalers:
   target:
     kwargs: {}
@@ -88,7 +125,7 @@ Training:
   verbose_variables: true
   continuous_testing: true
   metrics: regression
-  method: downstream_training  # todo
+  method: !IfIsNoneElse {condition: *discriminator, true: downstream_training, false: domain_discriminator_training}
   prediction_activation_function: null
   main_metric: pearson_r  # todo: this should not be required
   learning_rate: !LogUniform [10, -5, -3]
@@ -223,8 +260,3 @@ Varied Numbers of Channels:
         use_cmmn_layer: false
     normalise_region_representations: true
   name: RegionBasedPooling
-
-# -----------------
-# Domain discriminator
-# -----------------
-DomainDiscriminator: null

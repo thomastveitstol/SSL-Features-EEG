@@ -137,21 +137,11 @@ class FCModule(DomainDiscriminatorBase):
     # --------------
     @staticmethod
     @sampling_method
-    def exponential_decay(config, in_features):
+    def exponential_decay(*, proposed_depth, first_layer_multiple, in_features, exponential_decrease,
+                          activation_function, num_classes):
         """The number of layers are decreasing exponentially from first to last hidden layer"""
-        # --------------
-        # Sample hidden layers
-        # --------------
-        # Sample depth
-        proposed_depth = sample_hyperparameter(config["depth"]["dist"], **config["depth"]["kwargs"])
-
-        # Sample the first layer
-        first_layer = int(sample_hyperparameter(config["first_layer_multiple"]["dist"],
-                                                **config["first_layer_multiple"]["kwargs"]) * in_features)
-
-        # Sample the exponential decrease
-        exponential_decrease = sample_hyperparameter(config["exponential_decrease"]["dist"],
-                                                     **config["exponential_decrease"]["kwargs"])
+        # Set the first layer
+        first_layer = round(first_layer_multiple * in_features)
 
         # Create hidden layers
         hidden_units: List[int] = []
@@ -170,12 +160,13 @@ class FCModule(DomainDiscriminatorBase):
         # --------------
         # Sample activation function
         # --------------
-        activation_function, activation_function_kwargs = _sample_activation_function(config["activation_function"])
 
         # Return configuration which can be used as input to __init__
         return {"hidden_units": tuple(hidden_units),
-                "activation_function": activation_function,
-                "activation_function_kwargs": activation_function_kwargs}
+                "activation_function": activation_function["name"],
+                "activation_function_kwargs": activation_function["kwargs"],
+                "in_features": in_features,
+                "num_classes": num_classes}
 
 
 def _get_activation_function(activation_function, **kwargs):
