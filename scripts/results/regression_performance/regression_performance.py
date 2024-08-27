@@ -5,7 +5,9 @@ from typing import Dict, Optional
 
 import numpy
 import pandas
+import seaborn
 import yaml
+from matplotlib import pyplot
 from progressbar import progressbar
 
 from elecssl.data.paths import get_results_dir
@@ -124,6 +126,52 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
                 if model is None:
                     continue
                 print(f"{input_band} -> {target_band}: {model.test_performance[main_metric]:.2f}")
+
+    # -------------
+    # Produce heatmaps
+    # -------------
+    # Loop through each dataset
+    for dataset, input_freq_band_results in best_models.items():
+        # Create DataFrame
+        df = pandas.DataFrame(
+            input_freq_band_results, index=_FREQ_BAND_ORDER, columns=_FREQ_BAND_ORDER
+        ).map(lambda a: a.test_performance[main_metric])
+
+        # Save DataFrame
+        df.to_csv(os.path.join(os.path.dirname(__file__), "csv_files", f"{dataset.lower()}.csv"))
+
+        # -------------
+        # Plotting
+        # -------------
+        fig, ax = pyplot.subplots(figsize=_FIGSIZE)
+
+        seaborn.heatmap(
+            df, annot=True, vmin=-1, vmax=1, cmap="coolwarm", fmt=".2f", ax=ax, annot_kws={"size": _FONTSIZE}
+        )
+
+        # Set the font size of the color bar labels
+        cbar = ax.collections[0].colorbar
+        cbar.ax.tick_params(labelsize=_FONTSIZE)
+        cbar.ax.set_ylabel(_PRETTY_NAME[main_metric], fontsize=_FONTSIZE)
+
+        # Additional cosmetics
+        pyplot.title(f"Target dataset: {dataset}", fontsize=_FONTSIZE + 3)
+        ax.set_xlabel("Input frequency band", fontsize=_FONTSIZE)
+        ax.set_ylabel("Target band power", fontsize=_FONTSIZE)
+        ax.tick_params(labelsize=_FONTSIZE)
+        fig.tight_layout()
+
+    pyplot.show()
+
+
+# -------------
+# Constants
+# -------------
+_FIGSIZE = (7, 5)
+_FONTSIZE = 12
+_FREQ_BAND_ORDER = ("delta", "theta", "alpha", "beta", "gamma")
+_PRETTY_NAME = {"pearson_r": "Pearson r"}
+
 
 def main():
     main_metric = "pearson_r"

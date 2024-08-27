@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="refactoring" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="refactoring">
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/results/regression_performance.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results/regression_performance/regression_performance.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -44,64 +47,64 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python tests.Doctest BandPass._get_folder_name.executor": "Run",
-    "Python tests.Doctest FCModule.forward.executor": "Run",
-    "Python tests.Doctest PolygonGraph.line_intersection.executor": "Run",
-    "Python tests.Doctest Wang._load_single_cleaned_mne_object.executor": "Run",
-    "Python tests.Doctest get_domain_discriminator.executor": "Run",
-    "Python tests.Doctest get_montage_split.executor": "Run",
-    "Python tests.Doctest get_mts_module.executor": "Run",
-    "Python tests.Doctest project_to_2d.executor": "Run",
-    "Python tests.Doctest sex_to_int.executor": "Run",
-    "Python tests.Doctest strip_tensors.executor": "Run",
-    "Python tests.Doctests in BandPass.executor": "Run",
-    "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
-    "Python tests.Doctests in FCModule.executor": "Run",
-    "Python tests.Doctests in LEMON.executor": "Run",
-    "Python tests.Doctests in MainFixedChannelsModel.executor": "Run",
-    "Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor": "Run",
-    "Python tests.Doctests in MultiMSMean.executor": "Run",
-    "Python tests.Doctests in SRM (1).executor": "Run",
-    "Python tests.Doctests in SRM.executor": "Run",
-    "Python tests.Doctests in braindecode_models.executor": "Run",
-    "Python tests.Doctests in centroid_polygon.executor": "Run",
-    "Python tests.Doctests in cmmn.executor": "Run",
-    "Python tests.Doctests in dataset_base.executor": "Run",
-    "Python tests.Doctests in fc_modules.executor": "Run",
-    "Python tests.Doctests in getter.executor": "Run",
-    "Python tests.Doctests in head_region.executor": "Run",
-    "Python tests.Doctests in inception_network.executor": "Run",
-    "Python tests.Doctests in interpolate_datasets.executor": "Run",
-    "Python tests.Doctests in lemon.executor": "Run",
-    "Python tests.Doctests in losses.executor": "Run",
-    "Python tests.Doctests in main_fixed_channels_model.executor": "Run",
-    "Python tests.Doctests in main_rbp_model.executor": "Run",
-    "Python tests.Doctests in mean.executor": "Run",
-    "Python tests.Doctests in metrics.executor": "Run",
-    "Python tests.Doctests in miltiadous.executor": "Run",
-    "Python tests.Doctests in paths.executor": "Run",
-    "Python tests.Doctests in region_based_pooling.executor": "Run",
-    "Python tests.Doctests in sampling_distributions.executor": "Run",
-    "Python tests.Doctests in srm.executor": "Run",
-    "Python tests.Doctests in td_brain.executor": "Run",
-    "Python tests.Doctests in univariate_rocket.executor": "Run",
-    "Python tests.Doctests in utils.executor": "Run",
-    "Python tests.Doctests in wang.executor": "Run",
-    "Python.band_pass.executor": "Run",
-    "Python.band_power.executor": "Run",
-    "Python.lemon.executor": "Run",
-    "Python.mts_module_base.executor": "Run",
-    "Python.srm.executor": "Run",
-    "Python.wang.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python tests.Doctest BandPass._get_folder_name.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest FCModule.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest PolygonGraph.line_intersection.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Wang._load_single_cleaned_mne_object.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_domain_discriminator.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_montage_split.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_mts_module.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest project_to_2d.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest sex_to_int.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest strip_tensors.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in BandPass.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in CustomWeightedLoss.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in FCModule.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LEMON.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MainFixedChannelsModel.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MultiMSMean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in SRM (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in SRM.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in braindecode_models.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in centroid_polygon.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in cmmn.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in dataset_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in fc_modules.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in getter.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in head_region.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in inception_network.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in interpolate_datasets.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in losses.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in main_fixed_channels_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in main_rbp_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in mean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in miltiadous.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in paths.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in region_based_pooling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in sampling_distributions.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in srm.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in td_brain.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in univariate_rocket.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in wang.executor&quot;: &quot;Run&quot;,
+    &quot;Python.band_pass.executor&quot;: &quot;Run&quot;,
+    &quot;Python.band_power.executor&quot;: &quot;Run&quot;,
+    &quot;Python.lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mts_module_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python.srm.executor&quot;: &quot;Run&quot;,
+    &quot;Python.wang.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/thomas/PycharmProjects/SSL-Features-EEG&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
