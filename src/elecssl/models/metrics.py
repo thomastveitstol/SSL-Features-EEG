@@ -150,30 +150,34 @@ class Histories:
         # For storing variables such as age, ravlt_tot etc., which we will (e.g.) correlate with the difference between
         # y_pred and y_true. I think it'll be best to have variable name first, then the datasets. Should consider
         # cleaning up here, a little unreadable...
-        self._variables_history: Optional[Dict[str, Dict[str, Dict[str, List[float]]]]]
+        self._variables_history: Optional[Dict[str, Dict[str, Dict[str, Union[Dict[List[float]], List[float]]]]]]
         self._variable_metrics: Optional[Dict[str, Tuple[str, ...]]]
         if expected_variables is not None:
+            _metrics: Dict[str, Tuple[str, ...]] = {}
+            for var_name, var_metrics in variable_metrics.items():
+                if var_metrics == "regression":
+                    _metrics[var_name] = self.get_available_regression_metrics()
+                elif var_metrics == "classification":
+                    _metrics[var_name] = self.get_available_classification_metrics()
+                elif var_metrics == "multiclass_classification":
+                    _metrics[var_name] = self.get_available_multiclass_classification_metrics()
+                elif var_metrics == "groups_metrics":
+                    _metrics[var_name] = self.get_available_groups_metrics()
+                else:
+                    _metrics[var_name] = var_metrics
+
             self._variables_history = {
-                var_name: {dataset_name: {metric: [] for metric in variable_metrics[var_name]}
+                var_name: {dataset_name: {metric: {} if metric in self.get_available_groups_metrics() else []
+                                          for metric in _metrics[var_name]}
                            for dataset_name in itertools.chain(("All",), dataset_names)}
                 for var_name, dataset_names in expected_variables.items()
             }
             self._variables_history_ratios = {
-                var_name: {dataset_name: {metric: [] for metric in variable_metrics[var_name]}
+                var_name: {dataset_name: {metric: {} if metric in self.get_available_groups_metrics() else []
+                                          for metric in _metrics[var_name]}
                            for dataset_name in itertools.chain(("All",), dataset_names)}
                 for var_name, dataset_names in expected_variables.items()
             }
-
-            _metrics: Dict[str, Tuple[str, ...]] = {}
-            for var_name, var_metrics in variable_metrics.items():
-                if metrics == "regression":
-                    _metrics[var_name] = self.get_available_regression_metrics()
-                elif metrics == "classification":
-                    _metrics[var_name] = self.get_available_classification_metrics()
-                elif metrics == "multiclass_classification":
-                    _metrics[var_name] = self.get_available_multiclass_classification_metrics()
-                else:
-                    _metrics[var_name] = var_metrics
             self._variable_metrics = _metrics
         else:
             self._variables_history = None
@@ -325,17 +329,29 @@ class Histories:
             for var_name, var_history in self._variables_history.items():
                 for dataset_name, metrics in var_history.items():
                     for metric_name, metric_value in metrics.items():
-                        _hist_name = "" if self._name is None else f"{self._name}_"
-                        print(f"{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: "
-                              f"{metric_value[-1]:.3f}\t\t", end="")
+                        if metric_name in self.get_available_groups_metrics():
+                            for group, value in metric_value.items():
+                                _hist_name = "" if self._name is None else f"{self._name}_"
+                                print(f"{group}_{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: "
+                                      f"{value[-1]:.3f}\t\t", end="")
+                        else:
+                            _hist_name = "" if self._name is None else f"{self._name}_"
+                            print(f"{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: "
+                                  f"{metric_value[-1]:.3f}\t\t", end="")
                 print()
         if self._variables_history_ratios is not None:
             for var_name, var_history in self._variables_history_ratios.items():
                 for dataset_name, metrics in var_history.items():
                     for metric_name, metric_value in metrics.items():
-                        _hist_name = "" if self._name is None else f"{self._name}_"
-                        print(f"ratio_{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: "
-                              f"{metric_value[-1]:.3f}\t\t", end="")
+                        if metric_name in self.get_available_groups_metrics():
+                            for group, value in metric_value.items():
+                                _hist_name = "" if self._name is None else f"{self._name}_"
+                                print(f"ratio_{group}_{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: "
+                                      f"{value[-1]:.3f}\t\t", end="")
+                        else:
+                            _hist_name = "" if self._name is None else f"{self._name}_"
+                            print(f"ratio_{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: "
+                                  f"{metric_value[-1]:.3f}\t\t", end="")
                 print()
 
     def _update_metrics(self, subjects_info):
@@ -428,19 +444,56 @@ class Histories:
                     for metric in self._variable_metrics[var_name]:  # type: ignore[index]
                         # Compute metric
                         _tensor = torch.cat(tensor_list, dim=0)
-                        metric_value = self._compute_metric(metric=metric, y_pred=_tensor[:, 0], y_true=_tensor[:, 1])
 
-                        # Add results
-                        self._variables_history[var_name][dataset_name][metric].append(metric_value)
+                        if metric in self.get_available_groups_metrics():
+                            metric_value = self._compute_groups_metric(
+                                metric=metric, variable=_tensor[:, 0], groups=_tensor[:, 1]
+                            )
+
+                            # Might be the first time it is seen, in that case need to initialise the lists per group
+                            if not self._variables_history[var_name][dataset_name][metric]:
+                                for group in metric_value:
+                                    self._variables_history[var_name][dataset_name][metric][group] = []
+
+                            # Keys should be the same for all epochs
+                            for group, value in metric_value.items():
+                                self._variables_history[var_name][dataset_name][metric][group].append(value)
+
+                        else:
+                            metric_value = self._compute_metric(
+                                metric=metric, y_pred=_tensor[:, 0], y_true=_tensor[:, 1]
+                            )
+
+                            # Add results
+                            self._variables_history[var_name][dataset_name][metric].append(metric_value)
+
             for var_name, epoch_history in data_matrices_ratio.items():
                 for dataset_name, tensor_list in epoch_history.items():
                     for metric in self._variable_metrics[var_name]:  # type: ignore[index]
                         # Compute metric
                         _tensor = torch.cat(tensor_list, dim=0)
-                        metric_value = self._compute_metric(metric=metric, y_pred=_tensor[:, 0], y_true=_tensor[:, 1])
 
-                        # Add results
-                        self._variables_history_ratios[var_name][dataset_name][metric].append(metric_value)
+                        if metric in self.get_available_groups_metrics():
+                            metric_value = self._compute_groups_metric(
+                                metric=metric, variable=_tensor[:, 0], groups=_tensor[:, 1]
+                            )
+
+                            # Might be the first time it is seen, in that case need to initialise the lists per group
+                            if not self._variables_history_ratios[var_name][dataset_name][metric]:
+                                for group in metric_value:
+                                    self._variables_history_ratios[var_name][dataset_name][metric][group] = []
+
+                            # Keys should be the same for all epochs
+                            for group, value in metric_value.items():
+                                self._variables_history_ratios[var_name][dataset_name][metric][group].append(value)
+
+                        else:
+                            metric_value = self._compute_metric(
+                                metric=metric, y_pred=_tensor[:, 0], y_true=_tensor[:, 1]
+                            )
+
+                            # Add results
+                            self._variables_history_ratios[var_name][dataset_name][metric].append(metric_value)
 
         # -------------
         # Remove the epoch histories
@@ -562,6 +615,18 @@ class Histories:
 
         # Compute the metric
         return getattr(cls, metric)(y_pred=y_pred, y_true=y_true)
+
+    @classmethod
+    def _compute_groups_metric(cls, metric: str, *, variable: torch.Tensor, groups: torch.Tensor):
+        """Method for computing the specified groups metric"""
+
+        # Input check
+        if metric not in cls.get_available_groups_metrics():
+            raise ValueError(f"The metric {metric} was not recognised. The available ones are: "
+                             f"{cls.get_available_groups_metrics()}")
+
+        # Compute the metric
+        return getattr(cls, metric)(variable=variable, groups=groups)
 
     # -----------------
     # Properties
@@ -772,10 +837,18 @@ class Histories:
             metrics_dict: Dict[str, Dict[str, List[float]]] = {}  # {"pearson_r": {"All": [...], "SRM": [...]}}
             for dataset_name, metrics_history in var_history.items():
                 for metric, history_list in metrics_history.items():
-                    if metric not in metrics_dict:
-                        metrics_dict[metric] = {}
+                    if metric in self.get_available_groups_metrics():
+                        for group, hist_list in history_list.items():
+                            _metric = f"{metric}_{group}"
+                            if _metric not in metrics_dict:
+                                metrics_dict[_metric] = {}
 
-                    metrics_dict[metric][dataset_name] = history_list
+                            metrics_dict[_metric][dataset_name] = hist_list
+                    else:
+                        if metric not in metrics_dict:
+                            metrics_dict[metric] = {}
+
+                        metrics_dict[metric][dataset_name] = history_list
 
             # Loop through our newly created dictionary to make plots and save DataFrames
             for metric, dataset_histories in metrics_dict.items():

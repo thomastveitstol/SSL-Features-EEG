@@ -6,15 +6,21 @@ PredictionErrorAssociations:
   Miltiadous:
     - mmse
     - age
+    - sex
+    - clinical_status
   LEMON:
     - age
+    - sex
   SRM:
     - age
     - ravlt_tot
+    - sex
 VariablesMetrics:
   age: [ pearson_r, spearman_rho ]
   mmse: [ pearson_r, spearman_rho ]
   ravlt_tot: [ pearson_r, spearman_rho ]
+  clinical_status: groups_metrics
+  sex: groups_metrics
 
 # -----------------
 # Configuration for subject splitting (related to the cross validation)
@@ -120,7 +126,7 @@ Scalers:
     name: ZNormalisation
 Training:
   batch_size: 128
-  num_epochs: 100
+  num_epochs: 50
   verbose: true
   verbose_variables: true
   continuous_testing: true
