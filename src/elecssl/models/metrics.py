@@ -75,7 +75,7 @@ class Histories:
     """
 
     __slots__ = ("_history", "_prediction_history", "_subgroup_histories", "_epoch_y_pred", "_epoch_y_true",
-                 "_epoch_subjects", "_name", "_variables_history", "_variable_metrics")
+                 "_epoch_subjects", "_name", "_variables_history", "_variable_metrics", "_variables_history_ratios")
 
     def __init__(self, metrics, *, name=None, splits, expected_variables=None, variable_metrics=None):
         """
@@ -152,6 +152,11 @@ class Histories:
                            for dataset_name in itertools.chain(("All",), dataset_names)}
                 for var_name, dataset_names in expected_variables.items()
             }
+            self._variables_history_ratios = {
+                var_name: {dataset_name: {metric: [] for metric in variable_metrics[var_name]}
+                           for dataset_name in itertools.chain(("All",), dataset_names)}
+                for var_name, dataset_names in expected_variables.items()
+            }
 
             _metrics: Dict[str, Tuple[str, ...]] = {}
             for var_name, var_metrics in variable_metrics.items():
@@ -166,6 +171,7 @@ class Histories:
             self._variable_metrics = _metrics
         else:
             self._variables_history = None
+            self._variables_history_ratios = None
             self._variable_metrics = None
 
         # ----------------
@@ -317,6 +323,14 @@ class Histories:
                         print(f"{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: "
                               f"{metric_value[-1]:.3f}\t\t", end="")
                 print()
+        if self._variables_history_ratios is not None:
+            for var_name, var_history in self._variables_history_ratios.items():
+                for dataset_name, metrics in var_history.items():
+                    for metric_name, metric_value in metrics.items():
+                        _hist_name = "" if self._name is None else f"{self._name}_"
+                        print(f"ratio_{_hist_name}{var_name}_{dataset_name.lower()}_{metric_name}: "
+                              f"{metric_value[-1]:.3f}\t\t", end="")
+                print()
 
     def _update_metrics(self, subjects_info):
         # Concatenate torch tenors
@@ -398,10 +412,11 @@ class Histories:
         # Build the dicts and lists for the different features to correlate with the delta
         # -------------
         if subjects_info is not None and self._variables_history is not None:
-            data_matrices = self._build_delta_and_info_objects(
+            data_matrices, data_matrices_ratio = self._build_error_and_info_objects(
                 y_pred_per_subject=y_pred_per_subject, y_true_per_subject=y_true_per_subject, subjects=subjects,
                 subjects_info=subjects_info
             )
+            # todo: such a quick fix, maybe this can be improved
             for var_name, epoch_history in data_matrices.items():
                 for dataset_name, tensor_list in epoch_history.items():
                     for metric in self._variable_metrics[var_name]:  # type: ignore[index]
@@ -411,6 +426,15 @@ class Histories:
 
                         # Add results
                         self._variables_history[var_name][dataset_name][metric].append(metric_value)
+            for var_name, epoch_history in data_matrices_ratio.items():
+                for dataset_name, tensor_list in epoch_history.items():
+                    for metric in self._variable_metrics[var_name]:  # type: ignore[index]
+                        # Compute metric
+                        _tensor = torch.cat(tensor_list, dim=0)
+                        metric_value = self._compute_metric(metric=metric, y_pred=_tensor[:, 0], y_true=_tensor[:, 1])
+
+                        # Add results
+                        self._variables_history_ratios[var_name][dataset_name][metric].append(metric_value)
 
         # -------------
         # Remove the epoch histories
@@ -419,7 +443,7 @@ class Histories:
         self._epoch_y_true = []
         self._epoch_subjects = []
 
-    def _build_delta_and_info_objects(self, *, y_pred_per_subject, y_true_per_subject, subjects, subjects_info):
+    def _build_error_and_info_objects(self, *, y_pred_per_subject, y_true_per_subject, subjects, subjects_info):
         """
         Method for extracting delta values and info of which to (e.g.) correlate with, in a dict which makes it more
         feasible for computing these metrics
@@ -433,7 +457,7 @@ class Histories:
 
         Returns
         -------
-        dict[str, dict[str, list[torch.Tensor]]]
+        tuple[dict[str, dict[str, list[torch.Tensor]]], dict[str, dict[str, list[torch.Tensor]]]]
 
         Examples
         --------
@@ -450,19 +474,29 @@ class Histories:
         ...            Subject("P2", "D2"): {"ravlt": 14}, Subject("P3", "D2"): {"ravlt": 11},
         ...            Subject("P4", "D2"): {"ravlt": 15}, Subject("P1", "D3"): {"age": 36, "ravlt": 10},
         ...            Subject("P2", "D3"): {"age": 23, "ravlt": 7}, Subject("P3", "D3"): {"age": 85, "ravlt": 4}}
-        >>> my_history._build_delta_and_info_objects(
+        >>> my_history._build_error_and_info_objects(
         ...     y_pred_per_subject=my_yhat, y_true_per_subject=my_y, subjects=my_subjects, subjects_info=my_info
         ... )  # doctest: +NORMALIZE_WHITESPACE
-        {'age': {'All': [tensor([[ 0.8000, 37.0000]]), tensor([[ 1.3000, 85.0000]]), tensor([[-2.5000, 34.0000]]),
-                         tensor([[-0.8000, 15.0000]]), tensor([[ 6.3000, 23.0000]]), tensor([[-0.4000, 36.0000]])],
-                 'D1': [tensor([[ 0.8000, 37.0000]]), tensor([[-2.5000, 34.0000]]), tensor([[-0.8000, 15.0000]])],
-                 'D3': [tensor([[ 1.3000, 85.0000]]), tensor([[ 6.3000, 23.0000]]), tensor([[-0.4000, 36.0000]])]},
-         'ravlt': {'All': [tensor([[1.3000, 4.0000]]), tensor([[ 9.4000, 15.0000]]), tensor([[ 4.8000, 14.0000]]),
-                           tensor([[ 0.2000, 11.0000]]), tensor([[1.9000, 3.0000]]), tensor([[6.3000, 7.0000]]),
-                           tensor([[-0.4000, 10.0000]])],
-                   'D2': [tensor([[ 9.4000, 15.0000]]), tensor([[ 4.8000, 14.0000]]), tensor([[ 0.2000, 11.0000]]),
-                          tensor([[1.9000, 3.0000]])],
-                   'D3': [tensor([[1.3000, 4.0000]]), tensor([[6.3000, 7.0000]]), tensor([[-0.4000, 10.0000]])]}}
+        ({'age': {'All': [tensor([[ 0.8000, 37.0000]]), tensor([[ 1.3000, 85.0000]]), tensor([[-2.5000, 34.0000]]),
+                          tensor([[-0.8000, 15.0000]]), tensor([[ 6.3000, 23.0000]]), tensor([[-0.4000, 36.0000]])],
+                  'D1': [tensor([[ 0.8000, 37.0000]]), tensor([[-2.5000, 34.0000]]), tensor([[-0.8000, 15.0000]])],
+                  'D3': [tensor([[ 1.3000, 85.0000]]), tensor([[ 6.3000, 23.0000]]), tensor([[-0.4000, 36.0000]])]},
+          'ravlt': {'All': [tensor([[1.3000, 4.0000]]), tensor([[ 9.4000, 15.0000]]), tensor([[ 4.8000, 14.0000]]),
+                            tensor([[ 0.2000, 11.0000]]), tensor([[1.9000, 3.0000]]), tensor([[6.3000, 7.0000]]),
+                            tensor([[-0.4000, 10.0000]])],
+                    'D2': [tensor([[ 9.4000, 15.0000]]), tensor([[ 4.8000, 14.0000]]), tensor([[ 0.2000, 11.0000]]),
+                           tensor([[1.9000, 3.0000]])],
+                    'D3': [tensor([[1.3000, 4.0000]]), tensor([[6.3000, 7.0000]]), tensor([[-0.4000, 10.0000]])]}},
+         {'age': {'All': [tensor([[ 1.8000, 37.0000]]), tensor([[ 1.3514, 85.0000]]), tensor([[ 0.7312, 34.0000]]),
+                          tensor([[ 0.9184, 15.0000]]), tensor([[ 2.9091, 23.0000]]), tensor([[ 0.8261, 36.0000]])],
+                  'D1': [tensor([[ 1.8000, 37.0000]]), tensor([[ 0.7312, 34.0000]]), tensor([[ 0.9184, 15.0000]])],
+                  'D3': [tensor([[ 1.3514, 85.0000]]), tensor([[ 2.9091, 23.0000]]), tensor([[ 0.8261, 36.0000]])]},
+          'ravlt': {'All': [tensor([[1.3514, 4.0000]]), tensor([[48., 15.]]), tensor([[ 2.2632, 14.0000]]),
+                            tensor([[ 1.0455, 11.0000]]), tensor([[1.8261, 3.0000]]), tensor([[2.9091, 7.0000]]),
+                            tensor([[ 0.8261, 10.0000]])],
+                    'D2': [tensor([[48., 15.]]), tensor([[ 2.2632, 14.0000]]), tensor([[ 1.0455, 11.0000]]),
+                           tensor([[1.8261, 3.0000]])],
+                    'D3': [tensor([[1.3514, 4.0000]]), tensor([[2.9091, 7.0000]]), tensor([[ 0.8261, 10.0000]])]}})
         """
         if self._variables_history is None:
             raise RuntimeError("Cannot collate prediction errors and variables when no variables are expected")
@@ -480,19 +514,36 @@ class Histories:
             var_name: {dataset_name: [] for dataset_name in dataset_histories}
             for var_name, dataset_histories in self._variables_history.items()
         }
-        for delta_y, subject in zip(y_pred_per_subject - y_true_per_subject, subjects):
+
+        # Now, I'll also add y_hat / t_true. That is, the first element of the tensor is the ration, the second element
+        # is the variable value
+        data_matrices_ratio: Dict[str, Dict[str, List[torch.Tensor]]] = {
+            var_name: {dataset_name: [] for dataset_name in dataset_histories}
+            for var_name, dataset_histories in self._variables_history.items()
+        }
+        for delta_y, ratio, subject in zip(y_true_per_subject - y_pred_per_subject,
+                                           y_true_per_subject / y_pred_per_subject,
+                                           subjects):
             for var_name, dataset_names in self._variables_history.items():
                 if subject.dataset_name in dataset_names:
                     # Add to the dataset
                     data_matrices[var_name][subject.dataset_name].append(
                         torch.tensor([[delta_y, subjects_info[subject][var_name]]])
                     )
+                    data_matrices_ratio[var_name][subject.dataset_name].append(
+                        torch.tensor([[ratio, subjects_info[subject][var_name]]])
+                    )
 
                     # Add to the "All" dataset as well
                     data_matrices[var_name]["All"].append(
                         torch.tensor([[delta_y, subjects_info[subject][var_name]]])
                     )
-        return data_matrices
+                    # Add to the "All" dataset as well
+                    data_matrices_ratio[var_name]["All"].append(
+                        torch.tensor([[ratio, subjects_info[subject][var_name]]])
+                    )
+
+        return data_matrices, data_matrices_ratio
 
     @classmethod
     def _compute_metric(cls, metric: str, *, y_pred: torch.Tensor, y_true: torch.Tensor):
@@ -681,14 +732,31 @@ class Histories:
         # Save as .csv
         df.to_csv(os.path.join(path, f"{history_name}_metrics.csv"), index=False)
 
-    def save_variables_history(self, history_name, path, decimals):
+    def save_variables_histories(self, history_name, path, decimals):
+        # Associations with difference between predicted and true value
+        error_difference_path = path / "difference"
+        if not os.path.isdir(error_difference_path):
+            os.mkdir(error_difference_path)
+        self._save_variables_history(
+            history=self._variables_history, history_name=history_name, path=error_difference_path, decimals=decimals
+        )
+
+        # Associations with ratio between predicted and true value
+        error_ratio_path = path / "ratio"
+        if not os.path.isdir(error_ratio_path):
+            os.mkdir(error_ratio_path)
+        self._save_variables_history(
+            history=self._variables_history_ratios, history_name=history_name, path=error_ratio_path, decimals=decimals
+        )
+
+    def _save_variables_history(self, history, history_name, path, decimals):
         # If there is no history, raise a warning and do nothing
         if self._variables_history is None:
             warnings.warn("Tried to save results of associations with prediction error and other variables, but there "
                           "were no such history")
             return None
 
-        for var_name, var_history in self._variables_history.items():
+        for var_name, var_history in history.items():
             # I'll have a new folder for every variable (e.g., age, ravlt_tot, etc.)
             var_path = path / var_name
             if not os.path.isdir(var_path):

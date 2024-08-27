@@ -415,10 +415,10 @@ class SSLExperiment:
         # Save variable associations with prediction error
         variables_history_path = results_path / "error_associations"
         os.mkdir(variables_history_path)
-        train_history.save_variables_history(history_name="train", path=variables_history_path, decimals=decimals)
-        val_history.save_variables_history(history_name="val", path=variables_history_path, decimals=decimals)
+        train_history.save_variables_histories(history_name="train", path=variables_history_path, decimals=decimals)
+        val_history.save_variables_histories(history_name="val", path=variables_history_path, decimals=decimals)
         if test_history is not None:
-            test_history.save_variables_history(history_name="test", path=variables_history_path, decimals=decimals)
+            test_history.save_variables_histories(history_name="test", path=variables_history_path, decimals=decimals)
 
         # Save plots
         save_histories_plots(path=results_path, train_history=train_history, val_history=val_history,
