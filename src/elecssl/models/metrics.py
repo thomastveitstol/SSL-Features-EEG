@@ -42,6 +42,11 @@ def multiclass_classification_metric(func):
     return func
 
 
+def groups_metric(func):
+    setattr(func, "_is_groups_metric", True)
+    return func
+
+
 # ----------------
 # Convenient small classes
 # ----------------
@@ -75,7 +80,8 @@ class Histories:
     """
 
     __slots__ = ("_history", "_prediction_history", "_subgroup_histories", "_epoch_y_pred", "_epoch_y_true",
-                 "_epoch_subjects", "_name", "_variables_history", "_variable_metrics", "_variables_history_ratios")
+                 "_epoch_subjects", "_name", "_variables_history", "_variable_metrics", "_variables_history_ratios",
+                 "_groups_history_diff", "_groups_history_ratio")
 
     def __init__(self, metrics, *, name=None, splits, expected_variables=None, variable_metrics=None):
         """
@@ -852,8 +858,24 @@ class Histories:
         return tuple(metrics)
 
     @classmethod
+    def get_available_groups_metrics(cls):
+        """Get all groups metrics available for the class. The metrics must be a method decorated by @groups_metric to
+        be properly registered"""
+        # Get all groups metrics
+        metrics: List[str] = []
+        for method in dir(cls):
+            attribute = getattr(cls, method)
+
+            # Append (as type 'str') if it is a groups metric
+            if callable(attribute) and getattr(attribute, "_is_groups_metric", False):
+                metrics.append(method)
+
+        # Convert to tuple and return
+        return tuple(metrics)
+
+    @classmethod
     def get_available_metrics(cls):
-        """Get all available metrics"""
+        """Get all available metrics. Groups metrics are not added as they are not performance metrics per sé"""
         return (cls.get_available_classification_metrics() + cls.get_available_multiclass_classification_metrics() +
                 cls.get_available_regression_metrics())
 
@@ -963,6 +985,82 @@ class Histories:
         with torch.no_grad():
             performance = nn.CrossEntropyLoss(reduction='mean')(y_pred, y_true).cpu()
         return float(performance)
+
+    # -----------------
+    # Groups metrics
+    #
+    # These are designed to compute statistics on groups, such as computing the mean y / y_hat for each clinical
+    # status. Could probably benefit from a refactoring and re-structuring of the code, but as per now I don't want to
+    # -----------------
+    @staticmethod
+    @groups_metric
+    def mean(variable: torch.Tensor, groups: torch.Tensor):
+        """
+        Computes the mean of a variable per group
+
+        Parameters
+        ----------
+        variable : torch.Tensor
+        groups : torch.Tensor
+
+        Returns
+        -------
+        dict[str, float]
+
+        Examples
+        --------
+        >>> my_var = torch.tensor([0.81, 0.90, 0.12, 0.91, 0.63, 0.09, 0.27, 0.54, 0.95, 0.96])
+        >>> my_groups = torch.tensor([0, 1, 2, 2, 2, 1, 1, 0, 2, 2])
+        >>> Histories.mean(my_var, my_groups)  # doctest: +ELLIPSIS
+        {'0': 0.6750..., '1': 0.41999..., '2': 0.71399...}
+        """
+        # Ensure 1D
+        if variable.dim() == 2:
+            variable = torch.squeeze(variable, dim=1)
+        if groups.dim() == 2:
+            groups = torch.squeeze(groups, dim=1)
+
+        unique_groups = torch.unique(groups)
+        return {str(int(group)): torch.mean(variable[groups == group]).item() for group in unique_groups}
+
+    @classmethod
+    @groups_metric
+    def pairwise_mean_difference(cls, variable: torch.Tensor, groups: torch.Tensor):
+        """
+        Computes the pairwise difference between means of groups
+
+        Parameters
+        ----------
+        variable : torch.Tensor
+        groups : torch.Tensor
+
+        Returns
+        -------
+        dict[str, float]
+
+        Examples
+        --------
+        >>> my_var = torch.tensor([0.81, 0.12, 0.90, 0.91, 0.63, 0.09, 0.27, 0.54, 0.95, 0.96])
+        >>> my_groups = torch.tensor([0, 2, 1, 2, 2, 1, 1, 0, 2, 2])
+        >>> Histories.pairwise_mean_difference(my_var, my_groups)  # doctest: +ELLIPSIS
+        {'0-1': 0.2550..., '0-2': -0.03899..., '1-2': -0.29399...}
+        """
+        # Ensure 1D
+        if variable.dim() == 2:
+            variable = torch.squeeze(variable, dim=1)
+        if groups.dim() == 2:
+            groups = torch.squeeze(groups, dim=1)
+
+        # Compute group means
+        group_means = cls.mean(variable=variable, groups=groups)
+
+        # Compute pairwise differences
+        pairwise_mean_difference: Dict[str, float] = {}
+        for (group_1, mean_1), (group_2, mean_2) in itertools.combinations(group_means.items(), 2):
+            # torch.unique returns sorted tensors, so this should be fine
+            pairwise_mean_difference[f"{group_1}-{group_2}"] = mean_1 - mean_2
+
+        return pairwise_mean_difference
 
 
 # ----------------
