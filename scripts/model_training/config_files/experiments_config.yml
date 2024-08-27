@@ -143,7 +143,7 @@ Training:
     - band_power_beta_ec
     - band_power_gamma_ec
   Loss:
-    loss: !RandomChoice [MSELoss, L1Loss]
+    loss: !RandomChoice [ MSELoss, L1Loss ]
     loss_kwargs:
       reduction: UNDETERMINED
     weighter: !RandomChoice [ null, SamplePowerWeighter ]
@@ -168,32 +168,32 @@ InceptionNetwork: &InceptionNetwork
   depth: !NLogUniformInt [3, 3, 0, 3]
 
 # ShallowFBCSPNet
-n_filters: &n_filters !UniformInt [30, 51]
+_n_filters: &_n_filters !UniformInt [30, 51]
 ShallowFBCSPNetMTS: &ShallowFBCSPNetMTS
   num_classes: 1
   num_time_steps: *num_time_steps
-  n_filters_time: *n_filters
-  n_filters_spat: *n_filters
+  n_filters_time: *_n_filters
+  n_filters_spat: *_n_filters
   filter_time_length: !UniformInt [15, 36]
   pool_time_stride: &pool_time_stride !UniformInt [10, 21]
   pool_time_length: !MultiplierInt [ 5, *pool_time_stride ]
   drop_prob: !Uniform [0, 0.5]
 
 # Deep4Net
-n_first_filters: &n_first_filters !UniformInt [15, 36]
-filter_length: &filter_length !UniformInt [5, 16]
+_n_first_filters: &_n_first_filters !UniformInt [15, 36]
+_filter_length: &_filter_length !UniformInt [5, 16]
 Deep4NetMTS: &Deep4NetMTS
   num_classes: 1
   num_time_steps: *num_time_steps
-  n_filters_time: *n_first_filters
-  n_filters_spat: *n_first_filters
-  n_filters_2: !MultiplierInt [ 2, *n_first_filters ]
-  n_filters_3: !MultiplierInt [ 4, *n_first_filters ]
-  n_filters_4: !MultiplierInt [ 8, *n_first_filters ]
-  filter_time_length: *filter_length
-  filter_length_2: *filter_length
-  filter_length_3: *filter_length
-  filter_length_4: *filter_length
+  n_filters_time: *_n_first_filters
+  n_filters_spat: *_n_first_filters
+  n_filters_2: !MultiplierInt [ 2, *_n_first_filters ]
+  n_filters_3: !MultiplierInt [ 4, *_n_first_filters ]
+  n_filters_4: !MultiplierInt [ 8, *_n_first_filters ]
+  filter_time_length: *_filter_length
+  filter_length_2: *_filter_length
+  filter_length_3: *_filter_length
+  filter_length_4: *_filter_length
   drop_prob : !Uniform [0, 0.5]
 
 # Selected DL architecture
