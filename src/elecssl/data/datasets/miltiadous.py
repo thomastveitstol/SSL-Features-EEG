@@ -29,7 +29,7 @@ class Miltiadous(EEGDatasetBase):
     >>> Miltiadous().name
     'Miltiadous'
     >>> Miltiadous.get_available_targets(exclude_ssl=True)
-    ('age', 'mmse', 'sex')
+    ('age', 'clinical_status', 'mmse', 'sex')
     >>> len(Miltiadous().get_subject_ids())
     88
     >>> len(Miltiadous().channel_name_to_index())
@@ -105,6 +105,27 @@ class Miltiadous(EEGDatasetBase):
 
         # Extract the MMSE score of the subjects, in the same order as the input argument
         return numpy.array([sub_id_to_age[sub_id] for sub_id in subject_ids])
+
+    @target_method
+    def clinical_status(self, subject_ids):
+        """This is mostly designed for use with groups metrics in Histories class"""
+        # Read the .tsv file
+        df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t")
+
+        # Convert to dict
+        sub_info = {name: self._group_to_target(group) for name, group in zip(df["participant_id"], df["Group"])}
+
+        return numpy.array([sub_info[sub_id] for sub_id in subject_ids])
+
+    @staticmethod
+    def _group_to_target(group: str):
+        """Mapping from cognitive group as indicated in the .tsv file to numerical value"""
+        if group == "A":  # AD
+            return 0
+        elif group == "F":  # Frontotemporal dementia
+            return 1
+        elif group == "C":  # Control
+            return 2
 
     # ----------------
     # Methods for channel system
