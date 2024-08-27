@@ -7,6 +7,7 @@ https://github.com/thomastveitstol/CrossDatasetLearningEEG/blob/master/src/cdl_e
 
 Author: Thomas Tveitstøl (Oslo University Hospital)
 """
+# mypy: disable-error-code="index,union-attr"
 import itertools
 import os
 import warnings
@@ -150,7 +151,9 @@ class Histories:
         # For storing variables such as age, ravlt_tot etc., which we will (e.g.) correlate with the difference between
         # y_pred and y_true. I think it'll be best to have variable name first, then the datasets. Should consider
         # cleaning up here, a little unreadable...
-        self._variables_history: Optional[Dict[str, Dict[str, Dict[str, Union[Dict[List[float]], List[float]]]]]]
+        self._variables_history: Optional[Dict[str, Dict[str, Dict[str, Union[Dict[str, List[float]], List[float]]]]]]
+        self._variables_history_ratios: Optional[Dict[str, Dict[str, Dict[str, Union[Dict[str, List[float]],
+                                                                                     List[float]]]]]]
         self._variable_metrics: Optional[Dict[str, Tuple[str, ...]]]
         if expected_variables is not None:
             _metrics: Dict[str, Tuple[str, ...]] = {}
