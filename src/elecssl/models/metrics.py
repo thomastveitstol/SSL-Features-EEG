@@ -1070,6 +1070,18 @@ class Histories:
     # -----------------
     @staticmethod
     @groups_metric
+    def std(variable: torch.Tensor, groups: torch.Tensor):
+        # Ensure 1D
+        if variable.dim() == 2:
+            variable = torch.squeeze(variable, dim=1)
+        if groups.dim() == 2:
+            groups = torch.squeeze(groups, dim=1)
+
+        unique_groups = torch.unique(groups)
+        return {str(int(group)): torch.std(variable[groups == group]).item() for group in unique_groups}
+
+    @staticmethod
+    @groups_metric
     def mean(variable: torch.Tensor, groups: torch.Tensor):
         """
         Computes the mean of a variable per group
