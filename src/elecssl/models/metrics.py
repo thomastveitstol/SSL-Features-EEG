@@ -1138,6 +1138,38 @@ class Histories:
 
         return pairwise_mean_difference
 
+    @staticmethod
+    @groups_metric
+    def median(variable: torch.Tensor, groups: torch.Tensor):
+        # Ensure 1D
+        if variable.dim() == 2:
+            variable = torch.squeeze(variable, dim=1)
+        if groups.dim() == 2:
+            groups = torch.squeeze(groups, dim=1)
+
+        unique_groups = torch.unique(groups)
+        return {str(int(group)): torch.median(variable[groups == group]).item() for group in unique_groups}
+
+    @classmethod
+    @groups_metric
+    def pairwise_median_difference(cls, variable: torch.Tensor, groups: torch.Tensor):
+        # Ensure 1D
+        if variable.dim() == 2:
+            variable = torch.squeeze(variable, dim=1)
+        if groups.dim() == 2:
+            groups = torch.squeeze(groups, dim=1)
+
+        # Compute group medians
+        group_medians = cls.median(variable=variable, groups=groups)
+
+        # Compute pairwise differences
+        pairwise_median_difference: Dict[str, float] = {}
+        for (group_1, median_1), (group_2, median_2) in itertools.combinations(group_medians.items(), 2):
+            # torch.unique returns sorted tensors, so this should be fine
+            pairwise_median_difference[f"{group_1}-{group_2}"] = median_1 - median_2
+
+        return pairwise_median_difference
+
 
 # ----------------
 # Functions
