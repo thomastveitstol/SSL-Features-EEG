@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="refactoring">
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/results/regression_performance.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results/regression_performance/regression_performance.py" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added groups metric">
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/results/error_associations/group_differences.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results/error_associations/group_differences.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,64 +47,70 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python tests.Doctest BandPass._get_folder_name.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest FCModule.forward.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest PolygonGraph.line_intersection.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest Wang._load_single_cleaned_mne_object.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest get_domain_discriminator.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest get_montage_split.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest get_mts_module.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest project_to_2d.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest sex_to_int.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctest strip_tensors.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in BandPass.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in CustomWeightedLoss.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in FCModule.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in LEMON.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in MainFixedChannelsModel.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in MultiMSMean.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in SRM (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in SRM.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in braindecode_models.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in centroid_polygon.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in cmmn.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in dataset_base.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in fc_modules.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in getter.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in head_region.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in inception_network.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in interpolate_datasets.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in lemon.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in losses.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in main_fixed_channels_model.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in main_rbp_model.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in mean.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in metrics.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in miltiadous.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in paths.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in region_based_pooling.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in sampling_distributions.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in srm.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in td_brain.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in univariate_rocket.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in utils.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Doctests in wang.executor&quot;: &quot;Run&quot;,
-    &quot;Python.band_pass.executor&quot;: &quot;Run&quot;,
-    &quot;Python.band_power.executor&quot;: &quot;Run&quot;,
-    &quot;Python.lemon.executor&quot;: &quot;Run&quot;,
-    &quot;Python.mts_module_base.executor&quot;: &quot;Run&quot;,
-    &quot;Python.srm.executor&quot;: &quot;Run&quot;,
-    &quot;Python.wang.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/thomas/PycharmProjects/SSL-Features-EEG&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.Doctest BandPass._get_folder_name.executor": "Run",
+    "Python tests.Doctest FCModule.forward.executor": "Run",
+    "Python tests.Doctest Histories._build_error_and_info_objects.executor": "Run",
+    "Python tests.Doctest Histories.mean.executor": "Run",
+    "Python tests.Doctest Histories.pairwise_mean_difference.executor": "Run",
+    "Python tests.Doctest PolygonGraph.line_intersection.executor": "Run",
+    "Python tests.Doctest Wang._load_single_cleaned_mne_object.executor": "Run",
+    "Python tests.Doctest get_domain_discriminator.executor": "Run",
+    "Python tests.Doctest get_montage_split.executor": "Run",
+    "Python tests.Doctest get_mts_module.executor": "Run",
+    "Python tests.Doctest project_to_2d.executor": "Run",
+    "Python tests.Doctest sex_to_int.executor": "Run",
+    "Python tests.Doctest strip_tensors.executor": "Run",
+    "Python tests.Doctests in BandPass.executor": "Run",
+    "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
+    "Python tests.Doctests in FCModule.executor": "Run",
+    "Python tests.Doctests in LEMON.executor": "Run",
+    "Python tests.Doctests in MainFixedChannelsModel.executor": "Run",
+    "Python tests.Doctests in Miltiadous.executor": "Run",
+    "Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor": "Run",
+    "Python tests.Doctests in MultiMSMean.executor": "Run",
+    "Python tests.Doctests in SRM (1).executor": "Run",
+    "Python tests.Doctests in SRM.executor": "Run",
+    "Python tests.Doctests in braindecode_models.executor": "Run",
+    "Python tests.Doctests in centroid_polygon.executor": "Run",
+    "Python tests.Doctests in cmmn.executor": "Run",
+    "Python tests.Doctests in dataset_base.executor": "Run",
+    "Python tests.Doctests in fc_modules.executor": "Run",
+    "Python tests.Doctests in getter.executor": "Run",
+    "Python tests.Doctests in head_region.executor": "Run",
+    "Python tests.Doctests in inception_network.executor": "Run",
+    "Python tests.Doctests in interpolate_datasets.executor": "Run",
+    "Python tests.Doctests in lemon.executor": "Run",
+    "Python tests.Doctests in losses.executor": "Run",
+    "Python tests.Doctests in main_fixed_channels_model.executor": "Run",
+    "Python tests.Doctests in main_rbp_model.executor": "Run",
+    "Python tests.Doctests in mean.executor": "Run",
+    "Python tests.Doctests in metrics.executor": "Run",
+    "Python tests.Doctests in miltiadous.executor": "Run",
+    "Python tests.Doctests in paths.executor": "Run",
+    "Python tests.Doctests in region_based_pooling.executor": "Run",
+    "Python tests.Doctests in sampling_distributions.executor": "Run",
+    "Python tests.Doctests in srm.executor": "Run",
+    "Python tests.Doctests in td_brain.executor": "Run",
+    "Python tests.Doctests in univariate_rocket.executor": "Run",
+    "Python tests.Doctests in utils.executor": "Run",
+    "Python tests.Doctests in wang.executor": "Run",
+    "Python.band_pass.executor": "Run",
+    "Python.band_power.executor": "Run",
+    "Python.group_differences.executor": "Run",
+    "Python.lemon.executor": "Run",
+    "Python.mts_module_base.executor": "Run",
+    "Python.regression_performance.executor": "Run",
+    "Python.srm.executor": "Run",
+    "Python.wang.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
@@ -114,8 +120,8 @@
       <recent name="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.band_pass">
-    <configuration name="band_pass" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.group_differences">
+    <configuration name="group_differences" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -124,11 +130,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/prepare_input_data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results/error_associations" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/prepare_input_data/band_pass.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results/error_associations/group_differences.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -137,7 +143,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="band_power" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="regression_performance" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -146,11 +152,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/compute_pseudo_targets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results/regression_performance" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results/regression_performance/regression_performance.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -159,26 +165,45 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctest BandPass._get_folder_name" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctest Histories.mean" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/data_preparation" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/data_preparation/band_pass_filter.py" />
-      <option name="CLASS_NAME" value="BandPass" />
-      <option name="METHOD_NAME" value="_get_folder_name" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/metrics.py" />
+      <option name="CLASS_NAME" value="Histories" />
+      <option name="METHOD_NAME" value="mean" />
       <option name="FOLDER_NAME" value="" />
       <option name="TEST_TYPE" value="TEST_METHOD" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctest Wang._load_single_cleaned_mne_object" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctest Histories.pairwise_mean_difference" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/metrics.py" />
+      <option name="CLASS_NAME" value="Histories" />
+      <option name="METHOD_NAME" value="pairwise_mean_difference" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctests in Miltiadous" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -188,27 +213,8 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/wang.py" />
-      <option name="CLASS_NAME" value="Wang" />
-      <option name="METHOD_NAME" value="_load_single_cleaned_mne_object" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_METHOD" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Doctests in BandPass" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/data_preparation" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/data_preparation/band_pass_filter.py" />
-      <option name="CLASS_NAME" value="BandPass" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/miltiadous.py" />
+      <option name="CLASS_NAME" value="Miltiadous" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
       <option name="TEST_TYPE" value="TEST_CLASS" />
@@ -218,11 +224,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.band_pass" />
-        <item itemvalue="Python tests.Doctest BandPass._get_folder_name" />
-        <item itemvalue="Python tests.Doctests in BandPass" />
-        <item itemvalue="Python tests.Doctest Wang._load_single_cleaned_mne_object" />
-        <item itemvalue="Python.band_power" />
+        <item itemvalue="Python.group_differences" />
+        <item itemvalue="Python.regression_performance" />
+        <item itemvalue="Python tests.Doctest Histories.pairwise_mean_difference" />
+        <item itemvalue="Python tests.Doctest Histories.mean" />
+        <item itemvalue="Python tests.Doctests in Miltiadous" />
       </list>
     </recent_temporary>
   </component>
@@ -241,86 +247,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00012" summary="copies from CDL">
-      <option name="closed" value="true" />
-      <created>1723708611352</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1723708611352</updated>
-    </task>
-    <task id="LOCAL-00013" summary="removed todo">
-      <option name="closed" value="true" />
-      <created>1723709056730</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1723709056730</updated>
-    </task>
-    <task id="LOCAL-00014" summary="fixed imports">
-      <option name="closed" value="true" />
-      <created>1723709500601</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1723709500601</updated>
-    </task>
-    <task id="LOCAL-00015" summary="improved domain discriminator">
-      <option name="closed" value="true" />
-      <created>1723709534951</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1723709534951</updated>
-    </task>
-    <task id="LOCAL-00016" summary="updated rewuirements and ran tox">
-      <option name="closed" value="true" />
-      <created>1723710016300</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1723710016300</updated>
-    </task>
-    <task id="LOCAL-00017" summary="copies and improvements from CDL project">
-      <option name="closed" value="true" />
-      <created>1723711709287</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1723711709287</updated>
-    </task>
-    <task id="LOCAL-00018" summary="mypy fix">
-      <option name="closed" value="true" />
-      <created>1723712499918</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1723712499918</updated>
-    </task>
-    <task id="LOCAL-00019" summary="flake8 fix">
-      <option name="closed" value="true" />
-      <created>1723714531683</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1723714531683</updated>
-    </task>
-    <task id="LOCAL-00020" summary="updated requirements">
-      <option name="closed" value="true" />
-      <created>1723714917982</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1723714917982</updated>
-    </task>
-    <task id="LOCAL-00021" summary="automatic update">
-      <option name="closed" value="true" />
-      <created>1723714991862</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1723714991862</updated>
     </task>
     <task id="LOCAL-00022" summary="automatic update">
       <option name="closed" value="true" />
@@ -634,7 +560,87 @@
       <option name="project" value="LOCAL" />
       <updated>1724072414621</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="added heatmaps to plot script">
+      <option name="closed" value="true" />
+      <created>1724749275537</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1724749275537</updated>
+    </task>
+    <task id="LOCAL-00062" summary="updates for associating with ratio between true and pred">
+      <option name="closed" value="true" />
+      <created>1724763799250</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1724763799250</updated>
+    </task>
+    <task id="LOCAL-00063" summary="added target method">
+      <option name="closed" value="true" />
+      <created>1724763921715</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1724763921715</updated>
+    </task>
+    <task id="LOCAL-00064" summary="added groups metrics">
+      <option name="closed" value="true" />
+      <created>1724770177924</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1724770177924</updated>
+    </task>
+    <task id="LOCAL-00065" summary="updates for group metrics">
+      <option name="closed" value="true" />
+      <created>1724772942404</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1724772942404</updated>
+    </task>
+    <task id="LOCAL-00066" summary="mypy fix and muted for entire file">
+      <option name="closed" value="true" />
+      <created>1724774029803</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1724774029803</updated>
+    </task>
+    <task id="LOCAL-00067" summary="fix">
+      <option name="closed" value="true" />
+      <created>1724844960107</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1724844960107</updated>
+    </task>
+    <task id="LOCAL-00068" summary="added groups metrics">
+      <option name="closed" value="true" />
+      <created>1724845624797</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1724845624797</updated>
+    </task>
+    <task id="LOCAL-00069" summary="added analysis script">
+      <option name="closed" value="true" />
+      <created>1724845636835</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1724845636836</updated>
+    </task>
+    <task id="LOCAL-00070" summary="added groups metric">
+      <option name="closed" value="true" />
+      <created>1724848552680</created>
+      <option name="number" value="00070" />
+      <option name="presentableId" value="LOCAL-00070" />
+      <option name="project" value="LOCAL" />
+      <updated>1724848552680</updated>
+    </task>
+    <option name="localTasksCounter" value="71" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -649,15 +655,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="minor update" />
-    <MESSAGE value="implemented band power computations and improvements for using pseudo labels" />
-    <MESSAGE value="changed unit of band power and changed yml file" />
-    <MESSAGE value="argument fix and mypy and flake8 fixes" />
-    <MESSAGE value="ran tox" />
-    <MESSAGE value="fixes for handling loading of both ocular states" />
-    <MESSAGE value="flake8 fix" />
-    <MESSAGE value="fixed comment and added script for downloading LEMON" />
-    <MESSAGE value="added download method to dataset" />
     <MESSAGE value="fixed loading of both ocular state in dataset" />
     <MESSAGE value="added script for loading dataset" />
     <MESSAGE value="updated bash script" />
@@ -674,6 +671,15 @@
     <MESSAGE value="improved docstring" />
     <MESSAGE value="added handling unloadable data for feature extraction" />
     <MESSAGE value="refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactoring" />
+    <MESSAGE value="added heatmaps to plot script" />
+    <MESSAGE value="updates for associating with ratio between true and pred" />
+    <MESSAGE value="added target method" />
+    <MESSAGE value="updates for group metrics" />
+    <MESSAGE value="mypy fix and muted for entire file" />
+    <MESSAGE value="fix" />
+    <MESSAGE value="added groups metrics" />
+    <MESSAGE value="added analysis script" />
+    <MESSAGE value="added groups metric" />
+    <option name="LAST_COMMIT_MESSAGE" value="added groups metric" />
   </component>
 </project>
