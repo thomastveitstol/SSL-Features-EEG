@@ -41,7 +41,7 @@ SubGroups:
 # Data augmentation of input data
 # -----------------
 # A few configurations
-freq_band: &freq_band !RandomChoice [ delta, theta, alpha, beta, gamma ]
+freq_band: &freq_band alpha  # !RandomChoice [ delta, theta, alpha, beta, gamma ]
 autoreject: &autoreject !RandomChoice [ true, false ]
 input_length: &input_length !RandomChoice [ 5, 10, 20 ]
 sfreq_multiple: &sfreq_multiple !RandomChoice [ 2, 3, 4 ]
@@ -128,7 +128,7 @@ Training:
   batch_size: 128
   num_epochs: 50
   verbose: true
-  verbose_variables: true
+  verbose_variables: false
   continuous_testing: true
   metrics: regression
   method: !IfIsNoneElse {condition: *discriminator, true: downstream_training, false: domain_discriminator_training}
@@ -142,12 +142,13 @@ Training:
     name: DatasetBalancedTrainValSplit
     kwargs:
       val_split: 0.2
-  target: !RandomChoice
-    - band_power_delta_ec
-    - band_power_theta_ec
-    - band_power_alpha_ec
-    - band_power_beta_ec
-    - band_power_gamma_ec
+  target: band_power_theta_ec
+  #target: !RandomChoice
+  #  - band_power_delta_ec
+  #  - band_power_theta_ec
+  #  - band_power_alpha_ec
+  #  - band_power_beta_ec
+  #  - band_power_gamma_ec
   Loss:
     loss: !RandomChoice [ MSELoss, L1Loss ]
     loss_kwargs:

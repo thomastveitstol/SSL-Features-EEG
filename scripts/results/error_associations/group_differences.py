@@ -189,7 +189,7 @@ def main():
     variable = "clinical_status"
     error_type = ErrorType.RATIO
     dataset = "All"
-    main_metric = "pearson_r"
+    main_metric = "mae"
     balance_validation_performance = False
 
     # --------------
