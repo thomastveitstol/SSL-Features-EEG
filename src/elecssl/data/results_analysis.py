@@ -41,14 +41,14 @@ def get_successful_runs(results_dir):
 
 def get_input_and_target_freq_bands(config):
     # -----------
-    # Get frequency band of input data
+    # Get frequency band of target data
     # -----------
-    input_freq_band = config["Training"]["target"].split("_")[-2]
+    target_freq_band = config["Training"]["target"].split("_")[-2]
 
     # -----------
-    # Target frequency band
+    # Input frequency band
     # -----------
-    freq_band = set()
+    input_freq_band = set()
     for dataset_details in config["Datasets"].values():
         # Get the target from the preprocessed version
         _pattern = "band_pass-"
@@ -57,15 +57,15 @@ def get_input_and_target_freq_bands(config):
         i1 = version.find("--", i0)
 
         # Add it to frequency bands found
-        freq_band.add(version[i0:i1])
+        input_freq_band.add(version[i0:i1])
 
     # Should only be one
-    if len(freq_band) != 1:
-        raise ValueError(f"Expected a single frequency band for the targets but found (N={len(freq_band)}): "
-                         f"{freq_band}")
+    if len(input_freq_band) != 1:
+        raise ValueError(f"Expected a single frequency band for the inputs but found (N={len(input_freq_band)}): "
+                         f"{input_freq_band}")
 
     # Return tuple
-    return input_freq_band, tuple(freq_band)[0]
+    return tuple(input_freq_band)[0], target_freq_band
 
 
 def get_test_dataset_name(path):
