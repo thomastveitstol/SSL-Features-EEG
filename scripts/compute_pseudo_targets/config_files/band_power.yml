@@ -19,11 +19,11 @@ OcularStates:
         num_subjects: all
         kwargs:
           visit: 1
-          derivatives: false
+          derivatives: true
       TDBRAIN: &TDBRAIN
         num_subjects: all
         kwargs:
-          derivatives: true
+          derivatives: false
   EO:
     Datasets:
       LEMON: *LEMON
@@ -35,4 +35,4 @@ FrequencyBands:
   alpha: [ 8, 12 ]
   beta: [ 12, 30 ]
   gamma: [ 30, 45 ]
-AggregationMethod: mean
+AggregationMethod: median
