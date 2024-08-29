@@ -330,8 +330,9 @@ def _yaml_select_from_dict(loader, node):
 
 
 def _yaml_mapping_length(loader, node):
-    """Return the length of a mapping"""
-    return len(loader.construct_mapping(node))
+    """Return the length of a mapping. With probably too many constructors, anchors, and aliases, it was easier to send
+    the aliased dict as an element to a list of length one"""
+    return len(loader.construct_sequence(node)[0])
 
 
 def _yaml_sum(loader, node):

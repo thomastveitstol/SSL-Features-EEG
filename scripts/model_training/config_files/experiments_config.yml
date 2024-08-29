@@ -45,16 +45,18 @@ freq_band: &freq_band alpha  # !RandomChoice [ delta, theta, alpha, beta, gamma 
 autoreject: &autoreject !RandomChoice [ true, false ]
 input_length: &input_length !RandomChoice [ 5, 10, 20 ]
 sfreq_multiple: &sfreq_multiple !RandomChoice [ 2, 3, 4 ]
+input_ocular_state: &input_ocular_state !RandomChoice [ ec, eo ]
 
 # Augmentations
 band_pass_augmented: &band_pass_augmented !StrFormat
-  string: "preprocessed_band_pass_ec/data--band_pass-{freq_band}--input_length-{input_length}s--autoreject-{autoreject}\
+  string: "preprocessed_band_pass_{ocular_state}/data--band_pass-{freq_band}--input_length-{input_length}s--autoreject-{autoreject}\
     --sfreq-{sfreq_multiple}fmax"
   kwargs:
     freq_band: *freq_band
     autoreject: *autoreject
     input_length: *input_length
     sfreq_multiple: *sfreq_multiple
+    ocular_state: *input_ocular_state
 
 # The selected preprocessed version
 preprocessed_version: &preprocessed_version !RandomChoice
@@ -63,22 +65,44 @@ preprocessed_version: &preprocessed_version !RandomChoice
 # -----------------
 # Datasets
 # -----------------
-Datasets: &Datasets
-  SRM:
-    num_subjects: 111
-    num_time_steps: null
-    pre_processed_version: *preprocessed_version
-    time_series_start: null
-  LEMON:
-    num_subjects: 160
-    num_time_steps: null
-    pre_processed_version: *preprocessed_version
-    time_series_start: null
-  Miltiadous:
-    num_subjects: 88
-    num_time_steps: null
-    pre_processed_version: *preprocessed_version
-    time_series_start: null
+SRM: &SRM
+  num_subjects: 111
+  num_time_steps: null
+  pre_processed_version: *preprocessed_version
+  time_series_start: null
+LEMON: &LEMON
+  num_subjects: 10
+  num_time_steps: null
+  pre_processed_version: *preprocessed_version
+  time_series_start: null
+Miltiadous: &Miltiadous
+  num_subjects: 88
+  num_time_steps: null
+  pre_processed_version: *preprocessed_version
+  time_series_start: null
+TDBRAIN: &TDBRAIN
+  num_subjects: 4
+  num_time_steps: null
+  pre_processed_version: *preprocessed_version
+  time_series_start: null
+Wang: &Wang
+  num_subjects: 10
+  num_time_steps: null
+  pre_processed_version: *preprocessed_version
+  time_series_start: null
+
+Datasets: &Datasets !SelectFromDict
+  - ec:
+      #SRM: *SRM
+      LEMON: *LEMON
+      #Miltiadous: *Miltiadous
+      Wang: *Wang
+      # TDBRAIN: *TDBRAIN
+    eo:
+      LEMON: *LEMON
+      Wang: *Wang
+      # TDBRAIN: *TDBRAIN
+  - *input_ocular_state
 
 # -----------------
 # Domain discriminator
@@ -89,7 +113,7 @@ ExponentialDecayFC: &ExponentialDecayFC
   first_layer_multiple: !Uniform [ 0.5, 2 ]
   exponential_decrease: !RandomChoice [ 2, 3 ]
   in_features: UNDETERMINED  # Need to 'ask' the DL architecture
-  num_classes: !Sum [ !MappingLength { <<: *Datasets }, -1 ]
+  num_classes: !Sum [ !MappingLength [ *Datasets ], 1 ]
   activation_function: !RandomChoice
     - name: relu
       kwargs: {}
@@ -103,7 +127,7 @@ FCModule: &FCModule !RandomChoice
 # Selecting domain discriminator
 DomainDiscriminator:
   discriminator: &discriminator !RandomChoice
-    - null
+    #- null
     - name: FCModule
       kwargs: *FCModule
   training:
