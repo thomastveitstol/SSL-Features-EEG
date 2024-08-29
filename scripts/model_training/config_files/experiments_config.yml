@@ -15,6 +15,12 @@ PredictionErrorAssociations:
     - age
     - ravlt_tot
     - sex
+  Wang:
+    - age
+    - sex
+  TDBRAIN:
+    - age
+    - sex
 VariablesMetrics:
   age: [ pearson_r, spearman_rho ]
   mmse: [ pearson_r, spearman_rho ]
@@ -35,13 +41,15 @@ SubGroups:
     - Miltiadous
     - SRM
     - LEMON
+    - TDBRAIN
+    - Wang
   verbose: true
 
 # -----------------
 # Data augmentation of input data
 # -----------------
 # A few configurations
-freq_band: &freq_band alpha  # !RandomChoice [ delta, theta, alpha, beta, gamma ]
+freq_band: &freq_band !RandomChoice [ delta, theta, alpha, beta, gamma ]
 autoreject: &autoreject !RandomChoice [ true, false ]
 input_length: &input_length !RandomChoice [ 5, 10, 20 ]
 sfreq_multiple: &sfreq_multiple !RandomChoice [ 2, 3, 4 ]
@@ -166,13 +174,13 @@ Training:
     name: DatasetBalancedTrainValSplit
     kwargs:
       val_split: 0.2
-  target: band_power_theta_ec
-  #target: !RandomChoice
-  #  - band_power_delta_ec
-  #  - band_power_theta_ec
-  #  - band_power_alpha_ec
-  #  - band_power_beta_ec
-  #  - band_power_gamma_ec
+  #target: band_power_theta_ec
+  target: !RandomChoice
+    - band_power_delta_ec
+    - band_power_theta_ec
+    - band_power_alpha_ec
+    - band_power_beta_ec
+    - band_power_gamma_ec
   Loss:
     loss: !RandomChoice [ MSELoss, L1Loss ]
     loss_kwargs:
