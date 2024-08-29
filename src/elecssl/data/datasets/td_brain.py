@@ -50,7 +50,6 @@ class TDBRAIN(EEGDatasetBase):
         also be downloaded anyway"""
         return get_td_brain_raw_data_storage_path()
 
-
     def _get_subject_ids(self) -> Tuple[str, ...]:
         """Get the subject IDs available. Have to override due to (1) a minor variation in column name, and (2) repeated
         subject IDs"""
