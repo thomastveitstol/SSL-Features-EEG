@@ -6,21 +6,25 @@ OcularStates:
   EC:
     Datasets:
       SRM:
-        num_subjects: all
+        num_subjects: 10
         kwargs:
           session: "t1"
           derivatives: true
       Miltiadous:
-        num_subjects: all
+        num_subjects: 10
         kwargs:
           derivatives: true
       LEMON: &LEMON
-        num_subjects: all
+        num_subjects: 10
         kwargs:
           derivatives: false
           interpolation_method: MNE
+      TDBRAIN: &TDBRAIN
+        num_subjects: 10
+        kwargs:
+          derivatives: false
       Wang: &Wang
-        num_subjects: all
+        num_subjects: 10
         kwargs:
           visit: 1
           derivatives: true
@@ -28,6 +32,7 @@ OcularStates:
     Datasets:
       LEMON: *LEMON
       Wang: *Wang
+      TDBRAIN: *TDBRAIN
 Details:
   num_epochs: 3
   epoch_overlap: 0

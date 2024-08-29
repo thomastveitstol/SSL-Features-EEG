@@ -5,7 +5,7 @@ import mne
 import numpy
 import pandas
 
-from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method
+from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method, OcularState
 from elecssl.data.datasets.utils import sex_to_int
 from elecssl.data.paths import get_td_brain_raw_data_storage_path
 
@@ -42,6 +42,7 @@ class TDBRAIN(EEGDatasetBase):
     _channel_names = ("Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8", "FC3", "FCz", "FC4", "T7", "C3", "Cz", "C4", "T8",
                       "CP3", "CPz", "CP4", "P7", "P3", "Pz", "P4", "P8", "O1", "Oz", "O2")
     _montage_name = "standard_1020"  # 10-10 according to the paper
+    _ocular_states = (OcularState.EC, OcularState.EO)
 
     @classmethod
     def get_mne_path(cls):
@@ -68,11 +69,10 @@ class TDBRAIN(EEGDatasetBase):
     def get_participants_tsv_path(self):
         return os.path.join(self.get_mne_path(), "TDBRAIN_participants_V2_data", "TDBRAIN_participants_V2.tsv")
 
-    def _load_single_raw_mne_object(self, subject_id, *, preload=True):
+    def _load_single_raw_mne_object(self, subject_id, *, ocular_state, preload=True):
         # Create path. We will use the first available one
-        # todo: hard-coding eyes closed here...
         for session in ("ses-1", "ses-2", "ses-3"):
-            subject_path = f"{subject_id}/{session}/eeg/{subject_id}_{session}_task-restEC_eeg.vhdr"
+            subject_path = f"{subject_id}/{session}/eeg/{subject_id}_{session}_task-rest{ocular_state.value}_eeg.vhdr"
             path = os.path.join(self.get_mne_path(), subject_path)
 
             if os.path.isfile(path):
