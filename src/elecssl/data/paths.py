@@ -74,3 +74,20 @@ def get_eeg_features_storage_path():
         config = json.load(f)
 
     return Path(config["FeaturesDataPath"])
+
+
+def get_td_brain_raw_data_storage_path():
+    """
+    Get the path to the TDBrain folder. I am doing this to avoid duplicating datasets, and rather just use the path it
+    was stored in the Cross dataset learning project.
+
+    Returns
+    -------
+    Path
+    """
+    # Load the config file for paths
+    config_path = os.path.join(os.path.dirname(__file__), "config_paths.json")
+    with open(config_path) as f:
+        config = json.load(f)
+
+    return Path(config["MNEPathTDBrain"])

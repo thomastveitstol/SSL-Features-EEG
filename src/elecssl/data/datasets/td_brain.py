@@ -7,6 +7,7 @@ import pandas
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method
 from elecssl.data.datasets.utils import sex_to_int
+from elecssl.data.paths import get_td_brain_raw_data_storage_path
 
 
 class TDBRAIN(EEGDatasetBase):
@@ -41,6 +42,13 @@ class TDBRAIN(EEGDatasetBase):
     _channel_names = ("Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8", "FC3", "FCz", "FC4", "T7", "C3", "Cz", "C4", "T8",
                       "CP3", "CPz", "CP4", "P7", "P3", "Pz", "P4", "P8", "O1", "Oz", "O2")
     _montage_name = "standard_1020"  # 10-10 according to the paper
+
+    @classmethod
+    def get_mne_path(cls):
+        """The data was also used in the CDL project, and it's a lot of data, so I don't want to copy it. The data must
+        also be downloaded anyway"""
+        return get_td_brain_raw_data_storage_path()
+
 
     def _get_subject_ids(self) -> Tuple[str, ...]:
         """Get the subject IDs available. Have to override due to (1) a minor variation in column name, and (2) repeated
@@ -111,7 +119,7 @@ class TDBRAIN(EEGDatasetBase):
         There are some missing data it seems...
 
         >>> sum(tuple(numpy.isnan(my_age) for my_age in TDBRAIN().age(my_subjects)))  # type: ignore[attr-defined]
-        17
+        np.int64(17)
         """
         # Read the .tsv file
         df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t")
