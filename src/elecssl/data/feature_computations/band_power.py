@@ -2,6 +2,7 @@ from typing import Dict, Any, List
 
 import numpy
 import pandas
+from progressbar import progressbar
 from scipy import integrate
 
 from elecssl.data.datasets.dataset_base import MNELoadingError
@@ -101,7 +102,7 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method):
     # Loop though all datasets
     for info in datasets:
         # Loop though all provided subjects for the dataset
-        for subject in info.subjects:
+        for subject in progressbar(info.subjects, prefix=f"{type(info.dataset).__name__} ", redirect_stdout=True):
             # Load the EEG
             try:
                 eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
