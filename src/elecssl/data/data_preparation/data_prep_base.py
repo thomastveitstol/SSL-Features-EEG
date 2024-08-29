@@ -1,7 +1,7 @@
 import abc
 from typing import Any, Dict, Tuple
 
-import enlighten
+from progressbar import progressbar
 
 from elecssl.data.datasets.dataset_base import MNELoadingError, DatasetInfo
 from elecssl.data.paths import get_numpy_data_storage_path
@@ -55,15 +55,13 @@ class TransformationBase(abc.ABC):
         # Loop through all datasets
         for i, info in enumerate(datasets):
             print(f"\t({i + 1}/{num_datasets}) {type(info.dataset).__name__}")
-            pbar = enlighten.Counter(total=len(info.subjects), desc=type(info.dataset).__name__, unit="subjects")
 
             # Loop through all provided subjects for the dataset
-            for subject in info.subjects:
+            for subject in progressbar(info.subjects, suffix=type(info.dataset).__name__, redirect_stdout=True):
                 # Load the EEG
                 try:
                     eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
                 except MNELoadingError:
-                    pbar.update()
                     continue
 
                 # Save the data
@@ -73,10 +71,7 @@ class TransformationBase(abc.ABC):
                         config=config, plot_data=plot_data, save_data=save_data,
                     )
                 except InsufficientNumEpochsError:
-                    pbar.update()
                     continue
-
-                pbar.update()
 
     # -----------------
     # Path methods
