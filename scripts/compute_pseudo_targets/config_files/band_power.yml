@@ -19,11 +19,16 @@ OcularStates:
         num_subjects: all
         kwargs:
           visit: 1
+          derivatives: false
+      TDBRAIN: &TDBRAIN
+        num_subjects: all
+        kwargs:
           derivatives: true
   EO:
     Datasets:
       LEMON: *LEMON
       Wang: *Wang
+      TDBRAIN: *TDBRAIN
 FrequencyBands:
   delta: [ 1, 4 ]
   theta: [ 4, 8 ]
