@@ -57,7 +57,7 @@ class TransformationBase(abc.ABC):
             print(f"\t({i + 1}/{num_datasets}) {type(info.dataset).__name__}")
 
             # Loop through all provided subjects for the dataset
-            for subject in progressbar(info.subjects, suffix=type(info.dataset).__name__, redirect_stdout=True):
+            for subject in progressbar(info.subjects, prefix=f"{type(info.dataset).__name__} ", redirect_stdout=True):
                 # Load the EEG
                 try:
                     eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
