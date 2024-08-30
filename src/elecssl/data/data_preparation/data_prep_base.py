@@ -20,7 +20,7 @@ class TransformationBase(abc.ABC):
     # Methods for saving
     # -----------------
     @abc.abstractmethod
-    def _apply_and_save_single_data(self, raw, subject, config, plot_data, save_data):
+    def _apply_and_save_single_data(self, raw, subject, config, preprocessing, plot_data, save_data):
         """
         Method for applying transformation and saving a single epochs object
 
@@ -69,6 +69,7 @@ class TransformationBase(abc.ABC):
                     self._apply_and_save_single_data(
                         eeg, subject=Subject(subject_id=subject, dataset_name=type(info.dataset).__name__),
                         config=config, plot_data=plot_data, save_data=save_data,
+                        preprocessing=config["InitialPreprocessing"][type(info.dataset).__name__]
                     )
                 except InsufficientNumEpochsError:
                     continue

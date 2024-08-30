@@ -92,7 +92,7 @@ class BandPass(TransformationBase):
 
         return raw
 
-    def _apply_and_save_single_data(self, raw, subject, config, plot_data, save_data):
+    def _apply_and_save_single_data(self, raw, subject, config, preprocessing, plot_data, save_data):
         # ---------------
         # Input checks
         # ---------------
@@ -102,7 +102,7 @@ class BandPass(TransformationBase):
         # ---------------
         # Pre-processing
         # ---------------
-        raw = self._preprocess(raw, **config["InitialPreprocessing"])
+        raw = self._preprocess(raw, **preprocessing)
 
         # ---------------
         # Preparing and saving data

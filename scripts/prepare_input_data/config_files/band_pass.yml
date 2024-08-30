@@ -45,8 +45,19 @@ FrequencyBands:
   beta: [ 12, 30 ]
   gamma: [ 30, 45 ]
   all: [ 1, 45 ]
-InitialPreprocessing:  # todo: should be dataset specific
+SharedSteps: &SharedSteps
   excluded_channels: null
   time_series_start_secs: 30
   band_pass: null
-  notch_filter: 50
+  notch_filter: null
+InitialPreprocessing:
+  LEMON:
+    <<: *SharedSteps
+  TDBRAIN:
+    <<: *SharedSteps
+  SRM:
+    <<: *SharedSteps
+  Wang:
+    <<: *SharedSteps
+  Miltiadous:
+    <<: *SharedSteps
