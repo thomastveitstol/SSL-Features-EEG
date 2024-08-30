@@ -592,7 +592,7 @@ class SSLExperiment:
             test_name = tuple(test_datasets)[0] if len(test_datasets) == 1 else f"Fold {i}"
 
             # Add histories object to dict
-            if test_name in test_histories:
+            if test_name in test_histories and self.subject_split_config["name"] == "SplitOnDataset":
                 raise RuntimeError  # todo: add message
             test_histories[test_name] = test_history
 
