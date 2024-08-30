@@ -45,19 +45,19 @@ FrequencyBands:
   beta: [ 12, 30 ]
   gamma: [ 30, 45 ]
   all: [ 1, 45 ]
-SharedSteps: &SharedSteps
+_SharedSteps: &_SharedSteps
   excluded_channels: null
   time_series_start_secs: 30
   band_pass: null
   notch_filter: null
 InitialPreprocessing:
   LEMON:
-    <<: *SharedSteps
+    <<: *_SharedSteps
   TDBRAIN:
-    <<: *SharedSteps
+    <<: *_SharedSteps
   SRM:
-    <<: *SharedSteps
+    <<: *_SharedSteps
   Wang:
-    <<: *SharedSteps
+    <<: *_SharedSteps
   Miltiadous:
-    <<: *SharedSteps
+    <<: *_SharedSteps
