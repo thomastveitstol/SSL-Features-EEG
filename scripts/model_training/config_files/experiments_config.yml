@@ -79,7 +79,7 @@ SRM: &SRM
   pre_processed_version: *preprocessed_version
   time_series_start: null
 LEMON: &LEMON
-  num_subjects: 10
+  num_subjects: 160
   num_time_steps: null
   pre_processed_version: *preprocessed_version
   time_series_start: null
@@ -181,6 +181,11 @@ Training:
     - band_power_alpha_ec
     - band_power_beta_ec
     - band_power_gamma_ec
+    - band_power_delta_eo
+    - band_power_theta_eo
+    - band_power_alpha_eo
+    - band_power_beta_eo
+    - band_power_gamma_eo
   Loss:
     loss: !RandomChoice [ MSELoss, L1Loss ]
     loss_kwargs:
