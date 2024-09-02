@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="updates for tdbrain and added it to yml file">
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/data_preparation/data_prep_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/data_preparation/data_prep_base.py" afterDir="false" />
-    </list>
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added EO as targets in yml file" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -98,30 +96,34 @@
     "Python tests.Doctests in wang.executor": "Run",
     "Python.band_pass.executor": "Run",
     "Python.band_power.executor": "Run",
+    "Python.debugging_lemon.executor": "Run",
+    "Python.debugging_td_brain.executor": "Run",
+    "Python.elecssl_experiments.executor": "Run",
     "Python.group_differences.executor": "Run",
     "Python.lemon.executor": "Run",
     "Python.mts_module_base.executor": "Run",
+    "Python.plot_eeg_data.executor": "Run",
     "Python.regression_performance.executor": "Run",
     "Python.srm.executor": "Run",
     "Python.wang.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/CrossDatasetLearningEEG",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts" />
       <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
       <recent name="$PROJECT_DIR$/src/elecssl/models" />
       <recent name="$PROJECT_DIR$/src/elecssl/data" />
       <recent name="$PROJECT_DIR$/src/elecssl/data/datasets" />
-      <recent name="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctests in td_brain">
-    <configuration name="group_differences" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.plot_eeg_data">
+    <configuration name="debugging_lemon" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -130,11 +132,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results/error_associations" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/debugging" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results/error_associations/group_differences.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/debugging/debugging_lemon.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -143,7 +145,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="regression_performance" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="debugging_td_brain" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -152,11 +154,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results/regression_performance" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/debugging" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results/regression_performance/regression_performance.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/debugging/debugging_td_brain.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -165,42 +167,48 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctest Histories.pairwise_mean_difference" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="elecssl_experiments" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/model_training" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/metrics.py" />
-      <option name="CLASS_NAME" value="Histories" />
-      <option name="METHOD_NAME" value="pairwise_mean_difference" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_METHOD" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/model_training/elecssl_experiments.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in TDBRAIN" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="plot_eeg_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/visualise_data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/td_brain.py" />
-      <option name="CLASS_NAME" value="TDBRAIN" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_CLASS" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <configuration name="Doctests in td_brain" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
@@ -224,11 +232,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.plot_eeg_data" />
+        <item itemvalue="Python.elecssl_experiments" />
+        <item itemvalue="Python.debugging_lemon" />
+        <item itemvalue="Python.debugging_td_brain" />
         <item itemvalue="Python tests.Doctests in td_brain" />
-        <item itemvalue="Python tests.Doctests in TDBRAIN" />
-        <item itemvalue="Python.group_differences" />
-        <item itemvalue="Python.regression_performance" />
-        <item itemvalue="Python tests.Doctest Histories.pairwise_mean_difference" />
       </list>
     </recent_temporary>
   </component>
@@ -247,158 +255,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00026" summary="signature fix">
-      <option name="closed" value="true" />
-      <created>1723727246578</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1723727246578</updated>
-    </task>
-    <task id="LOCAL-00027" summary="optimised imports">
-      <option name="closed" value="true" />
-      <created>1723727302858</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1723727302858</updated>
-    </task>
-    <task id="LOCAL-00028" summary="muted mypy import error">
-      <option name="closed" value="true" />
-      <created>1723727794302</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1723727794302</updated>
-    </task>
-    <task id="LOCAL-00029" summary="automatic update">
-      <option name="closed" value="true" />
-      <created>1723727905472</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1723727905472</updated>
-    </task>
-    <task id="LOCAL-00030" summary="minor update">
-      <option name="closed" value="true" />
-      <created>1723799074022</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1723799074022</updated>
-    </task>
-    <task id="LOCAL-00031" summary="added dataset to getter">
-      <option name="closed" value="true" />
-      <created>1723799170908</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1723799170908</updated>
-    </task>
-    <task id="LOCAL-00032" summary="auto update">
-      <option name="closed" value="true" />
-      <created>1723799179372</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1723799179372</updated>
-    </task>
-    <task id="LOCAL-00033" summary="minor update">
-      <option name="closed" value="true" />
-      <created>1723799442449</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1723799442449</updated>
-    </task>
-    <task id="LOCAL-00034" summary="minor update">
-      <option name="closed" value="true" />
-      <created>1723799526996</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1723799526996</updated>
-    </task>
-    <task id="LOCAL-00035" summary="minor update">
-      <option name="closed" value="true" />
-      <created>1723799662499</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1723799662499</updated>
-    </task>
-    <task id="LOCAL-00036" summary="implemented band power computations and improvements for using pseudo labels">
-      <option name="closed" value="true" />
-      <created>1723800059600</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1723800059600</updated>
-    </task>
-    <task id="LOCAL-00037" summary="changed unit of band power and changed yml file">
-      <option name="closed" value="true" />
-      <created>1723804016998</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1723804016998</updated>
-    </task>
-    <task id="LOCAL-00038" summary="argument fix and mypy and flake8 fixes">
-      <option name="closed" value="true" />
-      <created>1723804229892</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1723804229892</updated>
-    </task>
-    <task id="LOCAL-00039" summary="ran tox">
-      <option name="closed" value="true" />
-      <created>1723804279324</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1723804279324</updated>
-    </task>
-    <task id="LOCAL-00040" summary="fixes for handling loading of both ocular states">
-      <option name="closed" value="true" />
-      <created>1723807329056</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1723807329056</updated>
-    </task>
-    <task id="LOCAL-00041" summary="flake8 fix">
-      <option name="closed" value="true" />
-      <created>1723807348866</created>
-      <option name="number" value="00041" />
-      <option name="presentableId" value="LOCAL-00041" />
-      <option name="project" value="LOCAL" />
-      <updated>1723807348866</updated>
-    </task>
-    <task id="LOCAL-00042" summary="fixed comment and added script for downloading LEMON">
-      <option name="closed" value="true" />
-      <created>1723807656870</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1723807656870</updated>
-    </task>
-    <task id="LOCAL-00043" summary="added download method to dataset">
-      <option name="closed" value="true" />
-      <created>1723809488702</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1723809488702</updated>
-    </task>
-    <task id="LOCAL-00044" summary="fixed loading of both ocular state in dataset">
-      <option name="closed" value="true" />
-      <created>1723809941648</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1723809941648</updated>
     </task>
     <task id="LOCAL-00045" summary="added script for loading dataset">
       <option name="closed" value="true" />
@@ -640,7 +496,159 @@
       <option name="project" value="LOCAL" />
       <updated>1724919908872</updated>
     </task>
-    <option name="localTasksCounter" value="75" />
+    <task id="LOCAL-00075" summary="changed progressbar">
+      <option name="closed" value="true" />
+      <created>1724920181657</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1724920181657</updated>
+    </task>
+    <task id="LOCAL-00076" summary="auto update">
+      <option name="closed" value="true" />
+      <created>1724920186204</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1724920186204</updated>
+    </task>
+    <task id="LOCAL-00077" summary="flake8 fix">
+      <option name="closed" value="true" />
+      <created>1724920210301</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1724920210301</updated>
+    </task>
+    <task id="LOCAL-00078" summary="cosmetic improvement to progressbar">
+      <option name="closed" value="true" />
+      <created>1724921050248</created>
+      <option name="number" value="00078" />
+      <option name="presentableId" value="LOCAL-00078" />
+      <option name="project" value="LOCAL" />
+      <updated>1724921050248</updated>
+    </task>
+    <task id="LOCAL-00079" summary="commented out code">
+      <option name="closed" value="true" />
+      <created>1724931125124</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1724931125124</updated>
+    </task>
+    <task id="LOCAL-00080" summary="added script for documenting changes made to TDBRAIN data files">
+      <option name="closed" value="true" />
+      <created>1724931149870</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1724931149870</updated>
+    </task>
+    <task id="LOCAL-00081" summary="added debugging script">
+      <option name="closed" value="true" />
+      <created>1724932023707</created>
+      <option name="number" value="00081" />
+      <option name="presentableId" value="LOCAL-00081" />
+      <option name="project" value="LOCAL" />
+      <updated>1724932023707</updated>
+    </task>
+    <task id="LOCAL-00082" summary="made yml file ready for randomly selecting ocular state for input">
+      <option name="closed" value="true" />
+      <created>1724936395066</created>
+      <option name="number" value="00082" />
+      <option name="presentableId" value="LOCAL-00082" />
+      <option name="project" value="LOCAL" />
+      <updated>1724936395066</updated>
+    </task>
+    <task id="LOCAL-00083" summary="added TDBRAIN to yml files">
+      <option name="closed" value="true" />
+      <created>1724936550492</created>
+      <option name="number" value="00083" />
+      <option name="presentableId" value="LOCAL-00083" />
+      <option name="project" value="LOCAL" />
+      <updated>1724936550492</updated>
+    </task>
+    <task id="LOCAL-00084" summary="yml file update">
+      <option name="closed" value="true" />
+      <created>1724936747681</created>
+      <option name="number" value="00084" />
+      <option name="presentableId" value="LOCAL-00084" />
+      <option name="project" value="LOCAL" />
+      <updated>1724936747681</updated>
+    </task>
+    <task id="LOCAL-00085" summary="changes to yml file">
+      <option name="closed" value="true" />
+      <created>1724937160179</created>
+      <option name="number" value="00085" />
+      <option name="presentableId" value="LOCAL-00085" />
+      <option name="project" value="LOCAL" />
+      <updated>1724937160179</updated>
+    </task>
+    <task id="LOCAL-00086" summary="added progressbar">
+      <option name="closed" value="true" />
+      <created>1724937336544</created>
+      <option name="number" value="00086" />
+      <option name="presentableId" value="LOCAL-00086" />
+      <option name="project" value="LOCAL" />
+      <updated>1724937336544</updated>
+    </task>
+    <task id="LOCAL-00087" summary="plot/debug script">
+      <option name="closed" value="true" />
+      <created>1725010088995</created>
+      <option name="number" value="00087" />
+      <option name="presentableId" value="LOCAL-00087" />
+      <option name="project" value="LOCAL" />
+      <updated>1725010088995</updated>
+    </task>
+    <task id="LOCAL-00088" summary="fixed raising error when nothing should be raised">
+      <option name="closed" value="true" />
+      <created>1725010790485</created>
+      <option name="number" value="00088" />
+      <option name="presentableId" value="LOCAL-00088" />
+      <option name="project" value="LOCAL" />
+      <updated>1725010790485</updated>
+    </task>
+    <task id="LOCAL-00089" summary="changes to script">
+      <option name="closed" value="true" />
+      <created>1725015037493</created>
+      <option name="number" value="00089" />
+      <option name="presentableId" value="LOCAL-00089" />
+      <option name="project" value="LOCAL" />
+      <updated>1725015037494</updated>
+    </task>
+    <task id="LOCAL-00090" summary="made preprocessing steps dataset dependent">
+      <option name="closed" value="true" />
+      <created>1725018168536</created>
+      <option name="number" value="00090" />
+      <option name="presentableId" value="LOCAL-00090" />
+      <option name="project" value="LOCAL" />
+      <updated>1725018168536</updated>
+    </task>
+    <task id="LOCAL-00091" summary="added underscore to key in yml file">
+      <option name="closed" value="true" />
+      <created>1725018207246</created>
+      <option name="number" value="00091" />
+      <option name="presentableId" value="LOCAL-00091" />
+      <option name="project" value="LOCAL" />
+      <updated>1725018207246</updated>
+    </task>
+    <task id="LOCAL-00092" summary="fixed FutureWarning">
+      <option name="closed" value="true" />
+      <created>1725019300768</created>
+      <option name="number" value="00092" />
+      <option name="presentableId" value="LOCAL-00092" />
+      <option name="project" value="LOCAL" />
+      <updated>1725019300768</updated>
+    </task>
+    <task id="LOCAL-00093" summary="added EO as targets in yml file">
+      <option name="closed" value="true" />
+      <created>1725025519246</created>
+      <option name="number" value="00093" />
+      <option name="presentableId" value="LOCAL-00093" />
+      <option name="project" value="LOCAL" />
+      <updated>1725025519246</updated>
+    </task>
+    <option name="localTasksCounter" value="94" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -655,31 +663,31 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed unnecessary method" />
-    <MESSAGE value="path fix" />
-    <MESSAGE value="imrpovements for feature compuatition" />
-    <MESSAGE value="added todo" />
-    <MESSAGE value="added bash scripts" />
-    <MESSAGE value="auto update" />
-    <MESSAGE value="no change, but pycharm still thinks so" />
-    <MESSAGE value="fixed bash script" />
-    <MESSAGE value="added error class for handling unexpected failed loading" />
-    <MESSAGE value="improved docstring" />
-    <MESSAGE value="added handling unloadable data for feature extraction" />
-    <MESSAGE value="refactoring" />
-    <MESSAGE value="added heatmaps to plot script" />
-    <MESSAGE value="updates for associating with ratio between true and pred" />
-    <MESSAGE value="added target method" />
-    <MESSAGE value="updates for group metrics" />
-    <MESSAGE value="mypy fix and muted for entire file" />
-    <MESSAGE value="fix" />
-    <MESSAGE value="added groups metrics" />
     <MESSAGE value="added analysis script" />
     <MESSAGE value="added groups metric" />
     <MESSAGE value="minor config changes" />
     <MESSAGE value="automatic update" />
     <MESSAGE value="changed path for TDBrain dataset" />
     <MESSAGE value="updates for tdbrain and added it to yml file" />
-    <option name="LAST_COMMIT_MESSAGE" value="updates for tdbrain and added it to yml file" />
+    <MESSAGE value="changed progressbar" />
+    <MESSAGE value="auto update" />
+    <MESSAGE value="flake8 fix" />
+    <MESSAGE value="cosmetic improvement to progressbar" />
+    <MESSAGE value="commented out code" />
+    <MESSAGE value="added script for documenting changes made to TDBRAIN data files" />
+    <MESSAGE value="added debugging script" />
+    <MESSAGE value="made yml file ready for randomly selecting ocular state for input" />
+    <MESSAGE value="added TDBRAIN to yml files" />
+    <MESSAGE value="yml file update" />
+    <MESSAGE value="changes to yml file" />
+    <MESSAGE value="added progressbar" />
+    <MESSAGE value="plot/debug script" />
+    <MESSAGE value="fixed raising error when nothing should be raised" />
+    <MESSAGE value="changes to script" />
+    <MESSAGE value="made preprocessing steps dataset dependent" />
+    <MESSAGE value="added underscore to key in yml file" />
+    <MESSAGE value="fixed FutureWarning" />
+    <MESSAGE value="added EO as targets in yml file" />
+    <option name="LAST_COMMIT_MESSAGE" value="added EO as targets in yml file" />
   </component>
 </project>
