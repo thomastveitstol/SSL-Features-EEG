@@ -79,7 +79,7 @@ SRM: &SRM
   pre_processed_version: *preprocessed_version
   time_series_start: null
 LEMON: &LEMON
-  num_subjects: 160
+  num_subjects: 203
   num_time_steps: null
   pre_processed_version: *preprocessed_version
   time_series_start: null
@@ -89,27 +89,27 @@ Miltiadous: &Miltiadous
   pre_processed_version: *preprocessed_version
   time_series_start: null
 TDBRAIN: &TDBRAIN
-  num_subjects: 4
+  num_subjects: 1273
   num_time_steps: null
   pre_processed_version: *preprocessed_version
   time_series_start: null
 Wang: &Wang
-  num_subjects: 10
+  num_subjects: 60
   num_time_steps: null
   pre_processed_version: *preprocessed_version
   time_series_start: null
 
 Datasets: &Datasets !SelectFromDict
   - ec:
-      #SRM: *SRM
+      SRM: *SRM
       LEMON: *LEMON
-      #Miltiadous: *Miltiadous
+      Miltiadous: *Miltiadous
       Wang: *Wang
-      # TDBRAIN: *TDBRAIN
+      TDBRAIN: *TDBRAIN
     eo:
       LEMON: *LEMON
       Wang: *Wang
-      # TDBRAIN: *TDBRAIN
+      TDBRAIN: *TDBRAIN
   - *input_ocular_state
 
 # -----------------
@@ -121,7 +121,7 @@ ExponentialDecayFC: &ExponentialDecayFC
   first_layer_multiple: !Uniform [ 0.5, 2 ]
   exponential_decrease: !RandomChoice [ 2, 3 ]
   in_features: UNDETERMINED  # Need to 'ask' the DL architecture
-  num_classes: !Sum [ !MappingLength [ *Datasets ], 1 ]
+  num_classes: !Sum [ !MappingLength [ *Datasets ], -1 ]
   activation_function: !RandomChoice
     - name: relu
       kwargs: {}
