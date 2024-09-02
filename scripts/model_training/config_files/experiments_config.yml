@@ -1,51 +1,4 @@
 # -----------------
-# Configurations for associating prediction errors with
-# other variables
-# -----------------
-PredictionErrorAssociations:
-  Miltiadous:
-    - mmse
-    - age
-    - sex
-    - clinical_status
-  LEMON:
-    - age
-    - sex
-  SRM:
-    - age
-    - ravlt_tot
-    - sex
-  Wang:
-    - age
-    - sex
-  TDBRAIN:
-    - age
-    - sex
-VariablesMetrics:
-  age: [ pearson_r, spearman_rho ]
-  mmse: [ pearson_r, spearman_rho ]
-  ravlt_tot: [ pearson_r, spearman_rho ]
-  clinical_status: groups_metrics
-  sex: groups_metrics
-
-# -----------------
-# Configuration for subject splitting (related to the cross validation)
-# -----------------
-SubjectSplit:
-  kwargs:
-    seed: 42
-  name: SplitOnDataset
-SubGroups:
-  sub_groups:
-    dataset_name:
-    - Miltiadous
-    - SRM
-    - LEMON
-    - TDBRAIN
-    - Wang
-  verbose: true
-
-# -----------------
 # Data augmentation of input data
 # -----------------
 # A few configurations
@@ -71,46 +24,101 @@ preprocessed_version: &preprocessed_version !RandomChoice
   - *band_pass_augmented
 
 # -----------------
+# Selecting target
+# -----------------
+# Configurations
+target_freq_band: &target_freq_band !RandomChoice [ delta, theta, alpha, beta, gamma ]
+target_ocular_state: &target_ocular_state !RandomChoice [ ec, eo ]
+
+# Targets
+band_power: &band_power !StrFormat
+  string: "band_power_{target_freq_band}_{target_ocular_state}"
+  kwargs:
+    target_freq_band: *target_freq_band
+    target_ocular_state: *target_ocular_state
+
+# The selected target
+target: &target !RandomChoice
+  - *band_power
+
+# -----------------
 # Datasets
 # -----------------
-SRM: &SRM
-  num_subjects: 111
-  num_time_steps: null
-  pre_processed_version: *preprocessed_version
-  time_series_start: null
-LEMON: &LEMON
-  num_subjects: 203
-  num_time_steps: null
-  pre_processed_version: *preprocessed_version
-  time_series_start: null
-Miltiadous: &Miltiadous
-  num_subjects: 88
-  num_time_steps: null
-  pre_processed_version: *preprocessed_version
-  time_series_start: null
-TDBRAIN: &TDBRAIN
-  num_subjects: 1273
-  num_time_steps: null
-  pre_processed_version: *preprocessed_version
-  time_series_start: null
-Wang: &Wang
-  num_subjects: 60
-  num_time_steps: null
-  pre_processed_version: *preprocessed_version
-  time_series_start: null
+AllDatasets: &AllDatasets
+  SRM:
+    num_subjects: 111
+    num_time_steps: null
+    pre_processed_version: *preprocessed_version
+    time_series_start: null
+  LEMON:
+    num_subjects: 203
+    num_time_steps: null
+    pre_processed_version: *preprocessed_version
+    time_series_start: null
+  Miltiadous:
+    num_subjects: 88
+    num_time_steps: null
+    pre_processed_version: *preprocessed_version
+    time_series_start: null
+  TDBRAIN:
+    num_subjects: 1273
+    num_time_steps: null
+    pre_processed_version: *preprocessed_version
+    time_series_start: null
+  Wang:
+    num_subjects: 60
+    num_time_steps: null
+    pre_processed_version: *preprocessed_version
+    time_series_start: null
 
-Datasets: &Datasets !SelectFromDict
-  - ec:
-      SRM: *SRM
-      LEMON: *LEMON
-      Miltiadous: *Miltiadous
-      Wang: *Wang
-      TDBRAIN: *TDBRAIN
-    eo:
-      LEMON: *LEMON
-      Wang: *Wang
-      TDBRAIN: *TDBRAIN
+OcularStateAvailability: &OcularStateAvailability
+  ec: [ SRM, LEMON, Miltiadous, Wang, TDBRAIN ]
+  eo: [ LEMON, Wang, TDBRAIN ]
+
+InputDatasets: &InputDatasets !SelectFromDict
+  - <<: *OcularStateAvailability
   - *input_ocular_state
+
+TargetDatasets: &TargetDatasets !SelectFromDict
+  - <<: *OcularStateAvailability
+  - *target_ocular_state
+
+DatasetsNames: &DatasetsNames !ListIntersection [ *InputDatasets, *TargetDatasets ]
+
+Datasets: &Datasets !MultiSelectFromDict
+  - <<: *AllDatasets
+  - *DatasetsNames
+
+# -----------------
+# Configurations for associating prediction errors with
+# other variables
+# -----------------
+PredictionErrorAssociations: !MultiSelectFromDict
+  - Miltiadous: [ mmse, age, sex, clinical_status ]
+    LEMON: [ age, sex ]
+    SRM: [ age, ravlt_tot, sex ]
+    Wang: [ age, sex ]
+    TDBRAIN: [ age, sex ]
+  - *DatasetsNames
+
+VariablesMetrics:
+  age: [ pearson_r, spearman_rho ]
+  mmse: [ pearson_r, spearman_rho ]
+  ravlt_tot: [ pearson_r, spearman_rho ]
+  clinical_status: groups_metrics
+  sex: groups_metrics
+
+# -----------------
+# Configuration for subject splitting (related to the cross validation)
+# -----------------
+SubjectSplit:
+  kwargs:
+    seed: 42
+  name: SplitOnDataset
+SubGroups:
+  sub_groups:
+    dataset_name: *DatasetsNames
+  verbose: true
 
 # -----------------
 # Domain discriminator
@@ -174,18 +182,7 @@ Training:
     name: DatasetBalancedTrainValSplit
     kwargs:
       val_split: 0.2
-  #target: band_power_theta_ec
-  target: !RandomChoice
-    - band_power_delta_ec
-    - band_power_theta_ec
-    - band_power_alpha_ec
-    - band_power_beta_ec
-    - band_power_gamma_ec
-    - band_power_delta_eo
-    - band_power_theta_eo
-    - band_power_alpha_eo
-    - band_power_beta_eo
-    - band_power_gamma_eo
+  target: *target
   Loss:
     loss: !RandomChoice [ MSELoss, L1Loss ]
     loss_kwargs:

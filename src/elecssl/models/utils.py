@@ -354,6 +354,18 @@ def _yaml_tuple(loader, node):
     return tuple(loader.construct_sequence(node))
 
 
+def _yaml_list_intersection(loader, node):
+    """Get the intersection of two lists"""
+    list_1, list_2 = loader.construct_sequence(node)
+    return list(set(list_1) & set(list_2))
+
+
+def yaml_multi_select_from_dict(loader, node):
+    """Selects the correct elements from a dictionary"""
+    dict_, keys_ = loader.construct_sequence(node, deep=True)
+    return {key_: dict_[key_] for key_ in keys_}
+
+
 def add_yaml_constructors(loader):
     """
     Function for adding varied needed formatters to yaml loader
@@ -373,4 +385,6 @@ def add_yaml_constructors(loader):
     loader.add_constructor("!Sum", _yaml_sum)
     loader.add_constructor("!IfIsNoneElse", _yaml_if_none_else)
     loader.add_constructor("!Tuple", _yaml_tuple)
+    loader.add_constructor("!ListIntersection", _yaml_list_intersection)
+    loader.add_constructor("!MultiSelectFromDict", yaml_multi_select_from_dict)
     return loader
