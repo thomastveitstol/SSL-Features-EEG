@@ -1,6 +1,14 @@
 import os
+from typing import NamedTuple
 
 import pandas
+
+from elecssl.data.datasets.dataset_base import OcularState
+
+
+class InOutOcularStates(NamedTuple):
+    input_data: OcularState
+    target: OcularState
 
 
 # ----------------
@@ -66,6 +74,32 @@ def get_input_and_target_freq_bands(config):
 
     # Return tuple
     return tuple(input_freq_band)[0], target_freq_band
+
+
+def get_input_and_target_freq_ocular_states(config):
+    # -----------
+    # Ocular state of target data
+    # -----------
+    target_ocular_state = OcularState(config["Training"]["target"].split("_")[-1].upper())
+
+    # -----------
+    # Input ocular state
+    # -----------
+    input_ocular_state = set()
+    for dataset_details in config["Datasets"].values():
+        # Get the ocular state from the preprocessed version
+        version = dataset_details["pre_processed_version"]
+
+        # Add it to frequency bands found
+        input_ocular_state.add(OcularState(version.split(sep="/")[0].split(sep="_")[-1].upper()))
+
+    # Should only be one
+    if len(input_ocular_state) != 1:
+        raise ValueError(f"Expected a single ocular state for the inputs but found (N={len(input_ocular_state)}): "
+                         f"{input_ocular_state}")
+
+    # Return tuple
+    return InOutOcularStates(input_data=tuple(input_ocular_state)[0], target=target_ocular_state)
 
 
 def get_test_dataset_name(path):

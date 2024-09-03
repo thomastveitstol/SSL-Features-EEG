@@ -12,7 +12,7 @@ from progressbar import progressbar
 
 from elecssl.data.paths import get_results_dir
 from elecssl.data.results_analysis import higher_is_better, get_test_dataset_name, get_input_and_target_freq_bands, \
-    is_better, get_successful_runs
+    is_better, get_successful_runs, InOutOcularStates, get_input_and_target_freq_ocular_states
 
 
 @dataclasses.dataclass(frozen=True)
@@ -72,7 +72,7 @@ def _get_val_test_metrics(path, main_metric, balance_validation_performance):
 
 
 def _get_best_performances(*, results_dir, main_metric, balance_validation_performance):
-    best_models: Dict[str, Dict[str, Dict[str, Optional[_Model]]]] = {}
+    best_models: Dict[InOutOcularStates, Dict[str, Dict[str, Dict[str, Optional[_Model]]]]] = {}
 
     for run in progressbar(get_successful_runs(results_dir), prefix="Run ", redirect_stdout=True):
         run_path = results_dir / run
@@ -89,29 +89,32 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
             )
 
             # -------------
-            # Get the frequency band of input and target
+            # Get the ocular states and frequency bands of input and target
             # -------------
             # Load the config file
             with open(run_path / "config.yml", "r") as file:
                 config = yaml.safe_load(file)
 
+            input_target_ocular_states = get_input_and_target_freq_ocular_states(config)
             input_freq_band, target_freq_band = get_input_and_target_freq_bands(config)
 
             # -------------
             # (Maybe) update best model
             # -------------
-            if test_dataset not in best_models:
-                best_models[test_dataset] = {}
-            if input_freq_band not in best_models[test_dataset]:
-                best_models[test_dataset][input_freq_band] = {}
-            if target_freq_band not in best_models[test_dataset][input_freq_band]:
-                best_models[test_dataset][input_freq_band][target_freq_band] = None
+            if input_target_ocular_states not in best_models:
+                best_models[input_target_ocular_states] = {}
+            if test_dataset not in best_models[input_target_ocular_states]:
+                best_models[input_target_ocular_states][test_dataset] = {}
+            if input_freq_band not in best_models[input_target_ocular_states][test_dataset]:
+                best_models[input_target_ocular_states][test_dataset][input_freq_band] = {}
+            if target_freq_band not in best_models[input_target_ocular_states][test_dataset][input_freq_band]:
+                best_models[input_target_ocular_states][test_dataset][input_freq_band][target_freq_band] = None
 
-            old_model = best_models[test_dataset][input_freq_band][target_freq_band]
+            old_model = best_models[input_target_ocular_states][test_dataset][input_freq_band][target_freq_band]
             if old_model is None or is_better(metric=main_metric,
                                               old_performance=old_model.val_performance,  # type: ignore
                                               new_performance=val_metric):
-                best_models[test_dataset][input_freq_band][target_freq_band] = _Model(
+                best_models[input_target_ocular_states][test_dataset][input_freq_band][target_freq_band] = _Model(
                     path=run_path / fold, val_performance=val_metric, test_performance=test_metrics
                 )
 
@@ -119,47 +122,57 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
     # Print results
     # -------------
     print(f"{' Results ':=^30}")
-    for dataset, input_freq_band_results in best_models.items():
-        print(f"\n{f' {dataset} ':-^25}")
-        for input_band, target_freq_band_results in input_freq_band_results.items():
-            for target_band, model in target_freq_band_results.items():
-                if model is None:
-                    continue
-                print(f"{input_band} -> {target_band}: {model.test_performance[main_metric]:.2f}")
+    for in_out_ocular_states, oc_state_results in best_models.items():
+        print(f"\n{f' Input: {in_out_ocular_states.input_data}, Target: {in_out_ocular_states.target} ':=^35}")
+        for dataset, input_freq_band_results in oc_state_results.items():
+            print(f"\n{f' {dataset} ':-^25}")
+            for input_band, target_freq_band_results in input_freq_band_results.items():
+                for target_band, model in target_freq_band_results.items():
+                    if model is None:
+                        continue
+                    if not isinstance(model, _Model):
+                        raise TypeError
+                    print(f"{input_band} -> {target_band}: {model.test_performance[main_metric]:.2f}")
 
     # -------------
     # Produce heatmaps
     # -------------
     # Loop through each dataset
-    for dataset, input_freq_band_results in best_models.items():
-        # Create DataFrame
-        df = pandas.DataFrame(
-            input_freq_band_results, index=_FREQ_BAND_ORDER, columns=_FREQ_BAND_ORDER
-        ).map(lambda a: a.test_performance[main_metric])
+    for in_out_ocular_states, oc_state_results in best_models.items():
+        for dataset, input_freq_band_results in oc_state_results.items():
+            # Create DataFrame
+            df = pandas.DataFrame(
+                input_freq_band_results, index=_FREQ_BAND_ORDER, columns=_FREQ_BAND_ORDER
+            ).map(lambda a: a if pandas.isnull(a) else a.test_performance[main_metric])
 
-        # Save DataFrame
-        df.to_csv(os.path.join(os.path.dirname(__file__), "csv_files", f"{dataset.lower()}.csv"))
+            # Save DataFrame
+            in_state, out_state = in_out_ocular_states
+            df.to_csv(
+                os.path.join(os.path.dirname(__file__), "csv_files",
+                             f"{dataset.lower()}_{in_state.value}_{out_state.value}.csv")
+            )
 
-        # -------------
-        # Plotting
-        # -------------
-        fig, ax = pyplot.subplots(figsize=_FIGSIZE)
+            # -------------
+            # Plotting
+            # -------------
+            fig, ax = pyplot.subplots(figsize=_FIGSIZE)
 
-        seaborn.heatmap(
-            df, annot=True, vmin=-1, vmax=1, cmap="coolwarm", fmt=".2f", ax=ax, annot_kws={"size": _FONTSIZE}
-        )
+            seaborn.heatmap(
+                df, annot=True, vmin=-1, vmax=1, cmap="coolwarm", fmt=".2f", ax=ax, annot_kws={"size": _FONTSIZE}
+            )
 
-        # Set the font size of the color bar labels
-        cbar = ax.collections[0].colorbar
-        cbar.ax.tick_params(labelsize=_FONTSIZE)
-        cbar.ax.set_ylabel(_PRETTY_NAME[main_metric], fontsize=_FONTSIZE)
+            # Set the font size of the color bar labels
+            cbar = ax.collections[0].colorbar
+            cbar.ax.tick_params(labelsize=_FONTSIZE)
+            cbar.ax.set_ylabel(_PRETTY_NAME[main_metric], fontsize=_FONTSIZE)
 
-        # Additional cosmetics
-        pyplot.title(f"Target dataset: {dataset}", fontsize=_FONTSIZE + 3)
-        ax.set_xlabel("Input frequency band", fontsize=_FONTSIZE)
-        ax.set_ylabel("Target band power", fontsize=_FONTSIZE)
-        ax.tick_params(labelsize=_FONTSIZE)
-        fig.tight_layout()
+            # Additional cosmetics
+            pyplot.title(f"Target dataset: {dataset} ({in_state.value.lower()}, {out_state.value.lower()})",
+                         fontsize=_FONTSIZE + 3)
+            ax.set_xlabel("Input frequency band", fontsize=_FONTSIZE)
+            ax.set_ylabel("Target band power", fontsize=_FONTSIZE)
+            ax.tick_params(labelsize=_FONTSIZE)
+            fig.tight_layout()
 
     pyplot.show()
 
