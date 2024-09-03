@@ -174,11 +174,11 @@ _PRETTY_NAME = {"pearson_r": "Pearson r"}
 
 
 def main():
-    main_metric = "pearson_r"
+    selection_metric = "pearson_r"
     results_dir = get_results_dir()
     balance_validation_performance = False
 
-    _get_best_performances(results_dir=results_dir, main_metric=main_metric,
+    _get_best_performances(results_dir=results_dir, main_metric=selection_metric,
                            balance_validation_performance=balance_validation_performance)
 
 
