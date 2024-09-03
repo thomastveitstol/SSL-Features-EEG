@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="improved variable name">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/results/regression_performance/regression_performance.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results/regression_performance/regression_performance.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/results_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/results_analysis.py" afterDir="false" />
-    </list>
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="automatic update" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -262,22 +258,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00046" summary="updated bash script">
-      <option name="closed" value="true" />
-      <created>1723810071239</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1723810071239</updated>
-    </task>
-    <task id="LOCAL-00047" summary="path fixes and added todo">
-      <option name="closed" value="true" />
-      <created>1723811686641</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1723811686641</updated>
     </task>
     <task id="LOCAL-00048" summary="removed unnecessary method">
       <option name="closed" value="true" />
@@ -655,7 +635,23 @@
       <option name="project" value="LOCAL" />
       <updated>1725372027512</updated>
     </task>
-    <option name="localTasksCounter" value="95" />
+    <task id="LOCAL-00095" summary="expanded plot script to cross ocular states">
+      <option name="closed" value="true" />
+      <created>1725375081913</created>
+      <option name="number" value="00095" />
+      <option name="presentableId" value="LOCAL-00095" />
+      <option name="project" value="LOCAL" />
+      <updated>1725375081913</updated>
+    </task>
+    <task id="LOCAL-00096" summary="automatic update">
+      <option name="closed" value="true" />
+      <created>1725375095670</created>
+      <option name="number" value="00096" />
+      <option name="presentableId" value="LOCAL-00096" />
+      <option name="project" value="LOCAL" />
+      <updated>1725375095670</updated>
+    </task>
+    <option name="localTasksCounter" value="97" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -670,9 +666,7 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added groups metric" />
     <MESSAGE value="minor config changes" />
-    <MESSAGE value="automatic update" />
     <MESSAGE value="changed path for TDBrain dataset" />
     <MESSAGE value="updates for tdbrain and added it to yml file" />
     <MESSAGE value="changed progressbar" />
@@ -695,6 +689,8 @@
     <MESSAGE value="fixed FutureWarning" />
     <MESSAGE value="added EO as targets in yml file" />
     <MESSAGE value="improved variable name" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved variable name" />
+    <MESSAGE value="expanded plot script to cross ocular states" />
+    <MESSAGE value="automatic update" />
+    <option name="LAST_COMMIT_MESSAGE" value="automatic update" />
   </component>
 </project>
