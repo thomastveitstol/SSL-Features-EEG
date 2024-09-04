@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="automatic update" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="improved plot script">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -44,75 +46,75 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python tests.Doctest BandPass._get_folder_name.executor": "Run",
-    "Python tests.Doctest FCModule.forward.executor": "Run",
-    "Python tests.Doctest Histories._build_error_and_info_objects.executor": "Run",
-    "Python tests.Doctest Histories.mean.executor": "Run",
-    "Python tests.Doctest Histories.pairwise_mean_difference.executor": "Run",
-    "Python tests.Doctest PolygonGraph.line_intersection.executor": "Run",
-    "Python tests.Doctest Wang._load_single_cleaned_mne_object.executor": "Run",
-    "Python tests.Doctest get_domain_discriminator.executor": "Run",
-    "Python tests.Doctest get_montage_split.executor": "Run",
-    "Python tests.Doctest get_mts_module.executor": "Run",
-    "Python tests.Doctest project_to_2d.executor": "Run",
-    "Python tests.Doctest sex_to_int.executor": "Run",
-    "Python tests.Doctest strip_tensors.executor": "Run",
-    "Python tests.Doctests in BandPass.executor": "Run",
-    "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
-    "Python tests.Doctests in FCModule.executor": "Run",
-    "Python tests.Doctests in LEMON.executor": "Run",
-    "Python tests.Doctests in MainFixedChannelsModel.executor": "Run",
-    "Python tests.Doctests in Miltiadous.executor": "Run",
-    "Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor": "Run",
-    "Python tests.Doctests in MultiMSMean.executor": "Run",
-    "Python tests.Doctests in SRM (1).executor": "Run",
-    "Python tests.Doctests in SRM.executor": "Run",
-    "Python tests.Doctests in TDBRAIN.executor": "Run",
-    "Python tests.Doctests in braindecode_models.executor": "Run",
-    "Python tests.Doctests in centroid_polygon.executor": "Run",
-    "Python tests.Doctests in cmmn.executor": "Run",
-    "Python tests.Doctests in dataset_base.executor": "Run",
-    "Python tests.Doctests in fc_modules.executor": "Run",
-    "Python tests.Doctests in getter.executor": "Run",
-    "Python tests.Doctests in head_region.executor": "Run",
-    "Python tests.Doctests in inception_network.executor": "Run",
-    "Python tests.Doctests in interpolate_datasets.executor": "Run",
-    "Python tests.Doctests in lemon.executor": "Run",
-    "Python tests.Doctests in losses.executor": "Run",
-    "Python tests.Doctests in main_fixed_channels_model.executor": "Run",
-    "Python tests.Doctests in main_rbp_model.executor": "Run",
-    "Python tests.Doctests in mean.executor": "Run",
-    "Python tests.Doctests in metrics.executor": "Run",
-    "Python tests.Doctests in miltiadous.executor": "Run",
-    "Python tests.Doctests in paths.executor": "Run",
-    "Python tests.Doctests in region_based_pooling.executor": "Run",
-    "Python tests.Doctests in sampling_distributions.executor": "Run",
-    "Python tests.Doctests in srm.executor": "Run",
-    "Python tests.Doctests in td_brain.executor": "Run",
-    "Python tests.Doctests in univariate_rocket.executor": "Run",
-    "Python tests.Doctests in utils.executor": "Run",
-    "Python tests.Doctests in wang.executor": "Run",
-    "Python.band_pass.executor": "Run",
-    "Python.band_power.executor": "Run",
-    "Python.debugging_lemon.executor": "Run",
-    "Python.debugging_td_brain.executor": "Run",
-    "Python.elecssl_experiments.executor": "Run",
-    "Python.group_differences.executor": "Run",
-    "Python.lemon.executor": "Run",
-    "Python.mts_module_base.executor": "Run",
-    "Python.plot_eeg_data.executor": "Run",
-    "Python.regression_performance.executor": "Run",
-    "Python.srm.executor": "Run",
-    "Python.wang.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python tests.Doctest BandPass._get_folder_name.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest FCModule.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Histories._build_error_and_info_objects.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Histories.mean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Histories.pairwise_mean_difference.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest PolygonGraph.line_intersection.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Wang._load_single_cleaned_mne_object.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_domain_discriminator.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_montage_split.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_mts_module.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest project_to_2d.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest sex_to_int.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest strip_tensors.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in BandPass.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in CustomWeightedLoss.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in FCModule.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LEMON.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MainFixedChannelsModel.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Miltiadous.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MultiMSMean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in SRM (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in SRM.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in TDBRAIN.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in braindecode_models.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in centroid_polygon.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in cmmn.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in dataset_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in fc_modules.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in getter.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in head_region.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in inception_network.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in interpolate_datasets.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in losses.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in main_fixed_channels_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in main_rbp_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in mean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in miltiadous.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in paths.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in region_based_pooling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in sampling_distributions.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in srm.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in td_brain.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in univariate_rocket.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in wang.executor&quot;: &quot;Run&quot;,
+    &quot;Python.band_pass.executor&quot;: &quot;Run&quot;,
+    &quot;Python.band_power.executor&quot;: &quot;Run&quot;,
+    &quot;Python.debugging_lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python.debugging_td_brain.executor&quot;: &quot;Run&quot;,
+    &quot;Python.elecssl_experiments.executor&quot;: &quot;Run&quot;,
+    &quot;Python.group_differences.executor&quot;: &quot;Run&quot;,
+    &quot;Python.lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mts_module_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plot_eeg_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.regression_performance.executor&quot;: &quot;Run&quot;,
+    &quot;Python.srm.executor&quot;: &quot;Run&quot;,
+    &quot;Python.wang.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/thomas/PycharmProjects/CrossDatasetLearningEEG&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/scripts" />
@@ -258,22 +260,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00049" summary="path fix">
-      <option name="closed" value="true" />
-      <created>1723811884292</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1723811884292</updated>
-    </task>
-    <task id="LOCAL-00050" summary="imrpovements for feature compuatition">
-      <option name="closed" value="true" />
-      <created>1723812487780</created>
-      <option name="number" value="00050" />
-      <option name="presentableId" value="LOCAL-00050" />
-      <option name="project" value="LOCAL" />
-      <updated>1723812487780</updated>
     </task>
     <task id="LOCAL-00051" summary="imrpovements for feature compuatition">
       <option name="closed" value="true" />
@@ -651,7 +637,23 @@
       <option name="project" value="LOCAL" />
       <updated>1725375346806</updated>
     </task>
-    <option name="localTasksCounter" value="98" />
+    <task id="LOCAL-00098" summary="automatic update">
+      <option name="closed" value="true" />
+      <created>1725375669815</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1725375669816</updated>
+    </task>
+    <task id="LOCAL-00099" summary="improved plot script">
+      <option name="closed" value="true" />
+      <created>1725462547025</created>
+      <option name="number" value="00099" />
+      <option name="presentableId" value="LOCAL-00099" />
+      <option name="project" value="LOCAL" />
+      <updated>1725462547025</updated>
+    </task>
+    <option name="localTasksCounter" value="100" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -666,7 +668,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="minor config changes" />
     <MESSAGE value="changed path for TDBrain dataset" />
     <MESSAGE value="updates for tdbrain and added it to yml file" />
     <MESSAGE value="changed progressbar" />
@@ -691,6 +692,7 @@
     <MESSAGE value="improved variable name" />
     <MESSAGE value="expanded plot script to cross ocular states" />
     <MESSAGE value="automatic update" />
-    <option name="LAST_COMMIT_MESSAGE" value="automatic update" />
+    <MESSAGE value="improved plot script" />
+    <option name="LAST_COMMIT_MESSAGE" value="improved plot script" />
   </component>
 </project>
