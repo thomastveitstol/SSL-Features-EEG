@@ -155,7 +155,7 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
             # -------------
             # Plotting
             # -------------
-            fig, ax = pyplot.subplots(figsize=_FIGSIZE)
+            fig, ax = pyplot.subplots(figsize=_FIGSIZE, dpi=_DPI)
 
             seaborn.heatmap(
                 df, annot=True, vmin=-1, vmax=1, cmap="coolwarm", fmt=".2f", ax=ax, annot_kws={"size": _FONTSIZE}
@@ -167,7 +167,7 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
             cbar.ax.set_ylabel(_PRETTY_NAME[main_metric], fontsize=_FONTSIZE)
 
             # Additional cosmetics
-            pyplot.title(f"Target dataset: {dataset} ({in_state.value.lower()}, {out_state.value.lower()})",
+            pyplot.title(rf"Target dataset: {dataset} ($O_1 = {in_state.value}$, $O_2 = {out_state.value}$)",
                          fontsize=_FONTSIZE + 3)
             ax.set_xlabel("Input frequency band", fontsize=_FONTSIZE)
             ax.set_ylabel("Target band power", fontsize=_FONTSIZE)
@@ -182,6 +182,7 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
 # -------------
 _FIGSIZE = (7, 5)
 _FONTSIZE = 12
+_DPI = 300
 _FREQ_BAND_ORDER = ("delta", "theta", "alpha", "beta", "gamma")
 _PRETTY_NAME = {"pearson_r": "Pearson r"}
 
