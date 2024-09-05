@@ -170,8 +170,7 @@ class TDBRAIN(EEGDatasetBase):
         # Convert to dict
         status_mapping = {}
         for sub_id, status in zip(df["participants_ID"], df["formal_status"]):
-            if status != "REPLICATION":
-                status_mapping[sub_id] = self._status_to_target(status)
+            status_mapping[sub_id] = self._status_to_target(status)
 
         return numpy.array([status_mapping[sub_id] for sub_id in subject_ids])
 
