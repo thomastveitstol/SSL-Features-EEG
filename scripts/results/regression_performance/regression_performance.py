@@ -182,7 +182,7 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
 # -------------
 _FIGSIZE = (7, 5)
 _FONTSIZE = 12
-_DPI = 300
+_DPI = 250
 _FREQ_BAND_ORDER = ("delta", "theta", "alpha", "beta", "gamma")
 _PRETTY_NAME = {"pearson_r": "Pearson r"}
 
