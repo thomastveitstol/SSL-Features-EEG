@@ -148,6 +148,46 @@ class TDBRAIN(EEGDatasetBase):
         # Select the ones passed in the subjects list, and return as numpy array
         return numpy.array([age_mapping[sub_id] for sub_id in subject_ids])
 
+    @target_method
+    def indication(self, subject_ids):
+        """This is mostly designed for use with groups metrics in Histories class"""
+        # Read the .tsv file
+        df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t")
+
+        # Convert to dict
+        status_mapping = {}
+        for sub_id, status in zip(df["participants_ID"], df["indication"]):
+            status_mapping[sub_id] = self._status_to_target(status)
+
+        return numpy.array([status_mapping[sub_id] for sub_id in subject_ids])
+
+    @target_method
+    def formal_status(self, subject_ids):
+        """This is mostly designed for use with groups metrics in Histories class"""
+        # Read the .tsv file
+        df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t")
+
+        # Convert to dict
+        status_mapping = {}
+        for sub_id, status in zip(df["participants_ID"], df["formal_status"]):
+            if status != "REPLICATION":
+                status_mapping[sub_id] = self._status_to_target(status)
+
+        return numpy.array([status_mapping[sub_id] for sub_id in subject_ids])
+
+    @staticmethod
+    def _status_to_target(status):
+        """Mapping from diagnostic status to numerical value"""
+        # I'll follow Table 1. todo: Are they certain about healthy? in that case, I need to add it to formal Dx as well
+        # todo: sometimes, there are several diagnosis per subject, s.a., ADHD / ASPERGER, how to handle that?
+        #  and what to do with the replication subjects?
+        mapping = {"MDD": 0, "ADHD": 1, "SMC": 2, "OCD": 3, "Tinnitus": 4, "Insomnia": 5, "Parkinson": 6, "Burnout": 7,
+                   "Dyslexia": 8, "Chronic Pain": 9, "UNKNOWN": 10, "Healthy": 11, "Other": 12, "REPLICATION": 13}
+        if status in mapping:
+            return mapping[status]
+
+        return len(mapping)  # todo: this must be changed in the future
+
     # ----------------
     # Channel system
     # ----------------

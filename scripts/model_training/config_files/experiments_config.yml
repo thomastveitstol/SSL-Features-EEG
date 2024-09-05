@@ -98,7 +98,7 @@ PredictionErrorAssociations: !MultiSelectFromDict
     LEMON: [ age, sex ]
     SRM: [ age, ravlt_tot, sex ]
     Wang: [ age, sex ]
-    TDBRAIN: [ age, sex ]
+    TDBRAIN: [ age, sex , indication, formal_status ]
   - *DatasetsNames
 
 VariablesMetrics:
@@ -107,6 +107,9 @@ VariablesMetrics:
   ravlt_tot: [ pearson_r, spearman_rho ]
   clinical_status: groups_metrics
   sex: groups_metrics
+  indication: groups_metrics
+  formal_status: groups_metrics
+
 
 # -----------------
 # Configuration for subject splitting (related to the cross validation)
