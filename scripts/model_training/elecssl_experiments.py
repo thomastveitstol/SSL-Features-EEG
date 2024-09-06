@@ -34,7 +34,7 @@ def _run_experiments(config_name):
     # ---------------
     # Run experiment
     # ---------------
-    results_path = get_results_dir() / f"debug_{}_{date.today()}_{datetime.now().strftime('%H%M%S')}"
+    results_path = get_results_dir() / f"debug_{config_name}_{date.today()}_{datetime.now().strftime('%H%M%S')}"
     with SSLExperiment(config=config, pre_processing_config={"general": {"resample": 90}},
                        results_path=results_path) as experiment:
         experiment.run_experiment()
