@@ -22,7 +22,7 @@ class MainRBPModel(nn.Module):
     PS: Merges montage splits by concatenation
     """
 
-    def __init__(self, *, mts_module, mts_module_kwargs, rbp_designs, normalise_region_representations=True,
+    def __init__(self, *, mts_module, mts_module_kwargs, rbp_designs, normalise_region_representations,
                  domain_discriminator=None, domain_discriminator_kwargs=None):
         """
         Initialise
