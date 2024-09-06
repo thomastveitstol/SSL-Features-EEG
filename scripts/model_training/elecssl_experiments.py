@@ -1,5 +1,6 @@
 import os
 from datetime import date, datetime
+from pathlib import Path
 
 import yaml
 
@@ -10,7 +11,7 @@ from elecssl.models.sampling_distributions import get_yaml_loader
 from elecssl.models.utils import add_yaml_constructors
 
 
-def main():
+def _run_experiments(config_name):
     # ---------------
     # Load config file with sampling
     # ---------------
@@ -19,7 +20,10 @@ def main():
 
     # Add additional formatting
     loader = add_yaml_constructors(loader)
-    with open(os.path.join(os.path.dirname(__file__), "config_files", "experiments_config.yml")) as file:
+
+    # Create path to config file
+    config_path = (Path(os.path.dirname(__file__)) / "config_files" / config_name).with_suffix(".yml")
+    with open(config_path) as file:
         config = yaml.load(file, Loader=loader)
 
     # ---------------
@@ -30,10 +34,22 @@ def main():
     # ---------------
     # Run experiment
     # ---------------
-    results_path = get_results_dir() / f"debug_{date.today()}_{datetime.now().strftime('%H%M%S')}"
+    results_path = get_results_dir() / f"debug_{}_{date.today()}_{datetime.now().strftime('%H%M%S')}"
     with SSLExperiment(config=config, pre_processing_config={"general": {"resample": 90}},
                        results_path=results_path) as experiment:
         experiment.run_experiment()
+
+
+def main():
+    # ----------------
+    # Select config file to use
+    # ----------------
+    experiments_config_name = "regression_performance"
+
+    # ----------------
+    # Run experiments
+    # ----------------
+    _run_experiments(config_name=experiments_config_name)
 
 
 if __name__ == "__main__":
