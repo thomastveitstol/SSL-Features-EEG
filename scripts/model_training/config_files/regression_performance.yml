@@ -72,8 +72,8 @@ AllDatasets: &AllDatasets
     time_series_start: null
 
 OcularStateAvailability: &OcularStateAvailability
-  ec: [ SRM, LEMON, Miltiadous, Wang, TDBRAIN ]
-  eo: [ LEMON, Wang, TDBRAIN ]
+  ec: [ SRM, LEMON, Wang ]  # Miltiadous, TDBRAIN
+  eo: [ LEMON, Wang ]  # TDBRAIN
 
 InputDatasets: &InputDatasets !SelectFromDict
   - <<: *OcularStateAvailability
