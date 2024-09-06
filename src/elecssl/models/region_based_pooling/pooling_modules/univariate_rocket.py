@@ -23,7 +23,7 @@ from elecssl.models.region_based_pooling.pooling_modules.pooling_base import pre
 # ---------------------
 # Pooling module classes
 # ---------------------
-class MultiCSSharedRocket(MultiMontageSplitsPoolingBase):
+class MultiMSSharedRocket(MultiMontageSplitsPoolingBase):
     """
     Pooling by linear combination of the channels, where the importance score is computed from ROCKET-based features and
     the ROCKET kernels are sharedacross all regions in the channel/region split. The ROCKET-based features are shared
@@ -33,10 +33,10 @@ class MultiCSSharedRocket(MultiMontageSplitsPoolingBase):
 
     Examples
     --------
-    >>> my_model = MultiCSSharedRocket((4, 7, 3, 9), num_kernels=100, max_receptive_field=200)
+    >>> my_model = MultiMSSharedRocket((4, 7, 3, 9), num_kernels=100, max_receptive_field=200)
     >>> my_model.num_channel_splits
     4
-    >>> MultiCSSharedRocket.supports_precomputing()
+    >>> MultiMSSharedRocket.supports_precomputing()
     True
     """
 
@@ -88,7 +88,7 @@ class MultiCSSharedRocket(MultiMontageSplitsPoolingBase):
         --------
         >>> my_data = {"d1": torch.rand(size=(10, 64, 500)), "d2": torch.rand(size=(7, 52, 512)),
         ...            "d3": torch.rand(size=(8, 9, 456)), "d4": torch.rand(size=(32, 19, 213))}
-        >>> my_model = MultiCSSharedRocket((6, 3, 9, 2), num_kernels=123, max_receptive_field=50)
+        >>> my_model = MultiMSSharedRocket((6, 3, 9, 2), num_kernels=123, max_receptive_field=50)
         >>> my_rocket_features = my_model.pre_compute(my_data)
         >>> {dataset_name: features.size() for dataset_name, features in my_rocket_features.items()}  # type: ignore
         ... # doctest: +NORMALIZE_WHITESPACE

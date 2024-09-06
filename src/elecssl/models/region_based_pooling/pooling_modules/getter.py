@@ -3,7 +3,7 @@ Simply a function for returning a specified pooling module
 """
 from elecssl.models.region_based_pooling.pooling_modules.head_region import MultiMSSharedRocketHeadRegion
 from elecssl.models.region_based_pooling.pooling_modules.mean import MultiMSMean
-from elecssl.models.region_based_pooling.pooling_modules.univariate_rocket import MultiCSSharedRocket
+from elecssl.models.region_based_pooling.pooling_modules.univariate_rocket import MultiMSSharedRocket
 
 
 def get_pooling_module(pooling_method, **kwargs):
@@ -31,7 +31,7 @@ def get_pooling_module(pooling_method, **kwargs):
     ('MultiMSMean',...)
     """
     # All available pooling modules must be included here
-    available_pooling_modules = (MultiMSMean, MultiCSSharedRocket, MultiMSSharedRocketHeadRegion)
+    available_pooling_modules = (MultiMSMean, MultiMSSharedRocket, MultiMSSharedRocketHeadRegion)
 
     # Loop through and select the correct one
     for pooling_module in available_pooling_modules:
