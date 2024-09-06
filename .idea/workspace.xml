@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="fix in target method tdbrain">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="changes to yml file" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -257,30 +255,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00055" summary="no change, but pycharm still thinks so">
-      <option name="closed" value="true" />
-      <created>1723816196567</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1723816196567</updated>
-    </task>
-    <task id="LOCAL-00056" summary="fixed bash script">
-      <option name="closed" value="true" />
-      <created>1723816324952</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1723816324952</updated>
-    </task>
-    <task id="LOCAL-00057" summary="added error class for handling unexpected failed loading">
-      <option name="closed" value="true" />
-      <created>1724054063890</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1724054063890</updated>
     </task>
     <task id="LOCAL-00058" summary="improved docstring">
       <option name="closed" value="true" />
@@ -650,7 +624,31 @@
       <option name="project" value="LOCAL" />
       <updated>1725544109820</updated>
     </task>
-    <option name="localTasksCounter" value="104" />
+    <task id="LOCAL-00104" summary="minor refactoring">
+      <option name="closed" value="true" />
+      <created>1725608209248</created>
+      <option name="number" value="00104" />
+      <option name="presentableId" value="LOCAL-00104" />
+      <option name="project" value="LOCAL" />
+      <updated>1725608209248</updated>
+    </task>
+    <task id="LOCAL-00105" summary="minor improvement to folder name">
+      <option name="closed" value="true" />
+      <created>1725608236756</created>
+      <option name="number" value="00105" />
+      <option name="presentableId" value="LOCAL-00105" />
+      <option name="project" value="LOCAL" />
+      <updated>1725608236756</updated>
+    </task>
+    <task id="LOCAL-00106" summary="changes to yml file">
+      <option name="closed" value="true" />
+      <created>1725608352137</created>
+      <option name="number" value="00106" />
+      <option name="presentableId" value="LOCAL-00106" />
+      <option name="project" value="LOCAL" />
+      <updated>1725608352137</updated>
+    </task>
+    <option name="localTasksCounter" value="107" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -665,8 +663,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="auto update" />
-    <MESSAGE value="flake8 fix" />
     <MESSAGE value="cosmetic improvement to progressbar" />
     <MESSAGE value="commented out code" />
     <MESSAGE value="added script for documenting changes made to TDBRAIN data files" />
@@ -674,7 +670,6 @@
     <MESSAGE value="made yml file ready for randomly selecting ocular state for input" />
     <MESSAGE value="added TDBRAIN to yml files" />
     <MESSAGE value="yml file update" />
-    <MESSAGE value="changes to yml file" />
     <MESSAGE value="added progressbar" />
     <MESSAGE value="plot/debug script" />
     <MESSAGE value="fixed raising error when nothing should be raised" />
@@ -690,6 +685,9 @@
     <MESSAGE value="plot cosmetics" />
     <MESSAGE value="added status to TDBRAIN" />
     <MESSAGE value="fix in target method tdbrain" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix in target method tdbrain" />
+    <MESSAGE value="minor refactoring" />
+    <MESSAGE value="minor improvement to folder name" />
+    <MESSAGE value="changes to yml file" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes to yml file" />
   </component>
 </project>

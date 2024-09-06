@@ -55,16 +55,16 @@ AllDatasets: &AllDatasets
     num_time_steps: null
     pre_processed_version: *preprocessed_version
     time_series_start: null
-  Miltiadous:
-    num_subjects: 88
-    num_time_steps: null
-    pre_processed_version: *preprocessed_version
-    time_series_start: null
-  TDBRAIN:
-    num_subjects: 1273
-    num_time_steps: null
-    pre_processed_version: *preprocessed_version
-    time_series_start: null
+  #Miltiadous:
+  #  num_subjects: 88
+  #  num_time_steps: null
+  #  pre_processed_version: *preprocessed_version
+  #  time_series_start: null
+  #TDBRAIN:
+  #  num_subjects: 1273
+  #  num_time_steps: null
+  #  pre_processed_version: *preprocessed_version
+  #  time_series_start: null
   Wang:
     num_subjects: 60
     num_time_steps: null
