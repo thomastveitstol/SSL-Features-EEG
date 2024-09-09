@@ -391,6 +391,7 @@ def _yaml_get_dict(loader, node):
     """yaml and nested structures is difficult, so sometimes using this is a nice quick fix"""
     return loader.construct_mapping(node, deep=True)
 
+
 def _yaml_get_list(loader, node):
     """Quick fix for returning a list"""
     return loader.construct_sequence(node, deep=True)

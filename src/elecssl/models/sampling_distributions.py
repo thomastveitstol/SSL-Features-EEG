@@ -178,7 +178,7 @@ def get_yaml_loader():
             return type_constructor
 
         # Add the constructor
-        _name  = _snake_case_to_pascal_case(sampling_dist)
+        _name = _snake_case_to_pascal_case(sampling_dist)
         yaml_loader.add_constructor(f"!{_name}", make_constructor(sampling_dist))
         yaml_loader.add_constructor(f"!Type{_name}", make_type_constructor(sampling_dist))
 
