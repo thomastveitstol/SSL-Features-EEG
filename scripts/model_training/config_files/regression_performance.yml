@@ -132,7 +132,7 @@ ExponentialDecayFC: &ExponentialDecayFC
   first_layer_multiple: !Uniform [ 0.5, 2 ]
   exponential_decrease: !RandomChoice [ 2, 3 ]
   in_features: UNDETERMINED  # Need to 'ask' the DL architecture
-  num_classes: !Sum [ !MappingLength [ *Datasets ], -1 ]
+  num_classes: &num_discriminator_classes !Sum [ !MappingLength [ *Datasets ], -1 ]
   activation_function: !RandomChoice
     - name: relu
       kwargs: {}
@@ -144,11 +144,15 @@ FCModule: &FCModule !RandomChoice
     kwargs: *ExponentialDecayFC
 
 # Selecting domain discriminator
+_discriminator: &_discriminator !RandomChoice
+  - null
+  - name: FCModule
+    kwargs: *FCModule
 DomainDiscriminator:
-  discriminator: &discriminator !RandomChoice
-    #- null
-    - name: FCModule
-      kwargs: *FCModule
+  discriminator: &discriminator !IfZeroElse  # No need for a domain discriminator if only one dataset for training
+    condition: !Sum [ *num_discriminator_classes, -1 ]
+    true: null
+    false: *_discriminator
   training:
     Loss:
       loss: CrossEntropyLoss
@@ -162,7 +166,6 @@ DomainDiscriminator:
 # -----------------
 # Training configurations
 # -----------------
-#training_method_condition: &_training_method_condition !IsNone *discriminator
 Scalers:
   target:
     kwargs: {}
@@ -238,7 +241,7 @@ Deep4NetMTS: &Deep4NetMTS
   filter_length_2: *_filter_length
   filter_length_3: *_filter_length
   filter_length_4: *_filter_length
-  drop_prob : !Uniform [0, 0.5]
+  drop_prob: !Uniform [0, 0.5]
 
 # Selected DL architecture
 DLArchitecture: !RandomChoice
@@ -252,7 +255,89 @@ DLArchitecture: !RandomChoice
 # -----------------
 # Varied numbers of channels
 # -----------------
-Varied Numbers of Channels:
+# Region based pooling. The logic for creating all hyperparameters are a little too much for a .yml file, so these are
+# the hyperparameters of the sampling of RBP
+
+# Pooling modules
+# todo: must implement and update for returning the distribution instead
+num_kernels: &num_kernels !TypeLogUniformInt [ 10, 2, 3 ] # return the distribution instead
+max_receptive_field: &max_receptive_field !TypeLogUniformInt [ 10, 2, 3 ]  # todo: use seconds as unit instead
+
+MultiMSMean: &MultiMSMean
+  pooling_method: MultiMSMean
+  pooling_method_kwargs: !GetDict {}
+
+MultiMSSharedRocket: &MultiMSSharedRocket
+  pooling_method: MultiMSSharedRocket
+  pooling_method_kwargs: !GetDict { num_kernels: *num_kernels, max_receptive_field: *max_receptive_field }
+
+MultiMSSharedRocketHeadRegion: &MultiMSSharedRocketHeadRegion
+  pooling_method: MultiMSSharedRocketHeadRegion
+  pooling_method_kwargs: !GetDict
+    num_kernels: *num_kernels
+    max_receptive_field: *max_receptive_field
+    latent_search_features: !TypeLogUniformInt [ 2, 3, 7 ]
+    share_search_receiver_modules: !TypeRandomChoice [ true, false ]  # return the distribution instead
+    bias: false
+
+# Montage splits
+CentroidPolygons: &CentroidPolygons
+  name: CentroidPolygons
+  kwargs: !GetDict
+    channel_positions: [ Miltiadous ]
+    min_nodes: !TypeUniformInt [ 1, 6 ]
+    k: !TypeRandomChoice
+      - [ 2, 2, 2, 2, 2, 2, 2 ]
+      - [ 3, 3, 3, 3, 3, 3, 3, 3 ]
+      - [ 2, 3, 2, 3, 2, 3, 2, 3, 2 ]
+      - [ 4, 3, 2, 3, 4, 3, 2, 3, 4 ]
+
+# CMMN
+NoCMMN: &NoCMMN
+  cmmn_kwargs: null
+  use_cmmn_layer: false
+
+_kernel_size_multiple: &kernel_size_multiple !Uniform [0.5, 4]
+_kernel_size: &cmmn_kernel_size !SelectFromDict
+  - delta: !MultiplierInt [ *kernel_size_multiple, 4 ]
+    theta: !MultiplierInt [ *kernel_size_multiple, 8 ]
+    alpha: !MultiplierInt [ *kernel_size_multiple, 12 ]
+    beta: !MultiplierInt [ *kernel_size_multiple, 30 ]
+    gamma: !MultiplierInt [ *kernel_size_multiple,45 ]
+  - *freq_band
+CMMN: &CMMN
+  cmmn_kwargs: !GetDict { kernel_size: *cmmn_kernel_size }
+  use_cmmn_layer: true
+
+_num_montage_splits: &num_montage_splits !LogUniformInt [2, 0, 3]
+_share_all_pooling_modules: &share_all_pooling_modules false #!RandomChoice [ true, false ]
+_num_pooling_modules: &num_pooling_modules !IfElse { condition: *share_all_pooling_modules, true: 1, false: !UniformInt [ 1, !Sum [ *num_montage_splits, 1 ] ] }
+_partitions: &partitions !CreatePartitionSizes [ *num_montage_splits, *num_pooling_modules ]
+RegionBasedPooling: &RegionBasedPooling
+  normalise_region_representations: !RandomChoice [ true, false ]
+  RBPDesigns: !SampleRBPDesigns
+    partitions: *partitions
+    designs:
+      num_designs: 1
+      pooling_type: multi_cs  # this shouldn't be necessary
+      pooling_module: !TypeRandomChoice [ *MultiMSMean, *MultiMSSharedRocket, *MultiMSSharedRocketHeadRegion ]
+      montage_splits: !TypeRandomChoice [ *CentroidPolygons ]
+      cmmn: !RandomChoice [ *NoCMMN, *CMMN ]
+
+# Interpolation
+Interpolation: &Interpolation
+  main_channel_system: !RandomChoiceFromList [ *DatasetsNames ]
+  method: !RandomChoice [ MNE, spline ]
+
+# Selecting method for handling varied electrode configurations
+Varied Numbers of Channels: !RandomChoice
+  - name: RegionBasedPooling
+    kwargs: *RegionBasedPooling
+  #- name: Interpolation
+  #  kwargs: *Interpolation
+
+
+Varied Numbers of Channrels:
   kwargs:
     RBPDesigns:
       RBPDesign0:
