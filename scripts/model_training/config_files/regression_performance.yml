@@ -259,7 +259,7 @@ DLArchitecture: !RandomChoice
 # the hyperparameters of the sampling of RBP
 
 # Pooling modules
-num_kernels: &num_kernels !TypeLogUniformInt [ 10, 2, 3 ] # return the distribution instead
+num_kernels: &num_kernels !TypeLogUniformInt [ 10, 2, 3 ]
 max_receptive_field: &max_receptive_field !TypeLogUniformInt [ 10, 2, 3 ]  # todo: use seconds as unit instead
 
 MultiMSMean: &MultiMSMean
@@ -276,7 +276,7 @@ MultiMSSharedRocketHeadRegion: &MultiMSSharedRocketHeadRegion
     num_kernels: *num_kernels
     max_receptive_field: *max_receptive_field
     latent_search_features: !TypeLogUniformInt [ 2, 3, 7 ]
-    share_search_receiver_modules: !TypeRandomChoice [ true, false ]  # return the distribution instead
+    share_search_receiver_modules: !TypeRandomChoice [ true, false ]
     bias: false
 
 # Montage splits
