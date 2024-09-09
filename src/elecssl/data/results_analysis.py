@@ -39,6 +39,15 @@ def is_better(metric, *, old_performance, new_performance):
 # ----------------
 # Functions for getting stuff
 # ----------------
+def get_successful_regression_performance_runs(results_dir):
+    # Get all folder names
+    all_runs = os.listdir(results_dir)
+
+    # Filter to get the successful ones only
+    return tuple(run for run in all_runs if os.path.isfile(results_dir / run / "finished_successfully.txt")
+                 and "regression_performance" in run)
+
+
 def get_successful_runs(results_dir):
     # Get all folder names
     all_runs = os.listdir(results_dir)

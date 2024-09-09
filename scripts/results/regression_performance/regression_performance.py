@@ -12,7 +12,7 @@ from progressbar import progressbar
 
 from elecssl.data.paths import get_results_dir
 from elecssl.data.results_analysis import higher_is_better, get_test_dataset_name, get_input_and_target_freq_bands, \
-    is_better, get_successful_runs, InOutOcularStates, get_input_and_target_freq_ocular_states
+    is_better, InOutOcularStates, get_input_and_target_freq_ocular_states, get_successful_regression_performance_runs
 
 
 @dataclasses.dataclass(frozen=True)
@@ -74,7 +74,7 @@ def _get_val_test_metrics(path, main_metric, balance_validation_performance):
 def _get_best_performances(*, results_dir, main_metric, balance_validation_performance):
     best_models: Dict[InOutOcularStates, Dict[str, Dict[str, Dict[str, Optional[_Model]]]]] = {}
 
-    for run in progressbar(get_successful_runs(results_dir), prefix="Run ", redirect_stdout=True):
+    for run in progressbar(get_successful_regression_performance_runs(results_dir), prefix="Run ", redirect_stdout=True):
         run_path = results_dir / run
 
         # Loop through the folds
@@ -182,13 +182,13 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
 # -------------
 _FIGSIZE = (7, 5)
 _FONTSIZE = 12
-_DPI = 250
+_DPI = None
 _FREQ_BAND_ORDER = ("delta", "theta", "alpha", "beta", "gamma")
-_PRETTY_NAME = {"pearson_r": "Pearson r"}
+_PRETTY_NAME = {"pearson_r": "Pearson's r", "spearman_rho": "Spearman's rho"}
 
 
 def main():
-    selection_metric = "pearson_r"
+    selection_metric = "spearman_rho"
     results_dir = get_results_dir()
     balance_validation_performance = False
 
