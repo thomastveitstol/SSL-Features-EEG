@@ -1,4 +1,5 @@
 import random
+from typing import Any, Dict
 
 
 def _generate_partition_sizes(*, n, k):
@@ -50,6 +51,8 @@ def yaml_generate_partition_sizes(loader, node):
 
 
 def _traverse_and_call(obj):
+    """Function which is used for making calls when a list/dict contains callables. This function was written by
+    ChatGPT"""
     if isinstance(obj, dict):
         # Recursively traverse dictionaries
         return {key: _traverse_and_call(value) for key, value in obj.items()}
@@ -70,7 +73,7 @@ def yaml_sample_rbp(loader, node):
     partitions = dict_["partitions"]
     designs = dict_["designs"]
 
-    rbp_designs = dict()
+    rbp_designs: Dict[str, Dict[str, Any]] = dict()
 
     for i, k in enumerate(partitions):
         rbp_name = f"RBPDesign{i}"
