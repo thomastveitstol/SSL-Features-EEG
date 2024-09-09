@@ -1,8 +1,11 @@
 import abc
+import random
 
 import numpy
 import torch
 from torch.autograd import Function
+
+from elecssl.models.region_based_pooling.hyperparameter_sampling import yaml_generate_partition_sizes, yaml_sample_rbp
 
 
 # ---------------
@@ -378,10 +381,24 @@ def _yaml_list_intersection(loader, node):
     return list(set(list_1) & set(list_2))
 
 
-def yaml_multi_select_from_dict(loader, node):
+def _yaml_multi_select_from_dict(loader, node):
     """Selects the correct elements from a dictionary"""
     dict_, keys_ = loader.construct_sequence(node, deep=True)
     return {key_: dict_[key_] for key_ in keys_}
+
+
+def _yaml_get_dict(loader, node):
+    """yaml and nested structures is difficult, so sometimes using this is a nice quick fix"""
+    return loader.construct_mapping(node, deep=True)
+
+def _yaml_get_list(loader, node):
+    """Quick fix for returning a list"""
+    return loader.construct_sequence(node, deep=True)
+
+
+def _yaml_random_choice_from_list(loader, node):
+    """Convenient when you must pass the list"""
+    return random.choice(loader.construct_sequence(node, deep=True)[0])
 
 
 def add_yaml_constructors(loader):
@@ -406,5 +423,9 @@ def add_yaml_constructors(loader):
     loader.add_constructor("!IfElse", _yaml_if_else)
     loader.add_constructor("!Tuple", _yaml_tuple)
     loader.add_constructor("!ListIntersection", _yaml_list_intersection)
-    loader.add_constructor("!MultiSelectFromDict", yaml_multi_select_from_dict)
+    loader.add_constructor("!MultiSelectFromDict", _yaml_multi_select_from_dict)
+    loader.add_constructor("!CreatePartitionSizes", yaml_generate_partition_sizes)
+    loader.add_constructor("!SampleRBPDesigns", yaml_sample_rbp)
+    loader.add_constructor("!GetDict", _yaml_get_dict)
+    loader.add_constructor("!RandomChoiceFromList", _yaml_random_choice_from_list)
     return loader
