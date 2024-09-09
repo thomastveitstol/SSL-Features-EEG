@@ -57,6 +57,7 @@ src/elecssl/models/mts_modules/getter.py
 src/elecssl/models/mts_modules/inception_network.py
 src/elecssl/models/mts_modules/mts_module_base.py
 src/elecssl/models/region_based_pooling/__init__.py
+src/elecssl/models/region_based_pooling/hyperparameter_sampling.py
 src/elecssl/models/region_based_pooling/region_based_pooling.py
 src/elecssl/models/region_based_pooling/utils.py
 src/elecssl/models/region_based_pooling/montage_splits/__init__.py
