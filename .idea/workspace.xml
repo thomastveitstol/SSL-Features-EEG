@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="changes to yml file" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="removed default argument">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/regression_performance.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/regression_performance.yml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -255,30 +258,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00058" summary="improved docstring">
-      <option name="closed" value="true" />
-      <created>1724054119761</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1724054119761</updated>
-    </task>
-    <task id="LOCAL-00059" summary="added handling unloadable data for feature extraction">
-      <option name="closed" value="true" />
-      <created>1724054301928</created>
-      <option name="number" value="00059" />
-      <option name="presentableId" value="LOCAL-00059" />
-      <option name="project" value="LOCAL" />
-      <updated>1724054301928</updated>
-    </task>
-    <task id="LOCAL-00060" summary="refactoring">
-      <option name="closed" value="true" />
-      <created>1724072414621</created>
-      <option name="number" value="00060" />
-      <option name="presentableId" value="LOCAL-00060" />
-      <option name="project" value="LOCAL" />
-      <updated>1724072414621</updated>
     </task>
     <task id="LOCAL-00061" summary="added heatmaps to plot script">
       <option name="closed" value="true" />
@@ -648,7 +627,31 @@
       <option name="project" value="LOCAL" />
       <updated>1725608352137</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <task id="LOCAL-00107" summary="changes to yml file">
+      <option name="closed" value="true" />
+      <created>1725609067247</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1725609067247</updated>
+    </task>
+    <task id="LOCAL-00108" summary="fixed class name">
+      <option name="closed" value="true" />
+      <created>1725615326187</created>
+      <option name="number" value="00108" />
+      <option name="presentableId" value="LOCAL-00108" />
+      <option name="project" value="LOCAL" />
+      <updated>1725615326187</updated>
+    </task>
+    <task id="LOCAL-00109" summary="removed default argument">
+      <option name="closed" value="true" />
+      <created>1725624404892</created>
+      <option name="number" value="00109" />
+      <option name="presentableId" value="LOCAL-00109" />
+      <option name="project" value="LOCAL" />
+      <updated>1725624404892</updated>
+    </task>
+    <option name="localTasksCounter" value="110" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -663,8 +666,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="cosmetic improvement to progressbar" />
-    <MESSAGE value="commented out code" />
     <MESSAGE value="added script for documenting changes made to TDBRAIN data files" />
     <MESSAGE value="added debugging script" />
     <MESSAGE value="made yml file ready for randomly selecting ocular state for input" />
@@ -688,6 +689,8 @@
     <MESSAGE value="minor refactoring" />
     <MESSAGE value="minor improvement to folder name" />
     <MESSAGE value="changes to yml file" />
-    <option name="LAST_COMMIT_MESSAGE" value="changes to yml file" />
+    <MESSAGE value="fixed class name" />
+    <MESSAGE value="removed default argument" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed default argument" />
   </component>
 </project>

@@ -349,6 +349,24 @@ def _yaml_if_none_else(loader, node):
         return options[False]
 
 
+def _yaml_if_zero_else(loader, node):
+    """Returns one of two alternatives, depending on if a condition is zero or not"""
+    options = loader.construct_mapping(node, deep=True)
+    if options["condition"] == 0:
+        return options[True]
+    else:
+        return options[False]
+
+
+def _yaml_if_else(loader, node):
+    """Returns one of two alternatives, depending on if a condition is True or False"""
+    options = loader.construct_mapping(node, deep=True)
+    if options["condition"]:
+        return options[True]
+    else:
+        return options[False]
+
+
 def _yaml_tuple(loader, node):
     """Convert sequence to tuple"""
     return tuple(loader.construct_sequence(node))
@@ -384,6 +402,8 @@ def add_yaml_constructors(loader):
     loader.add_constructor("!MappingLength", _yaml_mapping_length)
     loader.add_constructor("!Sum", _yaml_sum)
     loader.add_constructor("!IfIsNoneElse", _yaml_if_none_else)
+    loader.add_constructor("!IfZeroElse", _yaml_if_zero_else)
+    loader.add_constructor("!IfElse", _yaml_if_else)
     loader.add_constructor("!Tuple", _yaml_tuple)
     loader.add_constructor("!ListIntersection", _yaml_list_intersection)
     loader.add_constructor("!MultiSelectFromDict", yaml_multi_select_from_dict)
