@@ -166,11 +166,20 @@ def get_yaml_loader():
         # Create the constructor
         def make_constructor(dist):
             def constructor(loader, node):
-                return sample_hyperparameter(dist, *loader.construct_sequence(node))
+                return sample_hyperparameter(dist, *loader.construct_sequence(node, deep=True))
 
             return constructor
 
+        def make_type_constructor(dist):
+            def type_constructor(loader, node):
+                # todo: is this smelly lambda in for-loop?
+                return lambda: sample_hyperparameter(dist, *loader.construct_sequence(node, deep=True))
+
+            return type_constructor
+
         # Add the constructor
-        yaml_loader.add_constructor(f"!{_snake_case_to_pascal_case(sampling_dist)}", make_constructor(sampling_dist))
+        _name  = _snake_case_to_pascal_case(sampling_dist)
+        yaml_loader.add_constructor(f"!{_name}", make_constructor(sampling_dist))
+        yaml_loader.add_constructor(f"!Type{_name}", make_type_constructor(sampling_dist))
 
     return yaml_loader
