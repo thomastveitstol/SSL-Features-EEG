@@ -259,7 +259,6 @@ DLArchitecture: !RandomChoice
 # the hyperparameters of the sampling of RBP
 
 # Pooling modules
-# todo: must implement and update for returning the distribution instead
 num_kernels: &num_kernels !TypeLogUniformInt [ 10, 2, 3 ] # return the distribution instead
 max_receptive_field: &max_receptive_field !TypeLogUniformInt [ 10, 2, 3 ]  # todo: use seconds as unit instead
 
