@@ -309,7 +309,7 @@ CMMN: &CMMN
   use_cmmn_layer: true
 
 _num_montage_splits: &num_montage_splits !LogUniformInt [2, 0, 3]
-_share_all_pooling_modules: &share_all_pooling_modules false #!RandomChoice [ true, false ]
+_share_all_pooling_modules: &share_all_pooling_modules !RandomChoice [ true, false ]
 _num_pooling_modules: &num_pooling_modules !IfElse { condition: *share_all_pooling_modules, true: 1, false: !UniformInt [ 1, !Sum [ *num_montage_splits, 1 ] ] }
 _partitions: &partitions !CreatePartitionSizes [ *num_montage_splits, *num_pooling_modules ]
 RegionBasedPooling: &RegionBasedPooling
