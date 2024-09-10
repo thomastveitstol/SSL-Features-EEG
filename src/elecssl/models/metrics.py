@@ -679,7 +679,7 @@ class Histories:
         # Check if number of epochs is the same for all subjects
         all_num_epochs = set(len(epoch_history) for epoch_history in self._prediction_history.values())
 
-        assert len(all_num_epochs) == 1, (f"Expected number of EEG epochs to be the same for all epochs and subjects, "
+        assert len(all_num_epochs) == 1, (f"Expected number of DL epochs to be the same for all epochs and subjects, "
                                           f"but found {all_num_epochs}")
         num_epochs = tuple(all_num_epochs)[0]
 
