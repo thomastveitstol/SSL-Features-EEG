@@ -821,13 +821,14 @@ class Histories:
         # Save as .csv
         df.to_csv(os.path.join(path, f"{history_name}_metrics.csv"), index=False)
 
-    def save_variables_histories(self, history_name, path, decimals):
+    def save_variables_histories(self, history_name, path, decimals, save_plots):
         # Associations with difference between predicted and true value
         error_difference_path = path / "difference"
         if not os.path.isdir(error_difference_path):
             os.mkdir(error_difference_path)
         self._save_variables_history(
-            history=self._variables_history, history_name=history_name, path=error_difference_path, decimals=decimals
+            history=self._variables_history, history_name=history_name, path=error_difference_path, decimals=decimals,
+            save_plots=save_plots
         )
 
         # Associations with ratio between predicted and true value
@@ -835,10 +836,11 @@ class Histories:
         if not os.path.isdir(error_ratio_path):
             os.mkdir(error_ratio_path)
         self._save_variables_history(
-            history=self._variables_history_ratios, history_name=history_name, path=error_ratio_path, decimals=decimals
+            history=self._variables_history_ratios, history_name=history_name, path=error_ratio_path, decimals=decimals,
+            save_plots=save_plots
         )
 
-    def _save_variables_history(self, history, history_name, path, decimals):
+    def _save_variables_history(self, history, history_name, path, decimals, save_plots):
         # If there is no history, raise a warning and do nothing
         if self._variables_history is None:
             warnings.warn("Tried to save results of associations with prediction error and other variables, but there "
@@ -870,25 +872,26 @@ class Histories:
 
             # Loop through our newly created dictionary to make plots and save DataFrames
             for metric, dataset_histories in metrics_dict.items():
-                pyplot.figure(figsize=(12, 6))  # todo: as above, not an elegant solution...
+                if save_plots:
+                    pyplot.figure(figsize=(12, 6))  # todo: as above, not an elegant solution...
 
-                for dataset_name, history_list in dataset_histories.items():
-                    # Plot
-                    pyplot.plot(range(1, len(history_list) + 1), history_list, label=dataset_name)
+                    for dataset_name, history_list in dataset_histories.items():
+                        # Plot
+                        pyplot.plot(range(1, len(history_list) + 1), history_list, label=dataset_name)
 
-                    # Plot cosmetics
-                    font_size = 15
+                        # Plot cosmetics
+                        font_size = 15
 
-                    pyplot.title(f"Associations with prediction error: {var_name}", fontsize=font_size + 5)
-                    pyplot.xlabel("Epoch", fontsize=font_size)
-                    pyplot.ylabel(metric.capitalize(), fontsize=font_size)
-                    pyplot.tick_params(labelsize=font_size)
-                    pyplot.legend(fontsize=font_size)
-                    pyplot.grid()
+                        pyplot.title(f"Associations with prediction error: {var_name}", fontsize=font_size + 5)
+                        pyplot.xlabel("Epoch", fontsize=font_size)
+                        pyplot.ylabel(metric.capitalize(), fontsize=font_size)
+                        pyplot.tick_params(labelsize=font_size)
+                        pyplot.legend(fontsize=font_size)
+                        pyplot.grid()
 
-                # Save figure and close it
-                pyplot.savefig(var_path / f"{history_name}_{metric}.png")
-                pyplot.close()
+                    # Save figure and close it
+                    pyplot.savefig(var_path / f"{history_name}_{metric}.png")
+                    pyplot.close()
 
                 # Make and save dataframe
                 df = pandas.DataFrame.from_dict(dataset_histories)

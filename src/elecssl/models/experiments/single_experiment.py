@@ -400,8 +400,9 @@ class SSLExperiment:
                                              decimals=decimals)
 
             # Save domain discriminator metrics plots
-            save_discriminator_histories_plots(path=domain_discriminator_path,
-                                               histories=(dd_train_history, dd_val_history))
+            if self.saving_config["save_discriminator_plots"]:
+                save_discriminator_histories_plots(path=domain_discriminator_path,
+                                                   histories=(dd_train_history, dd_val_history))
 
         # Save subgroup plots
         sub_group_path = os.path.join(results_path, "sub_groups_plots")
@@ -415,14 +416,18 @@ class SSLExperiment:
         # Save variable associations with prediction error
         variables_history_path = results_path / "error_associations"
         os.mkdir(variables_history_path)
-        train_history.save_variables_histories(history_name="train", path=variables_history_path, decimals=decimals)
-        val_history.save_variables_histories(history_name="val", path=variables_history_path, decimals=decimals)
+        train_history.save_variables_histories(history_name="train", path=variables_history_path, decimals=decimals,
+                                               save_plots=self.saving_config["save_error_association_plots"])
+        val_history.save_variables_histories(history_name="val", path=variables_history_path, decimals=decimals,
+                                             save_plots=self.saving_config["save_error_association_plots"])
         if test_history is not None:
-            test_history.save_variables_histories(history_name="test", path=variables_history_path, decimals=decimals)
+            test_history.save_variables_histories(history_name="test", path=variables_history_path, decimals=decimals,
+                                                  save_plots=self.saving_config["save_error_association_plots"])
 
         # Save plots
-        save_histories_plots(path=results_path, train_history=train_history, val_history=val_history,
-                             test_estimate=test_estimate, test_history=test_history)
+        if self.saving_config["save_metrics_per_fold_plots"]:
+            save_histories_plots(path=results_path, train_history=train_history, val_history=val_history,
+                                 test_estimate=test_estimate, test_history=test_history)
 
     # -------------
     # Method for running experiments
@@ -596,7 +601,8 @@ class SSLExperiment:
                 raise RuntimeError  # todo: add message
             test_histories[test_name] = test_history
 
-        save_test_histories_plots(path=self._results_path, histories=test_histories)
+        if self.saving_config["save_final_test_histories_plots"]:
+            save_test_histories_plots(path=self._results_path, histories=test_histories)
 
     # -------------
     # Main method for running the cross validation experiment
@@ -741,3 +747,7 @@ class SSLExperiment:
     @property
     def variables_metrics(self):
         return self._config["VariablesMetrics"]
+
+    @property
+    def saving_config(self):
+        return self._config["Saving"]
