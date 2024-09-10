@@ -14,6 +14,7 @@ def generate_config_file(config):
     varied_num_channels = config["Varied Numbers of Channels"]
     datasets = config["Datasets"]
     scalers = config["Scalers"]
+    saving = config["Saving"]
 
     # -----------------
     # Add details which requires a little more handling
@@ -52,5 +53,6 @@ def generate_config_file(config):
         "Varied Numbers of Channels": varied_num_channels,
         "DomainDiscriminator": domain_discriminator,
         "DLArchitecture": dl_architecture,
-        "Training": training
+        "Training": training,
+        "Saving": saving
     }
