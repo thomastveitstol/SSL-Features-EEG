@@ -700,14 +700,14 @@ class Histories:
         # If the predictions of the model is a vector (such as a domain discriminator), further flattening is needed
         if all(isinstance(prediction, tuple) for predictions in prediction_history.values()
                for prediction in predictions):
-            output_dims = set(len(prediction) for predictions in prediction_history.values()
+            output_dims = set(len(prediction) for predictions in prediction_history.values()  # type: ignore[arg-type]
                               for prediction in predictions)
             assert len(output_dims) == 1, (f"Expected output dimensions to be the same for all predictions, but found "
-                                          f"{output_dims}")
+                                           f"{output_dims}")
             output_dim = tuple(output_dims)[0]
 
-            prediction_history = {sub_id: tuple(itertools.chain(*predictions)) for sub_id, predictions
-                                  in prediction_history.items()}
+            prediction_history = {sub_id: tuple(itertools.chain(*predictions))  # type: ignore[arg-type]
+                                  for sub_id, predictions in prediction_history.items()}
             epochs_column_names = [f"dim{k}_pred{j + 1}_epoch{i + 1}" for i in range(num_epochs) for j in
                                    range(num_eeg_epochs) for k in range(output_dim)]
         else:
