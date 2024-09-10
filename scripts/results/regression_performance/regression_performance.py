@@ -1,5 +1,6 @@
 import dataclasses
 import os
+import warnings
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -74,6 +75,7 @@ def _get_val_test_metrics(path, main_metric, balance_validation_performance):
 def _get_best_performances(*, results_dir, main_metric, balance_validation_performance):
     best_models: Dict[InOutOcularStates, Dict[str, Dict[str, Dict[str, Optional[_Model]]]]] = {}
 
+    num_very_bad_models = 0
     for run in progressbar(get_successful_regression_performance_runs(results_dir), prefix="Run ", redirect_stdout=True):
         run_path = results_dir / run
 
@@ -83,10 +85,17 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
             # I need to get the validation performance (for making model selection), test performance (in case the
             # current run and fold is best for this dataset), and the dataset name (to know which dataset the
             # metrics are for). I also need the frequency band for input and target data
-            val_metric, test_metrics, test_dataset = _get_val_test_metrics(
-                path=run_path / fold, main_metric=main_metric,
-                balance_validation_performance=balance_validation_performance
-            )
+            try:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore", category=FutureWarning)
+
+                    val_metric, test_metrics, test_dataset = _get_val_test_metrics(
+                        path=run_path / fold, main_metric=main_metric,
+                        balance_validation_performance=balance_validation_performance
+                    )
+            except KeyError:
+                num_very_bad_models += 1
+                continue
 
             # -------------
             # Get the ocular states and frequency bands of input and target
@@ -121,6 +130,8 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
     # -------------
     # Print results
     # -------------
+    print(f"Number of very bad models: {num_very_bad_models}")
+
     print(f"{' Results ':=^30}")
     for in_out_ocular_states, oc_state_results in best_models.items():
         print(f"\n{f' Input: {in_out_ocular_states.input_data}, Target: {in_out_ocular_states.target} ':=^35}")
@@ -182,7 +193,7 @@ def _get_best_performances(*, results_dir, main_metric, balance_validation_perfo
 # -------------
 _FIGSIZE = (7, 5)
 _FONTSIZE = 12
-_DPI = None
+_DPI = 250
 _FREQ_BAND_ORDER = ("delta", "theta", "alpha", "beta", "gamma")
 _PRETTY_NAME = {"pearson_r": "Pearson's r", "spearman_rho": "Spearman's rho"}
 
