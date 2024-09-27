@@ -70,4 +70,3 @@ src/elecssl/models/region_based_pooling/pooling_modules/head_region.py
 src/elecssl/models/region_based_pooling/pooling_modules/mean.py
 src/elecssl/models/region_based_pooling/pooling_modules/pooling_base.py
 src/elecssl/models/region_based_pooling/pooling_modules/univariate_rocket.py
-tests/test_fake.py
