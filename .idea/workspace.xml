@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="fixed config file generation">
-      <change afterPath="$PROJECT_DIR$/tests/test_data/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_data/test_paths.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/.coverage" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="removed unused test and added some useful ones" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -101,6 +96,7 @@
     "Python tests.Doctests in univariate_rocket.executor": "Run",
     "Python tests.Doctests in utils.executor": "Run",
     "Python tests.Doctests in wang.executor": "Run",
+    "Python tests.Python tests for test_paths.test_get_eeg_features_storage_path.executor": "Run",
     "Python tests.Python tests for test_paths.test_get_numpy_data_storage_path.executor": "Run",
     "Python tests.Python tests for test_paths.test_get_results_dir.executor": "Run",
     "Python tests.Python tests in test_paths.py.executor": "Run",
@@ -122,7 +118,7 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
     "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+    "settings.editor.selected.configurable": "com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -135,28 +131,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Python tests.Python tests in test_paths.py">
-    <configuration name="metrics" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/metrics.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="test_paths" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -177,6 +151,21 @@
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_paths.test_get_eeg_features_storage_path" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/test_data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_paths.test_get_eeg_features_storage_path&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="Python tests for test_paths.test_get_numpy_data_storage_path" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
@@ -227,10 +216,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python tests.Python tests in test_paths.py" />
-        <item itemvalue="Python.test_paths" />
+        <item itemvalue="Python tests.Python tests for test_paths.test_get_eeg_features_storage_path" />
         <item itemvalue="Python tests.Python tests for test_paths.test_get_results_dir" />
+        <item itemvalue="Python.test_paths" />
         <item itemvalue="Python tests.Python tests for test_paths.test_get_numpy_data_storage_path" />
-        <item itemvalue="Python.metrics" />
       </list>
     </recent_temporary>
   </component>
@@ -249,14 +238,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00079" summary="commented out code">
-      <option name="closed" value="true" />
-      <created>1724931125124</created>
-      <option name="number" value="00079" />
-      <option name="presentableId" value="LOCAL-00079" />
-      <option name="project" value="LOCAL" />
-      <updated>1724931125124</updated>
     </task>
     <task id="LOCAL-00080" summary="added script for documenting changes made to TDBRAIN data files">
       <option name="closed" value="true" />
@@ -642,7 +623,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725975543998</updated>
     </task>
-    <option name="localTasksCounter" value="128" />
+    <task id="LOCAL-00128" summary="removed unused test and added some useful ones">
+      <option name="closed" value="true" />
+      <created>1727422760084</created>
+      <option name="number" value="00128" />
+      <option name="presentableId" value="LOCAL-00128" />
+      <option name="project" value="LOCAL" />
+      <updated>1727422760084</updated>
+    </task>
+    <option name="localTasksCounter" value="129" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -657,7 +646,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="plot cosmetics" />
     <MESSAGE value="added status to TDBRAIN" />
     <MESSAGE value="fix in target method tdbrain" />
     <MESSAGE value="minor refactoring" />
@@ -682,6 +670,7 @@
     <MESSAGE value="mypy mute and flake8 fix" />
     <MESSAGE value="made saving plots optional (can now be determined from config file)" />
     <MESSAGE value="fixed config file generation" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed config file generation" />
+    <MESSAGE value="removed unused test and added some useful ones" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed unused test and added some useful ones" />
   </component>
 </project>
