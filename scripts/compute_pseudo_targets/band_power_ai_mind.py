@@ -64,7 +64,8 @@ def _single_ocular_state(config):
             yaml.safe_dump(freq_band_config, file)
 
         # Save the feature matrix
-        band_powers[["Dataset", "Subject-ID", feature]].to_csv((folder / feature_name).with_suffix(".csv"), index=False)
+        band_powers[["Dataset", "Subject-ID", feature]].to_csv((folder / feature_name / "ai_mind").with_suffix(".csv"),
+                                                               index=False)
 
 
 def main():
