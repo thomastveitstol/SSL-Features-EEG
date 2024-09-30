@@ -1,4 +1,5 @@
 import os
+from datetime import date, datetime
 from typing import List, Any, Dict
 
 import yaml
@@ -48,14 +49,18 @@ def _single_ocular_state(config):
         # Make directory
         feature_name = f"band_power_{feature}_{config["OcularState"].lower()}"
         folder = folder_root_path / feature_name
-        os.mkdir(folder)
+        try:
+            os.mkdir(folder)
+        except FileExistsError as e:
+            if not config["IgnoreExistingFolder"]:
+                raise e
 
         # Save config file (but remove info about the other frequency bands)
         freq_band_config = config.copy()
         del freq_band_config["FrequencyBands"]
         freq_band_config["FrequencyBand"] = {feature: config["FrequencyBands"][feature]}
 
-        with open(folder / "config.yml", "w") as file:
+        with open(folder / f"config_{date.today()}_{datetime.now().strftime('%H%M%S')}.yml", "w") as file:
             yaml.safe_dump(freq_band_config, file)
 
         # Save the feature matrix
