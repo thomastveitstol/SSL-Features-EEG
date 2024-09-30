@@ -17,7 +17,7 @@ class AIMind(EEGDatasetBase):
     """
     Class for the AI-Mind dataset
 
-    Citation:
+    Paper:
         Haraldsen IH, Hatlestad-Hall C, Marra C, Renvall H, Maestú F, Acosta-Hernández J, Alfonsin S, Andersson V,
         Anand A, Ayllón V, Babic A, Belhadi A, Birck C, Bruña R, Caraglia N, Carrarini C, Christensen E, Cicchetti A,
         Daugbjerg S, Di Bidino R, Diaz-Ponce A, Drews A, Giuffrè GM, Georges J, Gil-Gregorio P, Gove D, Govers TM,
