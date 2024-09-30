@@ -36,3 +36,4 @@ FrequencyBands:
   beta: [ 12, 30 ]
   gamma: [ 30, 45 ]
 AggregationMethod: median
+IgnoreExistingFolder: false
