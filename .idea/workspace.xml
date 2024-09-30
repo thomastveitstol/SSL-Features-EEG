@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="removed unused test and added some useful ones" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="ran tox" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -117,17 +117,17 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/tests",
     "settings.editor.selected.configurable": "com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/tests" />
       <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
       <recent name="$PROJECT_DIR$/scripts" />
       <recent name="$PROJECT_DIR$/src/elecssl/models" />
       <recent name="$PROJECT_DIR$/src/elecssl/data" />
-      <recent name="$PROJECT_DIR$/src/elecssl/data/datasets" />
     </key>
   </component>
   <component name="RunManager" selected="Python tests.Python tests in test_paths.py">
@@ -238,22 +238,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00080" summary="added script for documenting changes made to TDBRAIN data files">
-      <option name="closed" value="true" />
-      <created>1724931149870</created>
-      <option name="number" value="00080" />
-      <option name="presentableId" value="LOCAL-00080" />
-      <option name="project" value="LOCAL" />
-      <updated>1724931149870</updated>
-    </task>
-    <task id="LOCAL-00081" summary="added debugging script">
-      <option name="closed" value="true" />
-      <created>1724932023707</created>
-      <option name="number" value="00081" />
-      <option name="presentableId" value="LOCAL-00081" />
-      <option name="project" value="LOCAL" />
-      <updated>1724932023707</updated>
     </task>
     <task id="LOCAL-00082" summary="made yml file ready for randomly selecting ocular state for input">
       <option name="closed" value="true" />
@@ -631,7 +615,23 @@
       <option name="project" value="LOCAL" />
       <updated>1727422760084</updated>
     </task>
-    <option name="localTasksCounter" value="129" />
+    <task id="LOCAL-00129" summary="made src source package for pycharm (no idea why I had to do this...)">
+      <option name="closed" value="true" />
+      <created>1727424978863</created>
+      <option name="number" value="00129" />
+      <option name="presentableId" value="LOCAL-00129" />
+      <option name="project" value="LOCAL" />
+      <updated>1727424978863</updated>
+    </task>
+    <task id="LOCAL-00130" summary="ran tox">
+      <option name="closed" value="true" />
+      <created>1727425030563</created>
+      <option name="number" value="00130" />
+      <option name="presentableId" value="LOCAL-00130" />
+      <option name="project" value="LOCAL" />
+      <updated>1727425030563</updated>
+    </task>
+    <option name="localTasksCounter" value="131" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -646,7 +646,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added status to TDBRAIN" />
     <MESSAGE value="fix in target method tdbrain" />
     <MESSAGE value="minor refactoring" />
     <MESSAGE value="minor improvement to folder name" />
@@ -660,7 +659,6 @@
     <MESSAGE value="removed todo" />
     <MESSAGE value="added docstring and type hint" />
     <MESSAGE value="flake8 fixes" />
-    <MESSAGE value="ran tox" />
     <MESSAGE value="yml file" />
     <MESSAGE value="removed comments" />
     <MESSAGE value="improved plot script" />
@@ -671,6 +669,8 @@
     <MESSAGE value="made saving plots optional (can now be determined from config file)" />
     <MESSAGE value="fixed config file generation" />
     <MESSAGE value="removed unused test and added some useful ones" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed unused test and added some useful ones" />
+    <MESSAGE value="made src source package for pycharm (no idea why I had to do this...)" />
+    <MESSAGE value="ran tox" />
+    <option name="LAST_COMMIT_MESSAGE" value="ran tox" />
   </component>
 </project>
