@@ -1,5 +1,6 @@
 import itertools
 import os
+from datetime import date, datetime
 from pathlib import Path
 
 import autoreject
@@ -44,10 +45,14 @@ class BandPass(TransformationBase):
         # Create main folder
         # --------------
         root_path = self._get_path(ocular_state=config["OcularState"])
-        os.mkdir(root_path)
+        try:
+            os.mkdir(root_path)
+        except FileExistsError as e:
+            if not config["IgnoreExistingFolder"]:
+                raise e
 
         # Save the config file
-        with open(root_path / "config.yml", "w") as file:
+        with open(root_path / f"config_{date.today()}_{datetime.now().strftime('%H%M%S')}.yml", "w") as file:
             yaml.safe_dump(config, file)
 
         # --------------
@@ -62,10 +67,16 @@ class BandPass(TransformationBase):
             folder_name = self._get_folder_name(freq_band=freq_band, input_length=input_length,
                                                 is_autorejected=is_autorejected, resample_multiple=resample_multiple)
             folder_path = root_path / folder_name
-            os.mkdir(folder_path)
+            try:
+                os.mkdir(folder_path)
+            except FileExistsError as e:
+                if not config["IgnoreExistingFolder"]:
+                    raise e
 
             # Create folder for all datasets
             for dataset_name in config["Datasets"]:
+                # Ignoring existing folders is meant to avoid having to upload all original data to TSD, and prepare
+                # only AI-Mind data on TSD. So can't ignore if the AI-Mind dataset already exist
                 os.mkdir(folder_path / dataset_name)
 
     # ---------------
