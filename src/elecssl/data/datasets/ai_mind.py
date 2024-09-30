@@ -1,4 +1,6 @@
+import os
 import pickle
+from typing import Tuple
 
 import mne
 import numpy
@@ -6,6 +8,9 @@ import pandas
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, OcularState, target_method
 from elecssl.data.paths import get_pre_ctad_raw_data_path
+
+
+_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
 class AIMind(EEGDatasetBase):
@@ -46,7 +51,7 @@ class AIMind(EEGDatasetBase):
                       "PPO5h", "PPO6h", "PPO10h", "POO9h", "POO3h", "POO4h", "POO10h", "OI1h", "OI2h")
     _non_eeg_channels = ("CLAV", "VEOGL", "Valid data")
     _ocular_states = (OcularState.EC, OcularState.EO)
-    _montage_name = "standard_1020"
+    _montage_name = "standard_1005"
 
     # ----------------
     # Path methods
@@ -63,15 +68,36 @@ class AIMind(EEGDatasetBase):
     # ----------------
     # Loading methods
     # ----------------
-    def _load_single_raw_mne_object(self, subject_id, *, ocular_state, security_character, visit, recording, set_name):
+    def _get_subject_ids(self) -> Tuple[str, ...]:
+        return tuple(pandas.read_csv(self.get_participants_tsv_path(), sep=";", encoding="latin-1")["participant_id"])
+
+    def _get_subject_path(self, *, set_name, subject_id, visit, recording, ocular_state):
+        """Method for getting the absolute path. I don't know the algorithm for computing the safety character, so
+        trying them all instead"""
+        for security_character in _ALPHABET:
+            # Try the current safety character
+            path = (self.get_mne_path() / set_name / f"{subject_id[:-2]}-{visit}-{security_character}_{recording}-"
+                                                     f"{ocular_state.value}").with_suffix(".pickle")
+
+            # If the file exists, break out and use the current path
+            if os.path.isfile(path):
+                break
+
+        else:
+            # The "else" in a for-else is executed only if the for-loop exits normally, which happens when we run out
+            # of safety characters to try
+            raise FileNotFoundError(f"Found no file with any security character in the alphabet for {subject_id=}, "
+                                    f"{ocular_state=}, {visit=}, {set_name=}, {recording=}")
+        return path
+
+    def _load_single_raw_mne_object(self, subject_id, *, ocular_state, visit, recording, set_name):
         # -------------
         # Load object
         # -------------
         # Create path
-        # todo: check the difference between subject id and visit id. I'll need the safety character. Also, specifying
-        #  both recording and ocular state should not be necessary
-        path = (self.get_mne_path() / set_name / f"{subject_id}-{visit}-{security_character}_{recording}-"
-                                                 f"{ocular_state.value}").with_suffix(".pickle")
+        # todo: check the difference between subject id and visit id. I'll need the safety character
+        path = self._get_subject_path(set_name=set_name, subject_id=subject_id, visit=visit, recording=recording,
+                                      ocular_state=ocular_state)
 
         # Load pickle file object
         with open(path, "rb") as file:
