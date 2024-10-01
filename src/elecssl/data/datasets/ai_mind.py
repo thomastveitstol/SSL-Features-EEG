@@ -33,6 +33,8 @@ class AIMind(EEGDatasetBase):
     --------
     >>> len(AIMind._channel_names)
     126
+    >>> len(AIMind().get_subject_ids())
+    539
     """
 
     __slots__ = ()
@@ -69,7 +71,20 @@ class AIMind(EEGDatasetBase):
     # Loading methods
     # ----------------
     def _get_subject_ids(self) -> Tuple[str, ...]:
-        return tuple(pandas.read_csv(self.get_participants_tsv_path(), sep=";", encoding="latin-1")["participant_id"])
+        # As ctad is approaching, I'm just hard-coding up this...
+        # todo
+        # Get path to all the pickle files
+        path_to_pickle_files = get_pre_ctad_raw_data_path() / "1-continuous"
+
+        # Get all pickle file names. Also, remove.pickle and safety character (e.g., 1-111)
+        file_names = {file_name[:5] for file_name in os.listdir(path_to_pickle_files)}
+
+        # Get subjects from csv file
+        subject_ids = tuple(pandas.read_csv(self.get_participants_tsv_path(), sep=";",
+                                            encoding="latin-1")["participant_id"])
+
+        # Return only the ones with associated pickle files
+        return tuple(sub_id for sub_id in subject_ids if sub_id[:5] in file_names)
 
     def _get_subject_path(self, *, set_name, subject_id, visit, recording, ocular_state):
         """Method for getting the absolute path. I don't know the algorithm for computing the safety character, so
