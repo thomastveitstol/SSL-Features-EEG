@@ -199,7 +199,7 @@ class TrainValBase(DataSplitBase, abc.ABC):
 
     @property
     @abc.abstractmethod
-    def splits(self):
+    def splits(self) -> Tuple[Tuple[Subject, ...], Tuple[Subject, ...]]:
         """
         Get the splits. The first split is meant for training, the last for validation
 
