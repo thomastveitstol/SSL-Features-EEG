@@ -79,7 +79,7 @@ class AIMind(EEGDatasetBase):
             path = (self.get_mne_path() / set_name / f"{subject_id[:-2]}-{visit}-{security_character}_{recording}-"
                                                      f"{ocular_state.value}").with_suffix(".pickle")
 
-            # If the file exists, break out and use the current path
+            # If the file exists, return the current path
             if os.path.isfile(path):
                 return path
 
