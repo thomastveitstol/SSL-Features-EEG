@@ -47,7 +47,7 @@ class DataSplitBase(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def splits(self):
+    def splits(self) -> Tuple[Tuple[Subject, ...], ...]:
         """
         Get the splits
 
