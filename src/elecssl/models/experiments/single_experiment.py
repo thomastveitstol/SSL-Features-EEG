@@ -12,7 +12,7 @@ from elecssl.data.combined_datasets import CombinedDatasets
 from elecssl.data.data_generators.data_generator import InterpolationDataGenerator, RBPDataGenerator
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.scalers.target_scalers import get_target_scaler
-from elecssl.data.subject_split import get_data_split, leave_1_fold_out, TrainValBase
+from elecssl.data.subject_split import get_data_split
 from elecssl.models.losses import CustomWeightedLoss, get_activation_function
 from elecssl.models.main_models.main_fixed_channels_model import MainFixedChannelsModel
 from elecssl.models.main_models.main_rbp_model import MainRBPModel
@@ -553,7 +553,7 @@ class SSLExperiment:
         test_histories: Dict[str, Histories] = dict()
 
         # Loop through all folds
-        for i, test_subjects in enumerate(splits):
+        for i, (train_subjects, val_subjects, test_subjects) in enumerate(splits):
             print(f"\nFold {i + 1}/{len(splits)}")
 
             # -----------------
@@ -561,14 +561,6 @@ class SSLExperiment:
             # -----------------
             fold_path = self._results_path / f"Fold_{i}"
             os.mkdir(fold_path)
-
-            # -----------------
-            # Split into train and validation
-            # -----------------
-            non_test_subjects = leave_1_fold_out(i=i, folds=splits)
-            train_subjects, val_subjects = self._train_val_split(
-                dataset_subjects=combined_dataset.get_subjects_dict(non_test_subjects)
-            )
 
             # -----------------
             # Run the current fold
@@ -665,20 +657,6 @@ class SSLExperiment:
         data_split = get_data_split(split=self.subject_split_config["name"], dataset_subjects=subjects,
                                     **self.subject_split_config["kwargs"])
         return data_split.splits
-
-    def _train_val_split(self, dataset_subjects):
-        # Get the subject split
-        subject_split = get_data_split(split=self.train_config["ValSplit"]["name"],
-                                       dataset_subjects=dataset_subjects,
-                                       **self.train_config["ValSplit"]["kwargs"])
-        if not isinstance(subject_split, TrainValBase):
-            raise TypeError(f"Expected train/val split object to inherit from {TrainValBase.__name__}, but found type "
-                            f"{type(subject_split)}")
-
-        # Get train and validation subjects
-        train_subjects, val_subjects = subject_split.splits
-
-        return train_subjects, val_subjects
 
     # -------------
     # Properties (shortcuts to sub-part of the config file)

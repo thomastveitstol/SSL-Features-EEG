@@ -2,7 +2,7 @@ import abc
 import dataclasses
 import itertools
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Sequence
 
 import numpy
 
@@ -47,13 +47,10 @@ class DataSplitBase(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def splits(self) -> Tuple[Tuple[Subject, ...], ...]:
+    def splits(self) -> Sequence[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]]:
         """
-        Get the splits
-
-        Returns
-        -------
-        tuple[tuple[Subject, ...], ...]
+        Get the splits. First element is training, second is validation, third is testing. It is convenient with
+        Sequence rather than Iterable because __len__ is needed to know how many splits (e.g., k in k-fold CV) there are
         """
 
 
@@ -69,22 +66,33 @@ class KFoldDataSplit(DataSplitBase):
     >>> f1_drivers = {"Mercedes": ("Hamilton", "Russel", "Wolff"), "Red Bull": ("Verstappen", "Checo"),
     ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
-    >>> de_vries_points = 0
-    >>> my_splits = KFoldDataSplit(num_folds=3, dataset_subjects=f1_drivers, seed=de_vries_points).splits
-    >>> my_splits  # doctest: +NORMALIZE_WHITESPACE
-    ((Subject(subject_id='Russel', dataset_name='Mercedes'), Subject(subject_id='Stroll', dataset_name='Aston Martin'),
-      Subject(subject_id='Alonso', dataset_name='Aston Martin'), Subject(subject_id='Leclerc', dataset_name='Ferrari'),
-      Subject(subject_id='Magnussen', dataset_name='Haas')),
-     (Subject(subject_id='Wolff', dataset_name='Mercedes'), Subject(subject_id='Verstappen', dataset_name='Red Bull'),
-      Subject(subject_id='Norris', dataset_name='McLaren'), Subject(subject_id='Piastri', dataset_name='McLaren')),
-     (Subject(subject_id='Checo', dataset_name='Red Bull'), Subject(subject_id='Hamilton', dataset_name='Mercedes'),
-      Subject(subject_id='Hülkenberg', dataset_name='Haas'),
-      Subject(subject_id='Smooth Sainz', dataset_name='Ferrari')))
+    >>> meaning_of_life = 42
+    >>> my_splits = KFoldDataSplit(num_folds=4, dataset_subjects=f1_drivers, val_split=0.2, seed=meaning_of_life).splits
+    >>> len(my_splits), type(my_splits)
+    (4, <class 'tuple'>)
+    >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
+    ((3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>))
+    >>> all(isinstance(my_sub, Subject) for my_split in my_splits for my_split_subset in my_split  # type: ignore
+    ...     for my_sub in my_split_subset)  # type: ignore
+    True
+
+    Train, val and test never overlaps
+
+    >>> for my_train, my_val, my_test in my_splits:
+    ...     assert not set(my_train) & set(my_val)
+    ...     assert not set(my_train) & set(my_test)
+    ...     assert not set(my_val) & set(my_test)
+
+    Test subjects are never repeated
+
+    >>> my_test_subjects = tuple(my_split[-1] for my_split in my_splits)  # type: ignore
+    >>> for i, test_subjects in enumerate(my_test_subjects):
+    ...     assert not set(test_subjects) & set(_leave_1_fold_out(i, my_test_subjects))
     """
 
     __slots__ = "_splits",
 
-    def __init__(self, *, num_folds, dataset_subjects, seed=None):
+    def __init__(self, *, num_folds, dataset_subjects, val_split, seed=None):
         """
         Initialise
 
@@ -96,7 +104,7 @@ class KFoldDataSplit(DataSplitBase):
             Subject IDs. The keys are dataset names, the values are the subject IDs of the corresponding dataset
         seed : int, optional
             Seed for making the data split reproducible. If None, no seed is set
-
+        val_split : float
         """
         # Pool all subjects together
         subjects = []
@@ -115,9 +123,14 @@ class KFoldDataSplit(DataSplitBase):
         split = numpy.array_split(subjects, num_folds)  # type: ignore[arg-type, var-annotated]
 
         # Set attribute (and some type fix, type hinting and mypy stuff)
-        folds: List[Tuple[Subject, ...]] = []
-        for fold in split:
-            folds.append(tuple(fold))
+        folds: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
+        for i, fold in enumerate(split):
+            test = tuple(fold)
+            non_test_subjects = _leave_1_fold_out(i, split)
+            train, val = _split_randomly(subjects=non_test_subjects, split_percent=val_split)
+            folds.append((tuple(train), tuple(val), test))
+
+        # Make the k folds
         self._splits = tuple(folds)
 
     # ---------------
@@ -128,28 +141,51 @@ class KFoldDataSplit(DataSplitBase):
         return self._splits
 
 
-class SplitOnDataset(DataSplitBase):
+class LODOCV(DataSplitBase):
     """
-    Class for splitting the data based on the provided datasets only
+    Class for leave-one-dataset-out cross validation
 
+    Examples
+    --------
     >>> f1_drivers = {"Mercedes": ("Hamilton", "Russel", "Wolff"), "Red Bull": ("Verstappen", "Checo"),
     ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
-    >>> de_vries_points = 0
-    >>> my_splits = SplitOnDataset(dataset_subjects=f1_drivers, seed=de_vries_points).splits
-    >>> my_splits  # doctest: +NORMALIZE_WHITESPACE
-    ((Subject(subject_id='Magnussen', dataset_name='Haas'), Subject(subject_id='Hülkenberg', dataset_name='Haas')),
-     (Subject(subject_id='Hamilton', dataset_name='Mercedes'), Subject(subject_id='Wolff', dataset_name='Mercedes'),
-      Subject(subject_id='Russel', dataset_name='Mercedes')),
-     (Subject(subject_id='Alonso', dataset_name='Aston Martin'), Subject(subject_id='Stroll',
-                                                                         dataset_name='Aston Martin')),
-     (Subject(subject_id='Checo', dataset_name='Red Bull'), Subject(subject_id='Verstappen', dataset_name='Red Bull')),
-     (Subject(subject_id='Leclerc', dataset_name='Ferrari'), Subject(subject_id='Smooth Sainz',
-                                                                     dataset_name='Ferrari')),
-     (Subject(subject_id='Norris', dataset_name='McLaren'), Subject(subject_id='Piastri', dataset_name='McLaren')))
+    >>> meaning_of_life = 42
+    >>> my_splits = LODOCV(dataset_subjects=f1_drivers, seed=meaning_of_life, val_split=0.2).splits
+    >>> len(my_splits), type(my_splits)
+    (6, <class 'tuple'>)
+    >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
+    ... # doctest: +NORMALIZE_WHITESPACE
+    ((3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>),
+     (3, <class 'tuple'>))
+    >>> all(isinstance(my_sub, Subject) for my_split in my_splits for my_split_subset in my_split  # type: ignore
+    ...     for my_sub in my_split_subset)  # type: ignore
+    True
+
+    Train, val and test never overlaps
+
+    >>> for my_train, my_val, my_test in my_splits:
+    ...     assert not set(my_train) & set(my_val)
+    ...     assert not set(my_train) & set(my_test)
+    ...     assert not set(my_val) & set(my_test)
+
+    Test datasets are not overlapping and contains all data from the left out dataset
+
+    >>> for *_, my_test_subjects in my_splits:  # doctest: +NORMALIZE_WHITESPACE
+    ...     my_test_subjects
+    (Subject(subject_id='Piastri', dataset_name='McLaren'), Subject(subject_id='Norris', dataset_name='McLaren'))
+    (Subject(subject_id='Checo', dataset_name='Red Bull'), Subject(subject_id='Verstappen', dataset_name='Red Bull'))
+    (Subject(subject_id='Leclerc', dataset_name='Ferrari'), Subject(subject_id='Smooth Sainz', dataset_name='Ferrari'))
+    (Subject(subject_id='Stroll', dataset_name='Aston Martin'), Subject(subject_id='Alonso',
+                                                                        dataset_name='Aston Martin'))
+    (Subject(subject_id='Russel', dataset_name='Mercedes'), Subject(subject_id='Hamilton', dataset_name='Mercedes'),
+     Subject(subject_id='Wolff', dataset_name='Mercedes'))
+    (Subject(subject_id='Hülkenberg', dataset_name='Haas'), Subject(subject_id='Magnussen', dataset_name='Haas'))
     """
 
-    def __init__(self, dataset_subjects, *, seed=None):
+    __slots__ = "_splits",
+
+    def __init__(self, dataset_subjects, *, val_split, seed=None):
         """
         Initialise
 
@@ -159,6 +195,7 @@ class SplitOnDataset(DataSplitBase):
             Subject IDs. The keys are dataset names, the values are the subject IDs of the corresponding dataset
         seed : int, optional
             Seed for making the data split reproducible. If None, no seed is set
+        val_split : float
         """
         # Maybe make data split reproducible
         if seed is not None:
@@ -179,8 +216,16 @@ class SplitOnDataset(DataSplitBase):
         # Shuffle the folds (likely not necessary, but why not)
         random.shuffle(folds)
 
+        # Now that each element contains all subjects from a single dataset, create the folds
+        splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
+        for i, fold in enumerate(folds):
+            test_subjects = fold
+            non_test_subjects = _leave_1_fold_out(i, folds)
+            train, val = _split_randomly(subjects=non_test_subjects, split_percent=val_split)
+            splits.append((tuple(train), tuple(val), test_subjects))
+
         # Set attribute
-        self._splits = tuple(folds)
+        self._splits = tuple(splits)
 
     # ---------------
     # Properties
@@ -190,84 +235,105 @@ class SplitOnDataset(DataSplitBase):
         return self._splits
 
 
-class TrainValBase(DataSplitBase, abc.ABC):
+class KeepDatasetOutRandomSplits(DataSplitBase):
     """
-    Base class when slitting into training and validation
-    """
-
-    __slots__ = ()
-
-    @property
-    @abc.abstractmethod
-    def splits(self) -> Tuple[Tuple[Subject, ...], Tuple[Subject, ...]]:
-        """
-        Get the splits. The first split is meant for training, the last for validation
-
-        Returns
-        -------
-        tuple[tuple[Subject, ...], tuple[Subject, ...]]
-        """
-
-
-class DatasetBalancedTrainValSplit(TrainValBase):
-    """
-    Ensure that the training and validation is split per dataset
+    Class for keeping a specified dataset out as the test set. The remaining ones are used for training and validation
+    with as many random splits as specified
 
     Examples
     --------
-    >>> my_subjects = {"d1": tuple(f"s{i}" for i in range(10)), # type: ignore[attr-defined]
-    ...                "d2": tuple(f"s{i}" for i in range(20)),  # type: ignore[attr-defined]
-    ...                "d3": tuple(f"s{i}" for i in range(15))}  # type: ignore[attr-defined]
-    >>> my_splits = DatasetBalancedTrainValSplit(my_subjects, val_split=0.2, seed=2).splits
+    >>> f1_drivers = {"Mercedes": ("Hamilton", "Russel", "Wolff"), "Red Bull": ("Verstappen", "Checo"),
+    ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
+    ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
+    >>> my_num_splits = 5
+    >>> my_splits = KeepDatasetOutRandomSplits(f1_drivers, left_out_dataset="McLaren", val_split=0.2,
+    ...                                        num_random_splits=my_num_splits, seed=42).splits
+    >>> len(my_splits), type(my_splits)
+    (5, <class 'tuple'>)
+    >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
+    ((3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>))
+    >>> all(isinstance(my_sub, Subject) for my_split in my_splits for my_split_subset in my_split  # type: ignore
+    ...     for my_sub in my_split_subset)  # type: ignore
+    True
 
-    Check dataset sizes in train and validation set
+    Train, val and test never overlaps
 
-    >>> {dataset: len(tuple(sub for sub in my_splits[0] if sub.dataset_name == dataset))   # type: ignore[attr-defined]
-    ...  for dataset in my_subjects}
-    {'d1': 8, 'd2': 16, 'd3': 12}
-    >>> {dataset: len(tuple(sub for sub in my_splits[1] if sub.dataset_name == dataset))   # type: ignore[attr-defined]
-    ...  for dataset in my_subjects}
-    {'d1': 2, 'd2': 4, 'd3': 3}
+    >>> for my_train, my_val, my_test in my_splits:
+    ...     assert not set(my_train) & set(my_val)
+    ...     assert not set(my_train) & set(my_test)
+    ...     assert not set(my_val) & set(my_test)
 
-    Train and validation are not overlapping
+    The test set will always be the same, and contain the entire test dataset
 
-    >>> any(sub in my_splits[0] for sub in my_splits[1])  # type: ignore[attr-defined]
-    False
-
-    No problem if there is only one dataset
-
-    >>> DatasetBalancedTrainValSplit({"d1": tuple(f"s{i}" for i in range(10))},  # type: ignore[attr-defined]
-    ...                              val_split=0.2, seed=2).splits  # doctest: +NORMALIZE_WHITESPACE
-    ((Subject(subject_id='s5', dataset_name='d1'), Subject(subject_id='s9', dataset_name='d1'),
-      Subject(subject_id='s3', dataset_name='d1'), Subject(subject_id='s4', dataset_name='d1'),
-      Subject(subject_id='s6', dataset_name='d1'), Subject(subject_id='s7', dataset_name='d1'),
-      Subject(subject_id='s2', dataset_name='d1'), Subject(subject_id='s8', dataset_name='d1')),
-     (Subject(subject_id='s1', dataset_name='d1'), Subject(subject_id='s0', dataset_name='d1')))
+    >>> my_test_subjects = tuple(my_split[-1] for my_split in my_splits)  # type: ignore
+    >>> for test_subjects in my_test_subjects:
+    ...     test_subjects
+    (Subject(subject_id='Norris', dataset_name='McLaren'), Subject(subject_id='Piastri', dataset_name='McLaren'))
+    (Subject(subject_id='Norris', dataset_name='McLaren'), Subject(subject_id='Piastri', dataset_name='McLaren'))
+    (Subject(subject_id='Norris', dataset_name='McLaren'), Subject(subject_id='Piastri', dataset_name='McLaren'))
+    (Subject(subject_id='Norris', dataset_name='McLaren'), Subject(subject_id='Piastri', dataset_name='McLaren'))
+    (Subject(subject_id='Norris', dataset_name='McLaren'), Subject(subject_id='Piastri', dataset_name='McLaren'))
     """
 
-    __slots__ = "_train_subjects", "_val_subjects"
+    __slots__ = "_splits",
 
-    def __init__(self, dataset_subjects, *, val_split, seed=None):
+    def __init__(self, dataset_subjects, *, left_out_dataset, val_split, num_random_splits, seed=None):
+        """
+        Initialise
+
+        Parameters
+        ----------
+        dataset_subjects : dataset_subjects : dict[str, tuple[str, ...]]
+        left_out_dataset : str
+            Dataset to leave out as test set
+        val_split : float
+        num_random_splits : int
+        seed : int, optional
+        """
         # Maybe make data split reproducible
         if seed is not None:
             random.seed(seed)
 
-        # Loop through all datasets
-        train_subjects: List[Subject] = []
-        val_subjects: List[Subject] = []
-        for dataset, subjects in dataset_subjects.items():
-            dataset_train_subjects, dataset_val_subjects = _split_randomly(subjects=subjects, split_percent=val_split)
+        # Just fix the test set
+        test_subjects = tuple(Subject(dataset_name=left_out_dataset, subject_id=subject_id)
+                              for subject_id in dataset_subjects[left_out_dataset])
 
-            train_subjects.extend([Subject(subject_id=sub_id, dataset_name=dataset)
-                                   for sub_id in dataset_train_subjects])
-            val_subjects.extend([Subject(subject_id=sub_id, dataset_name=dataset) for sub_id in dataset_val_subjects])
+        # ------------
+        # Generate random splits for training/validation
+        # ------------
+        # Collect all non-test subjects
+        non_test_subjects = []
+        for dataset_name, subject_ids in dataset_subjects.items():
+            # Skipping the test dataset
+            if dataset_name == left_out_dataset:
+                continue
 
-        self._train_subjects = tuple(train_subjects)
-        self._val_subjects = tuple(val_subjects)
+            # Add all subjects from the current non-test dataset
+            non_test_subjects.extend(
+                [Subject(dataset_name=dataset_name, subject_id=subject_id) for subject_id in subject_ids]
+            )
 
+        # Create splits
+        splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
+        for i in range(num_random_splits):
+            # Randomly shuffle the non-test subjects
+            random.shuffle(non_test_subjects)
+
+            # Split into training and validation
+            train_subjects, val_subjects = _split_randomly(subjects=non_test_subjects, split_percent=val_split)
+
+            # Add to splits
+            splits.append((tuple(train_subjects), tuple(val_subjects), test_subjects))
+
+        # Set the attribute
+        self._splits = tuple(splits)
+
+    # ---------------
+    # Properties
+    # ---------------
     @property
     def splits(self):
-        return self._train_subjects, self._val_subjects
+        return self._splits
 
 
 # -----------------
@@ -287,7 +353,7 @@ def get_data_split(split, **kwargs):
     DataSplitBase
     """
     # All available data splits must be included here
-    available_splits = (KFoldDataSplit, SplitOnDataset, DatasetBalancedTrainValSplit)
+    available_splits = (KFoldDataSplit, LODOCV, KeepDatasetOutRandomSplits)
 
     # Loop through and select the correct one
     for split_class in available_splits:
@@ -299,7 +365,7 @@ def get_data_split(split, **kwargs):
                      f"{tuple(split_class.__name__ for split_class in available_splits)}")
 
 
-def leave_1_fold_out(i, folds) -> Tuple[Subject, ...]:
+def _leave_1_fold_out(i, folds) -> Tuple[Subject, ...]:
     """
     Method for selecting all subjects except for one fold (the i-th fold)
 
@@ -318,12 +384,12 @@ def leave_1_fold_out(i, folds) -> Tuple[Subject, ...]:
     >>> my_splits = ((Subject("TW", "Merc"), Subject("MV", "RB"), Subject("LN", "McL")),
     ...              (Subject("YT", "AT"), Subject("CS", "F")), (Subject("CL", "F"), Subject("VB", "AR")),
     ...              (Subject("FA", "AM"), Subject("LS", "AM"), Subject("DH", "RB")))
-    >>> leave_1_fold_out(2, my_splits)  # doctest: +NORMALIZE_WHITESPACE
+    >>> _leave_1_fold_out(2, my_splits)  # doctest: +NORMALIZE_WHITESPACE
     (Subject(subject_id='TW', dataset_name='Merc'), Subject(subject_id='MV', dataset_name='RB'),
      Subject(subject_id='LN', dataset_name='McL'), Subject(subject_id='YT', dataset_name='AT'),
      Subject(subject_id='CS', dataset_name='F'), Subject(subject_id='FA', dataset_name='AM'),
      Subject(subject_id='LS', dataset_name='AM'), Subject(subject_id='DH', dataset_name='RB'))
-    >>> leave_1_fold_out(-1, my_splits)  # doctest: +NORMALIZE_WHITESPACE
+    >>> _leave_1_fold_out(-1, my_splits)  # doctest: +NORMALIZE_WHITESPACE
     (Subject(subject_id='TW', dataset_name='Merc'), Subject(subject_id='MV', dataset_name='RB'),
      Subject(subject_id='LN', dataset_name='McL'), Subject(subject_id='YT', dataset_name='AT'),
      Subject(subject_id='CS', dataset_name='F'), Subject(subject_id='CL', dataset_name='F'),
