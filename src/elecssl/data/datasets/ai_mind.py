@@ -81,14 +81,10 @@ class AIMind(EEGDatasetBase):
 
             # If the file exists, break out and use the current path
             if os.path.isfile(path):
-                break
+                return path
 
-        else:
-            # The "else" in a for-else is executed only if the for-loop exits normally, which happens when we run out
-            # of safety characters to try
-            raise FileNotFoundError(f"Found no file with any security character in the alphabet for {subject_id=}, "
-                                    f"{ocular_state=}, {visit=}, {set_name=}, {recording=}")
-        return path
+        raise FileNotFoundError(f"Found no file with any security character in the alphabet for {subject_id=}, "
+                                f"{ocular_state=}, {visit=}, {set_name=}, {recording=}")
 
     def _load_single_raw_mne_object(self, subject_id, *, ocular_state, visit, recording, set_name):
         # -------------
