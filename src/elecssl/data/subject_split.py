@@ -299,7 +299,7 @@ def get_data_split(split, **kwargs):
                      f"{tuple(split_class.__name__ for split_class in available_splits)}")
 
 
-def leave_1_fold_out(i, folds):
+def leave_1_fold_out(i, folds) -> Tuple[Subject, ...]:
     """
     Method for selecting all subjects except for one fold (the i-th fold)
 
