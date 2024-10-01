@@ -194,7 +194,7 @@ class BandPass(TransformationBase):
             resampled_epochs.set_eeg_reference(ref_channels="average", verbose=False)
 
             # Convert to numpy arrays
-            data = resampled_epochs.get_data(copy=False)
+            data = resampled_epochs.get_data()
             assert data.ndim == 3, (f"Expected the EEG data to have three dimensions (epochs, channels, time steps), "
                                     f"but found shape={data.shape}")
 
