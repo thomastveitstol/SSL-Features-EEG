@@ -34,7 +34,7 @@ class AIMind(EEGDatasetBase):
     >>> len(AIMind._channel_names)
     126
     >>> len(AIMind().get_subject_ids())
-    539
+    538
     """
 
     __slots__ = ()
@@ -78,6 +78,9 @@ class AIMind(EEGDatasetBase):
 
         # Get all pickle file names. Also, remove.pickle and safety character (e.g., 1-111)
         file_names = {file_name[:5] for file_name in os.listdir(path_to_pickle_files)}
+
+        # Manually remove 4-257 because not all files exist
+        file_names.remove("4-257")
 
         # Get subjects from csv file
         subject_ids = tuple(pandas.read_csv(self.get_participants_tsv_path(), sep=";",
