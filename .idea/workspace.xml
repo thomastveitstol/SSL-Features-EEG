@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="ran tox" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="fixed path for saving" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -61,6 +61,7 @@
     "Python tests.Doctest sample_hyperparameter.executor": "Run",
     "Python tests.Doctest sex_to_int.executor": "Run",
     "Python tests.Doctest strip_tensors.executor": "Run",
+    "Python tests.Doctests in AIMind.executor": "Run",
     "Python tests.Doctests in BandPass.executor": "Run",
     "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
     "Python tests.Doctests in FCModule.executor": "Run",
@@ -117,70 +118,37 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/tests",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/compute_pseudo_targets",
     "settings.editor.selected.configurable": "com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts/compute_pseudo_targets" />
+      <recent name="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files" />
+      <recent name="$PROJECT_DIR$/scripts/prepare_input_data/config_files" />
       <recent name="$PROJECT_DIR$/tests" />
       <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
-      <recent name="$PROJECT_DIR$/scripts" />
-      <recent name="$PROJECT_DIR$/src/elecssl/models" />
-      <recent name="$PROJECT_DIR$/src/elecssl/data" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Python tests in test_paths.py">
-    <configuration name="test_paths" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/test_data" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_data/test_paths.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests for test_paths.test_get_eeg_features_storage_path" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.Doctests in AIMind">
+    <configuration name="Doctests in AIMind" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/test_data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_paths.test_get_eeg_features_storage_path&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests for test_paths.test_get_numpy_data_storage_path" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/test_data" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_paths.test_get_numpy_data_storage_path&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/ai_mind.py" />
+      <option name="CLASS_NAME" value="AIMind" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
     <configuration name="Python tests for test_paths.test_get_results_dir" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
@@ -189,12 +157,42 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/test_data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;test_paths.test_get_results_dir&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for tests.data.test_paths.test_get_eeg_features_storage_path" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;tests.data.test_paths.test_get_eeg_features_storage_path&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for tests.data.test_paths.test_get_results_dir" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;tests.data.test_paths.test_get_results_dir&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -204,22 +202,22 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/test_data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_data/test_paths.py&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/data/test_paths.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Python tests in test_paths.py" />
-        <item itemvalue="Python tests.Python tests for test_paths.test_get_eeg_features_storage_path" />
+        <item itemvalue="Python tests.Doctests in AIMind" />
         <item itemvalue="Python tests.Python tests for test_paths.test_get_results_dir" />
-        <item itemvalue="Python.test_paths" />
-        <item itemvalue="Python tests.Python tests for test_paths.test_get_numpy_data_storage_path" />
+        <item itemvalue="Python tests.Python tests in test_paths.py" />
+        <item itemvalue="Python tests.Python tests for tests.data.test_paths.test_get_eeg_features_storage_path" />
+        <item itemvalue="Python tests.Python tests for tests.data.test_paths.test_get_results_dir" />
       </list>
     </recent_temporary>
   </component>
@@ -238,142 +236,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00082" summary="made yml file ready for randomly selecting ocular state for input">
-      <option name="closed" value="true" />
-      <created>1724936395066</created>
-      <option name="number" value="00082" />
-      <option name="presentableId" value="LOCAL-00082" />
-      <option name="project" value="LOCAL" />
-      <updated>1724936395066</updated>
-    </task>
-    <task id="LOCAL-00083" summary="added TDBRAIN to yml files">
-      <option name="closed" value="true" />
-      <created>1724936550492</created>
-      <option name="number" value="00083" />
-      <option name="presentableId" value="LOCAL-00083" />
-      <option name="project" value="LOCAL" />
-      <updated>1724936550492</updated>
-    </task>
-    <task id="LOCAL-00084" summary="yml file update">
-      <option name="closed" value="true" />
-      <created>1724936747681</created>
-      <option name="number" value="00084" />
-      <option name="presentableId" value="LOCAL-00084" />
-      <option name="project" value="LOCAL" />
-      <updated>1724936747681</updated>
-    </task>
-    <task id="LOCAL-00085" summary="changes to yml file">
-      <option name="closed" value="true" />
-      <created>1724937160179</created>
-      <option name="number" value="00085" />
-      <option name="presentableId" value="LOCAL-00085" />
-      <option name="project" value="LOCAL" />
-      <updated>1724937160179</updated>
-    </task>
-    <task id="LOCAL-00086" summary="added progressbar">
-      <option name="closed" value="true" />
-      <created>1724937336544</created>
-      <option name="number" value="00086" />
-      <option name="presentableId" value="LOCAL-00086" />
-      <option name="project" value="LOCAL" />
-      <updated>1724937336544</updated>
-    </task>
-    <task id="LOCAL-00087" summary="plot/debug script">
-      <option name="closed" value="true" />
-      <created>1725010088995</created>
-      <option name="number" value="00087" />
-      <option name="presentableId" value="LOCAL-00087" />
-      <option name="project" value="LOCAL" />
-      <updated>1725010088995</updated>
-    </task>
-    <task id="LOCAL-00088" summary="fixed raising error when nothing should be raised">
-      <option name="closed" value="true" />
-      <created>1725010790485</created>
-      <option name="number" value="00088" />
-      <option name="presentableId" value="LOCAL-00088" />
-      <option name="project" value="LOCAL" />
-      <updated>1725010790485</updated>
-    </task>
-    <task id="LOCAL-00089" summary="changes to script">
-      <option name="closed" value="true" />
-      <created>1725015037493</created>
-      <option name="number" value="00089" />
-      <option name="presentableId" value="LOCAL-00089" />
-      <option name="project" value="LOCAL" />
-      <updated>1725015037494</updated>
-    </task>
-    <task id="LOCAL-00090" summary="made preprocessing steps dataset dependent">
-      <option name="closed" value="true" />
-      <created>1725018168536</created>
-      <option name="number" value="00090" />
-      <option name="presentableId" value="LOCAL-00090" />
-      <option name="project" value="LOCAL" />
-      <updated>1725018168536</updated>
-    </task>
-    <task id="LOCAL-00091" summary="added underscore to key in yml file">
-      <option name="closed" value="true" />
-      <created>1725018207246</created>
-      <option name="number" value="00091" />
-      <option name="presentableId" value="LOCAL-00091" />
-      <option name="project" value="LOCAL" />
-      <updated>1725018207246</updated>
-    </task>
-    <task id="LOCAL-00092" summary="fixed FutureWarning">
-      <option name="closed" value="true" />
-      <created>1725019300768</created>
-      <option name="number" value="00092" />
-      <option name="presentableId" value="LOCAL-00092" />
-      <option name="project" value="LOCAL" />
-      <updated>1725019300768</updated>
-    </task>
-    <task id="LOCAL-00093" summary="added EO as targets in yml file">
-      <option name="closed" value="true" />
-      <created>1725025519246</created>
-      <option name="number" value="00093" />
-      <option name="presentableId" value="LOCAL-00093" />
-      <option name="project" value="LOCAL" />
-      <updated>1725025519246</updated>
-    </task>
-    <task id="LOCAL-00094" summary="improved variable name">
-      <option name="closed" value="true" />
-      <created>1725372027512</created>
-      <option name="number" value="00094" />
-      <option name="presentableId" value="LOCAL-00094" />
-      <option name="project" value="LOCAL" />
-      <updated>1725372027512</updated>
-    </task>
-    <task id="LOCAL-00095" summary="expanded plot script to cross ocular states">
-      <option name="closed" value="true" />
-      <created>1725375081913</created>
-      <option name="number" value="00095" />
-      <option name="presentableId" value="LOCAL-00095" />
-      <option name="project" value="LOCAL" />
-      <updated>1725375081913</updated>
-    </task>
-    <task id="LOCAL-00096" summary="automatic update">
-      <option name="closed" value="true" />
-      <created>1725375095670</created>
-      <option name="number" value="00096" />
-      <option name="presentableId" value="LOCAL-00096" />
-      <option name="project" value="LOCAL" />
-      <updated>1725375095670</updated>
-    </task>
-    <task id="LOCAL-00097" summary="automatic update">
-      <option name="closed" value="true" />
-      <created>1725375346806</created>
-      <option name="number" value="00097" />
-      <option name="presentableId" value="LOCAL-00097" />
-      <option name="project" value="LOCAL" />
-      <updated>1725375346806</updated>
-    </task>
-    <task id="LOCAL-00098" summary="automatic update">
-      <option name="closed" value="true" />
-      <created>1725375669815</created>
-      <option name="number" value="00098" />
-      <option name="presentableId" value="LOCAL-00098" />
-      <option name="project" value="LOCAL" />
-      <updated>1725375669816</updated>
     </task>
     <task id="LOCAL-00099" summary="improved plot script">
       <option name="closed" value="true" />
@@ -631,7 +493,143 @@
       <option name="project" value="LOCAL" />
       <updated>1727425030563</updated>
     </task>
-    <option name="localTasksCounter" value="131" />
+    <task id="LOCAL-00131" summary="added tests">
+      <option name="closed" value="true" />
+      <created>1727682123251</created>
+      <option name="number" value="00131" />
+      <option name="presentableId" value="LOCAL-00131" />
+      <option name="project" value="LOCAL" />
+      <updated>1727682123251</updated>
+    </task>
+    <task id="LOCAL-00132" summary="fixed PYTHONPATH for tox">
+      <option name="closed" value="true" />
+      <created>1727697663254</created>
+      <option name="number" value="00132" />
+      <option name="presentableId" value="LOCAL-00132" />
+      <option name="project" value="LOCAL" />
+      <updated>1727697663255</updated>
+    </task>
+    <task id="LOCAL-00133" summary="fixes for tests">
+      <option name="closed" value="true" />
+      <created>1727697709638</created>
+      <option name="number" value="00133" />
+      <option name="presentableId" value="LOCAL-00133" />
+      <option name="project" value="LOCAL" />
+      <updated>1727697709638</updated>
+    </task>
+    <task id="LOCAL-00134" summary="automatics">
+      <option name="closed" value="true" />
+      <created>1727697741535</created>
+      <option name="number" value="00134" />
+      <option name="presentableId" value="LOCAL-00134" />
+      <option name="project" value="LOCAL" />
+      <updated>1727697741535</updated>
+    </task>
+    <task id="LOCAL-00135" summary="updated MNE requirement">
+      <option name="closed" value="true" />
+      <created>1727697812188</created>
+      <option name="number" value="00135" />
+      <option name="presentableId" value="LOCAL-00135" />
+      <option name="project" value="LOCAL" />
+      <updated>1727697812188</updated>
+    </task>
+    <task id="LOCAL-00136" summary="config file and script for preparing AI Mind input">
+      <option name="closed" value="true" />
+      <created>1727708699608</created>
+      <option name="number" value="00136" />
+      <option name="presentableId" value="LOCAL-00136" />
+      <option name="project" value="LOCAL" />
+      <updated>1727708699608</updated>
+    </task>
+    <task id="LOCAL-00137" summary="updated/added paths">
+      <option name="closed" value="true" />
+      <created>1727708713591</created>
+      <option name="number" value="00137" />
+      <option name="presentableId" value="LOCAL-00137" />
+      <option name="project" value="LOCAL" />
+      <updated>1727708713591</updated>
+    </task>
+    <task id="LOCAL-00138" summary="added dataset class for AI-Mind data">
+      <option name="closed" value="true" />
+      <created>1727708737054</created>
+      <option name="number" value="00138" />
+      <option name="presentableId" value="LOCAL-00138" />
+      <option name="project" value="LOCAL" />
+      <updated>1727708737055</updated>
+    </task>
+    <task id="LOCAL-00139" summary="fixed handling subject IDs">
+      <option name="closed" value="true" />
+      <created>1727710680123</created>
+      <option name="number" value="00139" />
+      <option name="presentableId" value="LOCAL-00139" />
+      <option name="project" value="LOCAL" />
+      <updated>1727710680123</updated>
+    </task>
+    <task id="LOCAL-00140" summary="improved comment">
+      <option name="closed" value="true" />
+      <created>1727710732080</created>
+      <option name="number" value="00140" />
+      <option name="presentableId" value="LOCAL-00140" />
+      <option name="project" value="LOCAL" />
+      <updated>1727710732080</updated>
+    </task>
+    <task id="LOCAL-00141" summary="added class to getter">
+      <option name="closed" value="true" />
+      <created>1727711044739</created>
+      <option name="number" value="00141" />
+      <option name="presentableId" value="LOCAL-00141" />
+      <option name="project" value="LOCAL" />
+      <updated>1727711044739</updated>
+    </task>
+    <task id="LOCAL-00142" summary="added option to ignore existing folders when trying to make them">
+      <option name="closed" value="true" />
+      <created>1727711439382</created>
+      <option name="number" value="00142" />
+      <option name="presentableId" value="LOCAL-00142" />
+      <option name="project" value="LOCAL" />
+      <updated>1727711439382</updated>
+    </task>
+    <task id="LOCAL-00143" summary="updates to config file">
+      <option name="closed" value="true" />
+      <created>1727711910587</created>
+      <option name="number" value="00143" />
+      <option name="presentableId" value="LOCAL-00143" />
+      <option name="project" value="LOCAL" />
+      <updated>1727711910587</updated>
+    </task>
+    <task id="LOCAL-00144" summary="made ignoring existing folders possible">
+      <option name="closed" value="true" />
+      <created>1727712340022</created>
+      <option name="number" value="00144" />
+      <option name="presentableId" value="LOCAL-00144" />
+      <option name="project" value="LOCAL" />
+      <updated>1727712340022</updated>
+    </task>
+    <task id="LOCAL-00145" summary="added confing file and updated another config file">
+      <option name="closed" value="true" />
+      <created>1727712630104</created>
+      <option name="number" value="00145" />
+      <option name="presentableId" value="LOCAL-00145" />
+      <option name="project" value="LOCAL" />
+      <updated>1727712630104</updated>
+    </task>
+    <task id="LOCAL-00146" summary="added script for computing pseudo target on AI mind data">
+      <option name="closed" value="true" />
+      <created>1727712758681</created>
+      <option name="number" value="00146" />
+      <option name="presentableId" value="LOCAL-00146" />
+      <option name="project" value="LOCAL" />
+      <updated>1727712758681</updated>
+    </task>
+    <task id="LOCAL-00147" summary="fixed path for saving">
+      <option name="closed" value="true" />
+      <created>1727713115441</created>
+      <option name="number" value="00147" />
+      <option name="presentableId" value="LOCAL-00147" />
+      <option name="project" value="LOCAL" />
+      <updated>1727713115441</updated>
+    </task>
+    <option name="localTasksCounter" value="148" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -646,23 +644,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix in target method tdbrain" />
-    <MESSAGE value="minor refactoring" />
-    <MESSAGE value="minor improvement to folder name" />
-    <MESSAGE value="changes to yml file" />
-    <MESSAGE value="fixed class name" />
-    <MESSAGE value="removed default argument" />
-    <MESSAGE value="improved plot/results script" />
-    <MESSAGE value="added constructors to yaml loader" />
-    <MESSAGE value="added creating callables as output for yml tags" />
-    <MESSAGE value="added sampling of RBP" />
-    <MESSAGE value="removed todo" />
-    <MESSAGE value="added docstring and type hint" />
-    <MESSAGE value="flake8 fixes" />
-    <MESSAGE value="yml file" />
-    <MESSAGE value="removed comments" />
-    <MESSAGE value="improved plot script" />
-    <MESSAGE value="improved error message" />
     <MESSAGE value="improvement for saving prediction history of domain discriminators" />
     <MESSAGE value="fixed saving prediction history" />
     <MESSAGE value="mypy mute and flake8 fix" />
@@ -671,6 +652,23 @@
     <MESSAGE value="removed unused test and added some useful ones" />
     <MESSAGE value="made src source package for pycharm (no idea why I had to do this...)" />
     <MESSAGE value="ran tox" />
-    <option name="LAST_COMMIT_MESSAGE" value="ran tox" />
+    <MESSAGE value="added tests" />
+    <MESSAGE value="fixed PYTHONPATH for tox" />
+    <MESSAGE value="fixes for tests" />
+    <MESSAGE value="automatics" />
+    <MESSAGE value="updated MNE requirement" />
+    <MESSAGE value="config file and script for preparing AI Mind input" />
+    <MESSAGE value="updated/added paths" />
+    <MESSAGE value="added dataset class for AI-Mind data" />
+    <MESSAGE value="fixed handling subject IDs" />
+    <MESSAGE value="improved comment" />
+    <MESSAGE value="added class to getter" />
+    <MESSAGE value="added option to ignore existing folders when trying to make them" />
+    <MESSAGE value="updates to config file" />
+    <MESSAGE value="made ignoring existing folders possible" />
+    <MESSAGE value="added confing file and updated another config file" />
+    <MESSAGE value="added script for computing pseudo target on AI mind data" />
+    <MESSAGE value="fixed path for saving" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed path for saving" />
   </component>
 </project>
