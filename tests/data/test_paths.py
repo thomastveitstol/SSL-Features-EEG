@@ -9,6 +9,7 @@ from elecssl.data.paths import (get_results_dir, get_raw_data_storage_path, get_
 @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Github does not have the required files")
 def test_get_results_dir():
     """Test if results path exists"""
+    assert False, os.environ
     assert os.path.isdir(get_results_dir())
 
 
