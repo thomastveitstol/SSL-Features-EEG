@@ -1,7 +1,4 @@
-Autoreject:
-  seed: 1
-  default_num_splits: 10
-  autoreject_resample: 180
+Autoreject: null
 OcularStates:
   EC:
     Datasets:

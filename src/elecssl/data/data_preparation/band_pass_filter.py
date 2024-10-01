@@ -58,8 +58,9 @@ class BandPass(TransformationBase):
         # --------------
         # Create sub folders
         # --------------
+        _autoreject_options = ((False,) if config["Autoreject"] is None else (True, False))
         _configurations = itertools.product(
-            config["FrequencyBands"], (True, False), config["Details"]["resample_multiples"],
+            config["FrequencyBands"], _autoreject_options, config["Details"]["resample_multiples"],
             config["Details"]["input_length"]
         )
         for freq_band, is_autorejected, resample_multiple, input_length in _configurations:
@@ -136,12 +137,15 @@ class BandPass(TransformationBase):
             raise InsufficientNumEpochsError
 
         # Run autoreject
-        autoreject_epochs = _run_autoreject(epochs.copy(), **config["Autoreject"])
+        if config["Autoreject"] is not None:
+            autoreject_epochs = _run_autoreject(epochs.copy(), **config["Autoreject"])
+        else:
+            autoreject_epochs = None
 
         # Select epochs
         epochs = epochs[:num_epochs]
 
-        if num_epochs > len(autoreject_epochs):
+        if autoreject_epochs is None or num_epochs > len(autoreject_epochs):
             # Skipping autorejected epochs if insufficient amount
             autoreject_epochs = None
         else:
