@@ -61,16 +61,6 @@ AllDatasets: &AllDatasets
     num_time_steps: null
     pre_processed_version: *preprocessed_version
     time_series_start: null
-  #Miltiadous:
-  #  num_subjects: 88
-  #  num_time_steps: null
-  #  pre_processed_version: *preprocessed_version
-  #  time_series_start: null
-  #TDBRAIN:
-  #  num_subjects: 1273
-  #  num_time_steps: null
-  #  pre_processed_version: *preprocessed_version
-  #  time_series_start: null
   Wang:
     num_subjects: 60
     num_time_steps: null
@@ -121,9 +111,12 @@ VariablesMetrics:
 # Configuration for subject splitting (related to the cross validation)
 # -----------------
 SubjectSplit:
+  name: KeepDatasetOutRandomSplits
   kwargs:
+    left_out_dataset: Wang
+    val_split: 0.2
+    num_random_splits: 5
     seed: 42
-  name: SplitOnDataset
 SubGroups:
   sub_groups:
     dataset_name: *DatasetsNames
@@ -190,10 +183,6 @@ Training:
   beta_1: !Uniform [0.8, 1.0]
   beta_2: !Uniform [0.9, 1.0]
   eps: !LogUniform [10, -10, -6]
-  ValSplit:  # todo: a little weird to have it in Training config?
-    name: DatasetBalancedTrainValSplit
-    kwargs:
-      val_split: 0.2
   target: *target
   Loss:
     loss: !RandomChoice [ MSELoss, L1Loss ]
@@ -215,14 +204,19 @@ num_time_steps: &num_time_steps !SelectFromDict
   - *freq_band
 
 # Inception network
-InceptionNetwork: &InceptionNetwork
+DeprecatedInceptionNetwork: &InceptionNetwork
   num_classes: 1
   cnn_units: !LogUniformInt [2, 3, 6]
   depth: !NLogUniformInt [3, 3, 0, 3]
 
+InceptionNetwork:
+  num_classes: 1
+  cnn_units: {low: 8, high: 64, step: 1, log: true}
+  depth: {low: 3, high: 27, step: 1, log: true}
+
 # ShallowFBCSPNet
 _n_filters: &_n_filters !UniformInt [30, 51]
-ShallowFBCSPNetMTS: &ShallowFBCSPNetMTS
+DeprecatedShallowFBCSPNetMTS: &ShallowFBCSPNetMTS
   num_classes: 1
   num_time_steps: *num_time_steps
   n_filters_time: *_n_filters
@@ -232,10 +226,24 @@ ShallowFBCSPNetMTS: &ShallowFBCSPNetMTS
   pool_time_length: !MultiplierInt [ 5, *pool_time_stride ]
   drop_prob: !Uniform [0, 0.5]
 
+ShallowFBCSPNetMTS:
+  num_classes: 1
+  num_filters: {low: 30, high: 50, step: 1, log: false}
+  filter_time_length: {low: 15, high: 35, step: 1, log: false}
+  pool_time_stride: {low: 10, high: 20, step: 1, log: false}
+  drop_prob: {low: 0.0, high: 0.5, step: null, log: false}
+
+
 # Deep4Net
+Deep4NetMTS:
+  num_classes: 1
+  num_first_filters: {low: 15, high: 35, step: 1, log: false}
+  filter_length: {low: 5, high: 15, step: 1, log: false}
+  drop_prob: {low: 0.0, high: 0.5, step: null, log: false}
+
 _n_first_filters: &_n_first_filters !UniformInt [15, 36]
 _filter_length: &_filter_length !UniformInt [5, 16]
-Deep4NetMTS: &Deep4NetMTS
+DeprecatedDeep4NetMTS: &Deep4NetMTS
   num_classes: 1
   num_time_steps: *num_time_steps
   n_filters_time: *_n_first_filters
@@ -250,7 +258,8 @@ Deep4NetMTS: &Deep4NetMTS
   drop_prob: !Uniform [0, 0.5]
 
 # Selected DL architecture
-DLArchitecture: !RandomChoice
+DLArchitectures: [ InceptionNetwork, ShallowFBCSPNetMTS, Deep4NetMTS ]
+DeprecatedDLArchitecture: !RandomChoice
   - model: InceptionNetwork
     kwargs: *InceptionNetwork
   - model: ShallowFBCSPNetMTS
@@ -308,7 +317,7 @@ _kernel_size: &cmmn_kernel_size !SelectFromDict
     theta: !MultiplierInt [ *kernel_size_multiple, 8 ]
     alpha: !MultiplierInt [ *kernel_size_multiple, 12 ]
     beta: !MultiplierInt [ *kernel_size_multiple, 30 ]
-    gamma: !MultiplierInt [ *kernel_size_multiple,45 ]
+    gamma: !MultiplierInt [ *kernel_size_multiple, 45 ]
   - *freq_band
 CMMN: &CMMN
   cmmn_kwargs: !GetDict { kernel_size: *cmmn_kernel_size }
