@@ -27,28 +27,29 @@ class SSLExperiment:
     (specified in the config file, such as age or a cognitive test score)
     """
 
-    def __init__(self, config, pre_processing_config, results_path, device=None):
+    def __init__(self, hp_config, experiments_config, pre_processing_config, results_path):
         """
 
         Parameters
         ----------
-        config : dict[str, Any]
+        hp_config : dict[str, Any]
+        experiments_config : dict[str, Any]
         pre_processing_config : dict[str, Any]
         results_path : pathlib.Path
-        device
         """
         # Create path
         os.mkdir(results_path)
 
-        # Save config file
-        with open(results_path / "config.yml", "w") as file:
-            yaml.safe_dump(config, file)
+        # Save HP file (experiments should be stored before running this)
+        with open(results_path / "hpo_config.yml", "w") as file:
+            yaml.safe_dump(hp_config, file)
 
         # Store attributes
-        self._config = config
+        self._hp_config = hp_config
+        self._experiments_config = experiments_config
         self._pre_processing_config = pre_processing_config
         self._results_path = results_path
-        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu") if device is None else device
+        self._device = torch.device(experiments_config["Device"])
 
     # -------------
     # Dunder methods for context manager (using the 'with' statement). See this video from mCoding for more information
@@ -663,18 +664,18 @@ class SSLExperiment:
     # -------------
     @property
     def datasets_config(self):
-        return self._config["Datasets"]
+        return self._experiments_config["Datasets"]
 
     @property
     def train_config(self):
-        return self._config["Training"]
+        return {**self._hp_config["Training"], **self._experiments_config["Training"]}
 
     @property
     def interpolation_config(self) -> Optional[Dict[str, Any]]:
-        if self._config["Varied Numbers of Channels"]["name"] != "Interpolation":
+        if self._hp_config["Varied Numbers of Channels"]["name"] != "Interpolation":
             return None
         else:
-            return self._config["Varied Numbers of Channels"]["kwargs"]  # type: ignore[no-any-return]
+            return self._hp_config["Varied Numbers of Channels"]["kwargs"]  # type: ignore[no-any-return]
 
     @property
     def shared_pre_processing_config(self):
@@ -683,19 +684,19 @@ class SSLExperiment:
 
     @property
     def subject_split_config(self):
-        return self._config["SubjectSplit"]
+        return self._experiments_config["SubjectSplit"]
 
     @property
     def spatial_dimension_handling_config(self):
-        return self._config["Varied Numbers of Channels"]
+        return self._hp_config["Varied Numbers of Channels"]
 
     @property
     def dl_architecture_config(self):
-        return self._config["DLArchitecture"]
+        return self._hp_config["DLArchitecture"]
 
     @property
     def domain_discriminator_config(self):
-        return self._config["DomainDiscriminator"]
+        return self._hp_config["DomainDiscriminator"]
 
     @property
     def cmmn_config(self):
@@ -705,27 +706,27 @@ class SSLExperiment:
 
     @property
     def rbp_config(self):
-        if self._config["Varied Numbers of Channels"]["name"] != "RegionBasedPooling":
+        if self._hp_config["Varied Numbers of Channels"]["name"] != "RegionBasedPooling":
             return None
         else:
-            return self._config["Varied Numbers of Channels"]["kwargs"]
+            return self._hp_config["Varied Numbers of Channels"]["kwargs"]
 
     @property
     def scaler_config(self):
-        return self._config["Scalers"]
+        return self._experiments_config["Scalers"]
 
     @property
     def sub_groups_config(self):
-        return self._config["SubGroups"]
+        return self._experiments_config["SubGroups"]
 
     @property
     def variables(self):
-        return self._config["PredictionErrorAssociations"]
+        return self._experiments_config["PredictionErrorAssociations"]
 
     @property
     def variables_metrics(self):
-        return self._config["VariablesMetrics"]
+        return self._experiments_config["VariablesMetrics"]
 
     @property
     def saving_config(self):
-        return self._config["Saving"]
+        return self._experiments_config["Saving"]
