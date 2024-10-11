@@ -1,0 +1,59 @@
+# Configurations not related to hyperparameter optimisation
+
+Saving:
+  save_discriminator_plots: false
+  save_error_association_plots: false
+  save_metrics_per_fold_plots: false
+  save_final_test_histories_plots: true
+
+OcularStates: [ [ eo, ec ], [ ec, eo ] ]
+FrequencyBands: [ delta, theta, alpha, beta, gamma ]
+# The preprocessed version must be during runtime
+
+MultiProcessing:
+  max_workers: 1
+
+# -----------------
+# Datasets
+# -----------------
+AllDatasets: &AllDatasets
+  LEMON:
+    num_subjects: 203
+    num_time_steps: null
+    time_series_start: null
+  Wang:
+    num_subjects: 60
+    num_time_steps: null
+    time_series_start: null
+
+# -----------------
+# Configuration for subject splitting
+# -----------------
+SubjectSplit:
+  name: KeepDatasetOutRandomSplits
+  kwargs:
+    left_out_dataset: Wang
+    val_split: 0.2
+    num_random_splits: 5
+    seed: 42
+SubGroups:
+  sub_groups:
+    dataset_name: !GetKeys *AllDatasets
+  verbose: true
+
+# -----------------
+# Training configurations
+# -----------------
+Scalers:
+  target:
+    kwargs: {}
+    name: ZNormalisation
+Training:
+  batch_size: 128
+  num_epochs: 50
+  verbose: true
+  verbose_variables: false
+  continuous_testing: true
+  metrics: regression
+  prediction_activation_function: null
+  main_metric: mae
