@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="fixed path for saving" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="removed keyword incompatible with downgraded mne version" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -65,7 +65,15 @@
     "Python tests.Doctests in BandPass.executor": "Run",
     "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
     "Python tests.Doctests in FCModule.executor": "Run",
+    "Python tests.Doctests in KFoldDataSplit.executor": "Run",
+    "Python tests.Doctests in KeepDatasetOutRandomSplits.executor": "Run",
     "Python tests.Doctests in LEMON.executor": "Run",
+    "Python tests.Doctests in LODOSplit (1).executor": "Run",
+    "Python tests.Doctests in LODOSplit (2).executor": "Run",
+    "Python tests.Doctests in LODOSplit (3).executor": "Run",
+    "Python tests.Doctests in LODOSplit (4).executor": "Run",
+    "Python tests.Doctests in LODOSplit (5).executor": "Run",
+    "Python tests.Doctests in LODOSplit.executor": "Run",
     "Python tests.Doctests in MainFixedChannelsModel.executor": "Run",
     "Python tests.Doctests in Miltiadous.executor": "Run",
     "Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor": "Run",
@@ -93,10 +101,12 @@
     "Python tests.Doctests in region_based_pooling.executor": "Run",
     "Python tests.Doctests in sampling_distributions.executor": "Run",
     "Python tests.Doctests in srm.executor": "Run",
+    "Python tests.Doctests in subject_split.executor": "Run",
     "Python tests.Doctests in td_brain.executor": "Run",
     "Python tests.Doctests in univariate_rocket.executor": "Run",
     "Python tests.Doctests in utils.executor": "Run",
     "Python tests.Doctests in wang.executor": "Run",
+    "Python tests.Python tests for test_paths.test_blabla.executor": "Run",
     "Python tests.Python tests for test_paths.test_get_eeg_features_storage_path.executor": "Run",
     "Python tests.Python tests for test_paths.test_get_numpy_data_storage_path.executor": "Run",
     "Python tests.Python tests for test_paths.test_get_results_dir.executor": "Run",
@@ -118,7 +128,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/compute_pseudo_targets",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
     "settings.editor.selected.configurable": "com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable"
   }
 }]]></component>
@@ -131,19 +141,19 @@
       <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctests in AIMind">
-    <configuration name="Doctests in AIMind" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.Doctests in subject_split">
+    <configuration name="Doctests in KFoldDataSplit" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/ai_mind.py" />
-      <option name="CLASS_NAME" value="AIMind" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/subject_split.py" />
+      <option name="CLASS_NAME" value="KFoldDataSplit" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
       <option name="TEST_TYPE" value="TEST_CLASS" />
@@ -151,73 +161,89 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_paths.test_get_results_dir" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in KeepDatasetOutRandomSplits" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_paths.test_get_results_dir&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/subject_split.py" />
+      <option name="CLASS_NAME" value="KeepDatasetOutRandomSplits" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for tests.data.test_paths.test_get_eeg_features_storage_path" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in LODOSplit (5)" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;tests.data.test_paths.test_get_eeg_features_storage_path&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/subject_split.py" />
+      <option name="CLASS_NAME" value="LODOSplit" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for tests.data.test_paths.test_get_results_dir" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in LODOSplit" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;tests.data.test_paths.test_get_results_dir&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/subject_split.py" />
+      <option name="CLASS_NAME" value="LODOSplit" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests in test_paths.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in subject_split" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/data/test_paths.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/subject_split.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Doctests in AIMind" />
-        <item itemvalue="Python tests.Python tests for test_paths.test_get_results_dir" />
-        <item itemvalue="Python tests.Python tests in test_paths.py" />
-        <item itemvalue="Python tests.Python tests for tests.data.test_paths.test_get_eeg_features_storage_path" />
-        <item itemvalue="Python tests.Python tests for tests.data.test_paths.test_get_results_dir" />
+        <item itemvalue="Python tests.Doctests in subject_split" />
+        <item itemvalue="Python tests.Doctests in KeepDatasetOutRandomSplits" />
+        <item itemvalue="Python tests.Doctests in KFoldDataSplit" />
+        <item itemvalue="Python tests.Doctests in LODOSplit" />
+        <item itemvalue="Python tests.Doctests in LODOSplit (5)" />
       </list>
     </recent_temporary>
   </component>
@@ -236,142 +262,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00099" summary="improved plot script">
-      <option name="closed" value="true" />
-      <created>1725462547025</created>
-      <option name="number" value="00099" />
-      <option name="presentableId" value="LOCAL-00099" />
-      <option name="project" value="LOCAL" />
-      <updated>1725462547025</updated>
-    </task>
-    <task id="LOCAL-00100" summary="automatic update">
-      <option name="closed" value="true" />
-      <created>1725462641886</created>
-      <option name="number" value="00100" />
-      <option name="presentableId" value="LOCAL-00100" />
-      <option name="project" value="LOCAL" />
-      <updated>1725462641887</updated>
-    </task>
-    <task id="LOCAL-00101" summary="plot cosmetics">
-      <option name="closed" value="true" />
-      <created>1725521500910</created>
-      <option name="number" value="00101" />
-      <option name="presentableId" value="LOCAL-00101" />
-      <option name="project" value="LOCAL" />
-      <updated>1725521500910</updated>
-    </task>
-    <task id="LOCAL-00102" summary="added status to TDBRAIN">
-      <option name="closed" value="true" />
-      <created>1725542865412</created>
-      <option name="number" value="00102" />
-      <option name="presentableId" value="LOCAL-00102" />
-      <option name="project" value="LOCAL" />
-      <updated>1725542865412</updated>
-    </task>
-    <task id="LOCAL-00103" summary="fix in target method tdbrain">
-      <option name="closed" value="true" />
-      <created>1725544109820</created>
-      <option name="number" value="00103" />
-      <option name="presentableId" value="LOCAL-00103" />
-      <option name="project" value="LOCAL" />
-      <updated>1725544109820</updated>
-    </task>
-    <task id="LOCAL-00104" summary="minor refactoring">
-      <option name="closed" value="true" />
-      <created>1725608209248</created>
-      <option name="number" value="00104" />
-      <option name="presentableId" value="LOCAL-00104" />
-      <option name="project" value="LOCAL" />
-      <updated>1725608209248</updated>
-    </task>
-    <task id="LOCAL-00105" summary="minor improvement to folder name">
-      <option name="closed" value="true" />
-      <created>1725608236756</created>
-      <option name="number" value="00105" />
-      <option name="presentableId" value="LOCAL-00105" />
-      <option name="project" value="LOCAL" />
-      <updated>1725608236756</updated>
-    </task>
-    <task id="LOCAL-00106" summary="changes to yml file">
-      <option name="closed" value="true" />
-      <created>1725608352137</created>
-      <option name="number" value="00106" />
-      <option name="presentableId" value="LOCAL-00106" />
-      <option name="project" value="LOCAL" />
-      <updated>1725608352137</updated>
-    </task>
-    <task id="LOCAL-00107" summary="changes to yml file">
-      <option name="closed" value="true" />
-      <created>1725609067247</created>
-      <option name="number" value="00107" />
-      <option name="presentableId" value="LOCAL-00107" />
-      <option name="project" value="LOCAL" />
-      <updated>1725609067247</updated>
-    </task>
-    <task id="LOCAL-00108" summary="fixed class name">
-      <option name="closed" value="true" />
-      <created>1725615326187</created>
-      <option name="number" value="00108" />
-      <option name="presentableId" value="LOCAL-00108" />
-      <option name="project" value="LOCAL" />
-      <updated>1725615326187</updated>
-    </task>
-    <task id="LOCAL-00109" summary="removed default argument">
-      <option name="closed" value="true" />
-      <created>1725624404892</created>
-      <option name="number" value="00109" />
-      <option name="presentableId" value="LOCAL-00109" />
-      <option name="project" value="LOCAL" />
-      <updated>1725624404892</updated>
-    </task>
-    <task id="LOCAL-00110" summary="improved plot/results script">
-      <option name="closed" value="true" />
-      <created>1725867734857</created>
-      <option name="number" value="00110" />
-      <option name="presentableId" value="LOCAL-00110" />
-      <option name="project" value="LOCAL" />
-      <updated>1725867734858</updated>
-    </task>
-    <task id="LOCAL-00111" summary="added constructors to yaml loader">
-      <option name="closed" value="true" />
-      <created>1725868691378</created>
-      <option name="number" value="00111" />
-      <option name="presentableId" value="LOCAL-00111" />
-      <option name="project" value="LOCAL" />
-      <updated>1725868691378</updated>
-    </task>
-    <task id="LOCAL-00112" summary="added constructors to yaml loader">
-      <option name="closed" value="true" />
-      <created>1725893386157</created>
-      <option name="number" value="00112" />
-      <option name="presentableId" value="LOCAL-00112" />
-      <option name="project" value="LOCAL" />
-      <updated>1725893386158</updated>
-    </task>
-    <task id="LOCAL-00113" summary="added creating callables as output for yml tags">
-      <option name="closed" value="true" />
-      <created>1725893425385</created>
-      <option name="number" value="00113" />
-      <option name="presentableId" value="LOCAL-00113" />
-      <option name="project" value="LOCAL" />
-      <updated>1725893425386</updated>
-    </task>
-    <task id="LOCAL-00114" summary="added sampling of RBP">
-      <option name="closed" value="true" />
-      <created>1725893438136</created>
-      <option name="number" value="00114" />
-      <option name="presentableId" value="LOCAL-00114" />
-      <option name="project" value="LOCAL" />
-      <updated>1725893438136</updated>
-    </task>
-    <task id="LOCAL-00115" summary="removed todo">
-      <option name="closed" value="true" />
-      <created>1725893468234</created>
-      <option name="number" value="00115" />
-      <option name="presentableId" value="LOCAL-00115" />
-      <option name="project" value="LOCAL" />
-      <updated>1725893468234</updated>
     </task>
     <task id="LOCAL-00116" summary="added docstring and type hint">
       <option name="closed" value="true" />
@@ -629,7 +519,143 @@
       <option name="project" value="LOCAL" />
       <updated>1727713115441</updated>
     </task>
-    <option name="localTasksCounter" value="148" />
+    <task id="LOCAL-00148" summary="skipped tests when pushing to github">
+      <option name="closed" value="true" />
+      <created>1727767462425</created>
+      <option name="number" value="00148" />
+      <option name="presentableId" value="LOCAL-00148" />
+      <option name="project" value="LOCAL" />
+      <updated>1727767462425</updated>
+    </task>
+    <task id="LOCAL-00149" summary="skipped tests when pushing to github">
+      <option name="closed" value="true" />
+      <created>1727768016796</created>
+      <option name="number" value="00149" />
+      <option name="presentableId" value="LOCAL-00149" />
+      <option name="project" value="LOCAL" />
+      <updated>1727768016796</updated>
+    </task>
+    <task id="LOCAL-00150" summary="skipped tests when pushing to github">
+      <option name="closed" value="true" />
+      <created>1727768932501</created>
+      <option name="number" value="00150" />
+      <option name="presentableId" value="LOCAL-00150" />
+      <option name="project" value="LOCAL" />
+      <updated>1727768932501</updated>
+    </task>
+    <task id="LOCAL-00151" summary="made test which will fail (need to check github error message)">
+      <option name="closed" value="true" />
+      <created>1727769275687</created>
+      <option name="number" value="00151" />
+      <option name="presentableId" value="LOCAL-00151" />
+      <option name="project" value="LOCAL" />
+      <updated>1727769275687</updated>
+    </task>
+    <task id="LOCAL-00152" summary="tried to fix problem with not detecting GITHUB_ACTIONS">
+      <option name="closed" value="true" />
+      <created>1727769737431</created>
+      <option name="number" value="00152" />
+      <option name="presentableId" value="LOCAL-00152" />
+      <option name="project" value="LOCAL" />
+      <updated>1727769737431</updated>
+    </task>
+    <task id="LOCAL-00153" summary="improved skipping condition">
+      <option name="closed" value="true" />
+      <created>1727770153516</created>
+      <option name="number" value="00153" />
+      <option name="presentableId" value="LOCAL-00153" />
+      <option name="project" value="LOCAL" />
+      <updated>1727770153516</updated>
+    </task>
+    <task id="LOCAL-00154" summary="improved type hinting">
+      <option name="closed" value="true" />
+      <created>1727770801429</created>
+      <option name="number" value="00154" />
+      <option name="presentableId" value="LOCAL-00154" />
+      <option name="project" value="LOCAL" />
+      <updated>1727770801429</updated>
+    </task>
+    <task id="LOCAL-00155" summary="removed for-else">
+      <option name="closed" value="true" />
+      <created>1727771057457</created>
+      <option name="number" value="00155" />
+      <option name="presentableId" value="LOCAL-00155" />
+      <option name="project" value="LOCAL" />
+      <updated>1727771057457</updated>
+    </task>
+    <task id="LOCAL-00156" summary="improved comment">
+      <option name="closed" value="true" />
+      <created>1727771076291</created>
+      <option name="number" value="00156" />
+      <option name="presentableId" value="LOCAL-00156" />
+      <option name="project" value="LOCAL" />
+      <updated>1727771076291</updated>
+    </task>
+    <task id="LOCAL-00157" summary="improved type hint">
+      <option name="closed" value="true" />
+      <created>1727771394938</created>
+      <option name="number" value="00157" />
+      <option name="presentableId" value="LOCAL-00157" />
+      <option name="project" value="LOCAL" />
+      <updated>1727771394938</updated>
+    </task>
+    <task id="LOCAL-00158" summary="improved type hint">
+      <option name="closed" value="true" />
+      <created>1727771478960</created>
+      <option name="number" value="00158" />
+      <option name="presentableId" value="LOCAL-00158" />
+      <option name="project" value="LOCAL" />
+      <updated>1727771478960</updated>
+    </task>
+    <task id="LOCAL-00159" summary="path fix">
+      <option name="closed" value="true" />
+      <created>1727783586116</created>
+      <option name="number" value="00159" />
+      <option name="presentableId" value="LOCAL-00159" />
+      <option name="project" value="LOCAL" />
+      <updated>1727783586116</updated>
+    </task>
+    <task id="LOCAL-00160" summary="quick fix for AI-Mind subject IDs">
+      <option name="closed" value="true" />
+      <created>1727783765623</created>
+      <option name="number" value="00160" />
+      <option name="presentableId" value="LOCAL-00160" />
+      <option name="project" value="LOCAL" />
+      <updated>1727783765624</updated>
+    </task>
+    <task id="LOCAL-00161" summary="quick fix for AI-Mind subject IDs">
+      <option name="closed" value="true" />
+      <created>1727786149526</created>
+      <option name="number" value="00161" />
+      <option name="presentableId" value="LOCAL-00161" />
+      <option name="project" value="LOCAL" />
+      <updated>1727786149528</updated>
+    </task>
+    <task id="LOCAL-00162" summary="improvements for subject splitting">
+      <option name="closed" value="true" />
+      <created>1727791924385</created>
+      <option name="number" value="00162" />
+      <option name="presentableId" value="LOCAL-00162" />
+      <option name="project" value="LOCAL" />
+      <updated>1727791924385</updated>
+    </task>
+    <task id="LOCAL-00163" summary="improvements for not running autoreject">
+      <option name="closed" value="true" />
+      <created>1727793044618</created>
+      <option name="number" value="00163" />
+      <option name="presentableId" value="LOCAL-00163" />
+      <option name="project" value="LOCAL" />
+      <updated>1727793044618</updated>
+    </task>
+    <task id="LOCAL-00164" summary="removed keyword incompatible with downgraded mne version">
+      <option name="closed" value="true" />
+      <created>1727793120911</created>
+      <option name="number" value="00164" />
+      <option name="presentableId" value="LOCAL-00164" />
+      <option name="project" value="LOCAL" />
+      <updated>1727793120912</updated>
+    </task>
+    <option name="localTasksCounter" value="165" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -644,24 +670,11 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improvement for saving prediction history of domain discriminators" />
-    <MESSAGE value="fixed saving prediction history" />
-    <MESSAGE value="mypy mute and flake8 fix" />
-    <MESSAGE value="made saving plots optional (can now be determined from config file)" />
-    <MESSAGE value="fixed config file generation" />
-    <MESSAGE value="removed unused test and added some useful ones" />
-    <MESSAGE value="made src source package for pycharm (no idea why I had to do this...)" />
-    <MESSAGE value="ran tox" />
-    <MESSAGE value="added tests" />
-    <MESSAGE value="fixed PYTHONPATH for tox" />
-    <MESSAGE value="fixes for tests" />
-    <MESSAGE value="automatics" />
     <MESSAGE value="updated MNE requirement" />
     <MESSAGE value="config file and script for preparing AI Mind input" />
     <MESSAGE value="updated/added paths" />
     <MESSAGE value="added dataset class for AI-Mind data" />
     <MESSAGE value="fixed handling subject IDs" />
-    <MESSAGE value="improved comment" />
     <MESSAGE value="added class to getter" />
     <MESSAGE value="added option to ignore existing folders when trying to make them" />
     <MESSAGE value="updates to config file" />
@@ -669,6 +682,19 @@
     <MESSAGE value="added confing file and updated another config file" />
     <MESSAGE value="added script for computing pseudo target on AI mind data" />
     <MESSAGE value="fixed path for saving" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed path for saving" />
+    <MESSAGE value="skipped tests when pushing to github" />
+    <MESSAGE value="made test which will fail (need to check github error message)" />
+    <MESSAGE value="tried to fix problem with not detecting GITHUB_ACTIONS" />
+    <MESSAGE value="improved skipping condition" />
+    <MESSAGE value="improved type hinting" />
+    <MESSAGE value="removed for-else" />
+    <MESSAGE value="improved comment" />
+    <MESSAGE value="improved type hint" />
+    <MESSAGE value="path fix" />
+    <MESSAGE value="quick fix for AI-Mind subject IDs" />
+    <MESSAGE value="improvements for subject splitting" />
+    <MESSAGE value="improvements for not running autoreject" />
+    <MESSAGE value="removed keyword incompatible with downgraded mne version" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed keyword incompatible with downgraded mne version" />
   </component>
 </project>

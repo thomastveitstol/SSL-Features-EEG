@@ -36,6 +36,7 @@ src/elecssl/data/scalers/__init__.py
 src/elecssl/data/scalers/scaler_base.py
 src/elecssl/data/scalers/target_scalers.py
 src/elecssl/models/__init__.py
+src/elecssl/models/hp_suggesting.py
 src/elecssl/models/losses.py
 src/elecssl/models/metrics.py
 src/elecssl/models/sampling_distributions.py
