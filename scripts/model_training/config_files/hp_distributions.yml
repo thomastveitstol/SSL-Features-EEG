@@ -21,7 +21,7 @@ Training:
 
 Loss:
   loss: { choices: [ MSELoss, L1Loss ] }
-  weighter: !Categorical { choices: [ null, SamplePowerWeighter ] }
+  weighter: { choices: [ null, SamplePowerWeighter ] }
   weighter_kwargs:
     weight_power: !Float { low: 0, high: 1, step: null, log: false }
 
@@ -31,8 +31,8 @@ Loss:
 DLArchitectures:
   InceptionNetwork:
     num_classes: 1
-    cnn_units: {low: 8, high: 64, step: 1, log: true}
-    depth: {low: 3, high: 27, step: 1, log: true}
+    cnn_units: {low: 8, high: 64, log: true}
+    depth: {low: 3, high: 27, log: true}
 
   ShallowFBCSPNetMTS:
     num_classes: 1
@@ -45,7 +45,7 @@ DLArchitectures:
     num_classes: 1
     num_first_filters: { low: 15, high: 35, step: 1, log: false }
     filter_length: { low: 5, high: 15, step: 1, log: false }
-    drop_prob: { low: 0.0, high: 0.5, step: null, log: false }
+    drop_prob: { low: 0.0, high: 0.5, log: false }  # todo: should this be independent from shallownet?
 
 Normalisation: !Categorical { choices: [ true, false ] }
 
@@ -59,10 +59,10 @@ Interpolation: &Interpolation
   methods: { choices: [ MNE, spline ] }
 
 
-_num_kernels: &num_kernels !Int { low: 100, high: 1000, step: 1, log: true }
-_max_receptive_field: &max_receptive_field !Int { low: 100, high: 1000, step: 1, log: true }
+_num_kernels: &num_kernels !Int { low: 100, high: 1000, log: true }
+_max_receptive_field: &max_receptive_field !Int { low: 100, high: 1000,log: true }
 RegionBasedPooling:
-  num_montage_splits: { low: 1, high: 16, step: 1, log: true }
+  num_montage_splits: { low: 1, high: 16, log: true }
   share_all_pooling_modules: { choices: [ true, false ] }
   num_pooling_modules_percentage: { low: 0.0, high: 1.0, step: null, log: false }
   num_designs: 1
@@ -75,7 +75,7 @@ RegionBasedPooling:
     MultiMSSharedRocketHeadRegion:
       num_kernels: *num_kernels
       max_receptive_field: *max_receptive_field
-      latent_search_features: !Int { low: 8, high: 128, step: 1, log: true }
+      latent_search_features: !Int { low: 8, high: 128, log: true }
       share_search_receiver_modules: !Categorical { choices: [ true, false ] }
       bias: !Categorical { choices: [ false ] }
   MontageSplits:
@@ -86,8 +86,8 @@ RegionBasedPooling:
         k_3: [ 2, 3, 2, 3, 2, 3, 2, 3, 2 ]
         k_4: [ 4, 3, 2, 3, 4, 3, 2, 3, 4 ]
       min_nodes: !Int { low: 1, high: 6, step: 1, log: false }
-      channel_system: { choices: [ LEMON ] }  # todo: hard-coded :(
+      channel_system: !Categorical { choices: [ LEMON ] }  # todo: hard-coded :(
 
-SpatialDimensionMismatch: { choice: [ Interpolation, RegionBasedPooling ] }
+SpatialDimensionMismatch: { choices: [ Interpolation, RegionBasedPooling ] }
 
 

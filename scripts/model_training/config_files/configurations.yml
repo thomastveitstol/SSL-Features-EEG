@@ -1,4 +1,4 @@
-# Configurations not related to hyperparameter optimisation
+# Configurations not related to distributions of hyperparameter optimisation
 
 Saving:
   save_discriminator_plots: false
@@ -10,8 +10,14 @@ OcularStates: [ [ eo, ec ], [ ec, eo ] ]
 FrequencyBands: [ delta, theta, alpha, beta, gamma ]
 # The preprocessed version must be during runtime
 
-MultiProcessing:
-  max_workers: 1
+HPO:
+  HPOStudy:
+    sampler: !HPOSampler [ TPESampler, { } ]
+  MultiProcessing:
+    max_workers: 1
+  num_trials: 3
+
+Device: cpu
 
 # -----------------
 # Datasets
@@ -38,7 +44,7 @@ SubjectSplit:
     seed: 42
 SubGroups:
   sub_groups:
-    dataset_name: !GetKeys *AllDatasets
+    dataset_name: !GetKeys { <<: *AllDatasets }
   verbose: true
 
 # -----------------
