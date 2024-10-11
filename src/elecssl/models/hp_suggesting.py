@@ -145,7 +145,7 @@ def make_trial_suggestion(trial, *, name, method, kwargs):
     elif method == "float":
         func = trial.suggest_float
     elif method == "categorical_dict":
-        suggested_key =  trial.suggest_categorical(name, choices=tuple(kwargs.keys()))
+        suggested_key = trial.suggest_categorical(name, choices=tuple(kwargs.keys()))
         return kwargs[suggested_key]
     else:
         raise ValueError(f"Sampling distribution of HP '{name}' not recognised: {method}")

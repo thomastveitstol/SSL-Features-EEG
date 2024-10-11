@@ -3,12 +3,9 @@ import os
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict
 
 import optuna
-import pandas
 import yaml
-from sklearn.tree import DecisionTreeRegressor
 
 from elecssl.models.experiments.single_experiment import SSLExperiment
 from elecssl.models.hp_suggesting import suggest_hyperparameters
@@ -79,13 +76,13 @@ class HPOExperiment:
                       self._experiments_config["FrequencyBands"])
 
             # Make directory for current iteration
-            results_dir = self._results_dir / f"debug_hpo_{trial.number}_{date.today()}_{datetime.now().strftime('%H%M%S')}"
+            results_dir = self._results_dir / (f"debug_hpo_{trial.number}_{date.today()}_"
+                                               f"{datetime.now().strftime('%H%M%S')}")
             os.mkdir(results_dir)
 
             # ---------------
             # Using multiprocessing  # todo: should turn this off if using GPU?
             # ---------------
-            feature_extractors_biomarkers: Dict[str, pandas.DataFrame] = {}
             with ProcessPoolExecutor(max_workers=self.hpo_study_config["MultiProcessing"]["max_workers"]) as executor:
                 print("Multiprocessing")
                 for (in_ocular_state, out_ocular_state), in_freq_band, out_freq_band in itertools.product(*spaces):
@@ -106,7 +103,7 @@ class HPOExperiment:
             # Combine all biomarkers to a single dataframe
 
             # Create ML  todo: make a package with ML models
-            ml_model = DecisionTreeRegressor()
+            # ml_model = DecisionTreeRegressor()
 
             # todo: Random splits? cross validation? I actually need to HPO the ML model too...
             # score = ml_model.fit(feature_extractors_biomarkers)
@@ -117,7 +114,7 @@ class HPOExperiment:
 
     @staticmethod
     def _run_single_job(experiments_config, sampling_config, trial: optuna.Trial, in_ocular_state, out_ocular_state,
-                    in_freq_band, out_freq_band, results_dir):
+                        in_freq_band, out_freq_band, results_dir):
         """Method for running a single SSL experiments"""
         feature_extractor_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
 
@@ -134,7 +131,7 @@ class HPOExperiment:
         results_path = results_dir / (f"hpo_{trial.number}_{feature_extractor_name}_{date.today()}_"
                                       f"{datetime.now().strftime('%H%M%S')}")
         with SSLExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
-                           pre_processing_config={}, results_path=results_path) as experiment:
+                           pre_processing_config={}, results_path=results_path) as _:
             ...
 
     # --------------

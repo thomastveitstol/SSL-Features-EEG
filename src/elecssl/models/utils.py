@@ -1,5 +1,4 @@
 import abc
-import random
 
 import numpy
 import torch
@@ -384,7 +383,7 @@ def add_yaml_constructors(loader):
 # Functions for yaml representers
 # ---------------
 def _yaml_representer_hpo_sampler(dumper, data):
-    return dumper.represent_sequence("!HPOSampler", [ data.__class__.__name__, "KWARGS_UNAVAILABLE" ])
+    return dumper.represent_sequence("!HPOSampler", [data.__class__.__name__, "KWARGS_UNAVAILABLE"])
 
 
 def add_yaml_representers(dumper):
