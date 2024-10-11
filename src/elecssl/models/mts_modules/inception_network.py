@@ -13,7 +13,6 @@ import torch
 import torch.nn as nn
 
 from elecssl.models.mts_modules.mts_module_base import MTSModuleBase
-from elecssl.models.sampling_distributions import sample_hyperparameter
 
 
 # ---------------------------
@@ -418,34 +417,14 @@ class InceptionNetwork(MTSModuleBase):
     # Hyperparameter sampling
     # ----------------
     @staticmethod
-    def sample_hyperparameters(config):
-        """
-        Method for sampling hyperparameters
-
-        Parameters
-        ----------
-        config : dict[str, typing.Any]
-
-        Returns
-        -------
-        dict[str, typing.Any]
-
-        Examples
-        --------
-        >>> my_cnn_units = {"dist": "log_uniform_int", "kwargs": {"base": 2, "a": 3, "b": 6}}
-        >>> my_depth = {"dist": "log_uniform_int", "kwargs": {"base": 3, "a": 1, "b": 3}}
-        >>> import numpy
-        >>> numpy.random.seed(3)
-        >>> InceptionNetwork.sample_hyperparameters({"cnn_units": my_cnn_units, "depth": my_depth})
-        {'cnn_units': 25, 'depth': 14}
-        """
+    def suggest_hyperparameters(name, trial, config):
         # Sample CNN units
-        cnn_units = sample_hyperparameter(config["cnn_units"]["dist"], **config["cnn_units"]["kwargs"])
+        cnn_units = trial.suggest_int(f"{name}_cnn_units", **config["cnn_units"])
 
         # Sample depth
-        depth = sample_hyperparameter(config["depth"]["dist"], **config["depth"]["kwargs"])
+        depth = 3 * int(trial.suggest_float(f"{name}_depth", **config["depth"]))
 
-        return {"cnn_units": cnn_units, "depth": depth}
+        return {"cnn_units": cnn_units, "depth": depth, "num_classes": config["num_classes"]}
 
     # ----------------
     # Properties

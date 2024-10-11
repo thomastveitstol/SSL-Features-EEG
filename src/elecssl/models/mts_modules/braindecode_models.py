@@ -10,7 +10,6 @@ import torch
 from braindecode.models import Deep4Net, ShallowFBCSPNet
 
 from elecssl.models.mts_modules.mts_module_base import MTSModuleBase
-from elecssl.models.sampling_distributions import sample_hyperparameter
 
 
 class ShallowFBCSPNetMTS(MTSModuleBase):
@@ -166,56 +165,29 @@ class ShallowFBCSPNetMTS(MTSModuleBase):
     # Hyperparameter sampling
     # ----------------
     @staticmethod
-    def sample_hyperparameters(config):
-        """
-        Method for sampling hyperparameters
-
-        Parameters
-        ----------
-        config : dict[str, typing.Any]
-
-        Returns
-        -------
-        dict[str, typing.Any]
-
-        Examples
-        --------
-        >>> my_num_filters = {"dist": "uniform_int", "kwargs": {"a": 5, "b": 8}}
-        >>> my_filter_lengths = {"dist": "uniform_int", "kwargs": {"a": 9, "b": 14}}
-        >>> my_pool_time_stride = {"dist": "uniform_int", "kwargs": {"a": 10, "b": 20}}
-        >>> my_drop_out = {"dist": "uniform", "kwargs": {"a": 0.0, "b": 0.5}}
-        >>> import numpy
-        >>> numpy.random.seed(3)
-        >>> ShallowFBCSPNetMTS.sample_hyperparameters(
-        ...     {"n_filters": my_num_filters, "filter_time_length": my_filter_lengths,
-        ...      "pool_time_stride": my_pool_time_stride, "drop_prob": my_drop_out}
-        ... )  # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
-        {'n_filters_time': 7, 'n_filters_spat': 7, 'filter_time_length': 9, 'pool_time_stride': 19,
-         'pool_time_length': 95, 'drop_prob': 0.419...}
-        """
+    def suggest_hyperparameters(name, trial, config):
         # Sample number of filters. Will be the same for temporal and spatial
-        n_filters = sample_hyperparameter(config["n_filters"]["dist"], **config["n_filters"]["kwargs"])
+        num_filters = trial.suggest_int(f"{name}_num_filters", **config["num_filters"])
 
         # Sample length of temporal filter
-        filter_time_length = sample_hyperparameter(config["filter_time_length"]["dist"],
-                                                   **config["filter_time_length"]["kwargs"])
+        filter_time_length = trial.suggest_int(f"{name}_filter_time_length", **config["filter_time_length"])
 
         # Sample length of temporal filter
-        pool_time_stride = sample_hyperparameter(config["pool_time_stride"]["dist"],
-                                                 **config["pool_time_stride"]["kwargs"])
+        pool_time_stride = trial.suggest_int(f"{name}_pool_time_stride", **config["pool_time_stride"])
 
         # We set the ratio of length/stride to the same as in the original paper
         pool_time_length = 5 * pool_time_stride
 
         # Sample drop out
-        drop_prob = sample_hyperparameter(config["drop_prob"]["dist"], **config["drop_prob"]["kwargs"])
+        drop_prob = trial.suggest_float(f"{name}_drop_prob", **config["drop_prob"])
 
-        return {"n_filters_time":  n_filters,
-                "n_filters_spat": n_filters,
+        return {"n_filters_time":  num_filters,
+                "n_filters_spat": num_filters,
                 "filter_time_length": filter_time_length,
                 "pool_time_stride": pool_time_stride,
                 "pool_time_length": pool_time_length,
-                "drop_prob": drop_prob}
+                "drop_prob": drop_prob,
+                "num_classes": config["num_classes"]}
 
     # ----------------
     # Properties
@@ -435,35 +407,10 @@ class Deep4NetMTS(MTSModuleBase):
     # Hyperparameter sampling
     # ----------------
     @staticmethod
-    def sample_hyperparameters(config):
-        """
-        The ratio between the number of filters will be maintained as in the original work
-
-        Parameters
-        ----------
-        config : dict[str, typing.Any]
-
-        Returns
-        -------
-        dict[str, typing.Any]
-
-        Examples
-        --------
-        >>> my_num_filters = {"dist": "uniform_int", "kwargs": {"a": 5, "b": 8}}
-        >>> my_filter_lengths = {"dist": "uniform_int", "kwargs": {"a": 9, "b": 14}}
-        >>> my_drop_out = {"dist": "uniform", "kwargs": {"a": 0.0, "b": 0.5}}
-        >>> import numpy
-        >>> numpy.random.seed(3)
-        >>> Deep4NetMTS.sample_hyperparameters({"n_first_filters": my_num_filters, "filter_length": my_filter_lengths,
-        ...                                     "drop_prob": my_drop_out})  # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
-        {'n_filters_time': 7, 'n_filters_spat': 7, 'n_filters_2': 14, 'n_filters_3': 28, 'n_filters_4': 56,
-         'filter_time_length': 9, 'filter_length_2': 9, 'filter_length_3': 9, 'filter_length_4': 9,
-         'drop_prob': 0.3540...}
-
-        """
+    def suggest_hyperparameters(name, trial, config):
+        """The ratio between the number of filters will be maintained as in the original work"""
         # Get the number of filters for the first conv block
-        num_first_filters = sample_hyperparameter(config["n_first_filters"]["dist"],
-                                                  **config["n_first_filters"]["kwargs"])
+        num_first_filters = trial.suggest_int(f"{name}_num_first_filters", **config["num_first_filters"])
 
         num_filters_hyperparameters = {"n_filters_time": num_first_filters,
                                        "n_filters_spat": num_first_filters,
@@ -472,7 +419,7 @@ class Deep4NetMTS(MTSModuleBase):
                                        "n_filters_4": 8 * num_first_filters}
 
         # Get the filter lengths
-        filter_length = sample_hyperparameter(config["filter_length"]["dist"], **config["filter_length"]["kwargs"])
+        filter_length = trial.suggest_int(f"{name}_filter_length", **config["filter_length"])
 
         # Compute the length of the filters for the conv blocks
         filter_lengths_hyperparameters = {"filter_time_length": filter_length,
@@ -480,9 +427,9 @@ class Deep4NetMTS(MTSModuleBase):
                                           "filter_length_3": filter_length,
                                           "filter_length_4": filter_length}
         # Get the drop out
-        drop_prob = sample_hyperparameter(config["drop_prob"]["dist"], **config["drop_prob"]["kwargs"])
+        drop_prob = trial.suggest_int(f"{name}_drop_prob", **config["drop_prob"])
 
-        return {**num_filters_hyperparameters, **filter_lengths_hyperparameters, **{"drop_prob": drop_prob}}
+        return {**num_filters_hyperparameters, **filter_lengths_hyperparameters, "drop_prob": drop_prob}
 
     # ----------------
     # Properties

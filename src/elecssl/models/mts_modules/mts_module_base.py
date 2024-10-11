@@ -1,5 +1,4 @@
 import abc
-from typing import Any, Dict
 
 import torch.nn as nn
 
@@ -8,8 +7,21 @@ class MTSModuleBase(nn.Module, abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def sample_hyperparameters(config: Dict[str, Any]) -> Dict[str, Any]:
-        """Method for sampling hyperparameters from a config file containing distributions of which to sample from"""
+    def suggest_hyperparameters(name, trial, config):
+        """
+        Method for suggesting hyperparameters from a config file containing distributions of which to sample from
+
+        Parameters
+        ----------
+        name : str
+            A string which will be added to all HP names
+        trial : optuna.Trial
+        config : dict[str, typing.Any]
+
+        Returns
+        -------
+        dict[str, typing.Any]
+        """
 
     def extract_latent_features(self, input_tensor):
         """
