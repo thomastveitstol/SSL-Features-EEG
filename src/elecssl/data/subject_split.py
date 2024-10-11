@@ -196,6 +196,8 @@ class LODOCV(DataSplitBase):
         seed : int, optional
             Seed for making the data split reproducible. If None, no seed is set
         val_split : float
+            todo: setting val_split=0.2 does not force that all datasets have 20% in validation. This should be an
+             option
         """
         # Maybe make data split reproducible
         if seed is not None:
