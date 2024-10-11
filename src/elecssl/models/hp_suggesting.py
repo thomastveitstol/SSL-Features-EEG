@@ -85,7 +85,6 @@ def _suggest_rbp(name, trial, config):
 
             # Kwargs of montage split
             rbp_designs[rbp_name]["split_methods_kwargs"] = {}
-            print(_name, config["MontageSplits"][_name])
             for param_name, (distribution, distribution_kwargs) in config["MontageSplits"][_name].items():
                 rbp_designs[rbp_name]["split_methods_kwargs"][param_name] = make_trial_suggestion(
                     trial=trial, name=f"{name}_{param_name}_{i}_{montage_split}", method=distribution,
