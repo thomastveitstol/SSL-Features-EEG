@@ -67,7 +67,7 @@ class HPOExperiment:
         study = optuna.create_study(**self.hpo_study_config["HPOStudy"])
 
         # Optimise
-        study.optimize(self._create_objective(), n_trials=self.hpo_study_config["NTrials"])
+        study.optimize(self._create_objective(), n_trials=self.hpo_study_config["num_trials"])
 
     def _create_objective(self):
 
@@ -86,7 +86,7 @@ class HPOExperiment:
             # Using multiprocessing  # todo: should turn this off if using GPU?
             # ---------------
             feature_extractors_biomarkers: Dict[str, pandas.DataFrame] = {}
-            with ProcessPoolExecutor(max_workers=self._experiments_config["MultiProcessing"]["max_workers"]) as executor:
+            with ProcessPoolExecutor(max_workers=self.hpo_study_config["MultiProcessing"]["max_workers"]) as executor:
                 print("Multiprocessing")
                 for (in_ocular_state, out_ocular_state), in_freq_band, out_freq_band in itertools.product(*spaces):
                     executor.submit(
