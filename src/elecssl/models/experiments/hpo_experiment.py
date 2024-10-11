@@ -53,6 +53,9 @@ class HPOExperiment:
         self._sampling_config = hp_config
         self._results_dir = results_dir
 
+        # Make directory
+        os.mkdir(results_dir)
+
         # Store the experiments config file
         safe_dumper = add_yaml_representers(yaml.SafeDumper)
         with open(results_dir / "experiments_config.yml", "w") as file:
