@@ -5,7 +5,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 import optuna
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 from elecssl.models.experiments.single_experiment import SSLExperiment
 from elecssl.models.hp_suggesting import suggest_hyperparameters
