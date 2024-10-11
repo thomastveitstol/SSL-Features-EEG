@@ -10,7 +10,6 @@ import pandas
 import yaml
 from sklearn.tree import DecisionTreeRegressor
 
-from elecssl.data.paths import get_results_dir
 from elecssl.models.experiments.single_experiment import SSLExperiment
 from elecssl.models.hp_suggesting import suggest_hyperparameters
 from elecssl.models.sampling_distributions import get_yaml_loader
