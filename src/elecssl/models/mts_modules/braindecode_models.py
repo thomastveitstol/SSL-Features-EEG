@@ -427,7 +427,7 @@ class Deep4NetMTS(MTSModuleBase):
                                           "filter_length_3": filter_length,
                                           "filter_length_4": filter_length}
         # Get the drop out
-        drop_prob = trial.suggest_int(f"{name}_drop_prob", **config["drop_prob"])
+        drop_prob = trial.suggest_float(f"{name}_drop_prob", **config["drop_prob"])
 
         return {**num_filters_hyperparameters, **filter_lengths_hyperparameters, "drop_prob": drop_prob}
 
