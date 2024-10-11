@@ -3,6 +3,9 @@ For suggesting hyperparameters using optuna
 """
 from typing import Any, Dict
 
+from optuna.samplers import GridSampler, RandomSampler, TPESampler, CmaEsSampler, GPSampler, PartialFixedSampler, \
+    NSGAIISampler, NSGAIIISampler, QMCSampler, BruteForceSampler
+
 from elecssl.models.mts_modules.getter import get_mts_module_type
 from elecssl.models.region_based_pooling.hyperparameter_sampling import generate_partition_sizes
 
@@ -82,6 +85,7 @@ def _suggest_rbp(name, trial, config):
 
             # Kwargs of montage split
             rbp_designs[rbp_name]["split_methods_kwargs"] = {}
+            print(_name, config["MontageSplits"][_name])
             for param_name, (distribution, distribution_kwargs) in config["MontageSplits"][_name].items():
                 rbp_designs[rbp_name]["split_methods_kwargs"][param_name] = make_trial_suggestion(
                     trial=trial, name=f"{name}_{param_name}_{i}_{montage_split}", method=distribution,
@@ -141,6 +145,9 @@ def make_trial_suggestion(trial, *, name, method, kwargs):
         func = trial.suggest_int
     elif method == "float":
         func = trial.suggest_float
+    elif method == "categorical_dict":
+        suggested_key =  trial.suggest_categorical(name, choices=tuple(kwargs.keys()))
+        return kwargs[suggested_key]
     else:
         raise ValueError(f"Sampling distribution of HP '{name}' not recognised: {method}")
     return func(name, **kwargs)
@@ -205,3 +212,19 @@ def suggest_hyperparameters(name, config, trial):
                                                                                     config=config)
 
     return suggested_hps
+
+
+def get_optuna_sampler(sampler, **kwargs):
+    """Function for getting a specified optuna sampler"""
+    # All available samplers must be included here
+    availables = (GridSampler, RandomSampler, TPESampler, CmaEsSampler, GPSampler, PartialFixedSampler, NSGAIISampler,
+                  NSGAIIISampler, QMCSampler, BruteForceSampler)
+
+    # Loop through and select the correct one
+    for optuna_sampler in availables:
+        if sampler == optuna_sampler.__name__:
+            return optuna_sampler(**kwargs)
+
+    # If no match, an error is raised
+    raise ValueError(f"The sampler '{sampler}' was not recognised. Please select among the following: "
+                     f"{tuple(s.__name__ for s in availables)}")

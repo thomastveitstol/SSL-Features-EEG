@@ -5,7 +5,7 @@ import numpy
 import torch
 from torch.autograd import Function
 
-from elecssl.models.region_based_pooling.hyperparameter_sampling import yaml_generate_partition_sizes, yaml_sample_rbp
+from elecssl.models.hp_suggesting import get_optuna_sampler
 
 
 # ---------------
@@ -401,6 +401,49 @@ def _yaml_random_choice_from_list(loader, node):
     """Convenient when you must pass the list"""
     return random.choice(loader.construct_sequence(node, deep=True)[0])
 
+# ---------------
+# For experiments config file (not related to HP sampling/suggestions)
+# ---------------
+def _yaml_get_keys(loader, node):
+    """Get the keys of a dictionary"""
+    return loader.construct_mapping(node).keys()
+
+
+def _yaml_get_hpo_sampler(loader, node):
+    """Get an optuna.sampler"""
+    sampler, kwargs = loader.construct_sequence(node, deep=True)
+    return get_optuna_sampler(sampler, **kwargs)
+
+
+# ---------------
+# For HPO distributions config file
+# ---------------
+def _yaml_optuna_categorical(loader, node):
+    """To be used in combination with optuna suggest categorical"""
+    loader.construct_mapping(node, deep=True)
+    return "categorical", loader.construct_mapping(node, deep=True)
+
+
+def _yaml_optuna_float(loader, node):
+    """To be used in combination with optuna suggest float"""
+    loader.construct_mapping(node, deep=True)
+    return "float", loader.construct_mapping(node, deep=True)
+
+
+def _yaml_optuna_int(loader, node):
+    """To be used in combination with optuna suggest int"""
+    loader.construct_mapping(node, deep=True)
+    return "int", loader.construct_mapping(node, deep=True)
+
+
+def _yaml_optuna_categorical_dict(loader, node):
+    """This one is supposed to be used when a categorical suggestion should be made, but the type is inconvenient. For
+    example, if the choices are three lists, you should give them names (keys) and sample the names instead. Because
+    optuna documentation prefers 'CategoricalChoiceType', which (at the time of writing this code) includes None, bool,
+    int, float, and str"""
+    loader.construct_mapping(node, deep=True)
+    return "categorical_dict", loader.construct_mapping(node, deep=True)
+
 
 def add_yaml_constructors(loader):
     """
@@ -414,19 +457,29 @@ def add_yaml_constructors(loader):
     -------
     typing.Type[yaml.SafeLoader]
     """
-    loader.add_constructor("!StrFormat", _yaml_str_format)
-    loader.add_constructor("!MultiplierInt", _yaml_multiplier_int)
-    loader.add_constructor("!SelectFromDict", _yaml_select_from_dict)
-    loader.add_constructor("!MappingLength", _yaml_mapping_length)
-    loader.add_constructor("!Sum", _yaml_sum)
-    loader.add_constructor("!IfIsNoneElse", _yaml_if_none_else)
-    loader.add_constructor("!IfZeroElse", _yaml_if_zero_else)
-    loader.add_constructor("!IfElse", _yaml_if_else)
-    loader.add_constructor("!Tuple", _yaml_tuple)
-    loader.add_constructor("!ListIntersection", _yaml_list_intersection)
-    loader.add_constructor("!MultiSelectFromDict", _yaml_multi_select_from_dict)
-    loader.add_constructor("!CreatePartitionSizes", yaml_generate_partition_sizes)
-    loader.add_constructor("!SampleRBPDesigns", yaml_sample_rbp)
-    loader.add_constructor("!GetDict", _yaml_get_dict)
-    loader.add_constructor("!RandomChoiceFromList", _yaml_random_choice_from_list)
+    # loader.add_constructor("!StrFormat", _yaml_str_format)
+    #     loader.add_constructor("!MultiplierInt", _yaml_multiplier_int)
+    #     loader.add_constructor("!SelectFromDict", _yaml_select_from_dict)
+    #     loader.add_constructor("!MappingLength", _yaml_mapping_length)
+    #     loader.add_constructor("!Sum", _yaml_sum)
+    #     loader.add_constructor("!IfIsNoneElse", _yaml_if_none_else)
+    #     loader.add_constructor("!IfZeroElse", _yaml_if_zero_else)
+    #     loader.add_constructor("!IfElse", _yaml_if_else)
+    #     loader.add_constructor("!Tuple", _yaml_tuple)
+    #     loader.add_constructor("!ListIntersection", _yaml_list_intersection)
+    #     loader.add_constructor("!MultiSelectFromDict", _yaml_multi_select_from_dict)
+    #     loader.add_constructor("!CreatePartitionSizes", yaml_generate_partition_sizes)
+    #     loader.add_constructor("!SampleRBPDesigns", yaml_sample_rbp)
+    #     loader.add_constructor("!GetDict", _yaml_get_dict)
+    #     loader.add_constructor("!RandomChoiceFromList", _yaml_random_choice_from_list)
+
+    # Convenient non-NPO distributions related ones
+    loader.add_constructor("!GetKeys", _yaml_get_keys)
+    loader.add_constructor("!HPOSampler", _yaml_get_hpo_sampler)
+
+    # To be used with optuna
+    loader.add_constructor("!Categorical", _yaml_optuna_categorical)
+    loader.add_constructor("!Float", _yaml_optuna_float)
+    loader.add_constructor("!Int", _yaml_optuna_int)
+    loader.add_constructor("!CategoricalDict", _yaml_optuna_categorical_dict)
     return loader
