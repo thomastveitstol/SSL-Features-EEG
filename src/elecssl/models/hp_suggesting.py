@@ -27,7 +27,7 @@ def _suggest_loss(name, trial, config):
     weighter = trial.suggest_categorical(f"{name}_weighter", **config["weighter"])
 
     if weighter is None:
-        return {"loss": loss, "loss_kwargs": {"reduction": "mean"}, "weighter": weighter}
+        return {"loss": loss, "loss_kwargs": {"reduction": "mean"}, "weighter": weighter, "weighter_kwargs": {}}
     else:
         weighter_kwargs = {}
         for param_name, (distribution, distribution_kwargs) in config["weighter_kwargs"].items():
