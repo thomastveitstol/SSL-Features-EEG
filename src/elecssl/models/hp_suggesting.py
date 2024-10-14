@@ -237,6 +237,8 @@ def suggest_hyperparameters(name, config, trial, experiments_config):
     if experiments_config["enable_domain_discriminator"]:
         raise NotImplementedError("Hyperparameter sampling with domain discriminator has not been implemented yet...")
     else:
+        # todo: not a fan of having to specify training method, especially now that the name is somewhat misleading...
+        suggested_hps["Training"]["method"] = "downstream_training"
         suggested_hps["DomainDiscriminator"] = None
 
     return suggested_hps
