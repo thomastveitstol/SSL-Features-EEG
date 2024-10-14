@@ -45,7 +45,7 @@ DLArchitectures:
   InceptionNetwork:
     num_classes: 1
     cnn_units: {low: 8, high: 64, log: true}
-    depth: {low: 3, high: 27, log: true}
+    depth: {low: 3, high: 15, log: true}
 
   ShallowFBCSPNetMTS:
     num_classes: 1
@@ -74,10 +74,10 @@ Interpolation: &Interpolation
   methods: { choices: [ MNE, spline ] }
 
 
-_num_kernels: &num_kernels !Int { low: 100, high: 1000, log: true }
-_max_receptive_field: &max_receptive_field !Int { low: 100, high: 1000,log: true }
+_num_kernels: &num_kernels !Int { low: 10, high: 100, log: true }  # todo
+_max_receptive_field: &max_receptive_field !Int { low: 10, high: 100,log: true }  # todo
 RegionBasedPooling:
-  num_montage_splits: { low: 1, high: 16, log: true }
+  num_montage_splits: { low: 1, high: 8, log: true }
   share_all_pooling_modules: { choices: [ true, false ] }
   num_pooling_modules_percentage: { low: 0.0, high: 1.0, step: null, log: false }
   num_designs: 1
