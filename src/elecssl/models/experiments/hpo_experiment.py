@@ -179,8 +179,8 @@ class HPOExperiment:
             f_max = yaml.safe_load(file)["FrequencyBands"][in_freq_band][-1]
 
         preprocessing_config_file = suggested_hyperparameters["Preprocessing"].copy()
-        preprocessing_config_file["resample"] = f_max * preprocessing_config_file['sfreq_multiple'] \
-                                                * preprocessing_config_file['input_length']
+        _resample = f_max * preprocessing_config_file['sfreq_multiple'] * preprocessing_config_file['input_length']
+        preprocessing_config_file["resample"] = _resample
 
         # Add the number of input time steps if required for the DL model
         if "num_time_steps" in suggested_hyperparameters["DLArchitecture"]["kwargs"] \
