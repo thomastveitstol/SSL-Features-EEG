@@ -81,6 +81,7 @@ def _suggest_rbp(name, trial, config, normalisation, cmmn):
 
         # Montage splits
         rbp_designs[rbp_name]["split_methods"] = []
+        rbp_designs[rbp_name]["split_methods_kwargs"] = []
         for montage_split in range(k):
             # Name of montage split
             _name = trial.suggest_categorical(f"{name}_montage_split_{i}_{montage_split}",
@@ -88,12 +89,13 @@ def _suggest_rbp(name, trial, config, normalisation, cmmn):
             rbp_designs[rbp_name]["split_methods"].append(_name)
 
             # Kwargs of montage split
-            rbp_designs[rbp_name]["split_methods_kwargs"] = {}
+            split_method_kwargs = dict()
             for param_name, (distribution, distribution_kwargs) in config["MontageSplits"][_name].items():
                 rbp_designs[rbp_name]["split_methods_kwargs"][param_name] = make_trial_suggestion(
                     trial=trial, name=f"{name}_{param_name}_{i}_{montage_split}", method=distribution,
                     kwargs=distribution_kwargs
                 )
+            rbp_designs[rbp_name]["split_methods_kwargs"].append(split_method_kwargs)
 
     return {"name": "RegionBasedPooling", "kwargs": {"RBPDesigns": rbp_designs,
                                                      "normalise_region_representations": normalisation}}
