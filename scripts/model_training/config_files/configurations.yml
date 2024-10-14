@@ -10,6 +10,12 @@ OcularStates: [ [ eo, ec ], [ ec, eo ] ]
 FrequencyBands: [ delta, theta, alpha, beta, gamma ]
 # The preprocessed version must be during runtime
 
+clinical_target: age
+log_transform_clinical_target: true
+deviation_method: ratio
+pretext_main_metric: mse
+enable_domain_discriminator: false
+
 HPO:
   HPOStudy:
     sampler: !HPOSampler [ TPESampler, { } ]
@@ -22,15 +28,27 @@ Device: cpu
 # -----------------
 # Datasets
 # -----------------
-AllDatasets: &AllDatasets
+Datasets: &Datasets
   LEMON:
-    num_subjects: 203
+    num_subjects: 20
     num_time_steps: null
     time_series_start: null
   Wang:
-    num_subjects: 60
+    num_subjects: 20
     num_time_steps: null
     time_series_start: null
+
+# -----------------
+# Configurations for associating prediction errors with
+# other variables  todo: should remove this, as it's old code and not actually part of the pipeline
+# -----------------
+PredictionErrorAssociations:
+  LEMON: [ age, sex ]
+  Wang: [ age, sex ]
+
+VariablesMetrics:
+  age: [ pearson_r, spearman_rho ]
+  sex: groups_metrics
 
 # -----------------
 # Configuration for subject splitting
@@ -40,11 +58,11 @@ SubjectSplit:
   kwargs:
     left_out_dataset: Wang
     val_split: 0.2
-    num_random_splits: 5
+    num_random_splits: 1
     seed: 42
 SubGroups:
   sub_groups:
-    dataset_name: !GetKeys { <<: *AllDatasets }
+    dataset_name: !GetKeys { <<: *Datasets }
   verbose: true
 
 # -----------------

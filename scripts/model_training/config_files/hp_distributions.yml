@@ -9,6 +9,15 @@ Preprocessing:
 # -----------------
 # Domain discriminator
 # -----------------
+Discriminators:
+  NoDiscriminator: {}
+  ExponentialDecalFC:
+    proposed_depth: {low: 1, high: 5, log: false}
+    first_layer_multiple: {low: 0.5, high: 2, log: false}
+    exponential_decrease: {low: 2, high: 5, log: false}
+    activation_function:
+      relu: {}
+      elu: {low: 0.2, high: 1.8, log: false}
 
 # -----------------
 # Training
@@ -47,7 +56,7 @@ DLArchitectures:
     filter_length: { low: 5, high: 15, step: 1, log: false }
     drop_prob: { low: 0.0, high: 0.5, log: false }  # todo: should this be independent from shallownet?
 
-Normalisation: !Categorical { choices: [ true, false ] }
+Normalisation: !Categorical { choices: [ true, false ] }  # todo: is this implemented yet?
 
 # -----------------
 # Varied numbers of channels
