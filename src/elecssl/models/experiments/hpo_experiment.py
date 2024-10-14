@@ -180,6 +180,12 @@ class HPOExperiment:
         preprocessing_config_file["resample"] = f_max * preprocessing_config_file['sfreq_multiple'] \
                                                 * preprocessing_config_file['input_length']
 
+        # Add the number of input time steps if required for the DL model
+        if "num_time_steps" in suggested_hyperparameters["DLArchitecture"]["kwargs"] \
+                and suggested_hyperparameters["DLArchitecture"]["kwargs"]["num_time_steps"] == "UNAVAILABLE":
+            _resample = preprocessing_config_file["resample"]
+            suggested_hyperparameters["DLArchitecture"]["kwargs"]["num_time_steps"] = _resample
+
         # Add the preprocessed version to all datasets
         preprocessed_version = (f"preprocessed_band_pass_{in_ocular_state}/data--band_pass-{in_freq_band}--"
                                 f"input_length-{preprocessing_config_file['input_length']}s--"
