@@ -12,7 +12,7 @@ from elecssl.models.region_based_pooling.hyperparameter_sampling import generate
 
 def _suggest_dl_architecture(name, trial, config):
     # Architecture
-    model = trial.suggest_categorical(f"{name}_architecture", config.keys())
+    model = trial.suggest_categorical(f"{name}_architecture", choices=config.keys())
 
     # Suggest hyperparameters of the DL model
     kwargs = get_mts_module_type(model).suggest_hyperparameters(name, trial, config[model])
@@ -39,7 +39,7 @@ def _suggest_loss(name, trial, config):
                 "weighter_kwargs": weighter_kwargs}
 
 
-def _suggest_rbp(name, trial, config):
+def _suggest_rbp(name, trial, config, normalisation, cmmn):
     num_montage_splits = trial.suggest_int(f"{name}_num_montage_splits", **config["num_montage_splits"])
     share_all_pooling_modules = trial.suggest_categorical(f"{name}_share_all_pooling_modules",
                                                           **config["share_all_pooling_modules"])
@@ -59,6 +59,10 @@ def _suggest_rbp(name, trial, config):
     for i, k in enumerate(partitions):
         rbp_name = f"RBPDesign{i}"
         rbp_designs[rbp_name] = dict()
+
+        # CMMN
+        rbp_designs[rbp_name]["cmmn_kwargs"] = cmmn["kwargs"]
+        rbp_designs[rbp_name]["cmmn_kwargs"] = cmmn["use_cmmn_layer"]
 
         # Number of designs
         rbp_designs[rbp_name]["num_designs"] = config["num_designs"]  # Should be 1
@@ -91,19 +95,21 @@ def _suggest_rbp(name, trial, config):
                     kwargs=distribution_kwargs
                 )
 
-    return rbp_designs
+    return {"name": "RegionBasedPooling", "kwargs": {"RBPDesigns": rbp_designs,
+                                                     "normalise_region_representations": normalisation}}
 
 
 def _suggest_interpolation(name, trial, config):
     method = trial.suggest_categorical(f"{name}_interpolation_method", **config["methods"])
     main_channel_system = trial.suggest_categorical(f"{name}_main_channel_system", **config["main_channel_system"])
-    return {"method": method, "main_channel_system": main_channel_system}
+    return {"name": "Interpolation", "kwargs": {"method": method, "main_channel_system": main_channel_system}}
 
 
-def _suggest_spatial_dimension_mismatch(name, trial, config):
+def _suggest_spatial_dimension_mismatch(name, trial, config, normalisation, cmmn):
     method = trial.suggest_categorical(f"{name}_spatial_dimension_handling", **config["SpatialDimensionMismatch"])
     if method == "RegionBasedPooling":
-        return _suggest_rbp(name=name, trial=trial, config=config["RegionBasedPooling"])
+        return _suggest_rbp(name=name, trial=trial, config=config["RegionBasedPooling"], normalisation=normalisation,
+                            cmmn=cmmn)
     elif method == "Interpolation":
         return _suggest_interpolation(name=name, trial=trial, config=config["Interpolation"])
     else:
@@ -152,7 +158,7 @@ def make_trial_suggestion(trial, *, name, method, kwargs):
     return func(name, **kwargs)
 
 
-def suggest_hyperparameters(name, config, trial):
+def suggest_hyperparameters(name, config, trial, experiments_config):
     """
     Function for suggesting HPs using optuna
 
@@ -200,6 +206,15 @@ def suggest_hyperparameters(name, config, trial):
             trial=trial, name=f"{name}_{param_name}", method=distribution, kwargs=distribution_kwargs
         )
 
+    # Normalisation
+    normalisation = trial.suggest_categorical(f"{name}_normalisation", **config["normalisation"])
+
+    # Convolutional monge mapping normalisation
+    if experiments_config["enable_cmmn"]:
+        raise NotImplementedError("Hyperparameter sampling with CMMN has not been implemented yet...")
+    else:
+        cmmn = {"use_cmmn_layer": False, "kwargs": {}}
+
     # DL architecture
     suggested_hps["DLArchitecture"] = _suggest_dl_architecture(name=name, trial=trial, config=config["DLArchitectures"])
 
@@ -207,8 +222,20 @@ def suggest_hyperparameters(name, config, trial):
     suggested_hps["Loss"] = _suggest_loss(name=name, trial=trial, config=config["Loss"])
 
     # Handling varied numbers of electrodes
-    suggested_hps["SpatialDimensionMismatch"] = _suggest_spatial_dimension_mismatch(name=name, trial=trial,
-                                                                                    config=config)
+    suggested_hps["SpatialDimensionMismatch"] = _suggest_spatial_dimension_mismatch(
+        name=name, trial=trial, config=config, normalisation=normalisation, cmmn=cmmn
+    )
+
+    # Maybe add normalisation to DL architecture
+    if suggested_hps["SpatialDimensionMismatch"]["name"] == "Interpolation":
+        suggested_hps["DLArchitecture"]["normalise"] = normalisation
+        suggested_hps["DLArchitecture"]["CMMN"] = cmmn
+
+    # Domain discriminator
+    if experiments_config["enable_domain_discriminator"]:
+        raise NotImplementedError("Hyperparameter sampling with domain discriminator has not been implemented yet...")
+    else:
+        suggested_hps["DomainDiscriminator"] = None
 
     return suggested_hps
 
