@@ -247,7 +247,8 @@ def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var
     # ----------------
     # Select epoch
     # ----------------
-    epoch = _get_best_val_epoch(path=path, pretext_main_metric=pretext_main_metric)
+    # todo: not really 'fold' anymore...
+    epoch = _get_best_val_epoch(path=path / "Fold_0", pretext_main_metric=pretext_main_metric)
 
     # ----------------
     # Get the biomarkers and the (clinical) variable
