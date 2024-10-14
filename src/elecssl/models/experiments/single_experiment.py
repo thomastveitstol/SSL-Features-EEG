@@ -366,7 +366,7 @@ class SSLExperiment:
         # Create loss
         if self.loss_config["weighter"] is not None:
             self.loss_config["weighter_kwargs"]["dataset_sizes"] = dataset_sizes
-        criterion = CustomWeightedLoss(**self.loss_config["Loss"])
+        criterion = CustomWeightedLoss(**self.loss_config)
 
         return optimiser, criterion
 
