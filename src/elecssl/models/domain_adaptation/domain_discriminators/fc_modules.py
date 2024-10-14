@@ -4,8 +4,7 @@ from typing import List, Any, Dict
 import optuna
 from torch import nn
 
-from elecssl.models.domain_adaptation.domain_discriminators.domain_discriminator_base import DomainDiscriminatorBase, \
-    sampling_method
+from elecssl.models.domain_adaptation.domain_discriminators.domain_discriminator_base import DomainDiscriminatorBase
 from elecssl.models.sampling_distributions import sample_hyperparameter
 
 
