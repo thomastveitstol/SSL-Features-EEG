@@ -49,6 +49,7 @@ DLArchitectures:
 
   ShallowFBCSPNetMTS:
     num_classes: 1
+    num_time_steps: UNAVAILABLE
     num_filters: {low: 30, high: 50, step: 1, log: false}
     filter_time_length: {low: 15, high: 35, step: 1, log: false}
     pool_time_stride: {low: 10, high: 20, step: 1, log: false}
@@ -56,6 +57,7 @@ DLArchitectures:
 
   Deep4NetMTS:
     num_classes: 1
+    num_time_steps: UNAVAILABLE
     num_first_filters: { low: 15, high: 35, step: 1, log: false }
     filter_length: { low: 5, high: 15, step: 1, log: false }
     drop_prob: { low: 0.0, high: 0.5, log: false }  # todo: should this be independent from shallownet?
@@ -98,8 +100,8 @@ RegionBasedPooling:
         k_2: [ 3, 3, 3, 3, 3, 3, 3, 3 ]
         k_3: [ 2, 3, 2, 3, 2, 3, 2, 3, 2 ]
         k_4: [ 4, 3, 2, 3, 4, 3, 2, 3, 4 ]
-      min_nodes: !Int { low: 1, high: 6, step: 1, log: false }
-      channel_system: !Categorical { choices: [ LEMON ] }  # todo: hard-coded :(
+      min_nodes: !Int { low: 2, high: 6, step: 1, log: false }  # todo
+      channel_positions: !Categorical { choices: [ [ LEMON ] ] }  # todo: hard-coded :(
 
 SpatialDimensionMismatch: { choices: [ Interpolation, RegionBasedPooling ] }
 

@@ -7,7 +7,7 @@ Saving:
   save_final_test_histories_plots: true
 
 OcularStates: [ [ eo, ec ] ]  # [ [ eo, ec ], [ ec, eo ] ]
-FrequencyBands: [ delta, theta ]  # , alpha, beta, gamma ]
+FrequencyBands: [ alpha, beta ]  # [ delta, theta, alpha, beta, gamma ]
 # The preprocessed version must be during runtime
 
 clinical_target: age
@@ -74,8 +74,8 @@ Scalers:
     kwargs: {}
     name: ZNormalisation
 Training:
-  batch_size: 128
-  num_epochs: 50
+  batch_size: 64
+  num_epochs: 20
   verbose: true
   verbose_variables: false
   continuous_testing: true
