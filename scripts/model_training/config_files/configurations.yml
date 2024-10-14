@@ -6,8 +6,8 @@ Saving:
   save_metrics_per_fold_plots: false
   save_final_test_histories_plots: true
 
-OcularStates: [ [ eo, ec ], [ ec, eo ] ]
-FrequencyBands: [ delta, theta, alpha, beta, gamma ]
+OcularStates: [ [ eo, ec ] ]  # [ [ eo, ec ], [ ec, eo ] ]
+FrequencyBands: [ delta, theta ]  # , alpha, beta, gamma ]
 # The preprocessed version must be during runtime
 
 clinical_target: age
@@ -15,13 +15,14 @@ log_transform_clinical_target: true
 deviation_method: ratio
 pretext_main_metric: mse
 enable_domain_discriminator: false
+enable_cmmn: false
 
 HPO:
   HPOStudy:
     sampler: !HPOSampler [ TPESampler, { } ]
   MultiProcessing:
     max_workers: 1
-  num_trials: 3
+  num_trials: 2
 
 Device: cpu
 

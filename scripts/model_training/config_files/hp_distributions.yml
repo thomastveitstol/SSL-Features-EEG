@@ -3,12 +3,13 @@
 # -----------------
 Preprocessing:
   autoreject: !Categorical { choices: [ true, false ] }
-  input_length: !Categorical { choices: [ 5, 10, 20 ] }
-  sfreq_multiple: !Categorical { choices: [ 2, 3, 4 ] }
+  input_length: !Categorical { choices: [ 5, 10 ] }  # todo
+  sfreq_multiple: !Categorical { choices: [ 2, 3 ] }  # todo
 
 # -----------------
-# Domain discriminator
+# Domain adaptation
 # -----------------
+# Domain discriminator
 Discriminators:
   NoDiscriminator: {}
   ExponentialDecalFC:
@@ -18,6 +19,9 @@ Discriminators:
     activation_function:
       relu: {}
       elu: {low: 0.2, high: 1.8, log: false}
+
+# Convolutional Monge mapping normalisation
+# todo
 
 # -----------------
 # Training
@@ -56,7 +60,7 @@ DLArchitectures:
     filter_length: { low: 5, high: 15, step: 1, log: false }
     drop_prob: { low: 0.0, high: 0.5, log: false }  # todo: should this be independent from shallownet?
 
-Normalisation: !Categorical { choices: [ true, false ] }  # todo: is this implemented yet?
+normalisation: { choices: [ true, false ] }
 
 # -----------------
 # Varied numbers of channels
