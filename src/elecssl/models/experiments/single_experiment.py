@@ -672,15 +672,15 @@ class SSLExperiment:
 
     @property
     def interpolation_config(self) -> Optional[Dict[str, Any]]:
-        if self._hp_config["Varied Numbers of Channels"]["name"] != "Interpolation":
+        if self._hp_config["SpatialDimensionMismatch"]["name"] != "Interpolation":
             return None
         else:
-            return self._hp_config["Varied Numbers of Channels"]["kwargs"]  # type: ignore[no-any-return]
+            return self._hp_config["SpatialDimensionMismatch"]["kwargs"]  # type: ignore[no-any-return]
 
     @property
     def shared_pre_processing_config(self):
         """Get the dict of the pre-processing config file which contains all shared pre-processing configurations"""
-        return self._pre_processing_config["general"]  # todo
+        return self._pre_processing_config
 
     @property
     def subject_split_config(self):
@@ -688,7 +688,7 @@ class SSLExperiment:
 
     @property
     def spatial_dimension_handling_config(self):
-        return self._hp_config["Varied Numbers of Channels"]
+        return self._hp_config["SpatialDimensionMismatch"]
 
     @property
     def dl_architecture_config(self):
@@ -706,10 +706,10 @@ class SSLExperiment:
 
     @property
     def rbp_config(self):
-        if self._hp_config["Varied Numbers of Channels"]["name"] != "RegionBasedPooling":
+        if self._hp_config["SpatialDimensionMismatch"]["name"] != "RegionBasedPooling":
             return None
         else:
-            return self._hp_config["Varied Numbers of Channels"]["kwargs"]
+            return self._hp_config["SpatialDimensionMismatch"]["kwargs"]
 
     @property
     def scaler_config(self):
