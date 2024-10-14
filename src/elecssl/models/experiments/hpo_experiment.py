@@ -24,6 +24,8 @@ from elecssl.models.utils import add_yaml_constructors, add_yaml_representers
 class HPOExperiment:
     """
     Class for running hyperparameter optimisation
+
+    todo: make this a context manager
     """
 
     __slots__ = ("_experiments_config", "_sampling_config", "_results_dir")
