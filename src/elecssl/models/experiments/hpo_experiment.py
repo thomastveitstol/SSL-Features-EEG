@@ -213,9 +213,9 @@ class HPOExperiment:
         # todo: a better solution could be to make the 'run_experiment' return the features...
         # todo: slightly hard-coded target
         subject_ids, deviation, clinical_target = _get_delta_and_variable(
-            path=results_path, target=f"band_power_{out_freq_band}_{out_ocular_state}", variable=clinical_target,
-            deviation_method=deviation_method, log_var=log_transform_clinical_target, num_eeg_epochs=num_eeg_epochs,
-            pretext_main_metric=pretext_main_metric
+            path=results_path / "Fold_0", target=f"band_power_{out_freq_band}_{out_ocular_state}",
+            variable=clinical_target, deviation_method=deviation_method, log_var=log_transform_clinical_target,
+            num_eeg_epochs=num_eeg_epochs, pretext_main_metric=pretext_main_metric
         )
 
         return subject_ids, deviation, clinical_target, feature_extractor_name
@@ -237,10 +237,9 @@ def _get_best_val_epoch(path, *, pretext_main_metric):
 
     # Get the epoch which maximises the performance
     if higher_is_better(metric=pretext_main_metric):
-        val_idx = numpy.argmax(val_df[pretext_main_metric])
+        return numpy.argmax(val_df[pretext_main_metric])
     else:
-        val_idx = numpy.argmin(val_df[pretext_main_metric])
-    return val_df[pretext_main_metric][val_idx]
+        return  numpy.argmin(val_df[pretext_main_metric])
 
 
 def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var, num_eeg_epochs, pretext_main_metric):
@@ -248,12 +247,12 @@ def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var
     # Select epoch
     # ----------------
     # todo: not really 'fold' anymore...
-    epoch = _get_best_val_epoch(path=path / "Fold_0", pretext_main_metric=pretext_main_metric)
+    epoch = _get_best_val_epoch(path=path, pretext_main_metric=pretext_main_metric)
 
     # ----------------
     # Get the biomarkers and the (clinical) variable
     # ----------------
-    test_predictions = pandas.read_csv(os.path.join(path, "test_history_predictions"))
+    test_predictions = pandas.read_csv(os.path.join(path, "test_history_predictions.csv"))
     subject_ids = test_predictions["sub_id"]
 
     # Check the number of datasets in the test set
