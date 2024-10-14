@@ -1,7 +1,7 @@
 from typing import Type
 
 from elecssl.models.domain_adaptation.domain_discriminators.domain_discriminator_base import DomainDiscriminatorBase
-from elecssl.models.domain_adaptation.domain_discriminators.fc_modules import FCModule
+from elecssl.models.domain_adaptation.domain_discriminators.fc_modules import FCModule, ExponentialDecayFC
 
 
 def get_domain_discriminator(name, **kwargs):
@@ -29,7 +29,7 @@ def get_domain_discriminator(name, **kwargs):
     following: ('FCModule',...)
     """
     # All available domain discriminators must be included here
-    available_domain_discriminators = (FCModule,)
+    available_domain_discriminators = (FCModule, ExponentialDecayFC)
 
     # Loop through and select the correct one
     for domain_discriminator in available_domain_discriminators:
@@ -60,7 +60,7 @@ def get_domain_discriminator_type(name) -> Type[DomainDiscriminatorBase]:
     following: ('FCModule',...)
     """
     # All available domain discriminators must be included here
-    available_domain_discriminators = (FCModule,)
+    available_domain_discriminators = (FCModule, ExponentialDecayFC)
 
     # Loop through and select the correct one
     for domain_discriminator in available_domain_discriminators:

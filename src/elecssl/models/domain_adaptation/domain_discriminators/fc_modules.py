@@ -1,6 +1,7 @@
 import random
 from typing import List, Any, Dict
 
+import optuna
 from torch import nn
 
 from elecssl.models.domain_adaptation.domain_discriminators.domain_discriminator_base import DomainDiscriminatorBase, \
@@ -132,14 +133,17 @@ class FCModule(DomainDiscriminatorBase):
 
         return x
 
-    # --------------
-    # Methods for creating a random architecture
-    # --------------
+
+class ExponentialDecayFC(FCModule):  # todo: some clean-up for domain discriminators...
+
     @staticmethod
-    @sampling_method
-    def exponential_decay(*, proposed_depth, first_layer_multiple, in_features, exponential_decrease,
-                          activation_function, num_classes):
-        """The number of layers are decreasing exponentially from first to last hidden layer"""
+    def suggest_hyperparameters(*, name, trial: optuna.Trial, config, in_features, num_classes):
+        # Suggest hyperparameters
+        first_layer_multiple = trial.suggest_float(f"{name}_first_layer_multiple", **config["first_layer_multiple"])
+        proposed_depth = trial.suggest_int(f"{name}_proposed_depth", **config["proposed_depth"])
+        exponential_decrease = trial.suggest_int(f"{name}_exponential_decrease", **config["exponential_decrease"])
+        activation_function = _suggest_activation_function(name=name, trial=trial, **config["activation_function"])
+
         # Set the first layer
         first_layer = round(first_layer_multiple * in_features)
 
@@ -157,16 +161,22 @@ class FCModule(DomainDiscriminatorBase):
             if num_units == 1:
                 break
 
-        # --------------
-        # Sample activation function
-        # --------------
-
-        # Return configuration which can be used as input to __init__
         return {"hidden_units": tuple(hidden_units),
                 "activation_function": activation_function["name"],
                 "activation_function_kwargs": activation_function["kwargs"],
                 "in_features": in_features,
                 "num_classes": num_classes}
+
+
+def _suggest_activation_function(name, trial, config):
+    activation_function = trial.suggest_categorical(f"{name}_activation_function", choices=tuple(config.keys()))
+    if activation_function == "relu":
+        return nn.ReLU()
+    elif activation_function == "elu":
+        alpha = trial.suggest_float(f"{name}_elu_alpha", **config[activation_function])
+        return nn.ELU(alpha=alpha)
+    else:
+        raise ValueError(f"Unexpected activation function: {activation_function}")
 
 
 def _get_activation_function(activation_function, **kwargs):
