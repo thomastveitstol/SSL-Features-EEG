@@ -62,7 +62,7 @@ def _suggest_rbp(name, trial, config, normalisation, cmmn):
 
         # CMMN
         rbp_designs[rbp_name]["cmmn_kwargs"] = cmmn["kwargs"]
-        rbp_designs[rbp_name]["cmmn_kwargs"] = cmmn["use_cmmn_layer"]
+        rbp_designs[rbp_name]["use_cmmn_layer"] = cmmn["use_cmmn_layer"]
 
         # Number of designs
         rbp_designs[rbp_name]["num_designs"] = config["num_designs"]  # Should be 1
