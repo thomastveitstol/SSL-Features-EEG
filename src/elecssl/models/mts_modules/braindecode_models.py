@@ -187,7 +187,8 @@ class ShallowFBCSPNetMTS(MTSModuleBase):
                 "pool_time_stride": pool_time_stride,
                 "pool_time_length": pool_time_length,
                 "drop_prob": drop_prob,
-                "num_classes": config["num_classes"]}
+                "num_classes": config["num_classes"],
+                "num_time_steps": config["num_time_steps"]}
 
     # ----------------
     # Properties
@@ -429,7 +430,8 @@ class Deep4NetMTS(MTSModuleBase):
         # Get the drop out
         drop_prob = trial.suggest_float(f"{name}_drop_prob", **config["drop_prob"])
 
-        return {**num_filters_hyperparameters, **filter_lengths_hyperparameters, "drop_prob": drop_prob}
+        return {**num_filters_hyperparameters, **filter_lengths_hyperparameters, "drop_prob": drop_prob,
+                "num_time_steps": config["num_time_steps"], "num_classes": config["num_classes"]}
 
     # ----------------
     # Properties
