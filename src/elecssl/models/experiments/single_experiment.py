@@ -364,9 +364,9 @@ class SSLExperiment:
                                eps=self.train_config["eps"])
 
         # Create loss
-        if self.train_config["Loss"]["weighter"] is not None:
-            self.train_config["Loss"]["weighter_kwargs"]["dataset_sizes"] = dataset_sizes
-        criterion = CustomWeightedLoss(**self.train_config["Loss"])
+        if self.loss_config["weighter"] is not None:
+            self.loss_config["weighter_kwargs"]["dataset_sizes"] = dataset_sizes
+        criterion = CustomWeightedLoss(**self.loss_config["Loss"])
 
         return optimiser, criterion
 
@@ -669,6 +669,10 @@ class SSLExperiment:
     @property
     def train_config(self):
         return {**self._hp_config["Training"], **self._experiments_config["Training"]}
+
+    @property
+    def loss_config(self):
+        return self._hp_config["Loss"]
 
     @property
     def interpolation_config(self) -> Optional[Dict[str, Any]]:
