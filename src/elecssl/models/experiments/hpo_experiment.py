@@ -239,7 +239,7 @@ def _get_best_val_epoch(path, *, pretext_main_metric):
     if higher_is_better(metric=pretext_main_metric):
         return numpy.argmax(val_df[pretext_main_metric])
     else:
-        return  numpy.argmin(val_df[pretext_main_metric])
+        return numpy.argmin(val_df[pretext_main_metric])
 
 
 def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var, num_eeg_epochs, pretext_main_metric):
