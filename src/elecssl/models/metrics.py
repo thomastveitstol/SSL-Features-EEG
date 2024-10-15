@@ -620,6 +620,10 @@ class Histories:
         return getattr(cls, metric)(y_pred=y_pred, y_true=y_true)
 
     @classmethod
+    def compute_metric(cls, metric: str, *, y_pred, y_true):
+        return cls._compute_metric(metric=metric, y_pred=torch.tensor(y_pred), y_true=torch.tensor(y_true))
+
+    @classmethod
     def _compute_groups_metric(cls, metric: str, *, variable: torch.Tensor, groups: torch.Tensor):
         """Method for computing the specified groups metric"""
 
