@@ -11,7 +11,7 @@ FrequencyBands: [ alpha, beta ]  # [ delta, theta, alpha, beta, gamma ]
 # The preprocessed version must be during runtime
 
 clinical_target: age
-log_transform_clinical_target: true
+log_transform_clinical_target: false
 deviation_method: ratio
 pretext_main_metric: mse
 enable_domain_discriminator: false
@@ -31,11 +31,11 @@ Device: cpu
 # -----------------
 Datasets: &Datasets
   LEMON:
-    num_subjects: 20
+    num_subjects: 10
     num_time_steps: null
     time_series_start: null
   Wang:
-    num_subjects: 20
+    num_subjects: 10
     num_time_steps: null
     time_series_start: null
 
