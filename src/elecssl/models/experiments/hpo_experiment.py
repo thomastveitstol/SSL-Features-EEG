@@ -147,14 +147,21 @@ class HPOExperiment:
             # ---------------
             # Use the biomarkers
             # ---------------
-            print(df)
-            # Combine all biomarkers to a single dataframe
-
             # Create ML  todo: make a package with ML models
             # ml_model = DecisionTreeRegressor()
 
-            # todo: Random splits? cross validation? I actually need to HPO the ML model too...
+            # Do evaluation (used as feedback to HPO algorithm)
             # score = ml_model.fit(feature_extractors_biomarkers)
+
+            # I will save the test results as well. Although it is conventional to not even open the test set before the
+            # HPO, keep in mind that as long the feedback to the HPO is not related to the test performance (and test
+            # set), then it will not bias the experiments. The model selection is also purely based on non-test set
+            # evaluated performance. Evaluating on the test set for every iteration may be interesting from an ML
+            # developers perspective, as one can e.g. find out if there are indications on the HPO leading to
+            # overfitting on the non-test set (although it would not be valid performance estimation to go back after
+            # checking the test set performance)
+
+            # todo: Save the model?
 
             return 0.4
 
