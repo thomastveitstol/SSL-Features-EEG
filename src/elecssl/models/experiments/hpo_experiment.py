@@ -17,6 +17,7 @@ from elecssl.data.results_analysis import higher_is_better
 from elecssl.data.subject_split import Subject
 from elecssl.models.experiments.single_experiment import SSLExperiment
 from elecssl.models.hp_suggesting import suggest_hyperparameters
+from elecssl.models.ml_models.ml_model_base import MLModel
 from elecssl.models.sampling_distributions import get_yaml_loader
 from elecssl.models.utils import add_yaml_constructors, add_yaml_representers
 
@@ -147,8 +148,8 @@ class HPOExperiment:
             # ---------------
             # Use the biomarkers
             # ---------------
-            # Create ML  todo: make a package with ML models
-            # ml_model = DecisionTreeRegressor()
+            # Create ML model
+            # ml_model = MLModel()
 
             # Do evaluation (used as feedback to HPO algorithm)
             # score = ml_model.fit(feature_extractors_biomarkers)
