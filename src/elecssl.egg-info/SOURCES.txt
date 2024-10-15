@@ -54,6 +54,8 @@ src/elecssl/models/experiments/single_experiment.py
 src/elecssl/models/main_models/__init__.py
 src/elecssl/models/main_models/main_fixed_channels_model.py
 src/elecssl/models/main_models/main_rbp_model.py
+src/elecssl/models/ml_models/__init__.py
+src/elecssl/models/ml_models/ml_model_base.py
 src/elecssl/models/mts_modules/__init__.py
 src/elecssl/models/mts_modules/braindecode_models.py
 src/elecssl/models/mts_modules/getter.py
