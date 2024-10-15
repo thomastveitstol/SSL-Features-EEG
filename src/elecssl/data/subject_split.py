@@ -57,6 +57,91 @@ class DataSplitBase(abc.ABC):
 # -----------------
 # Classes
 # -----------------
+class RandomSplitsTV(DataSplitBase):
+    """
+    Random splits without really having a test set
+
+    Examples
+    --------
+    >>> f1_drivers = {"Mercedes": ("Hamilton", "Russel", "Wolff"), "Red Bull": ("Verstappen", "Checo"),
+    ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
+    ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
+    >>> my_num_splits = 4
+    >>> my_splits = RandomSplitsTV(f1_drivers, val_split=0.2, num_random_splits=my_num_splits, seed=42).splits
+    >>> len(my_splits) == my_num_splits, type(my_splits)
+    (True, <class 'tuple'>)
+    >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
+    ((3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>))
+    >>> all(isinstance(my_sub, Subject) for my_split in my_splits for my_split_subset in my_split  # type: ignore
+    ...     for my_sub in my_split_subset)  # type: ignore
+    True
+
+    Train, val and test never overlaps
+
+    >>> for my_train, my_val, my_test in my_splits:
+    ...     assert not set(my_train) & set(my_val)
+    ...     assert not set(my_train) & set(my_test)
+    ...     assert not set(my_val) & set(my_test)
+
+    Test set is always empty
+
+    >>> my_test_subjects = tuple(my_split[-1] for my_split in my_splits)  # type: ignore
+    >>> for test_subjects in my_test_subjects:
+    ...     test_subjects
+    ()
+    ()
+    ()
+    ()
+    """
+
+    def __init__(self, dataset_subjects, *, val_split, num_random_splits, seed=None):
+        """
+        Initialise
+
+        Parameters
+        ----------
+        dataset_subjects : dict[str, tuple[str, ...]]
+        val_split : float
+        num_random_splits : int
+        seed : int
+        """
+        # Maybe make data split reproducible
+        if seed is not None:
+            random.seed(seed)
+
+        # ------------
+        # Generate random splits for training/validation
+        # ------------
+        subjects = []
+        for dataset_name, subject_ids in dataset_subjects.items():
+            # Add all subjects from the current non-test dataset
+            subjects.extend(
+                [Subject(dataset_name=dataset_name, subject_id=subject_id) for subject_id in subject_ids]
+            )
+
+        # Create splits
+        splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
+        for i in range(num_random_splits):
+            # Randomly shuffle the non-test subjects
+            random.shuffle(subjects)
+
+            # Split into training and validation
+            train_subjects, val_subjects = _split_randomly(subjects=subjects, split_percent=val_split)
+
+            # Add to splits. The test set will be empty instead of non-existent for consistency reasons
+            splits.append((tuple(train_subjects), tuple(val_subjects), ()))
+
+        # Set the attribute
+        self._splits = tuple(splits)
+
+    # ---------------
+    # Properties
+    # ---------------
+    @property
+    def splits(self):
+        return self._splits
+
+
 class KFoldDataSplit(DataSplitBase):
     """
     Class for splitting the data into k folds. The different datasets are neglected
@@ -285,7 +370,7 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
 
         Parameters
         ----------
-        dataset_subjects : dataset_subjects : dict[str, tuple[str, ...]]
+        dataset_subjects : dict[str, tuple[str, ...]]
         left_out_dataset : str
             Dataset to leave out as test set
         val_split : float
