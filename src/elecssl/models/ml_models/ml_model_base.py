@@ -2,7 +2,6 @@ from copy import deepcopy
 from typing import List
 
 import numpy
-import pandas
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 
@@ -16,6 +15,7 @@ class MLModel:
 
     Examples
     --------
+    >>> import pandas
     >>> from elecssl.data.subject_split import RandomSplitsTV, Subject
     >>> my_subjects = {"D1": ("S1", "S2"), "D2": ("S1", "S2", "S3"), "D3": ("P1", "P2", "P3", "P4"), "D4": ("P1", "P2")}
     >>> my_num_splits = 4
