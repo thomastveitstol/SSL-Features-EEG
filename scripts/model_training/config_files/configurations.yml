@@ -67,7 +67,7 @@ SubGroups:
     dataset_name: !GetKeys { <<: *Datasets }
   verbose: true
 
-MLModelSubjectSPlit:
+MLModelSubjectSplit:
   name: RandomSplitsTV
   kwargs:
     val_split: 0.2
