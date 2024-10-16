@@ -20,6 +20,7 @@ enable_cmmn: false
 HPO:
   HPOStudy:
     sampler: !HPOSampler [ TPESampler, { } ]
+    direction: minimize  # todo: this must depend on the selected target
   MultiProcessing:
     max_workers: 1
   num_trials: 2
