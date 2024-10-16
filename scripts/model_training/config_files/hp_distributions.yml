@@ -65,6 +65,13 @@ DLArchitectures:
 normalisation: { choices: [ true, false ] }
 
 # -----------------
+# The ML model operating on the biomarkers
+# -----------------
+MLModel:
+  model: ARDRegression
+  kwargs: {}
+
+# -----------------
 # Varied numbers of channels
 # -----------------
 _channel_system: # todo: not elegant

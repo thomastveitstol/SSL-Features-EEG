@@ -440,7 +440,7 @@ def get_data_split(split, **kwargs):
     DataSplitBase
     """
     # All available data splits must be included here
-    available_splits = (KFoldDataSplit, LODOCV, KeepDatasetOutRandomSplits)
+    available_splits = (KFoldDataSplit, LODOCV, KeepDatasetOutRandomSplits, RandomSplitsTV)
 
     # Loop through and select the correct one
     for split_class in available_splits:

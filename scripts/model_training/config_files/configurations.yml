@@ -66,6 +66,17 @@ SubGroups:
     dataset_name: !GetKeys { <<: *Datasets }
   verbose: true
 
+MLModelSubjectSPlit:
+  name: RandomSplitsTV
+  kwargs:
+    val_split: 0.2
+    num_random_splits: 5
+    seed: 42
+
+MLModelSettings:
+  aggregation_method: mean
+  evaluation_metric: mse  # todo: which should I choose?
+
 # -----------------
 # Training configurations
 # -----------------
