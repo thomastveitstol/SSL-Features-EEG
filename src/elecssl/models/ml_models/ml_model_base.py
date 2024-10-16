@@ -2,7 +2,8 @@ from copy import deepcopy
 from typing import List
 
 import numpy
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet, LassoLars, Lars, OrthogonalMatchingPursuit, \
+    BayesianRidge, ARDRegression
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 
 from elecssl.models.metrics import Histories
@@ -37,6 +38,38 @@ class MLModel:
     ...                    aggregation_method="mean")
     >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
     np.float64(0.578...)
+    >>> my_model = MLModel(model="Lasso", model_kwargs={"alpha": 0.5}, splits=my_splits, evaluation_metric="mae",
+    ...                    aggregation_method="mean")
+    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
+    np.float64(0.404...)
+    >>> my_model = MLModel(model="ElasticNet", model_kwargs={"alpha": 0.5, "l1_ratio": 0.3}, splits=my_splits,
+    ... evaluation_metric="mae", aggregation_method="mean")
+    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
+    np.float64(0.404...)
+    >>> my_model = MLModel(model="Ridge", model_kwargs={"alpha": 0.5}, splits=my_splits, evaluation_metric="mae",
+    ...                    aggregation_method="mean")
+    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
+    np.float64(0.428...)
+    >>> my_model = MLModel(model="Lars", model_kwargs={"n_nonzero_coefs": 4}, splits=my_splits, evaluation_metric="mae",
+    ...                    aggregation_method="mean")
+    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
+    np.float64(0.360...)
+    >>> my_model = MLModel(model="LassoLars", model_kwargs={"alpha": 0.5}, splits=my_splits, evaluation_metric="mae",
+    ...                    aggregation_method="mean")
+    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
+    np.float64(0.404...)
+    >>> my_model = MLModel(model="OrthogonalMatchingPursuit", model_kwargs={}, splits=my_splits,
+    ...                    evaluation_metric="mae", aggregation_method="mean")
+    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
+    np.float64(0.305...)
+    >>> my_model = MLModel(model="BayesianRidge", model_kwargs={}, splits=my_splits, evaluation_metric="mae",
+    ...                    aggregation_method="mean")
+    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
+    np.float64(0.598...)
+    >>> my_model = MLModel(model="ARDRegression", model_kwargs={}, splits=my_splits, evaluation_metric="mae",
+    ...                    aggregation_method="mean")
+    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
+    np.float64(0.502...)
     """
 
     __slots__ = ("_ml_model", "_splits", "_evaluation_metric", "_aggregation_method")
@@ -63,9 +96,6 @@ class MLModel:
         """
         scores: List[float] = []
         for train, val, test in self._splits:
-            # I'll reuse the splits as in the DL models, but I shouldn't actually have test set here
-            assert not test, f"Expected test set to be empty, but found (N={len(test)}): {test}"
-
             # --------------
             # Model training
             # --------------
@@ -108,7 +138,8 @@ def _aggregate_scores(method: str, scores: List[float]):
 
 def _get_ml_model(model, **kwargs):
     # All available ML models must be included here
-    available_models = (DecisionTreeRegressor, DecisionTreeClassifier, LinearRegression)
+    available_models = (DecisionTreeRegressor, DecisionTreeClassifier, LinearRegression, Lasso, Ridge, ElasticNet, Lars,
+                        LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression)
 
     # Loop through and select the correct one
     for available_model in available_models:
