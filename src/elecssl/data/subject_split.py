@@ -460,7 +460,7 @@ def subjects_tuple_to_dict(subjects):
 
     Parameters
     ----------
-    subjects : tuple[Subject, ...]
+    subjects : typing.Iterable[Subject]
 
     Returns
     -------
@@ -471,6 +471,12 @@ def subjects_tuple_to_dict(subjects):
     >>> my_subjects = (Subject("S1", "D1"), Subject("S2", "D1"), Subject("S3", "D1"), Subject("S1", "D2"),
     ...     Subject("S2", "D2"), Subject("P1", "D3"), Subject("P2", "D3"), Subject("P3", "D3"), Subject("P1", "D4"))
     >>> subjects_tuple_to_dict(my_subjects)
+    {'D1': ('S1', 'S2', 'S3'), 'D2': ('S1', 'S2'), 'D3': ('P1', 'P2', 'P3'), 'D4': ('P1',)}
+
+    It even works when the subjects are keys in dictionaries (the keys are looped over by default)
+
+    >>> my_subjects_dict = {sub: "Does not matter the values" for sub in my_subjects}  # type: ignore[attr-defined]
+    >>> subjects_tuple_to_dict(my_subjects_dict)
     {'D1': ('S1', 'S2', 'S3'), 'D2': ('S1', 'S2'), 'D3': ('P1', 'P2', 'P3'), 'D4': ('P1',)}
     """
     dataset_dict: Dict[str, List[str]] = {}
