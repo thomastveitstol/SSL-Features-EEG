@@ -2,7 +2,7 @@ import abc
 import dataclasses
 import itertools
 import random
-from typing import List, Tuple, Sequence
+from typing import List, Tuple, Sequence, Dict
 
 import numpy
 
@@ -450,6 +450,45 @@ def get_data_split(split, **kwargs):
     # If no match, an error is raised
     raise ValueError(f"The data split '{split}' was not recognised. Please select among the following: "
                      f"{tuple(split_class.__name__ for split_class in available_splits)}")
+
+
+def subjects_tuple_to_dict(subjects):
+    """
+    Function for converting from a tuple of subjects to a dictionary with dataset name as keys and tuple of subject IDs
+    as values. This function is convenient for converting to the format expected in the classes inheriting from
+    'DataSplitBase'
+
+    Parameters
+    ----------
+    subjects : tuple[Subject, ...]
+
+    Returns
+    -------
+    dict[str, tuple[str, ...]]
+
+    Examples
+    --------
+    >>> my_subjects = (Subject("S1", "D1"), Subject("S2", "D1"), Subject("S3", "D1"), Subject("S1", "D2"),
+    ...     Subject("S2", "D2"), Subject("P1", "D3"), Subject("P2", "D3"), Subject("P3", "D3"), Subject("P1", "D4"))
+    >>> subjects_tuple_to_dict(my_subjects)
+    {'D1': ('S1', 'S2', 'S3'), 'D2': ('S1', 'S2'), 'D3': ('P1', 'P2', 'P3'), 'D4': ('P1',)}
+    """
+    dataset_dict: Dict[str, List[str]] = {}
+    for subject in subjects:
+        # Do a type check
+        if not isinstance(subject, Subject):
+            raise TypeError(f"Expected all subjects to be of type {Subject.__name__}, but found {subject}")
+
+        # Add to dict
+        dataset_name = subject.dataset_name
+
+        if dataset_name not in dataset_dict:
+            dataset_dict[dataset_name] = [subject.subject_id]
+        else:
+            dataset_dict[dataset_name].append(subject.subject_id)
+
+    # Return with tuple values
+    return {name: tuple(subject_ids) for name, subject_ids in dataset_dict.items()}
 
 
 def _leave_1_fold_out(i, folds) -> Tuple[Subject, ...]:
