@@ -82,7 +82,7 @@ class HPOExperiment:
 
     def _create_objective(self):
 
-        def _objective(trial):
+        def _objective(trial: optuna.Trial):
             # ---------------
             # Create configurations for all feature extractors
             # ---------------
@@ -102,6 +102,8 @@ class HPOExperiment:
                 print("Multiprocessing")
                 experiments = []
                 for (in_ocular_state, out_ocular_state), in_freq_band, out_freq_band in itertools.product(*spaces):
+                    feature_extractor_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
+
                     # ---------------
                     # Just a bit of preparation...
                     # ---------------
@@ -117,17 +119,25 @@ class HPOExperiment:
                     experiment_config_file["Training"]["target"] = f"band_power_{out_freq_band}_{out_ocular_state}"
 
                     # ---------------
+                    # Suggest / sample hyperparameters
+                    # ---------------
+                    suggested_hyperparameters = suggest_hyperparameters(
+                        name=feature_extractor_name, config=self._sampling_config, trial=trial,
+                        experiments_config=experiment_config_file
+                    )
+
+                    # ---------------
                     # Initiate experiment
                     # ---------------
                     experiments.append(
                         executor.submit(
-                            self._run_single_job, experiments_config=experiment_config_file,
-                            sampling_config=self._sampling_config, trial=trial, in_ocular_state=in_ocular_state,
+                            self._run_single_job, experiments_config=experiment_config_file, trial_number=trial.number,
+                            suggested_hyperparameters=suggested_hyperparameters, in_ocular_state=in_ocular_state,
                             out_ocular_state=out_ocular_state, in_freq_band=in_freq_band, out_freq_band=out_freq_band,
                             results_dir=results_dir, clinical_target=self._experiments_config["clinical_target"],
                             deviation_method=self._experiments_config["deviation_method"],
                             log_transform_clinical_target=self._experiments_config["log_transform_clinical_target"],
-                            num_eeg_epochs=num_epochs,
+                            num_eeg_epochs=num_epochs, feature_extractor_name=feature_extractor_name,
                             pretext_main_metric=self._experiments_config["pretext_main_metric"]
                         )
                     )
@@ -182,25 +192,16 @@ class HPOExperiment:
             # checking the test set performance). Maybe I should call it "optimisation excluded set"?
 
             # todo: Save the model?
-
+            print(f"Trial params: {trial.params}")
             return score
 
         return _objective
 
     @staticmethod
-    def _run_single_job(experiments_config, sampling_config, trial: optuna.Trial, in_ocular_state, out_ocular_state,
+    def _run_single_job(experiments_config, suggested_hyperparameters, trial_number, in_ocular_state, out_ocular_state,
                         in_freq_band, out_freq_band, results_dir, clinical_target, deviation_method, num_eeg_epochs,
-                        log_transform_clinical_target, pretext_main_metric):
+                        log_transform_clinical_target, pretext_main_metric, feature_extractor_name):
         """Method for running a single SSL experiments"""
-        feature_extractor_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
-
-        # ---------------
-        # Suggest / sample hyperparameters
-        # ---------------
-        suggested_hyperparameters = suggest_hyperparameters(
-            name=feature_extractor_name, config=sampling_config, trial=trial, experiments_config=experiments_config
-        )
-
         # Load the preprocessing file and add some necessary info
         with open(get_numpy_data_storage_path() / f"preprocessed_band_pass_{in_ocular_state}" / "config.yml") as file:
             f_max = yaml.safe_load(file)["FrequencyBands"][in_freq_band][-1]
@@ -228,7 +229,7 @@ class HPOExperiment:
         # ---------------
         # Learn on the pretext regression task
         # ---------------
-        results_path = results_dir / (f"hpo_{trial.number}_{feature_extractor_name}_{date.today()}_"
+        results_path = results_dir / (f"hpo_{trial_number}_{feature_extractor_name}_{date.today()}_"
                                       f"{datetime.now().strftime('%H%M%S')}")
         with SSLExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
                            pre_processing_config=preprocessing_config_file, results_path=results_path) as experiment:
