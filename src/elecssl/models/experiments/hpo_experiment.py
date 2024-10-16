@@ -14,9 +14,10 @@ import yaml  # type: ignore[import-untyped]
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.paths import get_numpy_data_storage_path
 from elecssl.data.results_analysis import higher_is_better
-from elecssl.data.subject_split import Subject
+from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split
 from elecssl.models.experiments.single_experiment import SSLExperiment
 from elecssl.models.hp_suggesting import suggest_hyperparameters
+from elecssl.models.ml_models.ml_model_base import MLModel
 from elecssl.models.sampling_distributions import get_yaml_loader
 from elecssl.models.utils import add_yaml_constructors, add_yaml_representers
 
@@ -147,11 +148,27 @@ class HPOExperiment:
             # ---------------
             # Use the biomarkers
             # ---------------
-            # Create ML model
-            # ml_model = MLModel()
+            print("Training the ML model on biomarkers...")
 
-            # Do evaluation (used as feedback to HPO algorithm)
-            # score = ml_model.fit(feature_extractors_biomarkers)
+            # Create the subject splitting
+            subjects = subjects_tuple_to_dict(biomarkers)
+            split_kwargs = {"dataset_subjects": subjects, **self._experiments_config["MLModelSubjectSplit"]["kwargs"]}
+            biomarker_evaluation_splits = get_data_split(
+                split=self._experiments_config["MLModelSubjectSplit"]["name"], **split_kwargs
+            ).splits
+
+            # Create ML model
+            ml_model = MLModel(
+                model=self.ml_model_config["model"], model_kwargs=self.ml_model_config["kwargs"],
+                splits=biomarker_evaluation_splits,
+                evaluation_metric=self._experiments_config["MLModelSettings"]["evaluation_metric"],
+                aggregation_method=self._experiments_config["MLModelSettings"]["aggregation_method"]
+            )
+
+            # Do evaluation (used as feedback to HPO algorithm)  todo: must implement splitting test
+            score = ml_model.evaluate_features(non_test_df=df)
+            print(f"Training done! Obtained {self._experiments_config["MLModelSettings"]["evaluation_metric"]} "
+                  f"{self._experiments_config["MLModelSettings"]["evaluation_metric"]} = {score}")
 
             # I will save the test results as well. Although it is conventional to not even open the test set before the
             # HPO, keep in mind that as long the feedback to the HPO is not related to the test performance (and test
@@ -159,11 +176,11 @@ class HPOExperiment:
             # evaluated performance. Evaluating on the test set for every iteration may be interesting from an ML
             # developers perspective, as one can e.g. find out if there are indications on the HPO leading to
             # overfitting on the non-test set (although it would not be valid performance estimation to go back after
-            # checking the test set performance)
+            # checking the test set performance). Maybe I should call it "optimisation excluded set"?
 
             # todo: Save the model?
 
-            return 0.4
+            return score
 
         return _objective
 
@@ -233,6 +250,10 @@ class HPOExperiment:
     @property
     def hpo_study_config(self):
         return self._experiments_config["HPO"]
+
+    @property
+    def ml_model_config(self):
+        return self._sampling_config["MLModel"]
 
 
 # --------------
