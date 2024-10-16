@@ -170,8 +170,8 @@ class HPOExperiment:
 
             # Do evaluation (used as feedback to HPO algorithm)  todo: must implement splitting test
             score = ml_model.evaluate_features(non_test_df=df)
-            print(f"Training done! Obtained {self._experiments_config["MLModelSettings"]["aggregation_method"]} "
-                  f"{self._experiments_config["MLModelSettings"]["evaluation_metric"]} = {score}")
+            print(f"Training done! Obtained {self._experiments_config['MLModelSettings']['aggregation_method']} "
+                  f"{self._experiments_config['MLModelSettings']['evaluation_metric']} = {score}")
 
             # I will save the test results as well. Although it is conventional to not even open the test set before the
             # HPO, keep in mind that as long the feedback to the HPO is not related to the test performance (and test

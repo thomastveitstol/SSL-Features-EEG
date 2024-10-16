@@ -2,8 +2,8 @@ from copy import deepcopy
 from typing import List
 
 import numpy
-from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet, LassoLars, Lars, OrthogonalMatchingPursuit, \
-    BayesianRidge, ARDRegression
+from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet, LassoLars, Lars, BayesianRidge, \
+    ARDRegression, OrthogonalMatchingPursuit
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 
 from elecssl.models.metrics import Histories
