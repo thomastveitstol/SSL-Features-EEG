@@ -241,6 +241,9 @@ def suggest_hyperparameters(name, config, trial, experiments_config):
         suggested_hps["Training"]["method"] = "downstream_training"
         suggested_hps["DomainDiscriminator"] = None
 
+    # Suggesting the ML model  todo: come back to this...
+    suggested_hps["MLModel"] = config["MLModel"]
+
     return suggested_hps
 
 
