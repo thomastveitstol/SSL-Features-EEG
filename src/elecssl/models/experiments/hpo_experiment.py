@@ -339,9 +339,9 @@ def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var
     # Remove nan values
     mask = ~numpy.isnan(var).copy()
 
-    ground_truth = ground_truth[mask]
+    ground_truth = ground_truth[mask]  # type: ignore
     predictions = predictions[mask]
-    var = var[mask]
+    var = var[mask]  # type: ignore
     subject_ids = subject_ids[mask]
 
     # Get the deviation
