@@ -23,7 +23,7 @@ HPO:
     direction: minimize  # todo: this must depend on the selected target
   MultiProcessing:
     max_workers: 1
-  num_trials: 5
+  num_trials: 10
 
 Device: cpu
 
