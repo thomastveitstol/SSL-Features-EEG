@@ -14,7 +14,7 @@ import yaml  # type: ignore[import-untyped]
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.paths import get_numpy_data_storage_path
 from elecssl.data.results_analysis import higher_is_better
-from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split
+from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split, simple_random_split
 from elecssl.models.experiments.single_experiment import SSLExperiment
 from elecssl.models.hp_suggesting import suggest_hyperparameters
 from elecssl.models.ml_models.ml_model_base import MLModel
@@ -165,23 +165,30 @@ class HPOExperiment:
 
             # Create the subject splitting
             subjects = subjects_tuple_to_dict(biomarkers)
-            split_kwargs = {"dataset_subjects": subjects, **self._experiments_config["MLModelSubjectSplit"]["kwargs"]}
+
+            non_test_subjects, test_subjects = simple_random_split(
+                subjects=subjects, split_percent=self._experiments_config["TestSplit"]["split_percentage"],
+                seed=self._experiments_config["TestSplit"]["seed"], require_seeding=True
+            )
+
+            split_kwargs = {"dataset_subjects": non_test_subjects,
+                            **self._experiments_config["MLModelSubjectSplit"]["kwargs"]}
             biomarker_evaluation_splits = get_data_split(
                 split=self._experiments_config["MLModelSubjectSplit"]["name"], **split_kwargs
             ).splits
 
             # Create ML model
             ml_model = MLModel(
-                model=self.ml_model_config["model"], model_kwargs=self.ml_model_config["kwargs"],
+                model=self.ml_model_hp_config["model"], model_kwargs=self.ml_model_hp_config["kwargs"],
                 splits=biomarker_evaluation_splits,
-                evaluation_metric=self._experiments_config["MLModelSettings"]["evaluation_metric"],
-                aggregation_method=self._experiments_config["MLModelSettings"]["aggregation_method"]
+                evaluation_metric=self.ml_model_settings_config["evaluation_metric"],
+                aggregation_method=self.ml_model_settings_config["aggregation_method"]
             )
 
             # Do evaluation (used as feedback to HPO algorithm)  todo: must implement splitting test
-            score = ml_model.evaluate_features(non_test_df=df)
-            print(f"Training done! Obtained {self._experiments_config['MLModelSettings']['aggregation_method']} "
-                  f"{self._experiments_config['MLModelSettings']['evaluation_metric']} = {score}")
+            score = ml_model.evaluate_features(non_test_df=df.loc[list(non_test_subjects)])
+            print(f"Training done! Obtained {self.ml_model_settings_config['aggregation_method']} "
+                  f"{self.ml_model_settings_config['evaluation_metric']} = {score}")
 
             # I will save the test results as well. Although it is conventional to not even open the test set before the
             # HPO, keep in mind that as long the feedback to the HPO is not related to the test performance (and test
@@ -190,6 +197,18 @@ class HPOExperiment:
             # developers perspective, as one can e.g. find out if there are indications on the HPO leading to
             # overfitting on the non-test set (although it would not be valid performance estimation to go back after
             # checking the test set performance). Maybe I should call it "optimisation excluded set"?
+            test_predictions, test_scores = ml_model.predict_and_score(
+                df=df.loc[list(test_subjects)], metrics=self.ml_model_settings_config["metrics"],
+                aggregation_method=self.ml_model_settings_config["test_prediction_aggregation"]
+            )
+
+            # Save predictions and scores on test set (the score provided to the HPO algorithm should be stored by
+            # optuna)
+            test_predictions_df = pandas.DataFrame.from_dict({"sub_id": test_subjects, "pred": test_predictions})
+            test_scores_df = pandas.DataFrame.from_dict(test_scores)
+
+            test_predictions_df.to_csv(results_dir / "test_predictions.csv")
+            test_scores_df.to_csv(results_dir / "test_scores.csv")
 
             # todo: Save the model?
             print(f"Trial params: {trial.params}")
@@ -256,8 +275,12 @@ class HPOExperiment:
         return self._experiments_config["HPO"]
 
     @property
-    def ml_model_config(self):
+    def ml_model_hp_config(self):
         return self._sampling_config["MLModel"]
+
+    @property
+    def ml_model_settings_config(self):
+        return self._experiments_config["MLModelSettings"]
 
 
 # --------------
