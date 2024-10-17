@@ -23,7 +23,7 @@ HPO:
     direction: minimize  # todo: this must depend on the selected target
   MultiProcessing:
     max_workers: 1
-  num_trials: 2
+  num_trials: 5
 
 Device: cpu
 
@@ -65,7 +65,7 @@ SubjectSplit:
 SubGroups:
   sub_groups:
     dataset_name: !GetKeys { <<: *Datasets }
-  verbose: true
+  verbose: false
 
 MLModelSubjectSplit:
   name: RandomSplitsTV
