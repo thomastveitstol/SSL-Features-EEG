@@ -508,7 +508,7 @@ def simple_random_split(subjects, split_percent, seed, require_seeding):
     seed : int, optional
         A seed which is passed to initialise the random number generator of random
     require_seeding : bool
-        A boolean which indicates if seeding should be required (True) or not (False)
+        A boolean which indicates if seeding should be required (True) or not (False). Ignored if a seed is given.
 
     Returns
     -------
@@ -530,11 +530,12 @@ def simple_random_split(subjects, split_percent, seed, require_seeding):
       Subject(subject_id='S2', dataset_name='D4')))
     """
     # Maybe make the split reproducible
-    if seed is not None:
+    if seed is None:
         if not isinstance(require_seeding, bool):
             raise TypeError(f"Expected 'require_seeding' argument to be boolean, but found {type(require_seeding)}")
         if require_seeding:
             raise RuntimeError("Seeding for reproducibility was required, but not given")
+    else:
         random.seed(seed)
 
     # Generate splits
