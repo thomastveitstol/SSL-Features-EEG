@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import List
+from typing import List, Dict
 
 import numpy
 from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet, LassoLars, Lars, BayesianRidge, \
@@ -72,10 +72,11 @@ class MLModel:
     np.float64(0.502...)
     """
 
-    __slots__ = ("_ml_model", "_splits", "_evaluation_metric", "_aggregation_method")
+    __slots__ = ("_ml_model", "_splits", "_evaluation_metric", "_aggregation_method", "_fitted_ml_models")
 
     def __init__(self, *, model, model_kwargs, splits, evaluation_metric, aggregation_method):
         self._ml_model = _get_ml_model(model, **model_kwargs)
+        self._fitted_ml_models = []
         self._splits = splits
         self._evaluation_metric = evaluation_metric
         self._aggregation_method = aggregation_method
@@ -94,6 +95,11 @@ class MLModel:
         -------
         float
         """
+        # If models have already been fit, you should create a new object instead
+        if self._fitted_ml_models:
+            raise RuntimeError("Tried to evaluate features (which includes training ML models), but the ML models are "
+                               "already fitted")
+
         scores: List[float] = []
         for train, val, test in self._splits:
             # --------------
@@ -120,8 +126,32 @@ class MLModel:
             # Add it to the results
             scores.append(score)
 
+            # Store the model
+            self._fitted_ml_models.append(model)
+
         # Aggregate the scores to a single score
         return _aggregate_scores(method=self._aggregation_method, scores=scores)
+
+    def predict_and_score(self, df, metrics, aggregation_method):
+        # Maybe set the metrics to a pre-defined set
+        if isinstance(metrics, str):
+            metrics = Histories.get_default_metrics(metrics=metrics)
+
+        # Make predictions for all the available models. The i-th prediction (at axis 0) is from the i-th model
+        input_data = df.drop(labels="clinical_target", inplace=False, axis="columns")
+        predictions = numpy.concatenate([numpy.expand_dims(model.predict(X=input_data), axis=0)
+                                         for model in self._fitted_ml_models], axis=0)
+
+        # Aggregate the predictions
+        aggregated_predictions = _aggregate_predictions(method=aggregation_method, predictions=predictions)
+
+        # Compute the scores
+        target_data = df["clinical_target"]
+        performance: Dict[str, float] = {}
+        for metric in metrics:
+            performance[metric] = Histories.compute_metric(metric, y_pred=aggregated_predictions, y_true=target_data)
+
+        return aggregated_predictions, performance
 
 
 # ------------
@@ -134,6 +164,33 @@ def _aggregate_scores(method: str, scores: List[float]):
         return numpy.median(scores)
     else:
         raise ValueError(f"Method for aggregating the scores not recognised: {method}")
+
+
+def _aggregate_predictions(method, predictions):
+    """
+    Function for aggregating multiple predictions by, e.g., computing the mean. The i-th prediction (at axis=0) should
+    be from the i-th ML model
+
+    Parameters
+    ----------
+    method : str
+    predictions : numpy.ndarray
+
+    Returns
+    -------
+    numpy.ndarray
+
+    Examples
+    --------
+    >>> my_agg = _aggregate_predictions("mean", numpy.random.rand(4, 5, 6))
+    >>> my_agg.shape, type(my_agg)  # type: ignore
+    """
+    if method == "mean":
+        return numpy.mean(predictions, axis=0)  # type: ignore
+    elif method == "median":
+        return numpy.median(predictions, axis=0)  # type: ignore
+    else:
+        raise ValueError(f"Method for aggregating the predictions not recognised: {method}")
 
 
 def _get_ml_model(model, **kwargs):
