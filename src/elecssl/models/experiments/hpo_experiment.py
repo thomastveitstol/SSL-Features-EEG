@@ -166,8 +166,6 @@ class HPOExperiment:
             # ---------------
             # Use the biomarkers
             # ---------------
-            print("Training the ML model on biomarkers...")
-
             # Create the subject splitting
             non_test_subjects, test_subjects = simple_random_split(
                 subjects=biomarkers.keys(), split_percent=self._experiments_config["TestSplit"]["split_percentage"],
@@ -218,8 +216,6 @@ class HPOExperiment:
             test_predictions_df.to_csv(results_dir / "test_predictions.csv", index=False)
             test_scores_df.to_csv(results_dir / "test_scores.csv", index=False)
 
-            # todo: Save the model?
-            print(f"Trial params: {trial.params}")
             return score
 
         return _objective
