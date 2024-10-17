@@ -86,9 +86,6 @@ class HPOExperiment:
                 warnings.filterwarnings(action="ignore", category=_get_warning(warning))
             study.optimize(self._create_objective(), n_trials=self.hpo_study_config["num_trials"])
 
-        # Get the best parameters
-        print(f"Best HPC: {study.best_params}")
-
     def _create_objective(self):
 
         def _objective(trial: optuna.Trial):
@@ -106,7 +103,6 @@ class HPOExperiment:
             # ---------------
             # Using multiprocessing  # todo: should turn this off if using GPU?
             # ---------------
-            print(self._experiments_config)
             with ProcessPoolExecutor(max_workers=self.hpo_study_config["MultiProcessing"]["max_workers"]) as executor:
                 print("Multiprocessing")
                 experiments = []

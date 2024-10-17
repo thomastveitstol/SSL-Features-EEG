@@ -146,7 +146,7 @@ class MLModel:
         aggregated_predictions = _aggregate_predictions(method=aggregation_method, predictions=predictions)
 
         # Compute the scores
-        target_data = df["clinical_target"]
+        target_data = df["clinical_target"].to_numpy()
         performance: Dict[str, float] = {}
         for metric in metrics:
             performance[metric] = Histories.compute_metric(metric, y_pred=aggregated_predictions, y_true=target_data)
