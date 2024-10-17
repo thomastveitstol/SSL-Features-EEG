@@ -497,6 +497,51 @@ def subjects_tuple_to_dict(subjects):
     return {name: tuple(subject_ids) for name, subject_ids in dataset_dict.items()}
 
 
+def simple_random_split(subjects, split_percent, seed, require_seeding):
+    """
+    Function for splitting subjects into two
+
+    Parameters
+    ----------
+    subjects : tuple[Subject, ...]
+    split_percent : float
+    seed : int, optional
+        A seed which is passed to initialise the random number generator of random
+    require_seeding : bool
+        A boolean which indicates if seeding should be required (True) or not (False)
+
+    Returns
+    -------
+    tuple[tuple[Subject, ...], tuple[Subject, ...]]
+
+    Examples
+    --------
+    >>> my_subjects = (Subject("S1", "D1"), Subject("S2", "D1"), Subject("S3", "D1"), Subject("S1", "D2"),
+    ...                Subject("S2", "D2"), Subject("P1", "D3"), Subject("P2", "D3"), Subject("S3", "D3"),
+    ...                Subject("S4", "D3"), Subject("S1", "D4"), Subject("S2", "D4"), Subject("P1", "D5"))
+    >>> simple_random_split(subjects=my_subjects, split_percent=0.2, seed=42,
+    ...                     require_seeding=False)  # doctest: +NORMALIZE_WHITESPACE
+    ((Subject(subject_id='S3', dataset_name='D3'), Subject(subject_id='P1', dataset_name='D3'),
+      Subject(subject_id='S3', dataset_name='D1'), Subject(subject_id='S4', dataset_name='D3'),
+      Subject(subject_id='S1', dataset_name='D4'), Subject(subject_id='P2', dataset_name='D3'),
+      Subject(subject_id='P1', dataset_name='D5'), Subject(subject_id='S1', dataset_name='D2'),
+      Subject(subject_id='S2', dataset_name='D2')),
+     (Subject(subject_id='S1', dataset_name='D1'), Subject(subject_id='S2', dataset_name='D1'),
+      Subject(subject_id='S2', dataset_name='D4')))
+    """
+    # Maybe make the split reproducible
+    if seed is not None:
+        if not isinstance(require_seeding, bool):
+            raise TypeError(f"Expected 'require_seeding' argument to be boolean, but found {type(require_seeding)}")
+        if require_seeding:
+            raise RuntimeError(f"Seeding for reproducibility was required, but not given")
+        random.seed(seed)
+
+    # Generate splits
+    set_1, set_2 = _split_randomly(subjects=subjects, split_percent=split_percent)
+    return tuple(set_1), tuple(set_2)
+
+
 def _leave_1_fold_out(i, folds) -> Tuple[Subject, ...]:
     """
     Method for selecting all subjects except for one fold (the i-th fold)
