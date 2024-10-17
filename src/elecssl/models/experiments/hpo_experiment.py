@@ -164,14 +164,12 @@ class HPOExperiment:
             print("Training the ML model on biomarkers...")
 
             # Create the subject splitting
-            subjects = subjects_tuple_to_dict(biomarkers)
-
             non_test_subjects, test_subjects = simple_random_split(
-                subjects=subjects, split_percent=self._experiments_config["TestSplit"]["split_percentage"],
+                subjects=biomarkers.keys(), split_percent=self._experiments_config["TestSplit"]["split_percentage"],
                 seed=self._experiments_config["TestSplit"]["seed"], require_seeding=True
             )
 
-            split_kwargs = {"dataset_subjects": non_test_subjects,
+            split_kwargs = {"dataset_subjects": subjects_tuple_to_dict(non_test_subjects),
                             **self._experiments_config["MLModelSubjectSplit"]["kwargs"]}
             biomarker_evaluation_splits = get_data_split(
                 split=self._experiments_config["MLModelSubjectSplit"]["name"], **split_kwargs
