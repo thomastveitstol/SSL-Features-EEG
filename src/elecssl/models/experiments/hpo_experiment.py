@@ -5,7 +5,7 @@ import warnings
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Any
 
 import numpy
 import optuna
@@ -33,7 +33,7 @@ class HPOExperiment:
 
     __slots__ = ("_experiments_config", "_sampling_config", "_results_dir")
 
-    def __init__(self, hp_config_path, experiments_config_path, results_dir):
+    def __init__(self, hp_config_path: Path, experiments_config_path: Path, results_dir: Path):
         # ---------------
         # Load HP distributions files
         # ---------------
@@ -59,8 +59,8 @@ class HPOExperiment:
         # ---------------
         # Set attributes
         # ---------------
-        self._experiments_config = experiments_config
-        self._sampling_config = hp_config
+        self._experiments_config: Dict[str, Any] = experiments_config
+        self._sampling_config: Dict[str, Any] = hp_config
         self._results_dir = results_dir
 
         # Make directory
