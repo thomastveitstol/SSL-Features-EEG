@@ -534,7 +534,7 @@ def simple_random_split(subjects, split_percent, seed, require_seeding):
         if not isinstance(require_seeding, bool):
             raise TypeError(f"Expected 'require_seeding' argument to be boolean, but found {type(require_seeding)}")
         if require_seeding:
-            raise RuntimeError(f"Seeding for reproducibility was required, but not given")
+            raise RuntimeError("Seeding for reproducibility was required, but not given")
         random.seed(seed)
 
     # Generate splits
