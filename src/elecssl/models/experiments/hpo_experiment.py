@@ -203,10 +203,15 @@ class HPOExperiment:
             # Save predictions and scores on test set (the score provided to the HPO algorithm should be stored by
             # optuna)
             test_predictions_df = pandas.DataFrame.from_dict({"sub_id": test_subjects, "pred": test_predictions})
-            test_scores_df = pandas.DataFrame.from_dict(test_scores)
+            test_scores_df = pandas.DataFrame([test_scores])
 
-            test_predictions_df.to_csv(results_dir / "test_predictions.csv")
-            test_scores_df.to_csv(results_dir / "test_scores.csv")
+            test_predictions_df = test_predictions_df.round(
+                decimals=self.ml_model_settings_config["test_predictions_decimals"]
+            )
+            test_scores_df = test_scores_df.round(decimals=self.ml_model_settings_config["test_scores_decimals"])
+
+            test_predictions_df.to_csv(results_dir / "test_predictions.csv", index=False)
+            test_scores_df.to_csv(results_dir / "test_scores.csv", index=False)
 
             # todo: Save the model?
             print(f"Trial params: {trial.params}")

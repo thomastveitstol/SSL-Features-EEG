@@ -58,7 +58,7 @@ VariablesMetrics:
 SubjectSplit:
   name: KeepDatasetOutRandomSplits
   kwargs:
-    left_out_dataset: Wang
+    left_out_dataset: LEMON
     val_split: 0.2
     num_random_splits: 1
     seed: 42
@@ -71,7 +71,7 @@ MLModelSubjectSplit:
   name: RandomSplitsTV
   kwargs:
     val_split: 0.2
-    num_random_splits: 5
+    num_random_splits: 10
     seed: 42
 
 TestSplit:
@@ -104,3 +104,5 @@ MLModelSettings:
   metrics: regression
   split_percentage: 0.2  # todo: not sure which split tbh...
   test_prediction_aggregation: mean
+  test_predictions_decimals: 4
+  test_scores_decimals: 4
