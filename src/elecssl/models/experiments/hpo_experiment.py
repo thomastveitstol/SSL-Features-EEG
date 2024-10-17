@@ -74,7 +74,9 @@ class HPOExperiment:
     def run_hyperparameter_optimisation(self):
         """Run HPO with optuna"""
         # Create study
-        study = optuna.create_study(**self.hpo_study_config["HPOStudy"])
+        study = optuna.create_study(
+            study_name="optuna_study", storage=self._results_dir, **self.hpo_study_config["HPOStudy"]
+        )
 
         # Optimise
         with warnings.catch_warnings():
