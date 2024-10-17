@@ -45,12 +45,11 @@ Datasets: &Datasets
 # other variables  todo: should remove this, as it's old code and not actually part of the pipeline
 # -----------------
 PredictionErrorAssociations:
-  LEMON: [ age, sex ]
-  Wang: [ age, sex ]
+  LEMON: [ age ]
+  Wang: [ age ]
 
 VariablesMetrics:
   age: [ pearson_r, spearman_rho ]
-  sex: groups_metrics
 
 # -----------------
 # Configuration for subject splitting
@@ -94,6 +93,8 @@ Training:
   metrics: regression
   prediction_activation_function: null
   main_metric: mae
+Warnings:
+  ignore: [ NearConstantInputWarning, ConstantInputWarning ]
 
 # -----------------
 # ML model configurations

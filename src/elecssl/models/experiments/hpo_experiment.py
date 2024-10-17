@@ -1,6 +1,7 @@
 import concurrent
 import itertools
 import os
+import warnings
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
@@ -10,6 +11,7 @@ import numpy
 import optuna
 import pandas
 import yaml  # type: ignore[import-untyped]
+from scipy.stats import NearConstantInputWarning, ConstantInputWarning
 
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.paths import get_numpy_data_storage_path
@@ -75,7 +77,10 @@ class HPOExperiment:
         study = optuna.create_study(**self.hpo_study_config["HPOStudy"])
 
         # Optimise
-        study.optimize(self._create_objective(), n_trials=self.hpo_study_config["num_trials"])
+        with warnings.catch_warnings():
+            for warning in self._experiments_config["Warnings"]["ignore"]:
+                warnings.filterwarnings(action="ignore", category=_get_warning(warning))
+            study.optimize(self._create_objective(), n_trials=self.hpo_study_config["num_trials"])
 
         # Get the best parameters
         print(f"Best HPC: {study.best_params}")
@@ -354,3 +359,14 @@ def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var
         return subjects, delta, numpy.log10(var)
     else:
         return subjects, delta, var
+
+
+def _get_warning(warning):
+    if warning == "NearConstantInputWarning":
+        return NearConstantInputWarning
+    elif warning == "ConstantInputWarning":
+        return ConstantInputWarning
+    elif warning == "UserWarning":
+        return UserWarning
+    else:
+        raise ValueError(f"Warning {warning} not understood")
