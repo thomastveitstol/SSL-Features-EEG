@@ -977,6 +977,18 @@ class Histories:
         return (cls.get_available_classification_metrics() + cls.get_available_multiclass_classification_metrics() +
                 cls.get_available_regression_metrics())
 
+    @classmethod
+    def get_default_metrics(cls, metrics: str):
+        """Method for getting pre-specified sets of metrics"""
+        if metrics == "regression":
+            return cls.get_available_regression_metrics()
+        elif metrics == "classification":
+            return cls.get_available_classification_metrics()
+        elif metrics == "multiclass_classification":
+            return cls.get_available_multiclass_classification_metrics()
+        else:
+            raise ValueError(f"The requested pre-specified set of metrics was not understood: {metrics}")
+
     # -----------------
     # Regression metrics
     # todo: make tests and add more metrics
