@@ -826,6 +826,12 @@ class Histories:
         df.to_csv(os.path.join(path, f"{history_name}_metrics.csv"), index=False)
 
     def save_variables_histories(self, history_name, path, decimals, save_plots):
+        # If there is no history, raise a warning and do nothing
+        if self._variables_history is None:
+            warnings.warn("Tried to save results of associations with prediction error and other variables, but there "
+                          "were no such history", PlotNotSavedWarning)
+            return
+
         # Associations with difference between predicted and true value
         error_difference_path = path / "difference"
         if not os.path.isdir(error_difference_path):
@@ -845,12 +851,6 @@ class Histories:
         )
 
     def _save_variables_history(self, history, history_name, path, decimals, save_plots):
-        # If there is no history, raise a warning and do nothing
-        if self._variables_history is None:
-            warnings.warn("Tried to save results of associations with prediction error and other variables, but there "
-                          "were no such history", PlotNotSavedWarning)
-            return
-
         for var_name, var_history in history.items():
             # I'll have a new folder for every variable (e.g., age, ravlt_tot, etc.)
             var_path = path / var_name
