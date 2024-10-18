@@ -102,7 +102,7 @@ Warnings:
 # -----------------
 MLModelSettings:
   aggregation_method: mean
-  evaluation_metric: mse  # todo: which should I choose?
+  evaluation_metric: mae  # todo: which should I choose?
   metrics: regression
   split_percentage: 0.2  # todo: not sure which split tbh...
   test_prediction_aggregation: mean
