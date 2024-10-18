@@ -82,7 +82,7 @@ Interpolation: &Interpolation
 
 
 _num_kernels: &num_kernels !Int { low: 10, high: 100, log: true }  # todo
-_max_receptive_field: &max_receptive_field !Int { low: 10, high: 100, log: true }  # todo
+_max_receptive_field: &max_receptive_field !Int { low: 15, high: 100, log: true }  # todo
 RegionBasedPooling:
   num_montage_splits: { low: 1, high: 8, log: true }
   share_all_pooling_modules: { choices: [ true, false ] }
