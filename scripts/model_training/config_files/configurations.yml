@@ -95,7 +95,7 @@ Training:
   prediction_activation_function: null
   main_metric: mae
 Warnings:
-  ignore: [ NearConstantInputWarning, ConstantInputWarning ]
+  ignore: [ NearConstantInputWarning, ConstantInputWarning, PlotNotSavedWarning ]
 
 # -----------------
 # ML model configurations

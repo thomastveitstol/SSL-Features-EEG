@@ -19,6 +19,7 @@ from elecssl.data.results_analysis import higher_is_better
 from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split, simple_random_split
 from elecssl.models.experiments.single_experiment import SSLExperiment
 from elecssl.models.hp_suggesting import suggest_hyperparameters
+from elecssl.models.metrics import PlotNotSavedWarning
 from elecssl.models.ml_models.ml_model_base import MLModel
 from elecssl.models.sampling_distributions import get_yaml_loader
 from elecssl.models.utils import add_yaml_constructors, add_yaml_representers
@@ -364,5 +365,7 @@ def _get_warning(warning):
         return ConstantInputWarning
     elif warning == "UserWarning":
         return UserWarning
+    elif warning == "PlotNotSavedWarning":
+        return PlotNotSavedWarning
     else:
         raise ValueError(f"Warning {warning} not understood")
