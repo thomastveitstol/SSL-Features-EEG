@@ -29,6 +29,7 @@ class SSLExperiment:
 
     def __init__(self, hp_config, experiments_config, pre_processing_config, results_path):
         """
+        Initialise
 
         Parameters
         ----------
