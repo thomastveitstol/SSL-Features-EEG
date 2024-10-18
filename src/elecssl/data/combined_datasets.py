@@ -134,13 +134,18 @@ class CombinedDatasets:
         subject_info: Dict[Subject, Dict[str, Any]] = {}
         for dataset, details in zip(datasets, load_details):
             dataset_subjects = details.subject_ids
+
+            # Make empty subjects info. Convenient for consistency if no variables are passed
+            for _subject_id in dataset_subjects:
+                subject_info[Subject(subject_id=_subject_id, dataset_name=dataset.name)] = {}
+
+            # Loop through the variables (if any)
             for variable in variables[dataset.name]:
                 info_targets = dataset.load_targets(subject_ids=dataset_subjects, target=variable)
 
                 for info_target, subject_id in zip(info_targets, dataset_subjects):
                     subject = Subject(subject_id=subject_id, dataset_name=dataset.name)
-                    if subject not in subject_info:
-                        subject_info[subject] = {}
+
                     # i-th loaded target corresponds to the i-th subject
                     subject_info[subject][variable] = info_target
 
