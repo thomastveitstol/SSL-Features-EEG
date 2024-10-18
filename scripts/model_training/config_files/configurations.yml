@@ -46,11 +46,11 @@ Datasets: &Datasets
 # other variables  todo: should remove this, as it's old code and not actually part of the pipeline
 # -----------------
 PredictionErrorAssociations:
-  LEMON: [ age ]
-  Wang: [ age ]
+  LEMON: [ ]
+  Wang: [ ]
 
-VariablesMetrics:
-  age: [ pearson_r, spearman_rho ]
+VariablesMetrics: null
+# age: [ pearson_r, spearman_rho ]
 
 # -----------------
 # Configuration for subject splitting
