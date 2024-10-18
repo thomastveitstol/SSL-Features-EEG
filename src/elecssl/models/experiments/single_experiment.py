@@ -419,15 +419,20 @@ class SSLExperiment:
                                                save_plots=self.saving_config["save_subgroups_plots"])
 
         # Save variable associations with prediction error
-        variables_history_path = results_path / "error_associations"
-        os.mkdir(variables_history_path)
-        train_history.save_variables_histories(history_name="train", path=variables_history_path, decimals=decimals,
-                                               save_plots=self.saving_config["save_error_association_plots"])
-        val_history.save_variables_histories(history_name="val", path=variables_history_path, decimals=decimals,
-                                             save_plots=self.saving_config["save_error_association_plots"])
-        if test_history is not None:
-            test_history.save_variables_histories(history_name="test", path=variables_history_path, decimals=decimals,
-                                                  save_plots=self.saving_config["save_error_association_plots"])
+        _histories = (train_history, val_history) if test_history is None else (train_history, val_history,
+                                                                                test_history)
+        if any(history.has_variables_history for history in _histories):
+            variables_history_path = results_path / "error_associations"
+            os.mkdir(variables_history_path)
+            train_history.save_variables_histories(history_name="train", path=variables_history_path,
+                                                   decimals=decimals,
+                                                   save_plots=self.saving_config["save_error_association_plots"])
+            val_history.save_variables_histories(history_name="val", path=variables_history_path, decimals=decimals,
+                                                 save_plots=self.saving_config["save_error_association_plots"])
+            if test_history is not None:
+                test_history.save_variables_histories(history_name="test", path=variables_history_path,
+                                                      decimals=decimals,
+                                                      save_plots=self.saving_config["save_error_association_plots"])
 
         # Save plots
         if self.saving_config["save_metrics_per_fold_plots"]:
