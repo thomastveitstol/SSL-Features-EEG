@@ -652,6 +652,10 @@ class Histories:
     def newest_metrics(self):
         return {metric_name: performance[-1] for metric_name, performance in self._history.items()}
 
+    @property
+    def has_variables_history(self) -> bool:
+        return self._variables_history is not None
+
     # -----------------
     # Methods for saving
     # -----------------
