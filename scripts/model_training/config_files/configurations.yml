@@ -21,7 +21,7 @@ enable_cmmn: false
 HPO:
   HPOStudy:
     sampler: !HPOSampler [ TPESampler, { } ]
-    direction: minimize  # todo: this must depend on the selected target
+    direction: maximize  # todo: this must depend on the selected target
   MultiProcessing:
     max_workers: 1
   num_trials: 10
@@ -102,7 +102,7 @@ Warnings:
 # -----------------
 MLModelSettings:
   aggregation_method: mean
-  evaluation_metric: mae  # todo: which should I choose?
+  evaluation_metric: r2_score  # todo: which should I choose?
   metrics: regression
   split_percentage: 0.2  # todo: not sure which split tbh...
   test_prediction_aggregation: mean
