@@ -1,6 +1,7 @@
 # Configurations not related to distributions of hyperparameter optimisation
 
 Saving:
+  save_subgroups_plots: false
   save_discriminator_plots: false
   save_error_association_plots: false
   save_metrics_per_fold_plots: false

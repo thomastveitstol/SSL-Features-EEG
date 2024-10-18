@@ -409,10 +409,13 @@ class SSLExperiment:
         sub_group_path = os.path.join(results_path, "sub_groups_plots")
         os.mkdir(sub_group_path)
 
-        train_history.save_subgroup_metrics(history_name="train", path=sub_group_path, decimals=decimals)
-        val_history.save_subgroup_metrics(history_name="val", path=sub_group_path, decimals=decimals)
+        train_history.save_subgroup_metrics(history_name="train", path=sub_group_path, decimals=decimals,
+                                            save_plots=self.saving_config["save_subgroups_plots"])
+        val_history.save_subgroup_metrics(history_name="val", path=sub_group_path, decimals=decimals,
+                                          save_plots=self.saving_config["save_subgroups_plots"])
         if test_history is not None:
-            test_history.save_subgroup_metrics(history_name="test", path=sub_group_path, decimals=decimals)
+            test_history.save_subgroup_metrics(history_name="test", path=sub_group_path, decimals=decimals,
+                                               save_plots=self.saving_config["save_subgroups_plots"])
 
         # Save variable associations with prediction error
         variables_history_path = results_path / "error_associations"

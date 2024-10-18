@@ -539,26 +539,26 @@ class Histories:
         >>> my_history._build_error_and_info_objects(
         ...     y_pred_per_subject=my_yhat, y_true_per_subject=my_y, subjects=my_subjects, subjects_info=my_info
         ... )  # doctest: +NORMALIZE_WHITESPACE
-        ({'age': {'All': [tensor([[ 0.8000, 37.0000]]), tensor([[ 1.3000, 85.0000]]), tensor([[-2.5000, 34.0000]]),
-                          tensor([[-0.8000, 15.0000]]), tensor([[ 6.3000, 23.0000]]), tensor([[-0.4000, 36.0000]])],
-                  'D1': [tensor([[ 0.8000, 37.0000]]), tensor([[-2.5000, 34.0000]]), tensor([[-0.8000, 15.0000]])],
-                  'D3': [tensor([[ 1.3000, 85.0000]]), tensor([[ 6.3000, 23.0000]]), tensor([[-0.4000, 36.0000]])]},
-          'ravlt': {'All': [tensor([[1.3000, 4.0000]]), tensor([[ 9.4000, 15.0000]]), tensor([[ 4.8000, 14.0000]]),
-                            tensor([[ 0.2000, 11.0000]]), tensor([[1.9000, 3.0000]]), tensor([[6.3000, 7.0000]]),
-                            tensor([[-0.4000, 10.0000]])],
-                    'D2': [tensor([[ 9.4000, 15.0000]]), tensor([[ 4.8000, 14.0000]]), tensor([[ 0.2000, 11.0000]]),
-                           tensor([[1.9000, 3.0000]])],
-                    'D3': [tensor([[1.3000, 4.0000]]), tensor([[6.3000, 7.0000]]), tensor([[-0.4000, 10.0000]])]}},
-         {'age': {'All': [tensor([[ 1.8000, 37.0000]]), tensor([[ 1.3514, 85.0000]]), tensor([[ 0.7312, 34.0000]]),
-                          tensor([[ 0.9184, 15.0000]]), tensor([[ 2.9091, 23.0000]]), tensor([[ 0.8261, 36.0000]])],
-                  'D1': [tensor([[ 1.8000, 37.0000]]), tensor([[ 0.7312, 34.0000]]), tensor([[ 0.9184, 15.0000]])],
-                  'D3': [tensor([[ 1.3514, 85.0000]]), tensor([[ 2.9091, 23.0000]]), tensor([[ 0.8261, 36.0000]])]},
-          'ravlt': {'All': [tensor([[1.3514, 4.0000]]), tensor([[48., 15.]]), tensor([[ 2.2632, 14.0000]]),
-                            tensor([[ 1.0455, 11.0000]]), tensor([[1.8261, 3.0000]]), tensor([[2.9091, 7.0000]]),
-                            tensor([[ 0.8261, 10.0000]])],
-                    'D2': [tensor([[48., 15.]]), tensor([[ 2.2632, 14.0000]]), tensor([[ 1.0455, 11.0000]]),
-                           tensor([[1.8261, 3.0000]])],
-                    'D3': [tensor([[1.3514, 4.0000]]), tensor([[2.9091, 7.0000]]), tensor([[ 0.8261, 10.0000]])]}})
+        ({'age': {'All': [tensor([[-0.8000, 37.0000]]), tensor([[-1.3000, 85.0000]]), tensor([[ 2.5000, 34.0000]]),
+                          tensor([[ 0.8000, 15.0000]]), tensor([[-6.3000, 23.0000]]), tensor([[ 0.4000, 36.0000]])],
+                  'D1': [tensor([[-0.8000, 37.0000]]), tensor([[ 2.5000, 34.0000]]), tensor([[ 0.8000, 15.0000]])],
+                  'D3': [tensor([[-1.3000, 85.0000]]), tensor([[-6.3000, 23.0000]]), tensor([[ 0.4000, 36.0000]])]},
+          'ravlt': {'All': [tensor([[-1.3000,  4.0000]]), tensor([[-9.4000, 15.0000]]), tensor([[-4.8000, 14.0000]]),
+                            tensor([[-0.2000, 11.0000]]), tensor([[-1.9000,  3.0000]]), tensor([[-6.3000,  7.0000]]),
+                            tensor([[ 0.4000, 10.0000]])],
+                    'D2': [tensor([[-9.4000, 15.0000]]), tensor([[-4.8000, 14.0000]]), tensor([[-0.2000, 11.0000]]),
+                            tensor([[-1.9000,  3.0000]])],
+                    'D3': [tensor([[-1.3000,  4.0000]]), tensor([[-6.3000,  7.0000]]), tensor([[ 0.4000, 10.0000]])]}},
+         {'age': {'All': [tensor([[ 0.5556, 37.0000]]), tensor([[ 0.7400, 85.0000]]), tensor([[ 1.3676, 34.0000]]),
+                          tensor([[ 1.0889, 15.0000]]), tensor([[ 0.3437, 23.0000]]), tensor([[ 1.2105, 36.0000]])],
+                  'D1': [tensor([[ 0.5556, 37.0000]]), tensor([[ 1.3676, 34.0000]]), tensor([[ 1.0889, 15.0000]])],
+                  'D3': [tensor([[ 0.7400, 85.0000]]), tensor([[ 0.3437, 23.0000]]), tensor([[ 1.2105, 36.0000]])]},
+          'ravlt': {'All': [tensor([[0.7400, 4.0000]]), tensor([[ 0.0208, 15.0000]]), tensor([[ 0.4419, 14.0000]]),
+                            tensor([[ 0.9565, 11.0000]]), tensor([[0.5476, 3.0000]]), tensor([[0.3437, 7.0000]]),
+                            tensor([[ 1.2105, 10.0000]])],
+                    'D2': [tensor([[ 0.0208, 15.0000]]), tensor([[ 0.4419, 14.0000]]), tensor([[ 0.9565, 11.0000]]),
+                           tensor([[0.5476, 3.0000]])], 'D3': [tensor([[0.7400, 4.0000]]), tensor([[0.3437, 7.0000]]),
+                           tensor([[ 1.2105, 10.0000]])]}})
         """
         if self._variables_history is None:
             raise RuntimeError("Cannot collate prediction errors and variables when no variables are expected")
@@ -735,7 +735,7 @@ class Histories:
         # Save csv file
         df.to_csv(os.path.join(path, f"{history_name}_predictions.csv"), index=False)
 
-    def save_subgroup_metrics(self, history_name, path, decimals=None):
+    def save_subgroup_metrics(self, history_name, path, *, save_plots, decimals):
         # If there are no subgroups registered, raise a warning and do nothing
         if self._subgroup_histories is None:
             warnings.warn(message="Tried to save plot of metrics computed per sub-group, but there were no subgroups",
@@ -762,8 +762,6 @@ class Histories:
 
             # Loop through and create a plot per metrics (and level)
             for metric_to_plot in metrics:
-                pyplot.figure(figsize=(12, 6))  # todo: don't hardcode
-
                 # Make folder
                 metric_path = os.path.join(level_path, metric_to_plot)
                 if not os.path.isdir(metric_path):
@@ -783,19 +781,21 @@ class Histories:
                     if performance:
                         pyplot.plot(range(1, len(performance) + 1), performance, label=subgroup_name)
 
-                # Plot cosmetics
-                font_size = 15
+                # Plotting
+                if save_plots:
+                    pyplot.figure(figsize=(12, 6))  # todo: don't hardcode
+                    font_size = 15
 
-                pyplot.title(f"Performance (level={level})", fontsize=font_size+5)
-                pyplot.xlabel("Epoch", fontsize=font_size)
-                pyplot.ylabel(metric_to_plot.capitalize(), fontsize=font_size)
-                pyplot.tick_params(labelsize=font_size)
-                pyplot.legend(fontsize=font_size)
-                pyplot.grid()
+                    pyplot.title(f"Performance (level={level})", fontsize=font_size+5)
+                    pyplot.xlabel("Epoch", fontsize=font_size)
+                    pyplot.ylabel(metric_to_plot.capitalize(), fontsize=font_size)
+                    pyplot.tick_params(labelsize=font_size)
+                    pyplot.legend(fontsize=font_size)
+                    pyplot.grid()
 
-                # Save figure and close it
-                pyplot.savefig(os.path.join(metric_path, f"{history_name}_{metric_to_plot}.png"))
-                pyplot.close()
+                    # Save figure and close it
+                    pyplot.savefig(os.path.join(metric_path, f"{history_name}_{metric_to_plot}.png"))
+                    pyplot.close()
 
                 # Save history object as well
                 df = pandas.DataFrame.from_dict(df_dict)
