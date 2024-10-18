@@ -155,7 +155,7 @@ class Histories:
         self._variables_history_ratios: Optional[Dict[str, Dict[str, Dict[str, Union[Dict[str, List[float]],
                                                                                      List[float]]]]]]
         self._variable_metrics: Optional[Dict[str, Tuple[str, ...]]]
-        if expected_variables is not None:
+        if expected_variables is not None and any(variable_names for variable_names in expected_variables.values()):
             _metrics: Dict[str, Tuple[str, ...]] = {}
             for var_name, var_metrics in variable_metrics.items():
                 if var_metrics == "regression":
@@ -739,7 +739,7 @@ class Histories:
         # If there are no subgroups registered, raise a warning and do nothing
         if self._subgroup_histories is None:
             warnings.warn(message="Tried to save plot of metrics computed per sub-group, but there were no subgroups",
-                          category=RuntimeWarning)
+                          category=PlotNotSavedWarning)
             return None
 
         # Loop through all levels
@@ -848,8 +848,8 @@ class Histories:
         # If there is no history, raise a warning and do nothing
         if self._variables_history is None:
             warnings.warn("Tried to save results of associations with prediction error and other variables, but there "
-                          "were no such history")
-            return None
+                          "were no such history", PlotNotSavedWarning)
+            return
 
         for var_name, var_history in history.items():
             # I'll have a new folder for every variable (e.g., age, ravlt_tot, etc.)
@@ -1218,6 +1218,13 @@ class Histories:
 
 
 # ----------------
+# Warnings
+# ----------------
+class PlotNotSavedWarning(UserWarning):
+    ...
+
+
+# ----------------
 # Functions
 # ----------------
 def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true):
@@ -1382,8 +1389,8 @@ def save_histories_plots(path, *, train_history=None, val_history=None, test_his
     # If no history object is passed, a warning is raised and None is returned (better to do nothing than potentially
     # ruin an experiment with an unnecessary error)
     if all(history is None for history in (train_history, val_history, test_history, test_estimate)):
-        warnings.warn("No history object was passed, skip saving histories plots...")
-        return None
+        warnings.warn("No history object was passed, skip saving histories plots...", PlotNotSavedWarning)
+        return
 
     # ----------------
     # Loop through all metrics
