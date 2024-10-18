@@ -469,7 +469,24 @@ def _sample_dilation(*, max_receptive_field, kernel_length):
     11
     >>> _sample_dilation(max_receptive_field=1000, kernel_length=9)
     30
+
+    Max receptive field cannot be smaller than the kernel length
+
+    >>> _sample_dilation(max_receptive_field=10, kernel_length=11)
+    Traceback (most recent call last):
+    ...
+    ValueError: Kernel length must be less or equal to the max receptive field, but found 11 and 10
+
+    But max_receptive_field=kernel_length gives 1 in dilation
+
+    >>> _sample_dilation(max_receptive_field=11, kernel_length=11)
+    1
     """
+    # Input check
+    if max_receptive_field < kernel_length:
+        raise ValueError(f"Kernel length must be less or equal to the max receptive field, but found {kernel_length} "
+                         f"and {max_receptive_field}")
+
     # Set upper bound as in the ROCKET paper, with max_receptive_field instead of input length
     upper_bound = numpy.log2((max_receptive_field - 1) / (kernel_length - 1))
 
