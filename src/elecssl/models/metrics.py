@@ -740,7 +740,7 @@ class Histories:
         if self._subgroup_histories is None:
             warnings.warn(message="Tried to save plot of metrics computed per sub-group, but there were no subgroups",
                           category=PlotNotSavedWarning)
-            return None
+            return
 
         # Loop through all levels
         for level, subgroups in self._subgroup_histories.items():
