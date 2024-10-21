@@ -268,7 +268,7 @@ class EEGDatasetBase(abc.ABC):
             log_transform = numpy.log10
             target = target.split("_", 1)[1]
         else:
-            log_transform = lambda x: x
+            log_transform = _no_transform
 
         # Load the targets
         if target in self.get_available_targets(exclude_ssl=True):
@@ -523,6 +523,10 @@ class EEGDatasetBase(abc.ABC):
 # ------------------
 # Functions
 # ------------------
+def _no_transform(x):
+    return x
+
+
 def get_channel_name_order(channel_name_to_index):
     """
     This function ensures that one obtains the correct channel name order, even if the channel_name_to_index is poorly
