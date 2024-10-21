@@ -139,6 +139,83 @@ class NoScaler(TargetScalerBase):
         return scaled_data
 
 
+class FixedLogZTransform(TargetScalerBase):
+    """
+    Transformation which first computes the log, then applies z-transformation. Somewhat counterintuitively, the
+    'inv_transform' only inverts the z-transformation, but not the log transformation
+
+    The inverse transform is only supposed to be used for computing metrics, but
+    todo: double check that nothing wrong happens
+    """
+
+    __slots__ = ("_base", "_mean", "_std", "_log_func")
+
+    def __init__(self, *, base, mean=None, std=None):
+        self._mean = mean
+        self._std = std
+        self._base = base
+        self._log_func = self._get_log_func(base=base)
+
+    def fit(self, data):
+        # Concatenate to a data matrix
+        data_matrix = numpy.concatenate(list(data.values()), axis=0)
+
+        # Apply the log-transform
+        data_matrix = self._log_func(data_matrix)
+
+        # Update parameters
+        self._mean = numpy.mean(data_matrix, axis=0)
+        self._std = numpy.std(data_matrix, axis=0)
+
+    def transform(self, data):
+        return {dataset_name: (self._log_func(x) - self._mean) / self._std for dataset_name, x in data.items()}
+
+    def inv_transform(self, scaled_data):
+        """In contrast to what is usually done, this does not actually inverts the data fully. It only inverts the
+        z-transformation"""
+        if isinstance(scaled_data, dict):
+            return {dataset_name: z * self._std + self._mean for dataset_name, z in scaled_data.items()}
+        elif isinstance(scaled_data, (numpy.ndarray, torch.Tensor)):
+            return scaled_data * self._std + self._mean
+        else:
+            raise TypeError(f"Unrecognised data type: {type(scaled_data)}")
+
+    # -----------
+    # Convenient methods
+    # -----------
+    @staticmethod
+    def _get_log_func(base):
+        """Method for getting a logarithmic function (a Callable) with the specified base"""
+        # Get the 'basic' ones
+        if base == 2:
+            return numpy.log2
+        elif base == 10:
+            return numpy.log10
+        elif base in ("e", "euler", "ln", "natural"):
+            return numpy.log
+
+        # Otherwise, use the formula log_b(x) = log_e(x) / log_e(b)
+        def _arbitrary_log(x):
+            return numpy.log(x) / numpy.log(base)
+
+        return _arbitrary_log
+
+    # -----------
+    # Properties
+    # -----------
+    @property
+    def mean(self):
+        return self._mean
+
+    @property
+    def std(self):
+        return self._std
+
+    @property
+    def base(self):
+        return self._base
+
+
 # ---------------
 # Functions
 # ---------------
@@ -156,7 +233,7 @@ def get_target_scaler(scaler, **kwargs):
     TargetScalerBase
     """
     # All available scalers must be included here
-    available_scalers = (ZNormalisation, NoScaler)
+    available_scalers = (ZNormalisation, NoScaler, FixedLogZTransform)
 
     # Loop through and select the correct one
     for target_scaler in available_scalers:
