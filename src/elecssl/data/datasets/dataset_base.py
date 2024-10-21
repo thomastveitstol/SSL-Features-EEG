@@ -244,7 +244,7 @@ class EEGDatasetBase(abc.ABC):
     # ----------------
     def load_targets(self, target, subject_ids=None):
         """
-        Method for loading targets
+        Method for loading targets. There are some default logarithmic transformations which are also included
 
         Parameters
         ----------
@@ -257,15 +257,31 @@ class EEGDatasetBase(abc.ABC):
         """
         subject_ids = self.get_subject_ids() if subject_ids is None else subject_ids
 
-        # Return the targets
+        # Check and get logarithmic transformation of the target
+        if target.startswith(("log_", "loge_", "ln_")):
+            log_transform = numpy.log
+            target = target.split("_", 1)[1]
+        elif target.startswith("log2_"):
+            log_transform = numpy.log2
+            target = target.split("_", 1)[1]
+        elif target.startswith("log10_"):
+            log_transform = numpy.log10
+            target = target.split("_", 1)[1]
+        else:
+            log_transform = lambda x: x
+
+        # Load the targets
         if target in self.get_available_targets(exclude_ssl=True):
-            return getattr(self, target)(subject_ids=subject_ids)
+            loaded_targets = getattr(self, target)(subject_ids=subject_ids)
         elif target in self._get_available_self_supervised_targets():
-            return self._load_ssl_targets(subject_ids=subject_ids, target=target)
+            loaded_targets = self._load_ssl_targets(subject_ids=subject_ids, target=target)
         else:
             raise ValueError(f"Target '{target}' was not recognised. Make sure that the method passed shares the name "
                              f"with the implemented method you want to use. The targets available for this class "
                              f"({type(self).__name__}) are: {self.get_available_targets(exclude_ssl=False)}")
+
+        # Return with log transform (if any was specified)
+        return log_transform(loaded_targets)
 
     def _load_ssl_targets(self, subject_ids, target):
         # The feature names should identical to folder names inside the EEG features folder
@@ -286,7 +302,8 @@ class EEGDatasetBase(abc.ABC):
     @classmethod
     def get_available_targets(cls, exclude_ssl):
         """Get all target methods available for the class. The target method must be decorated by @target_method to be
-        properly registered"""
+        properly registered. Furthermore, there are some default logarithmic transformations which are also included by
+        adding e.g. 'log10_' to the target name, see 'load_targets' for these transformations"""
         if not isinstance(exclude_ssl, bool):
             raise TypeError(f"Expected input argument 'exclude_ssl' to be bool, but found {type(exclude_ssl)}")
 
