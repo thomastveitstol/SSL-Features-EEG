@@ -83,8 +83,8 @@ TestSplit:
 # -----------------
 Scalers:
   target:
-    kwargs: {}
-    name: ZNormalisation
+    kwargs: {base: 10}
+    name: FixedLogZTransform
 Training:
   batch_size: 64
   num_epochs: 20
