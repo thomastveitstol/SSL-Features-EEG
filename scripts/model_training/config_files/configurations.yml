@@ -83,7 +83,7 @@ TestSplit:
 # -----------------
 Scalers:
   target:
-    kwargs: {base: 10}
+    kwargs: { base: 10 }
     name: FixedLogZTransform
 Training:
   batch_size: 64
