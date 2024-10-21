@@ -129,7 +129,8 @@ class HPOExperiment:
                     # ---------------
                     suggested_hyperparameters = suggest_hyperparameters(
                         name=feature_extractor_name, config=self._sampling_config, trial=trial,
-                        experiments_config=experiment_config_file
+                        experiments_config=experiment_config_file, out_freq_band=out_freq_band,
+                        preprocessed_config_path=preprocessing_path
                     )
 
                     # ---------------

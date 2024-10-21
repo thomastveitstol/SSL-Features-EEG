@@ -3,6 +3,7 @@ For suggesting hyperparameters using optuna
 """
 from typing import Any, Dict
 
+import yaml
 from optuna.samplers import GridSampler, RandomSampler, TPESampler, CmaEsSampler, GPSampler, PartialFixedSampler, \
     NSGAIISampler, NSGAIIISampler, QMCSampler, BruteForceSampler
 
@@ -10,7 +11,15 @@ from elecssl.models.mts_modules.getter import get_mts_module_type, is_successful
 from elecssl.models.region_based_pooling.hyperparameter_sampling import generate_partition_sizes
 
 
-def _suggest_dl_architecture(name, trial, config):
+def _get_num_time_steps(preprocessed_config_path, freq_band, suggested_preprocessing_steps):
+    with open(preprocessed_config_path) as file:
+        f_max = yaml.safe_load(file)["FrequencyBands"][freq_band][-1]
+
+    return (f_max * suggested_preprocessing_steps["sfreq_multiple"] * suggested_preprocessing_steps["input_length"]
+            * suggested_preprocessing_steps["sfreq_multiple"])
+
+
+def _suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps, preprocessed_config_path, freq_band):
     while True:  # todo: maybe just set this to a high number instead?
         # Architecture
         model = trial.suggest_categorical(f"{name}_architecture", choices=config.keys())
@@ -18,8 +27,23 @@ def _suggest_dl_architecture(name, trial, config):
         # Suggest hyperparameters of the DL model
         kwargs = get_mts_module_type(model).suggest_hyperparameters(name, trial, config[model])
 
-        if is_successful_mts_module_initialisation(model=model, **kwargs):
+        # The number of input channels is unavailable atm, but should not impact the successfulness of the current
+        # models. An inelegant solution though...
+        # May also need the number of time steps
+        additional_kwargs = {"in_channels": 19}
+
+        # May also need the number of time steps
+        if "num_time_steps" in kwargs and kwargs["num_time_steps"] == "UNAVAILABLE":
+            additional_kwargs["additional_kwargs"] = _get_num_time_steps(
+                suggested_preprocessing_steps=suggested_preprocessing_steps, freq_band=freq_band,
+                preprocessed_config_path=preprocessed_config_path
+            )
+
+        # Accept HPC if the initialisation is successful
+        if is_successful_mts_module_initialisation(model=model, **kwargs, **additional_kwargs):
             break
+
+        print("Trying new HPC for DL architecture...")
 
     return {"model": model, "kwargs": kwargs}
 
@@ -164,7 +188,7 @@ def make_trial_suggestion(trial, *, name, method, kwargs):
     return func(name, **kwargs)
 
 
-def suggest_hyperparameters(name, config, trial, experiments_config):
+def suggest_hyperparameters(name, config, trial, experiments_config, out_freq_band, preprocessed_config_path):
     """
     Function for suggesting HPs using optuna
 
@@ -222,7 +246,11 @@ def suggest_hyperparameters(name, config, trial, experiments_config):
         cmmn = {"use_cmmn_layer": False, "kwargs": {}}
 
     # DL architecture
-    suggested_hps["DLArchitecture"] = _suggest_dl_architecture(name=name, trial=trial, config=config["DLArchitectures"])
+    suggested_hps["DLArchitecture"] = _suggest_dl_architecture(
+        name=name, trial=trial, config=config["DLArchitectures"],
+        suggested_preprocessing_steps=suggested_hps["Preprocessing"], freq_band=out_freq_band,
+        preprocessed_config_path=preprocessed_config_path
+    )
 
     # Loss
     suggested_hps["Loss"] = _suggest_loss(name=name, trial=trial, config=config["Loss"])

@@ -67,18 +67,6 @@ class MTSModuleBase(nn.Module, abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    def successful_initialisation(cls, *args, **kwargs):
-        """Method which returns True if the provided hyperparameters will give a successful initialisation, False if a
-        ValueError or ZeroDivisionError is raised. This was implemented as the braindecode models are not always able to
-        handle the input dimensionality, and tend to raise a ValueError or ZeroDivisionError if the input time series is
-        too short for the architecture to handle"""
-        try:
-            cls(*args, **kwargs)  # type: ignore[call-arg]
-        except (ValueError, ZeroDivisionError):
-            return False
-        return True
-
-    @classmethod
     def get_latent_features_dim(cls, *args, **kwargs):
         """Get the expected latent feature dimension"""
         return cls(*args, **kwargs).latent_features_dim  # type: ignore[call-arg]
