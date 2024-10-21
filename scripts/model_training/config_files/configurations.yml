@@ -11,8 +11,8 @@ OcularStates: [ [ eo, ec ] ]  # [ [ eo, ec ], [ ec, eo ] ]
 FrequencyBands: [ alpha, beta ]  # [ delta, theta, alpha, beta, gamma ]
 # The preprocessed version must be during runtime
 
-clinical_target: age
-log_transform_clinical_target: false
+clinical_target: log10_age
+log_transform_clinical_target: false  # todo: this should be removed now...
 deviation_method: ratio
 pretext_main_metric: mse
 enable_domain_discriminator: false
@@ -83,8 +83,8 @@ TestSplit:
 # -----------------
 Scalers:
   target:
-    kwargs: { base: 10 }
-    name: FixedLogZTransform
+    kwargs: { }
+    name: ZNormalisation
 Training:
   batch_size: 64
   num_epochs: 20
