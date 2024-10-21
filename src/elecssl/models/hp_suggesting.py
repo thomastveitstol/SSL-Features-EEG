@@ -34,7 +34,7 @@ def _suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps,
 
         # May also need the number of time steps
         if "num_time_steps" in kwargs and kwargs["num_time_steps"] == "UNAVAILABLE":
-            additional_kwargs["additional_kwargs"] = _get_num_time_steps(
+            additional_kwargs["num_time_steps"] = _get_num_time_steps(
                 suggested_preprocessing_steps=suggested_preprocessing_steps, freq_band=freq_band,
                 preprocessed_config_path=preprocessed_config_path
             )
