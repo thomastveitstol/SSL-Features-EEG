@@ -6,16 +6,20 @@ from typing import Any, Dict
 from optuna.samplers import GridSampler, RandomSampler, TPESampler, CmaEsSampler, GPSampler, PartialFixedSampler, \
     NSGAIISampler, NSGAIIISampler, QMCSampler, BruteForceSampler
 
-from elecssl.models.mts_modules.getter import get_mts_module_type
+from elecssl.models.mts_modules.getter import get_mts_module_type, is_successful_mts_module_initialisation
 from elecssl.models.region_based_pooling.hyperparameter_sampling import generate_partition_sizes
 
 
 def _suggest_dl_architecture(name, trial, config):
-    # Architecture
-    model = trial.suggest_categorical(f"{name}_architecture", choices=config.keys())
+    while True:  # todo: maybe just set this to a high number instead?
+        # Architecture
+        model = trial.suggest_categorical(f"{name}_architecture", choices=config.keys())
 
-    # Suggest hyperparameters of the DL model
-    kwargs = get_mts_module_type(model).suggest_hyperparameters(name, trial, config[model])
+        # Suggest hyperparameters of the DL model
+        kwargs = get_mts_module_type(model).suggest_hyperparameters(name, trial, config[model])
+
+        if is_successful_mts_module_initialisation(model=model, **kwargs):
+            break
 
     return {"model": model, "kwargs": kwargs}
 

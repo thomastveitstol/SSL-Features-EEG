@@ -5,6 +5,10 @@ from elecssl.models.mts_modules.braindecode_models import Deep4NetMTS, ShallowFB
 from elecssl.models.mts_modules.inception_network import InceptionNetwork
 
 
+def is_successful_mts_module_initialisation(model, *args, **kwargs):
+    return get_mts_module_type(mts_module_name=model).successful_initialisation(*args, **kwargs)
+
+
 def get_mts_module(mts_module_name, **kwargs):
     """
     Function for getting a specified MTS module
