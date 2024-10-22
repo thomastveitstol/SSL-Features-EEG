@@ -6,8 +6,6 @@ Braindecode citation:
     Hutter, F., Burgard, W. and Ball, T. (2017), Deep learning with convolutional neural networks for EEG decoding and
     visualization. Hum. Brain Mapp., 38: 5391-5420. https://doi.org/10.1002/hbm.23730
 """
-import math
-
 import torch
 from braindecode.models import Deep4Net, ShallowFBCSPNet
 
