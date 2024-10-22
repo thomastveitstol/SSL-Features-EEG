@@ -240,7 +240,7 @@ class Deep4NetMTS(MTSModuleBase):
     --------
     >>> _ = Deep4NetMTS(19, 3, 1000)
 
-    Since padding on the conv layers was added, 160 time steps are allowed (the minimum is 89)
+    Since padding on the conv layers was added, 160 time steps are allowed (the minimum is 90)
 
     Latent feature dimension does not depend on number of input channels
 
