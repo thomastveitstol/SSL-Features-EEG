@@ -1,6 +1,7 @@
 import abc
 import dataclasses
 import os
+import typing
 import warnings
 from enum import Enum
 from typing import Dict, Tuple, List, Optional, Union, Any
@@ -257,18 +258,19 @@ class EEGDatasetBase(abc.ABC):
         """
         subject_ids = self.get_subject_ids() if subject_ids is None else subject_ids
 
-        # Check and get logarithmic transformation of the target
+        # Check and get (e.g., logarithmic) transformation of the target
+        transformation: typing.Callable[[numpy.ndarray], numpy.ndarray]  # type: ignore[type-arg]
         if target.startswith(("log_", "loge_", "ln_")):
-            log_transform = numpy.log
+            transformation = numpy.log
             target = target.split("_", 1)[1]
         elif target.startswith("log2_"):
-            log_transform = numpy.log2
+            transformation = numpy.log2
             target = target.split("_", 1)[1]
         elif target.startswith("log10_"):
-            log_transform = numpy.log10
+            transformation = numpy.log10
             target = target.split("_", 1)[1]
         else:
-            log_transform = _no_transform
+            transformation = _no_transform
 
         # Load the targets
         if target in self.get_available_targets(exclude_ssl=True):
@@ -281,7 +283,7 @@ class EEGDatasetBase(abc.ABC):
                              f"({type(self).__name__}) are: {self.get_available_targets(exclude_ssl=False)}")
 
         # Return with log transform (if any was specified)
-        return log_transform(loaded_targets)
+        return transformation(loaded_targets)
 
     def _load_ssl_targets(self, subject_ids, target):
         # The feature names should identical to folder names inside the EEG features folder
