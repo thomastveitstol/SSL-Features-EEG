@@ -304,8 +304,6 @@ class Deep4NetMTS(MTSModuleBase):
     >>> Deep4NetMTS(19, 3, 89, filter_time_length=25)
     """
 
-    expected_init_errors = (ZeroDivisionError,)
-
     def __init__(self, in_channels, num_classes, num_time_steps, **kwargs):
         super().__init__()
 
@@ -316,11 +314,8 @@ class Deep4NetMTS(MTSModuleBase):
         _final_conv_length = (num_time_steps - kwargs.get("filter_time_length", 10) + 1) // 3 // 3 // 3 // 3
 
         # Initialise from Braindecode
-        try:
-            model = Deep4Net(n_chans=in_channels, n_outputs=num_classes, n_times=num_time_steps,
-                             final_conv_length=_final_conv_length, add_log_softmax=False, **kwargs)
-        except ZeroDivisionError:
-            assert False, _final_conv_length
+        model = Deep4Net(n_chans=in_channels, n_outputs=num_classes, n_times=num_time_steps,
+                         final_conv_length=_final_conv_length, add_log_softmax=False, **kwargs)
 
         # Set padding. It was such a horror with the first one, so I just gave it up...
         model.conv_2.padding = "same"
