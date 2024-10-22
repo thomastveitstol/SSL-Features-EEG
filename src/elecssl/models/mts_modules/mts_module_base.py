@@ -6,19 +6,6 @@ import torch.nn as nn
 
 class MTSModuleBase(nn.Module, abc.ABC):
 
-    # The expected exceptions from incompatible arguments to __init__
-    expected_init_errors: Tuple[Exception, ...] = ()
-
-    @classmethod
-    def successful_initialisation(cls, *args, **kwargs):
-        """Method for checking if the initialisation of a model will fail or not. It will return False if the error from
-        __init__ is expected, raise an error if it is unexpected, and True if no error is raised by __init__ """
-        try:
-            cls(*args, **kwargs)
-        except cls.expected_init_errors:
-            return False
-        return True
-
     @staticmethod
     @abc.abstractmethod
     def suggest_hyperparameters(name, trial, config):

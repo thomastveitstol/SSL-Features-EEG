@@ -7,7 +7,7 @@ import yaml
 from optuna.samplers import GridSampler, RandomSampler, TPESampler, CmaEsSampler, GPSampler, PartialFixedSampler, \
     NSGAIISampler, NSGAIIISampler, QMCSampler, BruteForceSampler
 
-from elecssl.models.mts_modules.getter import get_mts_module_type, is_successful_mts_module_initialisation
+from elecssl.models.mts_modules.getter import get_mts_module_type
 from elecssl.models.region_based_pooling.hyperparameter_sampling import generate_partition_sizes
 
 
@@ -20,30 +20,20 @@ def _get_num_time_steps(preprocessed_config_path, freq_band, suggested_preproces
 
 
 def _suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps, preprocessed_config_path, freq_band):
-    while True:  # todo: maybe just set this to a high number instead?
-        # Architecture
-        model = trial.suggest_categorical(f"{name}_architecture", choices=config.keys())
+    # Architecture
+    model = trial.suggest_categorical(f"{name}_architecture", choices=config.keys())
 
-        # Suggest hyperparameters of the DL model
-        kwargs = get_mts_module_type(model).suggest_hyperparameters(name, trial, config[model])
+    # May also need the number of time steps
+    model_config = config[model].copy()
+    if "num_time_steps" in model_config and model_config["num_time_steps"] == "UNAVAILABLE":
+        num_time_steps = _get_num_time_steps(
+            suggested_preprocessing_steps=suggested_preprocessing_steps, freq_band=freq_band,
+            preprocessed_config_path=preprocessed_config_path
+        )
+        model_config["num_time_steps"] = num_time_steps
 
-        # The number of input channels is unavailable atm, but should not impact the successfulness of the current
-        # models. An inelegant solution though...
-        # May also need the number of time steps
-        additional_kwargs = {"in_channels": 19}
-
-        # May also need the number of time steps
-        if "num_time_steps" in kwargs and kwargs["num_time_steps"] == "UNAVAILABLE":
-            additional_kwargs["num_time_steps"] = _get_num_time_steps(
-                suggested_preprocessing_steps=suggested_preprocessing_steps, freq_band=freq_band,
-                preprocessed_config_path=preprocessed_config_path
-            )
-
-        # Accept HPC if the initialisation is successful
-        if is_successful_mts_module_initialisation(model=model, **kwargs, **additional_kwargs):
-            break
-
-        print("Trying new HPC for DL architecture...")
+    # Suggest hyperparameters of the DL model
+    kwargs = get_mts_module_type(model).suggest_hyperparameters(name, trial, model_config)
 
     return {"model": model, "kwargs": kwargs}
 

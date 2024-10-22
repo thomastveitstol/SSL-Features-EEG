@@ -81,8 +81,6 @@ class ShallowFBCSPNetMTS(MTSModuleBase):
     )
     """
 
-    expected_init_errors = (ValueError,)
-
     def __init__(self, in_channels, num_classes, num_time_steps, **kwargs):
         super().__init__()
 
