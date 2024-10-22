@@ -6,6 +6,8 @@ Braindecode citation:
     Hutter, F., Burgard, W. and Ball, T. (2017), Deep learning with convolutional neural networks for EEG decoding and
     visualization. Hum. Brain Mapp., 38: 5391-5420. https://doi.org/10.1002/hbm.23730
 """
+import math
+
 import torch
 from braindecode.models import Deep4Net, ShallowFBCSPNet
 
@@ -35,7 +37,7 @@ class ShallowFBCSPNetMTS(MTSModuleBase):
     >>> ShallowFBCSPNetMTS(4, 7, 200).latent_features_dim
     280
 
-    Number of time steps must be above 98
+    Number of time steps must be above 98 (with default hyperparameters)
 
     >>> _ = ShallowFBCSPNetMTS(4, 7, 99)
     >>> _ = ShallowFBCSPNetMTS(4, 7, 98)  # doctest: +NORMALIZE_WHITESPACE
@@ -44,6 +46,16 @@ class ShallowFBCSPNetMTS(MTSModuleBase):
     ValueError: During model prediction RuntimeError was thrown showing that at some layer ` Output size is too small`
     (see above in the stacktrace). This could be caused by providing too small `n_times`/`input_window_seconds`.
     Model may require longer chunks of signal in the input than (1, 4, 98).
+
+    The general minimum number of input time steps is pool_time_length + filter_time_length - 1
+
+    >>> _ = ShallowFBCSPNetMTS(4, 7, 14, filter_time_length=5, pool_time_length=10)
+    >>> _ = ShallowFBCSPNetMTS(4, 7, 13, filter_time_length=5, pool_time_length=10)  # doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    ValueError: During model prediction RuntimeError was thrown showing that at some layer ` Output size is too small`
+    (see above in the stacktrace). This could be caused by providing too small `n_times`/`input_window_seconds`.
+    Model may require longer chunks of signal in the input than (1, 4, 13).
 
     How the model looks like (the softmax/LogSoftmax activation function has been removed)
 
@@ -180,17 +192,35 @@ class ShallowFBCSPNetMTS(MTSModuleBase):
         # We set the ratio of length/stride to the same as in the original paper
         pool_time_length = 5 * pool_time_stride
 
+        # If the suggested HPCs does not work with the number of input time steps, we will change them to the smallest
+        # possible value, while still trying to maintain the ratio between pool_time_length and filter_time_length
+        num_time_steps = config["num_time_steps"]
+        if ShallowFBCSPNetMTS._compute_min_num_time_steps(pool_time_length=pool_time_length,
+                                                          filter_time_length=filter_time_length) > num_time_steps:
+            ratio = filter_time_length / pool_time_length
+
+            pool_time_length = math.ceil((num_time_steps + 1) / (ratio + 1))
+            filter_time_length = math.ceil(ratio * pool_time_length)
+            pool_time_stride = pool_time_length // 5
+
         # Sample drop out
         drop_prob = trial.suggest_float(f"{name}_drop_prob", **config["drop_prob"])
 
-        return {"n_filters_time":  num_filters,
+        return {"n_filters_time": num_filters,
                 "n_filters_spat": num_filters,
                 "filter_time_length": filter_time_length,
                 "pool_time_stride": pool_time_stride,
                 "pool_time_length": pool_time_length,
                 "drop_prob": drop_prob,
                 "num_classes": config["num_classes"],
-                "num_time_steps": config["num_time_steps"]}
+                "num_time_steps": num_time_steps}
+
+    # ----------------
+    # Static methods
+    # ----------------
+    @staticmethod
+    def _compute_min_num_time_steps(pool_time_length, filter_time_length):
+        return pool_time_length + filter_time_length - 1
 
     # ----------------
     # Properties
@@ -274,7 +304,11 @@ class Deep4NetMTS(MTSModuleBase):
     Traceback (most recent call last):
     ...
     AttributeError: 'Deep4Net' object has no attribute 'conv_time_spat'
+
+    >>> Deep4NetMTS(19, 3, 89, filter_time_length=25)
     """
+
+    expected_init_errors = (ZeroDivisionError,)
 
     def __init__(self, in_channels, num_classes, num_time_steps, **kwargs):
         super().__init__()
@@ -286,8 +320,11 @@ class Deep4NetMTS(MTSModuleBase):
         _final_conv_length = (num_time_steps - kwargs.get("filter_time_length", 10) + 1) // 3 // 3 // 3 // 3
 
         # Initialise from Braindecode
-        model = Deep4Net(n_chans=in_channels, n_outputs=num_classes, n_times=num_time_steps,
-                         final_conv_length=_final_conv_length, add_log_softmax=False, **kwargs)
+        try:
+            model = Deep4Net(n_chans=in_channels, n_outputs=num_classes, n_times=num_time_steps,
+                             final_conv_length=_final_conv_length, add_log_softmax=False, **kwargs)
+        except ZeroDivisionError:
+            assert False, _final_conv_length
 
         # Set padding. It was such a horror with the first one, so I just gave it up...
         model.conv_2.padding = "same"
