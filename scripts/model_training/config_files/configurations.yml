@@ -7,7 +7,7 @@ Saving:
   save_metrics_per_fold_plots: false
   save_final_test_histories_plots: true
 
-OcularStates: [ [ eo, ec ] ]  # [ [ eo, ec ], [ ec, eo ] ]
+OcularStates: [ [ eo, ec ], [ ec, eo ] ]
 FrequencyBands: [ delta ]  # [ delta, theta, alpha, beta, gamma ]
 # The preprocessed version must be during runtime
 
@@ -33,11 +33,11 @@ Device: cpu
 # -----------------
 Datasets: &Datasets
   LEMON:
-    num_subjects: 20
+    num_subjects: 40
     num_time_steps: null
     time_series_start: null
   Wang:
-    num_subjects: 20
+    num_subjects: 30
     num_time_steps: null
     time_series_start: null
 
@@ -75,7 +75,7 @@ MLModelSubjectSplit:
     seed: 42
 
 TestSplit:
-  split_percentage: 0.2
+  split_percentage: 0.3
   seed: 42
 
 # -----------------
@@ -87,7 +87,7 @@ Scalers:
     name: ZNormalisation
 Training:
   batch_size: 64
-  num_epochs: 20
+  num_epochs: 50
   verbose: true
   verbose_variables: false
   continuous_testing: true
