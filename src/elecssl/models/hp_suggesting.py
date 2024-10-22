@@ -3,7 +3,7 @@ For suggesting hyperparameters using optuna
 """
 from typing import Any, Dict
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 from optuna.samplers import GridSampler, RandomSampler, TPESampler, CmaEsSampler, GPSampler, PartialFixedSampler, \
     NSGAIISampler, NSGAIIISampler, QMCSampler, BruteForceSampler
 
