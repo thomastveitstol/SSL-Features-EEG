@@ -15,8 +15,7 @@ def _get_num_time_steps(preprocessed_config_path, freq_band, suggested_preproces
     with open(preprocessed_config_path) as file:
         f_max = yaml.safe_load(file)["FrequencyBands"][freq_band][-1]
 
-    return (f_max * suggested_preprocessing_steps["sfreq_multiple"] * suggested_preprocessing_steps["input_length"]
-            * suggested_preprocessing_steps["sfreq_multiple"])
+    return f_max * suggested_preprocessing_steps["sfreq_multiple"] * suggested_preprocessing_steps["input_length"]
 
 
 def _suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps, preprocessed_config_path, freq_band):
