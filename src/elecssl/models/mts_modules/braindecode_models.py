@@ -197,9 +197,10 @@ class ShallowFBCSPNetMTS(MTSModuleBase):
                                                           filter_time_length=filter_time_length) > num_time_steps:
             ratio = filter_time_length / pool_time_length
 
-            pool_time_length = math.ceil((num_time_steps + 1) / (ratio + 1))
-            filter_time_length = math.ceil(ratio * pool_time_length)
+            pool_time_length = (num_time_steps + 1) // (ratio + 1)
+            filter_time_length = int(ratio * pool_time_length)
             pool_time_stride = pool_time_length // 5
+            print("Changed HPCs for ShallowNet")
 
         # Sample drop out
         drop_prob = trial.suggest_float(f"{name}_drop_prob", **config["drop_prob"])
