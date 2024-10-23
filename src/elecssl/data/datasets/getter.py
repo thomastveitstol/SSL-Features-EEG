@@ -50,6 +50,6 @@ def get_channel_system(dataset_name, **kwargs):
 
     Returns
     -------
-    cdl_eeg.data.datasets.dataset_base.ChannelSystem
+    elecssl.data.datasets.dataset_base.ChannelSystem
     """
     return get_dataset(dataset_name, **kwargs).channel_system
