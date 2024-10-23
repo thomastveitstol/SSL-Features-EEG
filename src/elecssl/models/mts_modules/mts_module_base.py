@@ -5,9 +5,9 @@ import torch.nn as nn
 
 class MTSModuleBase(nn.Module, abc.ABC):
 
-    @staticmethod
+    @classmethod
     @abc.abstractmethod
-    def suggest_hyperparameters(name, trial, config):
+    def suggest_hyperparameters(cls, name, trial, config):
         """
         Method for suggesting hyperparameters from a config file containing distributions of which to sample from
 

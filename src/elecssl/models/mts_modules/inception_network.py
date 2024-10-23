@@ -416,8 +416,8 @@ class InceptionNetwork(MTSModuleBase):
     # ----------------
     # Hyperparameter sampling
     # ----------------
-    @staticmethod
-    def suggest_hyperparameters(name, trial, config):
+    @classmethod
+    def suggest_hyperparameters(cls, name, trial, config):
         # Sample CNN units
         cnn_units = trial.suggest_int(f"{name}_cnn_units", **config["cnn_units"])
 
