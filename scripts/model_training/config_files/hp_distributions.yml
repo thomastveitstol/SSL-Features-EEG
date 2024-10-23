@@ -108,8 +108,8 @@ RegionBasedPooling:
         k_3: [ 2, 3, 2, 3, 2, 3, 2, 3, 2 ]
         k_4: [ 4, 3, 2, 3, 4, 3, 2, 3, 4 ]
       min_nodes: !Int { low: 2, high: 6, step: 1, log: false }  # todo
-      channel_positions: !CategoricalDict  # todo: hard-coded :(
-        LEMON: [ LEMON ]
+      channel_positions: !NotAHyperparameterList
+        [ LEMON, Wang ]
 
 SpatialDimensionMismatch: { choices: [ Interpolation, RegionBasedPooling ] }
 

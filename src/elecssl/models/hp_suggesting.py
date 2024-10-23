@@ -172,6 +172,9 @@ def make_trial_suggestion(trial, *, name, method, kwargs):
     elif method == "categorical_dict":
         suggested_key = trial.suggest_categorical(name, choices=tuple(kwargs.keys()))
         return kwargs[suggested_key]
+    elif method == "not_a_hyperparameter":
+        # Trial should not register it
+        return kwargs
     else:
         raise ValueError(f"Sampling distribution of HP '{name}' not recognised: {method}")
     return func(name, **kwargs)
