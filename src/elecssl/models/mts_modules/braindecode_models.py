@@ -174,8 +174,8 @@ class ShallowFBCSPNetMTS(MTSModuleBase):
     # ----------------
     # Hyperparameter sampling
     # ----------------
-    @staticmethod
-    def suggest_hyperparameters(name, trial, config):
+    @classmethod
+    def suggest_hyperparameters(cls, name, trial, config):
         # Sample number of filters. Will be the same for temporal and spatial
         num_filters = trial.suggest_int(f"{name}_num_filters", **config["num_filters"])
 
@@ -191,8 +191,8 @@ class ShallowFBCSPNetMTS(MTSModuleBase):
         # If the suggested HPCs does not work with the number of input time steps, we will change them to the smallest
         # possible value, while still trying to maintain the ratio between pool_time_length and filter_time_length
         num_time_steps = config["num_time_steps"]
-        if ShallowFBCSPNetMTS._compute_min_num_time_steps(pool_time_length=pool_time_length,
-                                                          filter_time_length=filter_time_length) > num_time_steps:
+        if cls._compute_min_num_time_steps(pool_time_length=pool_time_length,
+                                           filter_time_length=filter_time_length) > num_time_steps:
             ratio = filter_time_length / pool_time_length
 
             pool_time_length = int((num_time_steps + 1) / (ratio + 1))
@@ -240,20 +240,6 @@ class Deep4NetMTS(MTSModuleBase):
     --------
     >>> _ = Deep4NetMTS(19, 3, 1000)
 
-    Since padding on the conv layers was added, 160 time steps are allowed (the minimum is 90)
-
-    Latent feature dimension does not depend on number of input channels
-
-    >>> Deep4NetMTS.get_latent_features_dim(19, 3, 1000) == Deep4NetMTS.get_latent_features_dim(64, 3, 1000)
-    True
-
-    >>> _ = Deep4NetMTS(19, 3, 160)
-    >>> _ = Deep4NetMTS(19, 3, 90)
-    >>> _ = Deep4NetMTS(19, 3, 89, filter_time_length=10)  # doctest: +NORMALIZE_WHITESPACE
-    Traceback (most recent call last):
-    ...
-    ZeroDivisionError: float division by zero
-
     How the model looks like
 
     >>> Deep4NetMTS(19, 3, 180)  # doctest: +NORMALIZE_WHITESPACE
@@ -294,14 +280,59 @@ class Deep4NetMTS(MTSModuleBase):
       )
     )
 
+    Since padding on the conv layers was added, 160 time steps are allowed (the minimum is 90, if the depth should be
+    the same as in the original paper)
+
+    >>> _ = Deep4NetMTS(19, 3, 160)
+    >>> _ = Deep4NetMTS(19, 3, 90)
+
+    It is possible to use less than the formula, 3**depth + kernel size - 1, but the depth will be reduced
+
+    >>> Deep4NetMTS(19, 3, 70, filter_time_length=10)  # doctest: +NORMALIZE_WHITESPACE
+    Deep4NetMTS(
+      (_model): Deep4Net(
+        (ensuredims): Ensure4d()
+        (dimshuffle): Rearrange('batch C T 1 -> batch 1 T C')
+        (conv_time_spat): CombinedConv(
+          (conv_time): Conv2d(1, 25, kernel_size=(10, 1), stride=(1, 1))
+          (conv_spat): Conv2d(25, 25, kernel_size=(1, 19), stride=(1, 1), bias=False)
+        )
+        (bnorm): BatchNorm2d(25, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv_nonlin): Expression(expression=elu)
+        (pool): MaxPool2d(kernel_size=(3, 1), stride=(3, 1), padding=0, dilation=1, ceil_mode=False)
+        (pool_nonlin): Expression(expression=identity)
+        (drop_2): Dropout(p=0.5, inplace=False)
+        (conv_2): Conv2d(25, 50, kernel_size=(10, 1), stride=(1, 1), padding=same, bias=False)
+        (bnorm_2): BatchNorm2d(50, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (nonlin_2): Expression(expression=elu)
+        (pool_2): MaxPool2d(kernel_size=(3, 1), stride=(3, 1), padding=0, dilation=1, ceil_mode=False)
+        (pool_nonlin_2): Expression(expression=identity)
+        (drop_3): Dropout(p=0.5, inplace=False)
+        (conv_3): Conv2d(50, 100, kernel_size=(10, 1), stride=(1, 1), padding=same, bias=False)
+        (bnorm_3): BatchNorm2d(100, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (nonlin_3): Expression(expression=elu)
+        (pool_3): MaxPool2d(kernel_size=(3, 1), stride=(3, 1), padding=0, dilation=1, ceil_mode=False)
+        (pool_nonlin_3): Expression(expression=identity)
+        (final_layer): Sequential(
+          (conv_classifier): Conv2d(200, 3, kernel_size=(2, 1), stride=(1, 1))
+          (squeeze): Expression(expression=squeeze_final_output)
+        )
+      )
+    )
+
+    >>> _ = Deep4NetMTS(19, 3, 36, filter_time_length=10)
+
+    Latent feature dimension does not depend on number of input channels
+
+    >>> Deep4NetMTS.get_latent_features_dim(19, 3, 1000) == Deep4NetMTS.get_latent_features_dim(64, 3, 1000)
+    True
+
     Does not work with 'split_last_layer' set to False
 
     >>> Deep4NetMTS(19, 3, 1000, split_first_layer=False)
     Traceback (most recent call last):
     ...
     AttributeError: 'Deep4Net' object has no attribute 'conv_time_spat'
-
-    >>> Deep4NetMTS(19, 3, 89, filter_time_length=25)
     """
 
     def __init__(self, in_channels, num_classes, num_time_steps, **kwargs):
@@ -310,8 +341,15 @@ class Deep4NetMTS(MTSModuleBase):
         # ----------------
         # Build the model
         # ----------------
+        # If Deep4Net is incompatible with the number of time steps, the depth is first reduced
+        filter_time_length = kwargs.get("filter_time_length", 10)
+        reduce_depth = self._requires_reduced_depth(filter_time_length=filter_time_length,
+                                                    num_time_steps=num_time_steps)
+
         # Compute length of the final conv layer
-        _final_conv_length = (num_time_steps - kwargs.get("filter_time_length", 10) + 1) // 3 // 3 // 3 // 3
+        _final_conv_length = (num_time_steps - filter_time_length + 1) // 3 // 3 // 3
+        if not reduce_depth:
+            _final_conv_length = _final_conv_length // 3
 
         # Initialise from Braindecode
         model = Deep4Net(n_chans=in_channels, n_outputs=num_classes, n_times=num_time_steps,
@@ -322,8 +360,13 @@ class Deep4NetMTS(MTSModuleBase):
         model.conv_3.padding = "same"
         model.conv_4.padding = "same"
 
+        # Maybe reduce the depth
+        if reduce_depth:
+            del model.drop_4, model.conv_4, model.bnorm_4, model.nonlin_4, model.pool_4, model.pool_nonlin_4
+
         # Set attribute
         self._model = model
+
 
     def extract_latent_features(self, input_tensor):
         """
@@ -437,8 +480,8 @@ class Deep4NetMTS(MTSModuleBase):
     # ----------------
     # Hyperparameter sampling
     # ----------------
-    @staticmethod
-    def suggest_hyperparameters(name, trial, config):
+    @classmethod
+    def suggest_hyperparameters(cls, name, trial, config):
         """The ratio between the number of filters will be maintained as in the original work"""
         # Get the number of filters for the first conv block
         num_first_filters = trial.suggest_int(f"{name}_num_first_filters", **config["num_first_filters"])
@@ -452,6 +495,12 @@ class Deep4NetMTS(MTSModuleBase):
         # Get the filter lengths
         filter_length = trial.suggest_int(f"{name}_filter_length", **config["filter_length"])
 
+        # Maybe change the filter length. The first step is to reduce the depth. If it still is not enough, then the
+        # filter length is decreased. For my experiments, this should always be sufficient
+        num_time_steps = config["num_time_steps"]
+        if cls._requires_reduced_depth(num_time_steps=num_time_steps, filter_time_length=filter_length):
+            filter_length = num_time_steps - 26
+
         # Compute the length of the filters for the conv blocks
         filter_lengths_hyperparameters = {"filter_time_length": filter_length,
                                           "filter_length_2": filter_length,
@@ -461,7 +510,14 @@ class Deep4NetMTS(MTSModuleBase):
         drop_prob = trial.suggest_float(f"{name}_drop_prob", **config["drop_prob"])
 
         return {**num_filters_hyperparameters, **filter_lengths_hyperparameters, "drop_prob": drop_prob,
-                "num_time_steps": config["num_time_steps"], "num_classes": config["num_classes"]}
+                "num_time_steps": num_time_steps, "num_classes": config["num_classes"]}
+
+    # ----------------
+    # Convenient methods
+    # ----------------
+    @staticmethod
+    def _requires_reduced_depth(*, num_time_steps, filter_time_length):
+        return num_time_steps < filter_time_length - 1 + 3**4
 
     # ----------------
     # Properties
