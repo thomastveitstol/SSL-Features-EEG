@@ -314,7 +314,7 @@ class Deep4NetMTS(MTSModuleBase):
         (pool_3): MaxPool2d(kernel_size=(3, 1), stride=(3, 1), padding=0, dilation=1, ceil_mode=False)
         (pool_nonlin_3): Expression(expression=identity)
         (final_layer): Sequential(
-          (conv_classifier): Conv2d(200, 3, kernel_size=(2, 1), stride=(1, 1))
+          (conv_classifier): Conv2d(100, 3, kernel_size=(2, 1), stride=(1, 1))
           (squeeze): Expression(expression=squeeze_final_output)
         )
       )
@@ -346,14 +346,18 @@ class Deep4NetMTS(MTSModuleBase):
         reduce_depth = self._requires_reduced_depth(filter_time_length=filter_time_length,
                                                     num_time_steps=num_time_steps)
 
-        # Compute length of the final conv layer
+        # Compute length of the final conv layer. Also, easiest way to fix the dimensions of the final layer is to by
+        # fixing input to __init__
         _final_conv_length = (num_time_steps - filter_time_length + 1) // 3 // 3 // 3
-        if not reduce_depth:
+        input_kwargs = kwargs.copy()
+        if reduce_depth:
+            input_kwargs["n_filters_4"] = input_kwargs.get("n_filters_3", 100)  # Default when I wrote this code
+        else:
             _final_conv_length = _final_conv_length // 3
 
         # Initialise from Braindecode
         model = Deep4Net(n_chans=in_channels, n_outputs=num_classes, n_times=num_time_steps,
-                         final_conv_length=_final_conv_length, add_log_softmax=False, **kwargs)
+                         final_conv_length=_final_conv_length, add_log_softmax=False, **input_kwargs)
 
         # Set padding. It was such a horror with the first one, so I just gave it up...
         model.conv_2.padding = "same"
@@ -443,13 +447,13 @@ class Deep4NetMTS(MTSModuleBase):
         >>> my_model(torch.rand(size=(my_batch, my_channels, my_time_steps)), return_features=True).size()
         torch.Size([10, 4532])
 
-        New example t(his one didn't work in a previous implementation)
+        Example where the depth was reduced
 
         >>> my_model = Deep4NetMTS(filter_time_length=11, filter_length_2=11, filter_length_3=11, filter_length_4=11,
         ...                        n_filters_2=56, n_filters_3=112, n_filters_4=224, n_filters_spat=28,
-        ...                        n_filters_time=28, num_time_steps=900, drop_prob=0.075167, num_classes=1,
+        ...                        n_filters_time=28, num_time_steps=40, drop_prob=0.075167, num_classes=1,
         ...                        in_channels=19)
-        >>> my_model(torch.rand(16, 19, 900)).size()
+        >>> my_model(torch.rand(16, 19, 40)).size()
         torch.Size([16, 1])
         """
         # If predictions are to be made, just run forward method of the braindecode method
