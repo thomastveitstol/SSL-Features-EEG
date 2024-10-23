@@ -1,4 +1,5 @@
 import copy
+import dataclasses
 import warnings
 from typing import NamedTuple, List, Tuple, Dict, Optional
 
@@ -377,7 +378,7 @@ class CentroidPolygons(MontageSplitBase):
         Parameters
         ----------
         channel_positions: dict[str, tuple[Point2D, ...]] | tuple[str, ...]
-            Keys are channel system/dataset names, values are 2D projected electrode positions
+            Keys are channel system/dataset names, values are 2D projected electrode positions. Or just dataset names
         k: tuple[int, ...]
             Split vector
         min_nodes: int
@@ -390,12 +391,8 @@ class CentroidPolygons(MontageSplitBase):
         # -----------------------
         if isinstance(channel_positions, (tuple, list)) and all(isinstance(channel_system, str)
                                                                 for channel_system in channel_positions):
-            channel_positions = {
-                channel_system: _electrode_2d_to_point_tuple(
-                    project_to_2d(
-                        get_channel_system(dataset_name=channel_system).electrode_positions)
-                ) for channel_system in channel_positions
-            }
+            # If multiple dataset names are provided, we will fit on the intersection of channel systems
+            channel_positions = _get_channel_positions_intersection(channel_positions)
 
         # -----------------------
         # Maybe add a small noise to the channel positions.
@@ -638,8 +635,87 @@ class CentroidPolygons(MontageSplitBase):
 
 
 # -----------------
+# Handling multiple names for the same electrodes
+# -----------------
+_EQUIVALENT_CHANNELS = frozenset({frozenset({"T4", "T8"}), frozenset({"T3", "T7"})})
+
+
+def _equivalent_channels(ch_1, ch_2):
+    for equivalent_channel_set in _EQUIVALENT_CHANNELS:
+        if ch_1 in equivalent_channel_set and ch_2 in equivalent_channel_set:
+            return True
+    return False
+
+
+@dataclasses.dataclass(frozen=True)
+class _ChannelName:
+    """
+    This class handles the problem of channels having multiple names in EEG
+
+    Examples
+    --------
+    >>> _ChannelName("T3") == _ChannelName("T7")
+    True
+    >>> _ChannelName("T4") == _ChannelName("T8")
+    True
+    >>> _ChannelName("P1") == _ChannelName("P1")
+    True
+    >>> _ChannelName("NotReallyAChannelName") == _ChannelName("NotReallyAChannelName")  # But True is still returned
+    True
+    >>> _ChannelName("P1") == _ChannelName("P3")
+    False
+    """
+
+    name: str
+
+    def __eq__(self, other):
+        # Type check
+        if not isinstance(other, self.__class__):
+            return  False
+
+        # If the names are the same, True should be returned
+        if self.name == other.name:
+            return True
+
+        # Check if the 'other' channel name is equivalent to the self channel name, just with different as per EEG
+        # convention
+        return _equivalent_channels(self.name, other.name)
+
+
+# -----------------
 # Functions
 # -----------------
+def _get_channel_positions_intersection(dataset_names):
+    """
+    Function for getting the channel positions which are present in all requested channel systems
+
+    Returns
+    -------
+
+    """
+    # Loop through all datasets
+    merged_channel_system = {}
+    for i, dataset_name in enumerate(dataset_names):
+        # If it is the first
+        channel_system = get_channel_system(dataset_name=dataset_name).electrode_positions
+        if i == 0:
+            merged_channel_system = get_channel_system(dataset_name=dataset_name).electrode_positions
+            continue
+
+        # Find all channels which are not present in the current channel system
+        to_delete = set()
+        for channel_name in merged_channel_system:
+            if _ChannelName(channel_name) not in (_ChannelName(ch_name) for ch_name in channel_system):
+                to_delete.add(channel_name)
+
+        # Remove all channels which are not present in the current channel system
+        for channel_name in to_delete:
+            del merged_channel_system[channel_name]
+
+    # Get it on the correct form
+    return {"MergeDataset": _electrode_2d_to_point_tuple(project_to_2d(merged_channel_system))}
+
+
 def _order_region_ids(region_ids):
     """
     Function for ordering region IDs
