@@ -124,7 +124,7 @@ class HPOExperiment:
                     experiment_config_file = self._experiments_config.copy()
                     target_name = f"band_power_{out_freq_band}_{out_ocular_state}"
                     if experiment_config_file["Training"]["log_transform_targets"] is not None:
-                        target_name = f"{experiment_config_file["Training"]["log_transform_targets"]}_{target_name}"
+                        target_name = f"{experiment_config_file['Training']['log_transform_targets']}_{target_name}"
                     experiment_config_file["Training"]["target"] = target_name
 
                     # ---------------
