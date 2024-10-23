@@ -102,7 +102,7 @@ Warnings:
 # ML model configurations
 # -----------------
 MLModelSettings:
-  aggregation_method: mean
+  aggregation_method: median
   evaluation_metric: r2_score  # todo: which should I choose?
   metrics: regression
   split_percentage: 0.2  # todo: not sure which split tbh...

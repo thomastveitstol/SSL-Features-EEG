@@ -107,7 +107,7 @@ RegionBasedPooling:
         k_2: [ 3, 3, 3, 3, 3, 3, 3, 3 ]
         k_3: [ 2, 3, 2, 3, 2, 3, 2, 3, 2 ]
         k_4: [ 4, 3, 2, 3, 4, 3, 2, 3, 4 ]
-      min_nodes: !Int { low: 2, high: 6, step: 1, log: false }  # todo
+      min_nodes: !Int { low: 1, high: 6, step: 1, log: false }
       channel_positions: !NotAHyperparameterList
         [ LEMON, Wang ]
 
