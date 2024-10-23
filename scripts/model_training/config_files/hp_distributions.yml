@@ -55,12 +55,12 @@ DLArchitectures:
     pool_time_stride: { low: 5, high: 25, step: 1, log: false }
     drop_prob: { low: 0.0, high: 0.5, step: null, log: false }
 
-  #Deep4NetMTS:
-  #  num_classes: 1
-  #  num_time_steps: UNAVAILABLE
-  #  num_first_filters: { low: 15, high: 35, step: 1, log: false }
-  #  filter_length: { low: 5, high: 15, step: 1, log: false }
-  #  drop_prob: { low: 0.0, high: 0.5, log: false }  # todo: should this be independent from shallownet?
+  Deep4NetMTS:
+    num_classes: 1
+    num_time_steps: UNAVAILABLE
+    num_first_filters: { low: 15, high: 35, step: 1, log: false }
+    filter_length: { low: 5, high: 15, step: 1, log: false }
+    drop_prob: { low: 0.0, high: 0.5, log: false }  # todo: should this be independent from shallownet?
 
 normalisation: { choices: [ true, false ] }
 
