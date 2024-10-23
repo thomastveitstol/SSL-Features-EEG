@@ -671,7 +671,7 @@ class _ChannelName:
     def __eq__(self, other):
         # Type check
         if not isinstance(other, self.__class__):
-            return  False
+            return False
 
         # If the names are the same, True should be returned
         if self.name == other.name:
