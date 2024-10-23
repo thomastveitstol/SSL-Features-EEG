@@ -367,7 +367,6 @@ class Deep4NetMTS(MTSModuleBase):
         # Set attribute
         self._model = model
 
-
     def extract_latent_features(self, input_tensor):
         """
         Method for extracting latent features
