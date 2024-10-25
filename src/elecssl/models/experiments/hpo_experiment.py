@@ -204,7 +204,7 @@ class HPOExperiment:
             # developers perspective, as one can e.g. find out if there are indications on the HPO leading to
             # overfitting on the non-test set (although it would not be valid performance estimation to go back after
             # checking the test set performance). Maybe I should call it "optimisation excluded set"?
-            if not verify_type(self._experiments_config["debugging"], bool):
+            if verify_type(self._experiments_config["save_test_predictions"], bool):
                 test_predictions, test_scores = ml_model.predict_and_score(
                     df=df.loc[list(test_subjects)], metrics=self.ml_model_settings_config["metrics"],
                     aggregation_method=self.ml_model_settings_config["test_prediction_aggregation"]

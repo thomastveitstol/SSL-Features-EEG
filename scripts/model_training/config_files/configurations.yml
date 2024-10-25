@@ -1,6 +1,7 @@
 # Configurations not related to distributions of hyperparameter optimisation
 
 debugging: true
+save_test_predictions: true
 
 Saving:
   save_subgroups_plots: false
@@ -10,7 +11,7 @@ Saving:
   save_final_test_histories_plots: false
 
 OcularStates: [ [ eo, ec ], [ ec, eo ] ]
-FrequencyBands: [ delta ]  # [ delta, theta, alpha, beta, gamma ]
+FrequencyBands: [ delta, theta ]  # [ delta, theta, alpha, beta, gamma ]
 # The preprocessed version must be during runtime
 
 clinical_target: age
