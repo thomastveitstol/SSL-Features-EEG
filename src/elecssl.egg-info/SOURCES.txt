@@ -23,6 +23,7 @@ src/elecssl/data/data_preparation/data_prep_base.py
 src/elecssl/data/datasets/__init__.py
 src/elecssl/data/datasets/ai_mind.py
 src/elecssl/data/datasets/dataset_base.py
+src/elecssl/data/datasets/dortmund_vital.py
 src/elecssl/data/datasets/getter.py
 src/elecssl/data/datasets/lemon.py
 src/elecssl/data/datasets/miltiadous.py
