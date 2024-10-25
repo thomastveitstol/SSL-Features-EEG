@@ -72,7 +72,7 @@ SubGroups:
 MLModelSubjectSplit:
   name: RandomSplitsTV
   kwargs:
-    val_split: 0.2
+    val_split: 0.25
     num_random_splits: 10
     seed: 42
 
@@ -89,7 +89,7 @@ Scalers:
     name: ZNormalisation
 Training:
   batch_size: 64
-  num_epochs: 50
+  num_epochs: 10
   log_transform_targets: log10
   verbose: true
   verbose_variables: false
