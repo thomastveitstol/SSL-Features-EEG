@@ -180,7 +180,7 @@ def make_trial_suggestion(trial, *, name, method, kwargs):
     return func(name, **kwargs)
 
 
-def suggest_hyperparameters(name, config, trial, experiments_config, out_freq_band, preprocessed_config_path):
+def suggest_hyperparameters(name, config, trial, experiments_config, in_freq_band, preprocessed_config_path):
     """
     Function for suggesting HPs using optuna
 
@@ -240,7 +240,7 @@ def suggest_hyperparameters(name, config, trial, experiments_config, out_freq_ba
     # DL architecture
     suggested_hps["DLArchitecture"] = _suggest_dl_architecture(
         name=name, trial=trial, config=config["DLArchitectures"],
-        suggested_preprocessing_steps=suggested_hps["Preprocessing"], freq_band=out_freq_band,
+        suggested_preprocessing_steps=suggested_hps["Preprocessing"], freq_band=in_freq_band,
         preprocessed_config_path=preprocessed_config_path
     )
 
