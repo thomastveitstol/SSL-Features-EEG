@@ -7,7 +7,7 @@ Saving:
   save_discriminator_plots: false
   save_error_association_plots: false
   save_metrics_per_fold_plots: false
-  save_final_test_histories_plots: true
+  save_final_test_histories_plots: false
 
 OcularStates: [ [ eo, ec ], [ ec, eo ] ]
 FrequencyBands: [ delta ]  # [ delta, theta, alpha, beta, gamma ]
