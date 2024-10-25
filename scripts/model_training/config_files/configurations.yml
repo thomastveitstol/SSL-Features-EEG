@@ -1,5 +1,7 @@
 # Configurations not related to distributions of hyperparameter optimisation
 
+debugging: true
+
 Saving:
   save_subgroups_plots: false
   save_discriminator_plots: false

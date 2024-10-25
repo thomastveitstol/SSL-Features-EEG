@@ -312,6 +312,18 @@ def get_random_distribution(distribution, **kwargs):
                      f"{tuple(dist.__name__ for dist in available_distributions)}")
 
 
+# ------------
+# Convenient functions
+# ------------
+def verify_type(data, types):
+    """Function which checks the type of the object. Returns the object if the type is as expected, otherwise raises a
+    ypeError"""
+    if isinstance(data, types):
+        return data
+    raise TypeError(f"Failed when trying to verify type. Expected input to be of type(s) {types}, but found "
+                    f"{type(data)}")
+
+
 # -------------------------
 # Functions for yaml loader
 # -------------------------

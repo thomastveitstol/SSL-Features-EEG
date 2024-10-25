@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="changed HPO metric to optimise" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="flake8 fix" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -47,11 +47,13 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Python tests.Doctest BandPass._get_folder_name.executor": "Run",
+    "Python tests.Doctest Deep4NetMTS.forward.executor": "Run",
     "Python tests.Doctest FCModule.forward.executor": "Run",
     "Python tests.Doctest Histories._build_error_and_info_objects.executor": "Run",
     "Python tests.Doctest Histories.mean.executor": "Run",
     "Python tests.Doctest Histories.pairwise_mean_difference.executor": "Run",
     "Python tests.Doctest PolygonGraph.line_intersection.executor": "Run",
+    "Python tests.Doctest ShallowFBCSPNetMTS.forward.executor": "Run",
     "Python tests.Doctest Wang._load_single_cleaned_mne_object.executor": "Run",
     "Python tests.Doctest _aggregate_predictions.executor": "Run",
     "Python tests.Doctest _sample_dilation.executor": "Run",
@@ -70,6 +72,9 @@
     "Python tests.Doctests in AIMind.executor": "Run",
     "Python tests.Doctests in BandPass.executor": "Run",
     "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
+    "Python tests.Doctests in Deep4NetMTS (1).executor": "Run",
+    "Python tests.Doctests in Deep4NetMTS (2).executor": "Run",
+    "Python tests.Doctests in Deep4NetMTS.executor": "Run",
     "Python tests.Doctests in FCModule.executor": "Run",
     "Python tests.Doctests in KFoldDataSplit.executor": "Run",
     "Python tests.Doctests in KeepDatasetOutRandomSplits.executor": "Run",
@@ -92,7 +97,10 @@
     "Python tests.Doctests in RandomSplitsTV.executor": "Run",
     "Python tests.Doctests in SRM (1).executor": "Run",
     "Python tests.Doctests in SRM.executor": "Run",
+    "Python tests.Doctests in ShallowFBCSPNetMTS.executor": "Run",
     "Python tests.Doctests in TDBRAIN.executor": "Run",
+    "Python tests.Doctests in _ChannelName (1).executor": "Run",
+    "Python tests.Doctests in _ChannelName.executor": "Run",
     "Python tests.Doctests in braindecode_models.executor": "Run",
     "Python tests.Doctests in centroid_polygon.executor": "Run",
     "Python tests.Doctests in cmmn.executor": "Run",
@@ -127,6 +135,7 @@
     "Python tests.Python tests in test_paths.py.executor": "Run",
     "Python.band_pass.executor": "Run",
     "Python.band_power.executor": "Run",
+    "Python.centroid_polygon.executor": "Run",
     "Python.debugging_lemon.executor": "Run",
     "Python.debugging_td_brain.executor": "Run",
     "Python.elecssl_experiments.executor": "Run",
@@ -138,6 +147,7 @@
     "Python.ml_model_base.executor": "Run",
     "Python.mts_module_base.executor": "Run",
     "Python.plot_eeg_data.executor": "Run",
+    "Python.plot_power.executor": "Run",
     "Python.regression_performance.executor": "Run",
     "Python.srm.executor": "Run",
     "Python.test_paths.executor": "Run",
@@ -158,7 +168,29 @@
       <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.elecssl_hpo">
+  <component name="RunManager" selected="Python.centroid_polygon">
+    <configuration name="centroid_polygon" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits/centroid_polygon.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="elecssl_hpo" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -181,74 +213,55 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctest Histories._build_error_and_info_objects" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in _ChannelName (1)" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/metrics.py" />
-      <option name="CLASS_NAME" value="Histories" />
-      <option name="METHOD_NAME" value="_build_error_and_info_objects" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits/centroid_polygon.py" />
+      <option name="CLASS_NAME" value="_ChannelName" />
+      <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctest _sample_dilation" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in _ChannelName" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/pooling_modules" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/pooling_modules/univariate_rocket.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="_sample_dilation" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits/centroid_polygon.py" />
+      <option name="CLASS_NAME" value="_ChannelName" />
+      <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_FUNCTION" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctest simple_random_split" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in braindecode_models" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/subject_split.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="simple_random_split" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_FUNCTION" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Doctests in metrics" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/metrics.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/mts_modules/braindecode_models.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -259,11 +272,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.centroid_polygon" />
         <item itemvalue="Python.elecssl_hpo" />
-        <item itemvalue="Python tests.Doctest _sample_dilation" />
-        <item itemvalue="Python tests.Doctests in metrics" />
-        <item itemvalue="Python tests.Doctest Histories._build_error_and_info_objects" />
-        <item itemvalue="Python tests.Doctest simple_random_split" />
+        <item itemvalue="Python tests.Doctests in _ChannelName" />
+        <item itemvalue="Python tests.Doctests in _ChannelName (1)" />
+        <item itemvalue="Python tests.Doctests in braindecode_models" />
       </list>
     </recent_temporary>
   </component>
@@ -282,302 +295,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00213" summary="optimised imports">
-      <option name="closed" value="true" />
-      <created>1729007365750</created>
-      <option name="number" value="00213" />
-      <option name="presentableId" value="LOCAL-00213" />
-      <option name="project" value="LOCAL" />
-      <updated>1729007365750</updated>
-    </task>
-    <task id="LOCAL-00214" summary="added subject split for random splits with only training and validation">
-      <option name="closed" value="true" />
-      <created>1729008437353</created>
-      <option name="number" value="00214" />
-      <option name="presentableId" value="LOCAL-00214" />
-      <option name="project" value="LOCAL" />
-      <updated>1729008437353</updated>
-    </task>
-    <task id="LOCAL-00215" summary="added ML model">
-      <option name="closed" value="true" />
-      <created>1729010213926</created>
-      <option name="number" value="00215" />
-      <option name="presentableId" value="LOCAL-00215" />
-      <option name="project" value="LOCAL" />
-      <updated>1729010213926</updated>
-    </task>
-    <task id="LOCAL-00216" summary="minor change">
-      <option name="closed" value="true" />
-      <created>1729010310683</created>
-      <option name="number" value="00216" />
-      <option name="presentableId" value="LOCAL-00216" />
-      <option name="project" value="LOCAL" />
-      <updated>1729010310683</updated>
-    </task>
-    <task id="LOCAL-00217" summary="flake8 fixes">
-      <option name="closed" value="true" />
-      <created>1729010377603</created>
-      <option name="number" value="00217" />
-      <option name="presentableId" value="LOCAL-00217" />
-      <option name="project" value="LOCAL" />
-      <updated>1729010377603</updated>
-    </task>
-    <task id="LOCAL-00218" summary="added convenient function">
-      <option name="closed" value="true" />
-      <created>1729089528123</created>
-      <option name="number" value="00218" />
-      <option name="presentableId" value="LOCAL-00218" />
-      <option name="project" value="LOCAL" />
-      <updated>1729089528123</updated>
-    </task>
-    <task id="LOCAL-00219" summary="added doctest">
-      <option name="closed" value="true" />
-      <created>1729090018167</created>
-      <option name="number" value="00219" />
-      <option name="presentableId" value="LOCAL-00219" />
-      <option name="project" value="LOCAL" />
-      <updated>1729090018168</updated>
-    </task>
-    <task id="LOCAL-00220" summary="updated config files with newest implementations and added class to get function">
-      <option name="closed" value="true" />
-      <created>1729090942258</created>
-      <option name="number" value="00220" />
-      <option name="presentableId" value="LOCAL-00220" />
-      <option name="project" value="LOCAL" />
-      <updated>1729090942258</updated>
-    </task>
-    <task id="LOCAL-00221" summary="config file changes">
-      <option name="closed" value="true" />
-      <created>1729091102660</created>
-      <option name="number" value="00221" />
-      <option name="presentableId" value="LOCAL-00221" />
-      <option name="project" value="LOCAL" />
-      <updated>1729091102660</updated>
-    </task>
-    <task id="LOCAL-00222" summary="mainly added ML models to model class and doctests">
-      <option name="closed" value="true" />
-      <created>1729091134936</created>
-      <option name="number" value="00222" />
-      <option name="presentableId" value="LOCAL-00222" />
-      <option name="project" value="LOCAL" />
-      <updated>1729091134936</updated>
-    </task>
-    <task id="LOCAL-00223" summary="continued the work on the ML model for feedback to HPO">
-      <option name="closed" value="true" />
-      <created>1729091159416</created>
-      <option name="number" value="00223" />
-      <option name="presentableId" value="LOCAL-00223" />
-      <option name="project" value="LOCAL" />
-      <updated>1729091159416</updated>
-    </task>
-    <task id="LOCAL-00224" summary="quick fix for checking if pipeline works">
-      <option name="closed" value="true" />
-      <created>1729091579438</created>
-      <option name="number" value="00224" />
-      <option name="presentableId" value="LOCAL-00224" />
-      <option name="project" value="LOCAL" />
-      <updated>1729091579438</updated>
-    </task>
-    <task id="LOCAL-00225" summary="fixed typo">
-      <option name="closed" value="true" />
-      <created>1729091729201</created>
-      <option name="number" value="00225" />
-      <option name="presentableId" value="LOCAL-00225" />
-      <option name="project" value="LOCAL" />
-      <updated>1729091729201</updated>
-    </task>
-    <task id="LOCAL-00226" summary="added print statement (I'll delete it later)">
-      <option name="closed" value="true" />
-      <created>1729092337680</created>
-      <option name="number" value="00226" />
-      <option name="presentableId" value="LOCAL-00226" />
-      <option name="project" value="LOCAL" />
-      <updated>1729092337680</updated>
-    </task>
-    <task id="LOCAL-00227" summary="fixed syntax error (for old python versions) and flake8 fix">
-      <option name="closed" value="true" />
-      <created>1729092568143</created>
-      <option name="number" value="00227" />
-      <option name="presentableId" value="LOCAL-00227" />
-      <option name="project" value="LOCAL" />
-      <updated>1729092568150</updated>
-    </task>
-    <task id="LOCAL-00228" summary="suggesting hyperparameters outside .submit of ProcessPoolExecutor">
-      <option name="closed" value="true" />
-      <created>1729093679045</created>
-      <option name="number" value="00228" />
-      <option name="presentableId" value="LOCAL-00228" />
-      <option name="project" value="LOCAL" />
-      <updated>1729093679045</updated>
-    </task>
-    <task id="LOCAL-00229" summary="added function for simple subject split">
-      <option name="closed" value="true" />
-      <created>1729162791299</created>
-      <option name="number" value="00229" />
-      <option name="presentableId" value="LOCAL-00229" />
-      <option name="project" value="LOCAL" />
-      <updated>1729162791300</updated>
-    </task>
-    <task id="LOCAL-00230" summary="added method for making predictions with ml model">
-      <option name="closed" value="true" />
-      <created>1729162830074</created>
-      <option name="number" value="00230" />
-      <option name="presentableId" value="LOCAL-00230" />
-      <option name="project" value="LOCAL" />
-      <updated>1729162830074</updated>
-    </task>
-    <task id="LOCAL-00231" summary="added convenient method for getting a specified set of metrics">
-      <option name="closed" value="true" />
-      <created>1729162849436</created>
-      <option name="number" value="00231" />
-      <option name="presentableId" value="LOCAL-00231" />
-      <option name="project" value="LOCAL" />
-      <updated>1729162849436</updated>
-    </task>
-    <task id="LOCAL-00232" summary="additions to config file">
-      <option name="closed" value="true" />
-      <created>1729162866920</created>
-      <option name="number" value="00232" />
-      <option name="presentableId" value="LOCAL-00232" />
-      <option name="project" value="LOCAL" />
-      <updated>1729162866920</updated>
-    </task>
-    <task id="LOCAL-00233" summary="added saving predictions and scores on test set / optimisation excluded set">
-      <option name="closed" value="true" />
-      <created>1729162902183</created>
-      <option name="number" value="00233" />
-      <option name="presentableId" value="LOCAL-00233" />
-      <option name="project" value="LOCAL" />
-      <updated>1729162902183</updated>
-    </task>
-    <task id="LOCAL-00234" summary="flake8 fix">
-      <option name="closed" value="true" />
-      <created>1729163208919</created>
-      <option name="number" value="00234" />
-      <option name="presentableId" value="LOCAL-00234" />
-      <option name="project" value="LOCAL" />
-      <updated>1729163208919</updated>
-    </task>
-    <task id="LOCAL-00235" summary="fixed handling of seed requirement">
-      <option name="closed" value="true" />
-      <created>1729163497838</created>
-      <option name="number" value="00235" />
-      <option name="presentableId" value="LOCAL-00235" />
-      <option name="project" value="LOCAL" />
-      <updated>1729163497838</updated>
-    </task>
-    <task id="LOCAL-00236" summary="fixes">
-      <option name="closed" value="true" />
-      <created>1729163799561</created>
-      <option name="number" value="00236" />
-      <option name="presentableId" value="LOCAL-00236" />
-      <option name="project" value="LOCAL" />
-      <updated>1729163799561</updated>
-    </task>
-    <task id="LOCAL-00237" summary="improvements">
-      <option name="closed" value="true" />
-      <created>1729164870192</created>
-      <option name="number" value="00237" />
-      <option name="presentableId" value="LOCAL-00237" />
-      <option name="project" value="LOCAL" />
-      <updated>1729164870192</updated>
-    </task>
-    <task id="LOCAL-00238" summary="changes to config file">
-      <option name="closed" value="true" />
-      <created>1729164981801</created>
-      <option name="number" value="00238" />
-      <option name="presentableId" value="LOCAL-00238" />
-      <option name="project" value="LOCAL" />
-      <updated>1729164981801</updated>
-    </task>
-    <task id="LOCAL-00239" summary="implemented suppressing warnings">
-      <option name="closed" value="true" />
-      <created>1729166160557</created>
-      <option name="number" value="00239" />
-      <option name="presentableId" value="LOCAL-00239" />
-      <option name="project" value="LOCAL" />
-      <updated>1729166160557</updated>
-    </task>
-    <task id="LOCAL-00240" summary="type ignored strange pycharm complaint">
-      <option name="closed" value="true" />
-      <created>1729166194485</created>
-      <option name="number" value="00240" />
-      <option name="presentableId" value="LOCAL-00240" />
-      <option name="project" value="LOCAL" />
-      <updated>1729166194485</updated>
-    </task>
-    <task id="LOCAL-00241" summary="added saving of optuna study">
-      <option name="closed" value="true" />
-      <created>1729167049951</created>
-      <option name="number" value="00241" />
-      <option name="presentableId" value="LOCAL-00241" />
-      <option name="project" value="LOCAL" />
-      <updated>1729167049951</updated>
-    </task>
-    <task id="LOCAL-00242" summary="typing">
-      <option name="closed" value="true" />
-      <created>1729167193734</created>
-      <option name="number" value="00242" />
-      <option name="presentableId" value="LOCAL-00242" />
-      <option name="project" value="LOCAL" />
-      <updated>1729167193734</updated>
-    </task>
-    <task id="LOCAL-00243" summary="fixes for saving study">
-      <option name="closed" value="true" />
-      <created>1729168980672</created>
-      <option name="number" value="00243" />
-      <option name="presentableId" value="LOCAL-00243" />
-      <option name="project" value="LOCAL" />
-      <updated>1729168980672</updated>
-    </task>
-    <task id="LOCAL-00244" summary="fix in config file">
-      <option name="closed" value="true" />
-      <created>1729169296444</created>
-      <option name="number" value="00244" />
-      <option name="presentableId" value="LOCAL-00244" />
-      <option name="project" value="LOCAL" />
-      <updated>1729169296444</updated>
-    </task>
-    <task id="LOCAL-00245" summary="improvements">
-      <option name="closed" value="true" />
-      <created>1729171233243</created>
-      <option name="number" value="00245" />
-      <option name="presentableId" value="LOCAL-00245" />
-      <option name="project" value="LOCAL" />
-      <updated>1729171233243</updated>
-    </task>
-    <task id="LOCAL-00246" summary="change to config file">
-      <option name="closed" value="true" />
-      <created>1729171360070</created>
-      <option name="number" value="00246" />
-      <option name="presentableId" value="LOCAL-00246" />
-      <option name="project" value="LOCAL" />
-      <updated>1729171360070</updated>
-    </task>
-    <task id="LOCAL-00247" summary="removed prints statements">
-      <option name="closed" value="true" />
-      <created>1729171994403</created>
-      <option name="number" value="00247" />
-      <option name="presentableId" value="LOCAL-00247" />
-      <option name="project" value="LOCAL" />
-      <updated>1729171994403</updated>
-    </task>
-    <task id="LOCAL-00248" summary="added alternative to avoid saving subgroups metrics plots at runtime">
-      <option name="closed" value="true" />
-      <created>1729238102253</created>
-      <option name="number" value="00248" />
-      <option name="presentableId" value="LOCAL-00248" />
-      <option name="project" value="LOCAL" />
-      <updated>1729238102253</updated>
-    </task>
-    <task id="LOCAL-00249" summary="improved docstring">
-      <option name="closed" value="true" />
-      <created>1729238224594</created>
-      <option name="number" value="00249" />
-      <option name="presentableId" value="LOCAL-00249" />
-      <option name="project" value="LOCAL" />
-      <updated>1729238224594</updated>
     </task>
     <task id="LOCAL-00250" summary="fixes to not tracking error associations and made new warning class">
       <option name="closed" value="true" />
@@ -675,7 +392,303 @@
       <option name="project" value="LOCAL" />
       <updated>1729262282280</updated>
     </task>
-    <option name="localTasksCounter" value="262" />
+    <task id="LOCAL-00262" summary="added plot script">
+      <option name="closed" value="true" />
+      <created>1729500908943</created>
+      <option name="number" value="00262" />
+      <option name="presentableId" value="LOCAL-00262" />
+      <option name="project" value="LOCAL" />
+      <updated>1729500908943</updated>
+    </task>
+    <task id="LOCAL-00263" summary="added target scaler">
+      <option name="closed" value="true" />
+      <created>1729505450659</created>
+      <option name="number" value="00263" />
+      <option name="presentableId" value="LOCAL-00263" />
+      <option name="project" value="LOCAL" />
+      <updated>1729505450659</updated>
+    </task>
+    <task id="LOCAL-00264" summary="changed target scaler in configuration file">
+      <option name="closed" value="true" />
+      <created>1729505760100</created>
+      <option name="number" value="00264" />
+      <option name="presentableId" value="LOCAL-00264" />
+      <option name="project" value="LOCAL" />
+      <updated>1729505760100</updated>
+    </task>
+    <task id="LOCAL-00265" summary="minor cosmetic">
+      <option name="closed" value="true" />
+      <created>1729505836113</created>
+      <option name="number" value="00265" />
+      <option name="presentableId" value="LOCAL-00265" />
+      <option name="project" value="LOCAL" />
+      <updated>1729505836113</updated>
+    </task>
+    <task id="LOCAL-00266" summary="added log transform upon loading the targets">
+      <option name="closed" value="true" />
+      <created>1729508740634</created>
+      <option name="number" value="00266" />
+      <option name="presentableId" value="LOCAL-00266" />
+      <option name="project" value="LOCAL" />
+      <updated>1729508740634</updated>
+    </task>
+    <task id="LOCAL-00267" summary="fixes for log transform upon loading the targets">
+      <option name="closed" value="true" />
+      <created>1729508828519</created>
+      <option name="number" value="00267" />
+      <option name="presentableId" value="LOCAL-00267" />
+      <option name="project" value="LOCAL" />
+      <updated>1729508828520</updated>
+    </task>
+    <task id="LOCAL-00268" summary="changes to config file">
+      <option name="closed" value="true" />
+      <created>1729509988939</created>
+      <option name="number" value="00268" />
+      <option name="presentableId" value="LOCAL-00268" />
+      <option name="project" value="LOCAL" />
+      <updated>1729509988939</updated>
+    </task>
+    <task id="LOCAL-00269" summary="implementation for changing DL architecture if an expected error is raised in __init__">
+      <option name="closed" value="true" />
+      <created>1729513543550</created>
+      <option name="number" value="00269" />
+      <option name="presentableId" value="LOCAL-00269" />
+      <option name="project" value="LOCAL" />
+      <updated>1729513543551</updated>
+    </task>
+    <task id="LOCAL-00270" summary="fixes for changing DL architecture if an expected error is raised in __init__">
+      <option name="closed" value="true" />
+      <created>1729515370730</created>
+      <option name="number" value="00270" />
+      <option name="presentableId" value="LOCAL-00270" />
+      <option name="project" value="LOCAL" />
+      <updated>1729515370730</updated>
+    </task>
+    <task id="LOCAL-00271" summary="fixes for changing DL architecture if an expected error is raised in __init__">
+      <option name="closed" value="true" />
+      <created>1729515433743</created>
+      <option name="number" value="00271" />
+      <option name="presentableId" value="LOCAL-00271" />
+      <option name="project" value="LOCAL" />
+      <updated>1729515433743</updated>
+    </task>
+    <task id="LOCAL-00272" summary="flake8 fix">
+      <option name="closed" value="true" />
+      <created>1729517996029</created>
+      <option name="number" value="00272" />
+      <option name="presentableId" value="LOCAL-00272" />
+      <option name="project" value="LOCAL" />
+      <updated>1729517996029</updated>
+    </task>
+    <task id="LOCAL-00273" summary="update for incompatible HPC suggestions in Shallownet">
+      <option name="closed" value="true" />
+      <created>1729595114250</created>
+      <option name="number" value="00273" />
+      <option name="presentableId" value="LOCAL-00273" />
+      <option name="project" value="LOCAL" />
+      <updated>1729595114250</updated>
+    </task>
+    <task id="LOCAL-00274" summary="updated code for newest updates">
+      <option name="closed" value="true" />
+      <created>1729595493676</created>
+      <option name="number" value="00274" />
+      <option name="presentableId" value="LOCAL-00274" />
+      <option name="project" value="LOCAL" />
+      <updated>1729595493676</updated>
+    </task>
+    <task id="LOCAL-00275" summary="improved variable name and type hint">
+      <option name="closed" value="true" />
+      <created>1729596219553</created>
+      <option name="number" value="00275" />
+      <option name="presentableId" value="LOCAL-00275" />
+      <option name="project" value="LOCAL" />
+      <updated>1729596219553</updated>
+    </task>
+    <task id="LOCAL-00276" summary="optimised imports and muted mypy for yaml import">
+      <option name="closed" value="true" />
+      <created>1729596314457</created>
+      <option name="number" value="00276" />
+      <option name="presentableId" value="LOCAL-00276" />
+      <option name="project" value="LOCAL" />
+      <updated>1729596314457</updated>
+    </task>
+    <task id="LOCAL-00277" summary="fix for hyperparameter fix">
+      <option name="closed" value="true" />
+      <created>1729596706704</created>
+      <option name="number" value="00277" />
+      <option name="presentableId" value="LOCAL-00277" />
+      <option name="project" value="LOCAL" />
+      <updated>1729596706704</updated>
+    </task>
+    <task id="LOCAL-00278" summary="optimised imports">
+      <option name="closed" value="true" />
+      <created>1729596733569</created>
+      <option name="number" value="00278" />
+      <option name="presentableId" value="LOCAL-00278" />
+      <option name="project" value="LOCAL" />
+      <updated>1729596733570</updated>
+    </task>
+    <task id="LOCAL-00279" summary="fixed computing number of time steps">
+      <option name="closed" value="true" />
+      <created>1729600318146</created>
+      <option name="number" value="00279" />
+      <option name="presentableId" value="LOCAL-00279" />
+      <option name="project" value="LOCAL" />
+      <updated>1729600318146</updated>
+    </task>
+    <task id="LOCAL-00280" summary="fixed type of HP suggestion">
+      <option name="closed" value="true" />
+      <created>1729600897570</created>
+      <option name="number" value="00280" />
+      <option name="presentableId" value="LOCAL-00280" />
+      <option name="project" value="LOCAL" />
+      <updated>1729600897570</updated>
+    </task>
+    <task id="LOCAL-00281" summary="removed debugging code">
+      <option name="closed" value="true" />
+      <created>1729600975774</created>
+      <option name="number" value="00281" />
+      <option name="presentableId" value="LOCAL-00281" />
+      <option name="project" value="LOCAL" />
+      <updated>1729600975774</updated>
+    </task>
+    <task id="LOCAL-00282" summary="fixed comment">
+      <option name="closed" value="true" />
+      <created>1729605531899</created>
+      <option name="number" value="00282" />
+      <option name="presentableId" value="LOCAL-00282" />
+      <option name="project" value="LOCAL" />
+      <updated>1729605531899</updated>
+    </task>
+    <task id="LOCAL-00283" summary="config files">
+      <option name="closed" value="true" />
+      <created>1729605623897</created>
+      <option name="number" value="00283" />
+      <option name="presentableId" value="LOCAL-00283" />
+      <option name="project" value="LOCAL" />
+      <updated>1729605623897</updated>
+    </task>
+    <task id="LOCAL-00284" summary="config files">
+      <option name="closed" value="true" />
+      <created>1729606115565</created>
+      <option name="number" value="00284" />
+      <option name="presentableId" value="LOCAL-00284" />
+      <option name="project" value="LOCAL" />
+      <updated>1729606115565</updated>
+    </task>
+    <task id="LOCAL-00285" summary="changes for adapting depth of deepnet if init fail">
+      <option name="closed" value="true" />
+      <created>1729669106889</created>
+      <option name="number" value="00285" />
+      <option name="presentableId" value="LOCAL-00285" />
+      <option name="project" value="LOCAL" />
+      <updated>1729669106889</updated>
+    </task>
+    <task id="LOCAL-00286" summary="changed staticmethod to classmethod">
+      <option name="closed" value="true" />
+      <created>1729669177372</created>
+      <option name="number" value="00286" />
+      <option name="presentableId" value="LOCAL-00286" />
+      <option name="project" value="LOCAL" />
+      <updated>1729669177373</updated>
+    </task>
+    <task id="LOCAL-00287" summary="flake fix">
+      <option name="closed" value="true" />
+      <created>1729669212138</created>
+      <option name="number" value="00287" />
+      <option name="presentableId" value="LOCAL-00287" />
+      <option name="project" value="LOCAL" />
+      <updated>1729669212138</updated>
+    </task>
+    <task id="LOCAL-00288" summary="made deepnet available in config file">
+      <option name="closed" value="true" />
+      <created>1729669385509</created>
+      <option name="number" value="00288" />
+      <option name="presentableId" value="LOCAL-00288" />
+      <option name="project" value="LOCAL" />
+      <updated>1729669385509</updated>
+    </task>
+    <task id="LOCAL-00289" summary="added log transform of pseudo targets">
+      <option name="closed" value="true" />
+      <created>1729670053388</created>
+      <option name="number" value="00289" />
+      <option name="presentableId" value="LOCAL-00289" />
+      <option name="project" value="LOCAL" />
+      <updated>1729670053388</updated>
+    </task>
+    <task id="LOCAL-00290" summary="deleted deprecated script">
+      <option name="closed" value="true" />
+      <created>1729670132594</created>
+      <option name="number" value="00290" />
+      <option name="presentableId" value="LOCAL-00290" />
+      <option name="project" value="LOCAL" />
+      <updated>1729670132594</updated>
+    </task>
+    <task id="LOCAL-00291" summary="fixed dimensions of deepnet with reduced depth">
+      <option name="closed" value="true" />
+      <created>1729671256943</created>
+      <option name="number" value="00291" />
+      <option name="presentableId" value="LOCAL-00291" />
+      <option name="project" value="LOCAL" />
+      <updated>1729671256943</updated>
+    </task>
+    <task id="LOCAL-00292" summary="mypy fix for old python version">
+      <option name="closed" value="true" />
+      <created>1729671386825</created>
+      <option name="number" value="00292" />
+      <option name="presentableId" value="LOCAL-00292" />
+      <option name="project" value="LOCAL" />
+      <updated>1729671386825</updated>
+    </task>
+    <task id="LOCAL-00293" summary="fixed type hint">
+      <option name="closed" value="true" />
+      <created>1729678433782</created>
+      <option name="number" value="00293" />
+      <option name="presentableId" value="LOCAL-00293" />
+      <option name="project" value="LOCAL" />
+      <updated>1729678433782</updated>
+    </task>
+    <task id="LOCAL-00294" summary="fixes for fitting CentroidPolygon montage split on multiple channel systems">
+      <option name="closed" value="true" />
+      <created>1729681616489</created>
+      <option name="number" value="00294" />
+      <option name="presentableId" value="LOCAL-00294" />
+      <option name="project" value="LOCAL" />
+      <updated>1729681616489</updated>
+    </task>
+    <task id="LOCAL-00295" summary="updates for fitting CentroidPolygon montage split on multiple channel systems">
+      <option name="closed" value="true" />
+      <created>1729682330720</created>
+      <option name="number" value="00295" />
+      <option name="presentableId" value="LOCAL-00295" />
+      <option name="project" value="LOCAL" />
+      <updated>1729682330720</updated>
+    </task>
+    <task id="LOCAL-00296" summary="changes to config file">
+      <option name="closed" value="true" />
+      <created>1729682342290</created>
+      <option name="number" value="00296" />
+      <option name="presentableId" value="LOCAL-00296" />
+      <option name="project" value="LOCAL" />
+      <updated>1729682342290</updated>
+    </task>
+    <task id="LOCAL-00297" summary="changes to config files">
+      <option name="closed" value="true" />
+      <created>1729682508687</created>
+      <option name="number" value="00297" />
+      <option name="presentableId" value="LOCAL-00297" />
+      <option name="project" value="LOCAL" />
+      <updated>1729682508687</updated>
+    </task>
+    <task id="LOCAL-00298" summary="flake8 fix">
+      <option name="closed" value="true" />
+      <created>1729682550341</created>
+      <option name="number" value="00298" />
+      <option name="presentableId" value="LOCAL-00298" />
+      <option name="project" value="LOCAL" />
+      <updated>1729682550341</updated>
+    </task>
+    <option name="localTasksCounter" value="299" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -690,31 +703,31 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixes" />
+    <MESSAGE value="update for incompatible HPC suggestions in Shallownet" />
+    <MESSAGE value="updated code for newest updates" />
+    <MESSAGE value="improved variable name and type hint" />
+    <MESSAGE value="optimised imports and muted mypy for yaml import" />
+    <MESSAGE value="fix for hyperparameter fix" />
+    <MESSAGE value="optimised imports" />
+    <MESSAGE value="fixed computing number of time steps" />
+    <MESSAGE value="fixed type of HP suggestion" />
+    <MESSAGE value="removed debugging code" />
+    <MESSAGE value="fixed comment" />
+    <MESSAGE value="config files" />
+    <MESSAGE value="changes for adapting depth of deepnet if init fail" />
+    <MESSAGE value="changed staticmethod to classmethod" />
+    <MESSAGE value="flake fix" />
+    <MESSAGE value="made deepnet available in config file" />
+    <MESSAGE value="added log transform of pseudo targets" />
+    <MESSAGE value="deleted deprecated script" />
+    <MESSAGE value="fixed dimensions of deepnet with reduced depth" />
+    <MESSAGE value="mypy fix for old python version" />
+    <MESSAGE value="fixed type hint" />
+    <MESSAGE value="fixes for fitting CentroidPolygon montage split on multiple channel systems" />
+    <MESSAGE value="updates for fitting CentroidPolygon montage split on multiple channel systems" />
     <MESSAGE value="changes to config file" />
-    <MESSAGE value="implemented suppressing warnings" />
-    <MESSAGE value="type ignored strange pycharm complaint" />
-    <MESSAGE value="added saving of optuna study" />
-    <MESSAGE value="typing" />
-    <MESSAGE value="fixes for saving study" />
-    <MESSAGE value="fix in config file" />
-    <MESSAGE value="improvements" />
-    <MESSAGE value="change to config file" />
-    <MESSAGE value="removed prints statements" />
-    <MESSAGE value="added alternative to avoid saving subgroups metrics plots at runtime" />
-    <MESSAGE value="improved docstring" />
-    <MESSAGE value="fixes to not tracking error associations and made new warning class" />
-    <MESSAGE value="improved pythonicness" />
-    <MESSAGE value="removed making unnecessary directories" />
-    <MESSAGE value="improvement to handling subjects info when no info is desired" />
-    <MESSAGE value="turned off tracking of error associations" />
-    <MESSAGE value="muted PlotNotSavedWarning warnings" />
-    <MESSAGE value="added property" />
-    <MESSAGE value="fixed making unnecessary folder" />
-    <MESSAGE value="added doctest" />
-    <MESSAGE value="config file" />
-    <MESSAGE value="fixed HP distribution" />
-    <MESSAGE value="changed HPO metric to optimise" />
-    <option name="LAST_COMMIT_MESSAGE" value="changed HPO metric to optimise" />
+    <MESSAGE value="changes to config files" />
+    <MESSAGE value="flake8 fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="flake8 fix" />
   </component>
 </project>

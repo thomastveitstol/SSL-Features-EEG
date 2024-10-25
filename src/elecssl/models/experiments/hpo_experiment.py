@@ -22,7 +22,7 @@ from elecssl.models.hp_suggesting import suggest_hyperparameters
 from elecssl.models.metrics import PlotNotSavedWarning
 from elecssl.models.ml_models.ml_model_base import MLModel
 from elecssl.models.sampling_distributions import get_yaml_loader
-from elecssl.models.utils import add_yaml_constructors, add_yaml_representers
+from elecssl.models.utils import add_yaml_constructors, add_yaml_representers, verify_type
 
 
 class HPOExperiment:
@@ -97,7 +97,8 @@ class HPOExperiment:
                       self._experiments_config["FrequencyBands"])
 
             # Make directory for current iteration
-            results_dir = self._results_dir / (f"debug_hpo_{trial.number}_{date.today()}_"
+            _debug_mode = "debug_" if verify_type(self._experiments_config["debugging"], bool) else ""
+            results_dir = self._results_dir / (f"{_debug_mode}hpo_{trial.number}_{date.today()}_"
                                                f"{datetime.now().strftime('%H%M%S')}")
             os.mkdir(results_dir)
 
@@ -203,23 +204,24 @@ class HPOExperiment:
             # developers perspective, as one can e.g. find out if there are indications on the HPO leading to
             # overfitting on the non-test set (although it would not be valid performance estimation to go back after
             # checking the test set performance). Maybe I should call it "optimisation excluded set"?
-            test_predictions, test_scores = ml_model.predict_and_score(
-                df=df.loc[list(test_subjects)], metrics=self.ml_model_settings_config["metrics"],
-                aggregation_method=self.ml_model_settings_config["test_prediction_aggregation"]
-            )
+            if not verify_type(self._experiments_config["debugging"], bool):
+                test_predictions, test_scores = ml_model.predict_and_score(
+                    df=df.loc[list(test_subjects)], metrics=self.ml_model_settings_config["metrics"],
+                    aggregation_method=self.ml_model_settings_config["test_prediction_aggregation"]
+                )
 
-            # Save predictions and scores on test set (the score provided to the HPO algorithm should be stored by
-            # optuna)
-            test_predictions_df = pandas.DataFrame.from_dict({"sub_id": test_subjects, "pred": test_predictions})
-            test_scores_df = pandas.DataFrame([test_scores])
+                # Save predictions and scores on test set (the score provided to the HPO algorithm should be stored by
+                # optuna)
+                test_predictions_df = pandas.DataFrame.from_dict({"sub_id": test_subjects, "pred": test_predictions})
+                test_scores_df = pandas.DataFrame([test_scores])
 
-            test_predictions_df = test_predictions_df.round(
-                decimals=self.ml_model_settings_config["test_predictions_decimals"]
-            )
-            test_scores_df = test_scores_df.round(decimals=self.ml_model_settings_config["test_scores_decimals"])
+                test_predictions_df = test_predictions_df.round(
+                    decimals=self.ml_model_settings_config["test_predictions_decimals"]
+                )
+                test_scores_df = test_scores_df.round(decimals=self.ml_model_settings_config["test_scores_decimals"])
 
-            test_predictions_df.to_csv(results_dir / "test_predictions.csv", index=False)
-            test_scores_df.to_csv(results_dir / "test_scores.csv", index=False)
+                test_predictions_df.to_csv(results_dir / "test_predictions.csv", index=False)
+                test_scores_df.to_csv(results_dir / "test_scores.csv", index=False)
 
             return score
 
