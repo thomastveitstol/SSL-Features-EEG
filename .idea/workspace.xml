@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="clean up and optimised imports">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power_ai_mind.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power_ai_mind.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power_ai_mind.yml" beforeDir="false" />
-    </list>
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="config files" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -181,7 +176,7 @@
       <recent name="$PROJECT_DIR$/scripts/debugging" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.band_power">
+  <component name="RunManager" selected="Python.plot_eeg_data">
     <configuration name="band_power" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -291,8 +286,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.band_power" />
         <item itemvalue="Python.plot_eeg_data" />
+        <item itemvalue="Python.band_power" />
         <item itemvalue="Python.plot_power" />
         <item itemvalue="Python tests.Doctests in DortmundVital" />
         <item itemvalue="Python.dortmund_vital (1)" />
@@ -314,22 +309,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00280" summary="fixed type of HP suggestion">
-      <option name="closed" value="true" />
-      <created>1729600897570</created>
-      <option name="number" value="00280" />
-      <option name="presentableId" value="LOCAL-00280" />
-      <option name="project" value="LOCAL" />
-      <updated>1729600897570</updated>
-    </task>
-    <task id="LOCAL-00281" summary="removed debugging code">
-      <option name="closed" value="true" />
-      <created>1729600975774</created>
-      <option name="number" value="00281" />
-      <option name="presentableId" value="LOCAL-00281" />
-      <option name="project" value="LOCAL" />
-      <updated>1729600975774</updated>
     </task>
     <task id="LOCAL-00282" summary="fixed comment">
       <option name="closed" value="true" />
@@ -707,7 +686,23 @@
       <option name="project" value="LOCAL" />
       <updated>1733499235596</updated>
     </task>
-    <option name="localTasksCounter" value="329" />
+    <task id="LOCAL-00329" summary="fixes for preprocessing a new dataset without re-preprocessing existing ones">
+      <option name="closed" value="true" />
+      <created>1733500379905</created>
+      <option name="number" value="00329" />
+      <option name="presentableId" value="LOCAL-00329" />
+      <option name="project" value="LOCAL" />
+      <updated>1733500379905</updated>
+    </task>
+    <task id="LOCAL-00330" summary="config files">
+      <option name="closed" value="true" />
+      <created>1733500613910</created>
+      <option name="number" value="00330" />
+      <option name="presentableId" value="LOCAL-00330" />
+      <option name="project" value="LOCAL" />
+      <updated>1733500613910</updated>
+    </task>
+    <option name="localTasksCounter" value="331" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -722,8 +717,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="started on new dataset class" />
-    <MESSAGE value="added download script for Dortmund Vital dataset" />
     <MESSAGE value="changed download bash file to download dortmund vital" />
     <MESSAGE value="config file" />
     <MESSAGE value="ran tox" />
@@ -747,6 +740,8 @@
     <MESSAGE value="added cropping and fixes for PSD on epochs object" />
     <MESSAGE value="key fix" />
     <MESSAGE value="clean up and optimised imports" />
-    <option name="LAST_COMMIT_MESSAGE" value="clean up and optimised imports" />
+    <MESSAGE value="fixes for preprocessing a new dataset without re-preprocessing existing ones" />
+    <MESSAGE value="config files" />
+    <option name="LAST_COMMIT_MESSAGE" value="config files" />
   </component>
 </project>
