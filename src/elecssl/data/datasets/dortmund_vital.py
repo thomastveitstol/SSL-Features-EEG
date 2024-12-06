@@ -73,6 +73,5 @@ class DortmundVital(EEGDatasetBase):
         # Return dict with channel positions, keeping only the ones in the data
         return {ch_name: tuple(pos) for ch_name, pos in channel_positions.items() if ch_name in self._channel_names}
 
-
     def channel_name_to_index(self):
         return {ch_name: i for i, ch_name in enumerate(self._channel_names)}
