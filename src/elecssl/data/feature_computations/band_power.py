@@ -1,5 +1,6 @@
 from typing import Dict, Any, List
 
+import mne
 import numpy
 import pandas
 from progressbar import progressbar
@@ -82,7 +83,7 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method, verbose):
 # -------------------
 # Computations made on dataset level
 # -------------------
-def compute_band_powers(datasets, frequency_bands, aggregation_method, average_reference, verbose, autoreject):
+def compute_band_powers(datasets, frequency_bands, aggregation_method, average_reference, verbose, autoreject, epochs):
     """
     Function for computing band powers of entire datasets
 
@@ -93,6 +94,8 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
     aggregation_method : str
     average_reference : bool
     verbose : bool
+    autoreject : dict[str, Any] | None
+    epochs : dict[str, Any] | None
 
     Returns
     -------
@@ -112,9 +115,14 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
         for subject in progressbar(info.subjects, prefix=f"{type(info.dataset).__name__} ", redirect_stdout=True):
             # Load the EEG
             try:
+                print(subject)
                 eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
             except MNELoadingError:
                 continue
+
+            # Maybe epoch
+            if epochs is not None:
+                eeg = mne.make_fixed_length_epochs(raw=eeg, **epochs)
 
             # Maybe run autoreject
             if autoreject is not None:

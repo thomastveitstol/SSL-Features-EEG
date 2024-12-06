@@ -2,18 +2,18 @@ OcularStates:
   EC:
     Datasets:
       DortmundVital: &DortmundVital
-        num_subjects: all
+        num_subjects: 3
         kwargs:
           derivatives: false
           session: 1
           acquisition: pre
       LEMON: &LEMON
-        num_subjects: all
+        num_subjects: 3
         kwargs:
           derivatives: false
           interpolation_method: MNE
       Wang: &Wang
-        num_subjects: all
+        num_subjects: 3
         kwargs:
           visit: 1
           derivatives: true
@@ -32,6 +32,11 @@ AggregationMethod: median
 IgnoreExistingFolder: false
 AverageReference: true
 verbose: false
+Epochs:
+  duration: 4
+  preload: true
+  overlap: 0
+  verbose: false
 Autoreject:
   seed: 42
   default_num_splits: 10

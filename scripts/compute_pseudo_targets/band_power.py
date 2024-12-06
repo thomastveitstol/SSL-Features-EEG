@@ -3,6 +3,7 @@ from datetime import date, datetime
 from typing import List, Any, Dict
 
 import yaml
+from python_utils.time import epoch
 
 from elecssl.data.datasets.dataset_base import OcularState, DatasetInfo
 from elecssl.data.datasets.getter import get_dataset
@@ -37,7 +38,7 @@ def _single_ocular_state(config):
     band_powers = compute_band_powers(
         datasets=tuple(datasets), frequency_bands=config["FrequencyBands"], verbose=config["verbose"],
         aggregation_method=config["AggregationMethod"], average_reference=config["AverageReference"],
-        autoreject=config["Autoreject"]
+        autoreject=config["Autoreject"], epochs=config["Epochs"]
     )
 
     # ---------------

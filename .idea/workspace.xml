@@ -4,13 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="using all subjects">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/visualise_data/plot_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/visualise_data/plot_power.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/data_preparation/band_pass_filter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/data_preparation/band_pass_filter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/data_preparation/data_prep_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/data_preparation/data_prep_base.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -314,30 +312,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00272" summary="flake8 fix">
-      <option name="closed" value="true" />
-      <created>1729517996029</created>
-      <option name="number" value="00272" />
-      <option name="presentableId" value="LOCAL-00272" />
-      <option name="project" value="LOCAL" />
-      <updated>1729517996029</updated>
-    </task>
-    <task id="LOCAL-00273" summary="update for incompatible HPC suggestions in Shallownet">
-      <option name="closed" value="true" />
-      <created>1729595114250</created>
-      <option name="number" value="00273" />
-      <option name="presentableId" value="LOCAL-00273" />
-      <option name="project" value="LOCAL" />
-      <updated>1729595114250</updated>
-    </task>
-    <task id="LOCAL-00274" summary="updated code for newest updates">
-      <option name="closed" value="true" />
-      <created>1729595493676</created>
-      <option name="number" value="00274" />
-      <option name="presentableId" value="LOCAL-00274" />
-      <option name="project" value="LOCAL" />
-      <updated>1729595493676</updated>
     </task>
     <task id="LOCAL-00275" summary="improved variable name and type hint">
       <option name="closed" value="true" />
@@ -707,7 +681,31 @@
       <option name="project" value="LOCAL" />
       <updated>1733489490825</updated>
     </task>
-    <option name="localTasksCounter" value="321" />
+    <task id="LOCAL-00321" summary="added autoreject for pseudo-targets">
+      <option name="closed" value="true" />
+      <created>1733495543018</created>
+      <option name="number" value="00321" />
+      <option name="presentableId" value="LOCAL-00321" />
+      <option name="project" value="LOCAL" />
+      <updated>1733495543018</updated>
+    </task>
+    <task id="LOCAL-00322" summary="fix">
+      <option name="closed" value="true" />
+      <created>1733495597555</created>
+      <option name="number" value="00322" />
+      <option name="presentableId" value="LOCAL-00322" />
+      <option name="project" value="LOCAL" />
+      <updated>1733495597555</updated>
+    </task>
+    <task id="LOCAL-00323" summary="fix">
+      <option name="closed" value="true" />
+      <created>1733495620899</created>
+      <option name="number" value="00323" />
+      <option name="presentableId" value="LOCAL-00323" />
+      <option name="project" value="LOCAL" />
+      <updated>1733495620899</updated>
+    </task>
+    <option name="localTasksCounter" value="324" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -722,8 +720,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed type hint" />
-    <MESSAGE value="fixes for fitting CentroidPolygon montage split on multiple channel systems" />
     <MESSAGE value="updates for fitting CentroidPolygon montage split on multiple channel systems" />
     <MESSAGE value="changes to config file" />
     <MESSAGE value="changes to config files" />
@@ -747,6 +743,8 @@
     <MESSAGE value="auto update" />
     <MESSAGE value="keyfix" />
     <MESSAGE value="using all subjects" />
-    <option name="LAST_COMMIT_MESSAGE" value="using all subjects" />
+    <MESSAGE value="added autoreject for pseudo-targets" />
+    <MESSAGE value="fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix" />
   </component>
 </project>

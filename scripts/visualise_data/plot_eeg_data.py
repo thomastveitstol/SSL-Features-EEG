@@ -5,6 +5,7 @@ from autoreject import autoreject
 from matplotlib import pyplot
 from mne import make_fixed_length_epochs
 
+from elecssl.data.data_preparation.data_prep_base import run_autoreject
 from elecssl.data.datasets.dataset_base import OcularState
 from elecssl.data.datasets.dortmund_vital import DortmundVital
 
@@ -13,7 +14,7 @@ def main():
     # -------------
     # Choices
     # -------------
-    subject = "sub-052"
+    subject = "sub-001"
     ocular_state = OcularState.EO
     acquisition = "pre"
     session = 1
@@ -43,10 +44,9 @@ def main():
         eeg = make_fixed_length_epochs(raw=eeg, duration=duration, preload=True, verbose=False)
 
         if apply_autoreject:
-            if autoreject_resample is not None:
-                eeg.resample(autoreject_resample, verbose=False)
-            reject = autoreject.AutoReject(verbose=False)
-            eeg = reject.fit_transform(eeg, return_log=False)
+            print("Applying autoreject...")
+            print(type(eeg), autoreject)
+            eeg = run_autoreject(eeg, autoreject_resample=autoreject_resample, seed=42, default_num_splits=10)
 
     # -------------
     # Plot
