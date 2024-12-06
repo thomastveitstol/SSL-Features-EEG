@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added methods to DortmundVital dataset">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/dortmund_vital.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/dortmund_vital.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/getter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/getter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" afterDir="false" />
-    </list>
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="auto update" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -310,46 +303,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00265" summary="minor cosmetic">
-      <option name="closed" value="true" />
-      <created>1729505836113</created>
-      <option name="number" value="00265" />
-      <option name="presentableId" value="LOCAL-00265" />
-      <option name="project" value="LOCAL" />
-      <updated>1729505836113</updated>
-    </task>
-    <task id="LOCAL-00266" summary="added log transform upon loading the targets">
-      <option name="closed" value="true" />
-      <created>1729508740634</created>
-      <option name="number" value="00266" />
-      <option name="presentableId" value="LOCAL-00266" />
-      <option name="project" value="LOCAL" />
-      <updated>1729508740634</updated>
-    </task>
-    <task id="LOCAL-00267" summary="fixes for log transform upon loading the targets">
-      <option name="closed" value="true" />
-      <created>1729508828519</created>
-      <option name="number" value="00267" />
-      <option name="presentableId" value="LOCAL-00267" />
-      <option name="project" value="LOCAL" />
-      <updated>1729508828520</updated>
-    </task>
-    <task id="LOCAL-00268" summary="changes to config file">
-      <option name="closed" value="true" />
-      <created>1729509988939</created>
-      <option name="number" value="00268" />
-      <option name="presentableId" value="LOCAL-00268" />
-      <option name="project" value="LOCAL" />
-      <updated>1729509988939</updated>
-    </task>
-    <task id="LOCAL-00269" summary="implementation for changing DL architecture if an expected error is raised in __init__">
-      <option name="closed" value="true" />
-      <created>1729513543550</created>
-      <option name="number" value="00269" />
-      <option name="presentableId" value="LOCAL-00269" />
-      <option name="project" value="LOCAL" />
-      <updated>1729513543551</updated>
     </task>
     <task id="LOCAL-00270" summary="fixes for changing DL architecture if an expected error is raised in __init__">
       <option name="closed" value="true" />
@@ -703,7 +656,47 @@
       <option name="project" value="LOCAL" />
       <updated>1733486979589</updated>
     </task>
-    <option name="localTasksCounter" value="314" />
+    <task id="LOCAL-00314" summary="added average referencing">
+      <option name="closed" value="true" />
+      <created>1733489180779</created>
+      <option name="number" value="00314" />
+      <option name="presentableId" value="LOCAL-00314" />
+      <option name="project" value="LOCAL" />
+      <updated>1733489180779</updated>
+    </task>
+    <task id="LOCAL-00315" summary="added doctest">
+      <option name="closed" value="true" />
+      <created>1733489188391</created>
+      <option name="number" value="00315" />
+      <option name="presentableId" value="LOCAL-00315" />
+      <option name="project" value="LOCAL" />
+      <updated>1733489188391</updated>
+    </task>
+    <task id="LOCAL-00316" summary="added DortmundVital to available datasets">
+      <option name="closed" value="true" />
+      <created>1733489205357</created>
+      <option name="number" value="00316" />
+      <option name="presentableId" value="LOCAL-00316" />
+      <option name="project" value="LOCAL" />
+      <updated>1733489205357</updated>
+    </task>
+    <task id="LOCAL-00317" summary="flake8 fix">
+      <option name="closed" value="true" />
+      <created>1733489264645</created>
+      <option name="number" value="00317" />
+      <option name="presentableId" value="LOCAL-00317" />
+      <option name="project" value="LOCAL" />
+      <updated>1733489264645</updated>
+    </task>
+    <task id="LOCAL-00318" summary="auto update">
+      <option name="closed" value="true" />
+      <created>1733489272067</created>
+      <option name="number" value="00318" />
+      <option name="presentableId" value="LOCAL-00318" />
+      <option name="project" value="LOCAL" />
+      <updated>1733489272067</updated>
+    </task>
+    <option name="localTasksCounter" value="319" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -718,10 +711,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="flake fix" />
-    <MESSAGE value="made deepnet available in config file" />
-    <MESSAGE value="added log transform of pseudo targets" />
-    <MESSAGE value="deleted deprecated script" />
     <MESSAGE value="fixed dimensions of deepnet with reduced depth" />
     <MESSAGE value="mypy fix for old python version" />
     <MESSAGE value="fixed type hint" />
@@ -734,7 +723,6 @@
     <MESSAGE value="added download script for Dortmund Vital dataset" />
     <MESSAGE value="changed download bash file to download dortmund vital" />
     <MESSAGE value="config file" />
-    <MESSAGE value="flake8 fix" />
     <MESSAGE value="ran tox" />
     <MESSAGE value="improvements" />
     <MESSAGE value="fix of commputing number of time steps" />
@@ -743,6 +731,11 @@
     <MESSAGE value="minor cosmetic" />
     <MESSAGE value="added script for data visualisation" />
     <MESSAGE value="added methods to DortmundVital dataset" />
-    <option name="LAST_COMMIT_MESSAGE" value="added methods to DortmundVital dataset" />
+    <MESSAGE value="added average referencing" />
+    <MESSAGE value="added doctest" />
+    <MESSAGE value="added DortmundVital to available datasets" />
+    <MESSAGE value="flake8 fix" />
+    <MESSAGE value="auto update" />
+    <option name="LAST_COMMIT_MESSAGE" value="auto update" />
   </component>
 </project>

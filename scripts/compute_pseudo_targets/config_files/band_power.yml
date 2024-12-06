@@ -31,3 +31,4 @@ FrequencyBands:
 AggregationMethod: median
 IgnoreExistingFolder: false
 AverageReference: true
+verbose: false
