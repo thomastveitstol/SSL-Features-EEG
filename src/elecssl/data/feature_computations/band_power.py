@@ -118,7 +118,7 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
 
             # Maybe run autoreject
             if autoreject is not None:
-                eeg = run_autoreject(**autoreject)
+                eeg = run_autoreject(eeg, **autoreject)
 
             # Set average reference
             if average_reference:
