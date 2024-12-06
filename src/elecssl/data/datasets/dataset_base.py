@@ -46,6 +46,7 @@ class OcularState(Enum):
     >>> OcularState.EC
     <OcularState.EC: 'EC'>
     """
+
     EC = "EC"
     EO = "EO"
 
