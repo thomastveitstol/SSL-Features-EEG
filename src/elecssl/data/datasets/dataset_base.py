@@ -38,8 +38,38 @@ class MNELoadingError(Exception):
 
 
 class OcularState(Enum):
+    """
+    Enum class for Ocular state
+
+    Examples
+    --------
+    >>> OcularState.EC
+    <OcularState.EC: 'EC'>
+    """
     EC = "EC"
     EO = "EO"
+
+    def to_pascal_case(self):
+        """
+        Method for converting to a string Pascal Case
+
+        Returns
+        -------
+        str
+
+        Examples
+        --------
+        >>> OcularState.EO.to_pascal_case()
+        'EyesOpen'
+        >>> OcularState.EC.to_pascal_case()
+        'EyesClosed'
+        """
+        if self == OcularState.EC:
+            return "EyesClosed"
+        elif self == OcularState.EO:
+            return "EyesOpen"
+        else:
+            raise ValueError(f"Invalid OcularState {self}")
 
 
 @dataclasses.dataclass(frozen=True)
