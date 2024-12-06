@@ -1,28 +1,40 @@
 """
-Script I made after notch filter failed for some subjects in the LEMON dataset. I was because the sampling frequency is
-not the same for all.
-
-However, it doesn't look like a notch filter is needed for LEMON
+Script for getting to know the data. Channel names and stuff
 """
 from matplotlib import pyplot
 
 from elecssl.data.datasets.dataset_base import OcularState
-from elecssl.data.datasets.lemon import LEMON
+from elecssl.data.datasets.dortmund_vital import DortmundVital
 
 
 def main():
-    # Select subject and load data
-    sub_id = LEMON().get_subject_ids()[167]
-    eeg = LEMON().load_single_mne_object(subject_id=sub_id, ocular_state=OcularState.EC, interpolation_method="MNE")
+    # -------------
+    # Choices
+    # -------------
+    subject = 4
+    ocular_state = OcularState.EC
+    acquisition = "pre"
+    session = 1
 
-    # Apply notch filter
-    print(eeg.info["sfreq"])
-    # eeg.notch_filter(50)
-    eeg.resample(250)
+    preload = True
 
+    subject_id = DortmundVital().get_subject_ids()[subject]
+
+    # -------------
+    # Get data
+    # -------------
+    raw = DortmundVital().load_single_mne_object(
+        subject_id=subject_id, ocular_state=ocular_state, session=session, acquisition=acquisition, preload=preload
+    )
+
+    raw.filter(1, 45, verbose=False)
+    raw.notch_filter(50, verbose=False)
+
+    # -------------
     # Plot
-    eeg.plot()
-    eeg.compute_psd().plot()
+    # -------------
+    raw.plot()
+    raw.compute_psd(verbose=False).plot()
 
     pyplot.show()
 
