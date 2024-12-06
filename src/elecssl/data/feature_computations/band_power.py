@@ -121,7 +121,6 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
         for subject in progressbar(info.subjects, prefix=f"{type(info.dataset).__name__} ", redirect_stdout=True):
             # Load the EEG
             try:
-                print(subject)
                 eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
             except MNELoadingError:
                 continue

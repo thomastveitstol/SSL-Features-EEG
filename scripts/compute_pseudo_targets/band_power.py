@@ -3,7 +3,6 @@ from datetime import date, datetime
 from typing import List, Any, Dict
 
 import yaml
-from python_utils.time import epoch
 
 from elecssl.data.datasets.dataset_base import OcularState, DatasetInfo
 from elecssl.data.datasets.getter import get_dataset
