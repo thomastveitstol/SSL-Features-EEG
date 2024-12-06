@@ -14,15 +14,15 @@ def main():
     # -------------
     # Choices
     # -------------
-    subject = "sub-001"
-    ocular_state = OcularState.EO
+    subject = 1
+    ocular_state = OcularState.EC
     acquisition = "pre"
     session = 1
 
     duration = 4
     use_epochs = True
     autoreject_resample = None
-    apply_autoreject = True
+    apply_autoreject = False
 
     preload = True
 
@@ -40,19 +40,22 @@ def main():
     eeg.filter(1, 45, verbose=False)
     eeg.notch_filter(50, verbose=False)
 
+    # Crop
+    eeg.crop(30, eeg.n_times / eeg.info["sfreq"] - 20)
+
     if use_epochs:
         eeg = make_fixed_length_epochs(raw=eeg, duration=duration, preload=True, verbose=False)
 
         if apply_autoreject:
-            print("Applying autoreject...")
-            print(type(eeg), autoreject)
             eeg = run_autoreject(eeg, autoreject_resample=autoreject_resample, seed=42, default_num_splits=10)
 
     # -------------
     # Plot
     # -------------
     eeg.plot()
-    eeg.compute_psd(verbose=False).plot(verbose=False)
+    psd = eeg.compute_psd(verbose=False)
+    print(psd.get_data().shape)
+    psd.plot()
 
     pyplot.show()
 

@@ -32,6 +32,9 @@ AggregationMethod: median
 IgnoreExistingFolder: false
 AverageReference: true
 verbose: false
+Crop:
+  tmin: 30
+  cut: 20
 Epochs:
   duration: 4
   preload: true

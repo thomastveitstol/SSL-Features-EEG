@@ -38,7 +38,7 @@ def _single_ocular_state(config):
     band_powers = compute_band_powers(
         datasets=tuple(datasets), frequency_bands=config["FrequencyBands"], verbose=config["verbose"],
         aggregation_method=config["AggregationMethod"], average_reference=config["AverageReference"],
-        autoreject=config["Autoreject"], epochs=config["Epochs"]
+        autoreject=config["Autoreject"], epochs=config["Epochs"], crop=config["Crop"]
     )
 
     # ---------------

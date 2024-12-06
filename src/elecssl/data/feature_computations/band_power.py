@@ -5,6 +5,7 @@ import numpy
 import pandas
 from progressbar import progressbar
 from scipy import integrate
+from sqlalchemy.util import NONE_SET
 
 from elecssl.data.data_preparation.data_prep_base import run_autoreject
 from elecssl.data.datasets.dataset_base import MNELoadingError
@@ -31,6 +32,10 @@ def _compute_band_power_from_psd(psd, f_min, f_max, aggregation_method):
     # Integrate between the desired range
     freqs = psd.freqs[(f_min < psd.freqs) & (psd.freqs < f_max)]
     psd_data = numpy.array(psd.get_data())[..., (f_min < psd.freqs) & (psd.freqs < f_max)]
+
+    # Maybe average across epochs
+    if psd_data.ndim == 3:
+        psd_data = numpy.mean(psd_data, axis=0)
 
     # The Simpson integration actually returns a numpy array, looks like scipy hasn't updated their type
     # hinting
@@ -83,7 +88,8 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method, verbose):
 # -------------------
 # Computations made on dataset level
 # -------------------
-def compute_band_powers(datasets, frequency_bands, aggregation_method, average_reference, verbose, autoreject, epochs):
+def compute_band_powers(datasets, frequency_bands, aggregation_method, average_reference, verbose, autoreject, epochs,
+                        crop):
     """
     Function for computing band powers of entire datasets
 
@@ -96,6 +102,7 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
     verbose : bool
     autoreject : dict[str, Any] | None
     epochs : dict[str, Any] | None
+    crop : dict[str, Any] | None
 
     Returns
     -------
@@ -119,6 +126,10 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
                 eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
             except MNELoadingError:
                 continue
+
+            # Maybe crop
+            if crop is not None:
+                eeg.crop(tmin=crop["tmin"], tmax=eeg.n_times / eeg.info["sfreq"] - crop["tmax"], verbose=False)
 
             # Maybe epoch
             if epochs is not None:
