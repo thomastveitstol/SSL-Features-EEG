@@ -1,37 +1,37 @@
-Autoreject: null
+Autoreject:
+  seed: 1
+  default_num_splits: 10
+  autoreject_resample: 180
 OcularStates:
   EC:
     Datasets:
-      AIMind:
+      DortmundVital: &DortmundVital
         num_subjects: all
         kwargs:
-          set_name: "1-continuous"
-          visit: 1
-          recording: 2
           derivatives: false
+          session: 1
+          acquisition: pre
   EO:
     Datasets:
-      AIMind:
-        num_subjects: all
-        kwargs:
-          set_name: "1-continuous"
-          visit: 1
-          recording: 1
-          derivatives: false
+      DortmundVital: *DortmundVital
 Details:
   num_epochs: 3
   epoch_overlap: 0
-  resample_multiples: [ 2, 3 ]
-  input_length: [ 5 ]
+  resample_multiples: [ 2, 3, 4 ]
+  input_length: [ 5, 10, 20 ]
 FrequencyBands:
+  delta: [ 1, 4 ]
+  theta: [ 4, 8 ]
   alpha: [ 8, 12 ]
   beta: [ 12, 30 ]
+  gamma: [ 30, 45 ]
+  all: [ 1, 45 ]
 _SharedSteps: &_SharedSteps
   excluded_channels: null
   time_series_start_secs: 30
   band_pass: null
   notch_filter: null
 InitialPreprocessing:
-  AIMind:
+  DortmundVital:
     <<: *_SharedSteps
 IgnoreExistingFolder: true

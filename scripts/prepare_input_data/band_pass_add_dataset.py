@@ -40,7 +40,7 @@ def main():
     # Read config file
     # ---------------
     # todo: unnecessary with a new script just for a new config file...
-    with open(os.path.join(os.path.dirname(__file__), "config_files", "band_pass_ai_mind.yml")) as file:
+    with open(os.path.join(os.path.dirname(__file__), "config_files", "band_pass_add_dataset.yml")) as file:
         config: Dict[str, Any] = yaml.safe_load(file)
 
     # ---------------

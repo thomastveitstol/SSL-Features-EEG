@@ -2,18 +2,18 @@ OcularStates:
   EC:
     Datasets:
       DortmundVital: &DortmundVital
-        num_subjects: 3
+        num_subjects: all
         kwargs:
           derivatives: false
           session: 1
           acquisition: pre
       LEMON: &LEMON
-        num_subjects: 3
+        num_subjects: all
         kwargs:
           derivatives: false
           interpolation_method: MNE
       Wang: &Wang
-        num_subjects: 3
+        num_subjects: all
         kwargs:
           visit: 1
           derivatives: true
