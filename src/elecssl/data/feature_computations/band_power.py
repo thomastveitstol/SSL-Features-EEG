@@ -5,7 +5,6 @@ import numpy
 import pandas
 from progressbar import progressbar
 from scipy import integrate
-from sqlalchemy.util import NONE_SET
 
 from elecssl.data.data_preparation.data_prep_base import run_autoreject
 from elecssl.data.datasets.dataset_base import MNELoadingError
