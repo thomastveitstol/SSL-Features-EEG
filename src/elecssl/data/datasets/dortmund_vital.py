@@ -19,6 +19,11 @@ class DortmundVital(EEGDatasetBase):
         Edmund Wascher and Daniel Schneider and Patrick D. Gajewski and Stephan Getzmann (2024). Resting-state EEG data
         before and after cognitive activity across the adult lifespan and a 5-year follow-up. OpenNeuro. [Dataset]
         doi: doi:10.18112/openneuro.ds005385.v1.0.2
+
+    Examples
+    --------
+    >>> DortmundVital().num_channels
+    64
     """
 
     __slots__ = ()
