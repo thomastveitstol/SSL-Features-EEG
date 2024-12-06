@@ -32,3 +32,7 @@ AggregationMethod: median
 IgnoreExistingFolder: false
 AverageReference: true
 verbose: false
+Autoreject:
+  seed: 42
+  default_num_splits: 10
+  autoreject_resample: 180

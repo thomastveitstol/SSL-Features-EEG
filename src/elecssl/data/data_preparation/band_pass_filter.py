@@ -3,21 +3,12 @@ import os
 from datetime import date, datetime
 from pathlib import Path
 
-import autoreject
 import mne
 import numpy
 import yaml  # type: ignore[import-untyped]
 from matplotlib import pyplot
 
-from elecssl.data.data_preparation.data_prep_base import TransformationBase, InsufficientNumEpochsError
-
-
-def _run_autoreject(epochs, *, autoreject_resample, seed, default_num_splits):
-    """Function for running autoreject. Operates in-place"""
-    if autoreject_resample is not None:
-        epochs.resample(autoreject_resample, verbose=False)
-    reject = autoreject.AutoReject(verbose=False, random_state=seed, cv=min(default_num_splits, len(epochs)))
-    return reject.fit_transform(epochs, return_log=False)
+from elecssl.data.data_preparation.data_prep_base import TransformationBase, InsufficientNumEpochsError, run_autoreject
 
 
 class BandPass(TransformationBase):
@@ -138,7 +129,7 @@ class BandPass(TransformationBase):
 
         # Run autoreject
         if config["Autoreject"] is not None:
-            autoreject_epochs = _run_autoreject(epochs.copy(), **config["Autoreject"])
+            autoreject_epochs = run_autoreject(epochs.copy(), **config["Autoreject"])
         else:
             autoreject_epochs = None
 

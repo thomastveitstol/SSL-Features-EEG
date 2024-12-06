@@ -1,6 +1,7 @@
 import abc
 from typing import Any, Dict, Tuple
 
+import autoreject
 from progressbar import progressbar
 
 from elecssl.data.datasets.dataset_base import MNELoadingError, DatasetInfo
@@ -98,3 +99,14 @@ class TransformationBase(abc.ABC):
     @abc.abstractmethod
     def _create_folders(self, config):
         """Method for creating all expected folders"""
+
+
+# ------------
+# Functions
+# ------------
+def run_autoreject(epochs, *, autoreject_resample, seed, default_num_splits):
+    """Function for running autoreject. Operates in-place"""
+    if autoreject_resample is not None:
+        epochs.resample(autoreject_resample, verbose=False)
+    reject = autoreject.AutoReject(verbose=False, random_state=seed, cv=min(default_num_splits, len(epochs)))
+    return reject.fit_transform(epochs, return_log=False)

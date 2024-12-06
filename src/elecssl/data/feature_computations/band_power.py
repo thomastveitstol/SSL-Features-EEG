@@ -5,6 +5,7 @@ import pandas
 from progressbar import progressbar
 from scipy import integrate
 
+from elecssl.data.data_preparation.data_prep_base import run_autoreject
 from elecssl.data.datasets.dataset_base import MNELoadingError
 
 
@@ -81,7 +82,7 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method, verbose):
 # -------------------
 # Computations made on dataset level
 # -------------------
-def compute_band_powers(datasets, frequency_bands, aggregation_method, average_reference, verbose):
+def compute_band_powers(datasets, frequency_bands, aggregation_method, average_reference, verbose, autoreject):
     """
     Function for computing band powers of entire datasets
 
@@ -115,9 +116,15 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
             except MNELoadingError:
                 continue
 
-            # Compute power for all frequency bands of interest
+            # Maybe run autoreject
+            if autoreject is not None:
+                eeg = run_autoreject(**autoreject)
+
+            # Set average reference
             if average_reference:
                 eeg.set_eeg_reference(ref_channels="average", verbose=False)
+
+            # Compute power for all frequency bands of interest
             power = _compute_band_power(eeg=eeg, frequency_bands=frequency_bands, verbose=verbose,
                                         aggregation_method=aggregation_method)
 

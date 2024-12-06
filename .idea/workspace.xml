@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="auto update" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="using all subjects">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/visualise_data/plot_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/visualise_data/plot_power.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/data_preparation/band_pass_filter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/data_preparation/band_pass_filter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/data_preparation/data_prep_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/data_preparation/data_prep_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -176,7 +184,7 @@
       <recent name="$PROJECT_DIR$/scripts/debugging" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctests in DortmundVital">
+  <component name="RunManager" selected="Python.plot_eeg_data">
     <configuration name="dortmund_vital (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -213,6 +221,28 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="plot_power" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/visualise_data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/visualise_data/plot_power.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -259,32 +289,13 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in OcularState" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/dataset_base.py" />
-      <option name="CLASS_NAME" value="OcularState" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_CLASS" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Doctests in DortmundVital" />
         <item itemvalue="Python.plot_eeg_data" />
+        <item itemvalue="Python.plot_power" />
+        <item itemvalue="Python tests.Doctests in DortmundVital" />
         <item itemvalue="Python.dortmund_vital (1)" />
         <item itemvalue="Python tests.Doctest OcularState.to_pascal_case" />
-        <item itemvalue="Python tests.Doctests in OcularState" />
       </list>
     </recent_temporary>
   </component>
@@ -303,22 +314,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00270" summary="fixes for changing DL architecture if an expected error is raised in __init__">
-      <option name="closed" value="true" />
-      <created>1729515370730</created>
-      <option name="number" value="00270" />
-      <option name="presentableId" value="LOCAL-00270" />
-      <option name="project" value="LOCAL" />
-      <updated>1729515370730</updated>
-    </task>
-    <task id="LOCAL-00271" summary="fixes for changing DL architecture if an expected error is raised in __init__">
-      <option name="closed" value="true" />
-      <created>1729515433743</created>
-      <option name="number" value="00271" />
-      <option name="presentableId" value="LOCAL-00271" />
-      <option name="project" value="LOCAL" />
-      <updated>1729515433743</updated>
     </task>
     <task id="LOCAL-00272" summary="flake8 fix">
       <option name="closed" value="true" />
@@ -696,7 +691,23 @@
       <option name="project" value="LOCAL" />
       <updated>1733489272067</updated>
     </task>
-    <option name="localTasksCounter" value="319" />
+    <task id="LOCAL-00319" summary="keyfix">
+      <option name="closed" value="true" />
+      <created>1733489407317</created>
+      <option name="number" value="00319" />
+      <option name="presentableId" value="LOCAL-00319" />
+      <option name="project" value="LOCAL" />
+      <updated>1733489407317</updated>
+    </task>
+    <task id="LOCAL-00320" summary="using all subjects">
+      <option name="closed" value="true" />
+      <created>1733489490825</created>
+      <option name="number" value="00320" />
+      <option name="presentableId" value="LOCAL-00320" />
+      <option name="project" value="LOCAL" />
+      <updated>1733489490825</updated>
+    </task>
+    <option name="localTasksCounter" value="321" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -711,8 +722,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed dimensions of deepnet with reduced depth" />
-    <MESSAGE value="mypy fix for old python version" />
     <MESSAGE value="fixed type hint" />
     <MESSAGE value="fixes for fitting CentroidPolygon montage split on multiple channel systems" />
     <MESSAGE value="updates for fitting CentroidPolygon montage split on multiple channel systems" />
@@ -736,6 +745,8 @@
     <MESSAGE value="added DortmundVital to available datasets" />
     <MESSAGE value="flake8 fix" />
     <MESSAGE value="auto update" />
-    <option name="LAST_COMMIT_MESSAGE" value="auto update" />
+    <MESSAGE value="keyfix" />
+    <MESSAGE value="using all subjects" />
+    <option name="LAST_COMMIT_MESSAGE" value="using all subjects" />
   </component>
 </project>
