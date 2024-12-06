@@ -41,6 +41,6 @@ Epochs:
   overlap: 0
   verbose: false
 Autoreject:
-  seed: 42
+  seed: 1
   default_num_splits: 10
   autoreject_resample: 180
