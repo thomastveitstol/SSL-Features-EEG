@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="flake8 fix" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added methods to DortmundVital dataset">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/dortmund_vital.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/dortmund_vital.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/getter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/getter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -52,6 +59,7 @@
     "Python tests.Doctest Histories._build_error_and_info_objects.executor": "Run",
     "Python tests.Doctest Histories.mean.executor": "Run",
     "Python tests.Doctest Histories.pairwise_mean_difference.executor": "Run",
+    "Python tests.Doctest OcularState.to_pascal_case.executor": "Run",
     "Python tests.Doctest PolygonGraph.line_intersection.executor": "Run",
     "Python tests.Doctest ShallowFBCSPNetMTS.forward.executor": "Run",
     "Python tests.Doctest Wang._load_single_cleaned_mne_object.executor": "Run",
@@ -75,6 +83,7 @@
     "Python tests.Doctests in Deep4NetMTS (1).executor": "Run",
     "Python tests.Doctests in Deep4NetMTS (2).executor": "Run",
     "Python tests.Doctests in Deep4NetMTS.executor": "Run",
+    "Python tests.Doctests in DortmundVital.executor": "Run",
     "Python tests.Doctests in FCModule.executor": "Run",
     "Python tests.Doctests in KFoldDataSplit.executor": "Run",
     "Python tests.Doctests in KeepDatasetOutRandomSplits.executor": "Run",
@@ -94,6 +103,7 @@
     "Python tests.Doctests in Miltiadous.executor": "Run",
     "Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor": "Run",
     "Python tests.Doctests in MultiMSMean.executor": "Run",
+    "Python tests.Doctests in OcularState.executor": "Run",
     "Python tests.Doctests in RandomSplitsTV.executor": "Run",
     "Python tests.Doctests in SRM (1).executor": "Run",
     "Python tests.Doctests in SRM.executor": "Run",
@@ -138,6 +148,8 @@
     "Python.centroid_polygon.executor": "Run",
     "Python.debugging_lemon.executor": "Run",
     "Python.debugging_td_brain.executor": "Run",
+    "Python.dortmund_vital (1).executor": "Run",
+    "Python.dortmund_vital.executor": "Run",
     "Python.elecssl_experiments.executor": "Run",
     "Python.elecssl_hpo.executor": "Run",
     "Python.group_differences.executor": "Run",
@@ -161,15 +173,18 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts/dataset_downloads" />
       <recent name="$PROJECT_DIR$/scripts/compute_pseudo_targets" />
       <recent name="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files" />
       <recent name="$PROJECT_DIR$/scripts/prepare_input_data/config_files" />
       <recent name="$PROJECT_DIR$/tests" />
-      <recent name="$PROJECT_DIR$/src/elecssl/models/region_based_pooling" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts/debugging" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.centroid_polygon">
-    <configuration name="centroid_polygon" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.Doctests in DortmundVital">
+    <configuration name="dortmund_vital (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -178,11 +193,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits/centroid_polygon.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/dortmund_vital.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -191,7 +206,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="elecssl_hpo" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="plot_eeg_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -200,11 +215,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/model_training" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/visualise_data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/model_training/elecssl_hpo.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -213,18 +228,37 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in _ChannelName (1)" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctest OcularState.to_pascal_case" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits/centroid_polygon.py" />
-      <option name="CLASS_NAME" value="_ChannelName" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/dataset_base.py" />
+      <option name="CLASS_NAME" value="OcularState" />
+      <option name="METHOD_NAME" value="to_pascal_case" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctests in DortmundVital" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/dortmund_vital.py" />
+      <option name="CLASS_NAME" value="DortmundVital" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
       <option name="TEST_TYPE" value="TEST_CLASS" />
@@ -232,58 +266,39 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in _ChannelName" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in OcularState" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/region_based_pooling/montage_splits/centroid_polygon.py" />
-      <option name="CLASS_NAME" value="_ChannelName" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/dataset_base.py" />
+      <option name="CLASS_NAME" value="OcularState" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
       <option name="TEST_TYPE" value="TEST_CLASS" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Doctests in braindecode_models" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/mts_modules/braindecode_models.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.centroid_polygon" />
-        <item itemvalue="Python.elecssl_hpo" />
-        <item itemvalue="Python tests.Doctests in _ChannelName" />
-        <item itemvalue="Python tests.Doctests in _ChannelName (1)" />
-        <item itemvalue="Python tests.Doctests in braindecode_models" />
+        <item itemvalue="Python tests.Doctests in DortmundVital" />
+        <item itemvalue="Python.plot_eeg_data" />
+        <item itemvalue="Python.dortmund_vital (1)" />
+        <item itemvalue="Python tests.Doctest OcularState.to_pascal_case" />
+        <item itemvalue="Python tests.Doctests in OcularState" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-98f27166c754-ba05f1cad1b1-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.21829.153" />
+        <option value="bundled-python-sdk-d7ad00fb9fc3-c546a90a8094-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.23726.102" />
       </set>
     </attachedChunks>
   </component>
@@ -295,126 +310,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00250" summary="fixes to not tracking error associations and made new warning class">
-      <option name="closed" value="true" />
-      <created>1729257431638</created>
-      <option name="number" value="00250" />
-      <option name="presentableId" value="LOCAL-00250" />
-      <option name="project" value="LOCAL" />
-      <updated>1729257431638</updated>
-    </task>
-    <task id="LOCAL-00251" summary="improved pythonicness">
-      <option name="closed" value="true" />
-      <created>1729257467541</created>
-      <option name="number" value="00251" />
-      <option name="presentableId" value="LOCAL-00251" />
-      <option name="project" value="LOCAL" />
-      <updated>1729257467541</updated>
-    </task>
-    <task id="LOCAL-00252" summary="removed making unnecessary directories">
-      <option name="closed" value="true" />
-      <created>1729257529373</created>
-      <option name="number" value="00252" />
-      <option name="presentableId" value="LOCAL-00252" />
-      <option name="project" value="LOCAL" />
-      <updated>1729257529373</updated>
-    </task>
-    <task id="LOCAL-00253" summary="improvement to handling subjects info when no info is desired">
-      <option name="closed" value="true" />
-      <created>1729257676215</created>
-      <option name="number" value="00253" />
-      <option name="presentableId" value="LOCAL-00253" />
-      <option name="project" value="LOCAL" />
-      <updated>1729257676215</updated>
-    </task>
-    <task id="LOCAL-00254" summary="turned off tracking of error associations">
-      <option name="closed" value="true" />
-      <created>1729257788852</created>
-      <option name="number" value="00254" />
-      <option name="presentableId" value="LOCAL-00254" />
-      <option name="project" value="LOCAL" />
-      <updated>1729257788852</updated>
-    </task>
-    <task id="LOCAL-00255" summary="muted PlotNotSavedWarning warnings">
-      <option name="closed" value="true" />
-      <created>1729258147397</created>
-      <option name="number" value="00255" />
-      <option name="presentableId" value="LOCAL-00255" />
-      <option name="project" value="LOCAL" />
-      <updated>1729258147397</updated>
-    </task>
-    <task id="LOCAL-00256" summary="added property">
-      <option name="closed" value="true" />
-      <created>1729258581119</created>
-      <option name="number" value="00256" />
-      <option name="presentableId" value="LOCAL-00256" />
-      <option name="project" value="LOCAL" />
-      <updated>1729258581119</updated>
-    </task>
-    <task id="LOCAL-00257" summary="fixed making unnecessary folder">
-      <option name="closed" value="true" />
-      <created>1729258617056</created>
-      <option name="number" value="00257" />
-      <option name="presentableId" value="LOCAL-00257" />
-      <option name="project" value="LOCAL" />
-      <updated>1729258617056</updated>
-    </task>
-    <task id="LOCAL-00258" summary="added doctest">
-      <option name="closed" value="true" />
-      <created>1729261191088</created>
-      <option name="number" value="00258" />
-      <option name="presentableId" value="LOCAL-00258" />
-      <option name="project" value="LOCAL" />
-      <updated>1729261191088</updated>
-    </task>
-    <task id="LOCAL-00259" summary="config file">
-      <option name="closed" value="true" />
-      <created>1729261237026</created>
-      <option name="number" value="00259" />
-      <option name="presentableId" value="LOCAL-00259" />
-      <option name="project" value="LOCAL" />
-      <updated>1729261237026</updated>
-    </task>
-    <task id="LOCAL-00260" summary="fixed HP distribution">
-      <option name="closed" value="true" />
-      <created>1729261246811</created>
-      <option name="number" value="00260" />
-      <option name="presentableId" value="LOCAL-00260" />
-      <option name="project" value="LOCAL" />
-      <updated>1729261246811</updated>
-    </task>
-    <task id="LOCAL-00261" summary="changed HPO metric to optimise">
-      <option name="closed" value="true" />
-      <created>1729262282280</created>
-      <option name="number" value="00261" />
-      <option name="presentableId" value="LOCAL-00261" />
-      <option name="project" value="LOCAL" />
-      <updated>1729262282280</updated>
-    </task>
-    <task id="LOCAL-00262" summary="added plot script">
-      <option name="closed" value="true" />
-      <created>1729500908943</created>
-      <option name="number" value="00262" />
-      <option name="presentableId" value="LOCAL-00262" />
-      <option name="project" value="LOCAL" />
-      <updated>1729500908943</updated>
-    </task>
-    <task id="LOCAL-00263" summary="added target scaler">
-      <option name="closed" value="true" />
-      <created>1729505450659</created>
-      <option name="number" value="00263" />
-      <option name="presentableId" value="LOCAL-00263" />
-      <option name="project" value="LOCAL" />
-      <updated>1729505450659</updated>
-    </task>
-    <task id="LOCAL-00264" summary="changed target scaler in configuration file">
-      <option name="closed" value="true" />
-      <created>1729505760100</created>
-      <option name="number" value="00264" />
-      <option name="presentableId" value="LOCAL-00264" />
-      <option name="project" value="LOCAL" />
-      <updated>1729505760100</updated>
     </task>
     <task id="LOCAL-00265" summary="minor cosmetic">
       <option name="closed" value="true" />
@@ -688,7 +583,127 @@
       <option name="project" value="LOCAL" />
       <updated>1729682550341</updated>
     </task>
-    <option name="localTasksCounter" value="299" />
+    <task id="LOCAL-00299" summary="fixes for not using test data while debugging">
+      <option name="closed" value="true" />
+      <created>1729843388675</created>
+      <option name="number" value="00299" />
+      <option name="presentableId" value="LOCAL-00299" />
+      <option name="project" value="LOCAL" />
+      <updated>1729843388675</updated>
+    </task>
+    <task id="LOCAL-00300" summary="config file">
+      <option name="closed" value="true" />
+      <created>1729844955932</created>
+      <option name="number" value="00300" />
+      <option name="presentableId" value="LOCAL-00300" />
+      <option name="project" value="LOCAL" />
+      <updated>1729844955932</updated>
+    </task>
+    <task id="LOCAL-00301" summary="started on new dataset class">
+      <option name="closed" value="true" />
+      <created>1729844964267</created>
+      <option name="number" value="00301" />
+      <option name="presentableId" value="LOCAL-00301" />
+      <option name="project" value="LOCAL" />
+      <updated>1729844964267</updated>
+    </task>
+    <task id="LOCAL-00302" summary="added download script for Dortmund Vital dataset">
+      <option name="closed" value="true" />
+      <created>1729845150398</created>
+      <option name="number" value="00302" />
+      <option name="presentableId" value="LOCAL-00302" />
+      <option name="project" value="LOCAL" />
+      <updated>1729845150398</updated>
+    </task>
+    <task id="LOCAL-00303" summary="changed download bash file to download dortmund vital">
+      <option name="closed" value="true" />
+      <created>1729845205055</created>
+      <option name="number" value="00303" />
+      <option name="presentableId" value="LOCAL-00303" />
+      <option name="project" value="LOCAL" />
+      <updated>1729845205055</updated>
+    </task>
+    <task id="LOCAL-00304" summary="config file">
+      <option name="closed" value="true" />
+      <created>1729852445089</created>
+      <option name="number" value="00304" />
+      <option name="presentableId" value="LOCAL-00304" />
+      <option name="project" value="LOCAL" />
+      <updated>1729852445089</updated>
+    </task>
+    <task id="LOCAL-00305" summary="flake8 fix">
+      <option name="closed" value="true" />
+      <created>1729852515265</created>
+      <option name="number" value="00305" />
+      <option name="presentableId" value="LOCAL-00305" />
+      <option name="project" value="LOCAL" />
+      <updated>1729852515265</updated>
+    </task>
+    <task id="LOCAL-00306" summary="ran tox">
+      <option name="closed" value="true" />
+      <created>1729852528846</created>
+      <option name="number" value="00306" />
+      <option name="presentableId" value="LOCAL-00306" />
+      <option name="project" value="LOCAL" />
+      <updated>1729852528846</updated>
+    </task>
+    <task id="LOCAL-00307" summary="improvements">
+      <option name="closed" value="true" />
+      <created>1729856158207</created>
+      <option name="number" value="00307" />
+      <option name="presentableId" value="LOCAL-00307" />
+      <option name="project" value="LOCAL" />
+      <updated>1729856158207</updated>
+    </task>
+    <task id="LOCAL-00308" summary="fix of commputing number of time steps">
+      <option name="closed" value="true" />
+      <created>1729856494067</created>
+      <option name="number" value="00308" />
+      <option name="presentableId" value="LOCAL-00308" />
+      <option name="project" value="LOCAL" />
+      <updated>1729856494068</updated>
+    </task>
+    <task id="LOCAL-00309" summary="minor refactoring">
+      <option name="closed" value="true" />
+      <created>1733484650798</created>
+      <option name="number" value="00309" />
+      <option name="presentableId" value="LOCAL-00309" />
+      <option name="project" value="LOCAL" />
+      <updated>1733484650799</updated>
+    </task>
+    <task id="LOCAL-00310" summary="added method to enum class">
+      <option name="closed" value="true" />
+      <created>1733485216135</created>
+      <option name="number" value="00310" />
+      <option name="presentableId" value="LOCAL-00310" />
+      <option name="project" value="LOCAL" />
+      <updated>1733485216135</updated>
+    </task>
+    <task id="LOCAL-00311" summary="minor cosmetic">
+      <option name="closed" value="true" />
+      <created>1733485238307</created>
+      <option name="number" value="00311" />
+      <option name="presentableId" value="LOCAL-00311" />
+      <option name="project" value="LOCAL" />
+      <updated>1733485238307</updated>
+    </task>
+    <task id="LOCAL-00312" summary="added script for data visualisation">
+      <option name="closed" value="true" />
+      <created>1733486916086</created>
+      <option name="number" value="00312" />
+      <option name="presentableId" value="LOCAL-00312" />
+      <option name="project" value="LOCAL" />
+      <updated>1733486916086</updated>
+    </task>
+    <task id="LOCAL-00313" summary="added methods to DortmundVital dataset">
+      <option name="closed" value="true" />
+      <created>1733486979589</created>
+      <option name="number" value="00313" />
+      <option name="presentableId" value="LOCAL-00313" />
+      <option name="project" value="LOCAL" />
+      <updated>1733486979589</updated>
+    </task>
+    <option name="localTasksCounter" value="314" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -703,19 +718,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="update for incompatible HPC suggestions in Shallownet" />
-    <MESSAGE value="updated code for newest updates" />
-    <MESSAGE value="improved variable name and type hint" />
-    <MESSAGE value="optimised imports and muted mypy for yaml import" />
-    <MESSAGE value="fix for hyperparameter fix" />
-    <MESSAGE value="optimised imports" />
-    <MESSAGE value="fixed computing number of time steps" />
-    <MESSAGE value="fixed type of HP suggestion" />
-    <MESSAGE value="removed debugging code" />
-    <MESSAGE value="fixed comment" />
-    <MESSAGE value="config files" />
-    <MESSAGE value="changes for adapting depth of deepnet if init fail" />
-    <MESSAGE value="changed staticmethod to classmethod" />
     <MESSAGE value="flake fix" />
     <MESSAGE value="made deepnet available in config file" />
     <MESSAGE value="added log transform of pseudo targets" />
@@ -727,7 +729,20 @@
     <MESSAGE value="updates for fitting CentroidPolygon montage split on multiple channel systems" />
     <MESSAGE value="changes to config file" />
     <MESSAGE value="changes to config files" />
+    <MESSAGE value="fixes for not using test data while debugging" />
+    <MESSAGE value="started on new dataset class" />
+    <MESSAGE value="added download script for Dortmund Vital dataset" />
+    <MESSAGE value="changed download bash file to download dortmund vital" />
+    <MESSAGE value="config file" />
     <MESSAGE value="flake8 fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="flake8 fix" />
+    <MESSAGE value="ran tox" />
+    <MESSAGE value="improvements" />
+    <MESSAGE value="fix of commputing number of time steps" />
+    <MESSAGE value="minor refactoring" />
+    <MESSAGE value="added method to enum class" />
+    <MESSAGE value="minor cosmetic" />
+    <MESSAGE value="added script for data visualisation" />
+    <MESSAGE value="added methods to DortmundVital dataset" />
+    <option name="LAST_COMMIT_MESSAGE" value="added methods to DortmundVital dataset" />
   </component>
 </project>
