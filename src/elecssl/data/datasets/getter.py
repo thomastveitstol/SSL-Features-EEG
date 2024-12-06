@@ -2,6 +2,7 @@ from typing import Type, Tuple
 
 from elecssl.data.datasets.ai_mind import AIMind
 from elecssl.data.datasets.dataset_base import EEGDatasetBase
+from elecssl.data.datasets.dortmund_vital import DortmundVital
 from elecssl.data.datasets.lemon import LEMON
 from elecssl.data.datasets.miltiadous import Miltiadous
 from elecssl.data.datasets.srm import SRM
@@ -25,7 +26,8 @@ def get_dataset(dataset_name, **kwargs):
     EEGDatasetBase
     """
     # All available datasets must be included here
-    available_datasets: Tuple[Type[EEGDatasetBase], ...] = (SRM, Miltiadous, Wang, LEMON, TDBRAIN, AIMind)
+    available_datasets: Tuple[Type[EEGDatasetBase], ...] = (SRM, Miltiadous, Wang, LEMON, TDBRAIN, AIMind,
+                                                            DortmundVital)
 
     # Loop through and select the correct one
     for dataset in available_datasets:
