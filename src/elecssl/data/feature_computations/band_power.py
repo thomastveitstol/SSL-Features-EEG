@@ -129,7 +129,7 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
 
             # Maybe crop
             if crop is not None:
-                eeg.crop(tmin=crop["tmin"], tmax=eeg.n_times / eeg.info["sfreq"] - crop["tmax"], verbose=False)
+                eeg.crop(tmin=crop["tmin"], tmax=eeg.n_times / eeg.info["sfreq"] - crop["cut"], verbose=False)
 
             # Maybe epoch
             if epochs is not None:
