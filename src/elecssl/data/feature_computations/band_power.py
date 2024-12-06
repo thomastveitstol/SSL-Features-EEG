@@ -50,7 +50,7 @@ def _compute_band_power_from_psd(psd, f_min, f_max, aggregation_method):
     return agg(power) * 10**12
 
 
-def _compute_band_power(eeg, frequency_bands, aggregation_method):
+def _compute_band_power(eeg, frequency_bands, aggregation_method, verbose):
     """
     Function for computing band power for multiple frequency bands, for a single EEG
 
@@ -65,7 +65,7 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method):
     dict[str, float]
     """
     # Compute PSD
-    psd = eeg.compute_psd()
+    psd = eeg.compute_psd(verbose=verbose)
 
     # Compute power of bands
     power: Dict[str, float] = dict()
@@ -81,7 +81,7 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method):
 # -------------------
 # Computations made on dataset level
 # -------------------
-def compute_band_powers(datasets, frequency_bands, aggregation_method):
+def compute_band_powers(datasets, frequency_bands, aggregation_method, average_reference, verbose):
     """
     Function for computing band powers of entire datasets
 
@@ -90,11 +90,17 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method):
     datasets : tuple[DatasetInfo, ...]
     frequency_bands : dict[str, tuple[float, float]]
     aggregation_method : str
+    average_reference : bool
+    verbose : bool
 
     Returns
     -------
     pandas.DataFrame
     """
+    # Quick input check
+    if not isinstance(average_reference, bool):
+        raise TypeError(f"Expected 'average_reference' to be bool, but found {type(average_reference)}")
+
     # Initialise what will eventually be converted to a pandas DataFrame
     _f_bands = {band_name: [] for band_name in frequency_bands}  # type: ignore[var-annotated]
     results: Dict[str, List[Any]] = {"Dataset": [], "Subject-ID": [], **_f_bands}
@@ -110,7 +116,10 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method):
                 continue
 
             # Compute power for all frequency bands of interest
-            power = _compute_band_power(eeg=eeg, frequency_bands=frequency_bands, aggregation_method=aggregation_method)
+            if average_reference:
+                eeg.set_eeg_reference(ref_channels="average", verbose=False)
+            power = _compute_band_power(eeg=eeg, frequency_bands=frequency_bands, verbose=verbose,
+                                        aggregation_method=aggregation_method)
 
             # Add to results
             for band_name, band_power in power.items():

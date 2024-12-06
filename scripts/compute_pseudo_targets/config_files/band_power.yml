@@ -1,34 +1,27 @@
 OcularStates:
   EC:
     Datasets:
-      SRM:
-        num_subjects: all
+      DortmundVital: &DortmundVital
+        num_subjects: 5
         kwargs:
-          session: "t1"
-          derivatives: true
-      Miltiadous:
-        num_subjects: all
-        kwargs:
-          derivatives: true
+          derivatives: false
+          session: 1
+          acquisition: pre
       LEMON: &LEMON
-        num_subjects: all
+        num_subjects: 5
         kwargs:
           derivatives: false
           interpolation_method: MNE
       Wang: &Wang
-        num_subjects: all
+        num_subjects: 5
         kwargs:
           visit: 1
           derivatives: true
-      TDBRAIN: &TDBRAIN
-        num_subjects: all
-        kwargs:
-          derivatives: false
   EO:
     Datasets:
+      DortmundVital: *DortmundVital
       LEMON: *LEMON
       Wang: *Wang
-      TDBRAIN: *TDBRAIN
 FrequencyBands:
   delta: [ 1, 4 ]
   theta: [ 4, 8 ]
@@ -37,3 +30,4 @@ FrequencyBands:
   gamma: [ 30, 45 ]
 AggregationMethod: median
 IgnoreExistingFolder: false
+AverageReference: true
