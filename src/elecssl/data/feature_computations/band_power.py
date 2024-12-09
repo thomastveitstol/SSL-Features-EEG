@@ -134,11 +134,15 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
             if epochs is not None:
                 eeg = mne.make_fixed_length_epochs(raw=eeg, **epochs)
 
+            # Maybe skip this subject if the number of epochs is insufficient
+            if len(eeg) < min_epochs:
+                continue
+
             # Maybe run autoreject
             if autoreject is not None:
                 eeg = run_autoreject(eeg, **autoreject)
 
-            # Maybe skip this subject if the number of epochs is insufficient
+            # Again, maybe skip this subject if the number of epochs is insufficient after autoreject
             if len(eeg) < min_epochs:
                 continue
 

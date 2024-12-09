@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added minimum number of epochs for power calculations" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added minimum number of epochs for power calculations instead of preprocessing">
+      <change beforePath="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -309,14 +311,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00285" summary="changes for adapting depth of deepnet if init fail">
-      <option name="closed" value="true" />
-      <created>1729669106889</created>
-      <option name="number" value="00285" />
-      <option name="presentableId" value="LOCAL-00285" />
-      <option name="project" value="LOCAL" />
-      <updated>1729669106889</updated>
     </task>
     <task id="LOCAL-00286" summary="changed staticmethod to classmethod">
       <option name="closed" value="true" />
@@ -702,7 +696,15 @@
       <option name="project" value="LOCAL" />
       <updated>1733733537433</updated>
     </task>
-    <option name="localTasksCounter" value="334" />
+    <task id="LOCAL-00334" summary="added minimum number of epochs for power calculations instead of preprocessing">
+      <option name="closed" value="true" />
+      <created>1733733679286</created>
+      <option name="number" value="00334" />
+      <option name="presentableId" value="LOCAL-00334" />
+      <option name="project" value="LOCAL" />
+      <updated>1733733679286</updated>
+    </task>
+    <option name="localTasksCounter" value="335" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -717,7 +719,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improvements" />
     <MESSAGE value="fix of commputing number of time steps" />
     <MESSAGE value="minor refactoring" />
     <MESSAGE value="added method to enum class" />
@@ -742,6 +743,7 @@
     <MESSAGE value="ran tox" />
     <MESSAGE value="minor changes" />
     <MESSAGE value="added minimum number of epochs for power calculations" />
-    <option name="LAST_COMMIT_MESSAGE" value="added minimum number of epochs for power calculations" />
+    <MESSAGE value="added minimum number of epochs for power calculations instead of preprocessing" />
+    <option name="LAST_COMMIT_MESSAGE" value="added minimum number of epochs for power calculations instead of preprocessing" />
   </component>
 </project>

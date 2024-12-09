@@ -14,13 +14,13 @@ def main():
     # -------------
     # Choices
     # -------------
-    subject = 1
+    subject = 229
     ocular_state = OcularState.EC
     acquisition = "pre"
     session = 1
 
     duration = 4
-    use_epochs = True
+    use_epochs = False
     autoreject_resample = None
     apply_autoreject = False
 
@@ -41,7 +41,7 @@ def main():
     eeg.notch_filter(50, verbose=False)
 
     # Crop
-    eeg.crop(30, eeg.n_times / eeg.info["sfreq"] - 20)
+    eeg.crop(30, eeg.n_times / eeg.info["sfreq"] - 10)
 
     if use_epochs:
         eeg = make_fixed_length_epochs(raw=eeg, duration=duration, preload=True, verbose=False)

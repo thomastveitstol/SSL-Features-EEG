@@ -34,7 +34,7 @@ AverageReference: true
 verbose: false
 Crop:
   tmin: 30
-  cut: 20
+  cut: 10
 Epochs:
   duration: 4
   preload: true
@@ -44,4 +44,4 @@ Autoreject:
   seed: 1
   default_num_splits: 10
   autoreject_resample: 180
-min_epochs: 10  # todo: asking ricardo for this one
+min_epochs: 15
