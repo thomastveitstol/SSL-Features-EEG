@@ -88,7 +88,7 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method, verbose):
 # Computations made on dataset level
 # -------------------
 def compute_band_powers(datasets, frequency_bands, aggregation_method, average_reference, verbose, autoreject, epochs,
-                        crop):
+                        crop, min_epochs):
     """
     Function for computing band powers of entire datasets
 
@@ -102,6 +102,7 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
     autoreject : dict[str, Any] | None
     epochs : dict[str, Any] | None
     crop : dict[str, Any] | None
+    min_epochs : int
 
     Returns
     -------
@@ -136,6 +137,10 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
             # Maybe run autoreject
             if autoreject is not None:
                 eeg = run_autoreject(eeg, **autoreject)
+
+            # Maybe skip this subject if the number of epochs is insufficient
+            if len(eeg) < min_epochs:
+                continue
 
             # Set average reference
             if average_reference:

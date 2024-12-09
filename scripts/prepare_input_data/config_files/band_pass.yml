@@ -2,6 +2,7 @@ Autoreject:
   seed: 1
   default_num_splits: 10
   autoreject_resample: 180
+min_epochs: 10  # todo: asking ricardo for this one
 OcularStates:
   EC:
     Datasets:
