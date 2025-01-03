@@ -1,3 +1,5 @@
+import concurrent.futures
+from concurrent.futures.process import ProcessPoolExecutor
 from typing import Dict, Any, List
 
 import mne
@@ -84,11 +86,67 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method, verbose):
     return power
 
 
+def _compute_band_power_single_subject(*, subject, info, crop, band_pass, notch_filter, resample, epochs, min_epochs,
+                                       autoreject, average_reference, frequency_bands, verbose, aggregation_method):
+    results = {"Subject-ID": subject, "Dataset": type(info.dataset).__name__}
+
+    # Load the EEG
+    try:
+        eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
+    except MNELoadingError:
+        return
+
+    # Maybe crop
+    if crop is not None:
+        eeg.crop(tmin=crop["tmin"], tmax=eeg.n_times / eeg.info["sfreq"] - crop["cut"], verbose=False)
+
+    # Maybe filter
+    if band_pass is not None:
+        eeg.filter(*band_pass, verbose=False)
+
+    if notch_filter is not None:
+        eeg.notch_filter(notch_filter, verbose=False)
+
+    # Maybe resample
+    if resample is not None:
+        eeg.resample(resample, verbose=False)
+
+    # Maybe epoch
+    if epochs is not None:
+        eeg = mne.make_fixed_length_epochs(raw=eeg, **epochs)
+
+    # Maybe skip this subject if the number of epochs is insufficient
+    if len(eeg) < min_epochs:
+        return
+
+    # Maybe run autoreject
+    if autoreject is not None:
+        eeg = run_autoreject(eeg, **autoreject, autoreject_resample=None)
+
+    # Again, maybe skip this subject if the number of epochs is insufficient after autoreject
+    if len(eeg) < min_epochs:
+        return
+
+    # Set average reference
+    if average_reference:
+        eeg.set_eeg_reference(ref_channels="average", verbose=False)
+
+    # Compute power for all frequency bands of interest
+    power = _compute_band_power(eeg=eeg, frequency_bands=frequency_bands, verbose=verbose,
+                                aggregation_method=aggregation_method)
+
+    # Add to results
+    for band_name, band_power in power.items():
+        results[band_name] = band_power
+
+    return results
+
+
 # -------------------
 # Computations made on dataset level
 # -------------------
 def compute_band_powers(datasets, *, frequency_bands, aggregation_method, average_reference, verbose, autoreject,
-                        epochs, crop, min_epochs, band_pass, notch_filter, resample):
+                        epochs, crop, min_epochs, band_pass, notch_filter, resample, max_workers):
     """
     Function for computing band powers of entire datasets
 
@@ -106,6 +164,7 @@ def compute_band_powers(datasets, *, frequency_bands, aggregation_method, averag
     band_pass : tuple[float, float] | None
     notch_filter : float | None
     resample : float 1 None
+    max_workers : int
 
     Returns
     -------
@@ -121,59 +180,29 @@ def compute_band_powers(datasets, *, frequency_bands, aggregation_method, averag
 
     # Loop though all datasets
     for info in datasets:
-        # Loop though all provided subjects for the dataset
-        for subject in progressbar(info.subjects, prefix=f"{type(info.dataset).__name__} ", redirect_stdout=True):
-            # Load the EEG
-            try:
-                eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
-            except MNELoadingError:
-                continue
+        num_subjects = len(info.subjects)
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            # Loop though all provided subjects for the dataset
+            future_results = []
+            for subject in info.subjects:
+                future_results.append(
+                    executor.submit(
+                        _compute_band_power_single_subject, subject=subject, info=info, crop=crop, band_pass=band_pass,
+                        notch_filter=notch_filter, resample=resample, epochs=epochs, min_epochs=min_epochs,
+                        autoreject=autoreject, average_reference=average_reference, frequency_bands=frequency_bands,
+                        verbose=verbose, aggregation_method=aggregation_method
+                    )
+                )
 
-            # Maybe crop
-            if crop is not None:
-                eeg.crop(tmin=crop["tmin"], tmax=eeg.n_times / eeg.info["sfreq"] - crop["cut"], verbose=False)
+            # Collect all results
+            for future_result in progressbar(concurrent.futures.as_completed(future_results), max_value=num_subjects,
+                                             prefix=f"{type(info.dataset).__name__} ", redirect_stdout=True):
+                subject_result = future_result.result()
 
-            # Maybe filter
-            if band_pass is not None:
-                eeg.filter(*band_pass, verbose=False)
-
-            if notch_filter is not None:
-                eeg.notch_filter(notch_filter, verbose=False)
-
-            # Maybe resample
-            if resample is not None:
-                eeg.resample(resample, verbose=False)
-
-            # Maybe epoch
-            if epochs is not None:
-                eeg = mne.make_fixed_length_epochs(raw=eeg, **epochs)
-
-            # Maybe skip this subject if the number of epochs is insufficient
-            if len(eeg) < min_epochs:
-                continue
-
-            # Maybe run autoreject
-            if autoreject is not None:
-                eeg = run_autoreject(eeg, **autoreject, autoreject_resample=None)
-
-            # Again, maybe skip this subject if the number of epochs is insufficient after autoreject
-            if len(eeg) < min_epochs:
-                continue
-
-            # Set average reference
-            if average_reference:
-                eeg.set_eeg_reference(ref_channels="average", verbose=False)
-
-            # Compute power for all frequency bands of interest
-            power = _compute_band_power(eeg=eeg, frequency_bands=frequency_bands, verbose=verbose,
-                                        aggregation_method=aggregation_method)
-
-            # Add to results
-            for band_name, band_power in power.items():
-                results[band_name].append(band_power)
-
-            results["Dataset"].append(type(info.dataset).__name__)
-            results["Subject-ID"].append(subject)
+                if subject_result is not None:
+                    # Add the subject's results to the overall results
+                    for key, value in subject_result.items():
+                        results[key].append(value)
 
     # Convert to pandas DataFrame and return
     return pandas.DataFrame.from_dict(results)

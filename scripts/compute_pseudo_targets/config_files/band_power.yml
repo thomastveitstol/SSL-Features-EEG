@@ -47,3 +47,4 @@ resample: 180
 band_pass: [1, 45]
 notch_filter: null
 min_epochs: 15
+max_workers: 1

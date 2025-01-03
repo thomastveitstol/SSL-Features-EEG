@@ -39,7 +39,7 @@ def _single_ocular_state(config):
         aggregation_method=config["AggregationMethod"], average_reference=config["AverageReference"],
         autoreject=config["Autoreject"], epochs=config["Epochs"], crop=config["Crop"], min_epochs=config["min_epochs"],
         band_pass=tuple(config["band_pass"]), notch_filter=config["notch_filter"], # type: ignore
-        resample=config["resample"]
+        resample=config["resample"], max_workers=config["max_workers"]
     )
 
     # ---------------
