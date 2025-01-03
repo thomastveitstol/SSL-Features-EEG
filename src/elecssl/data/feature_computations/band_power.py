@@ -87,8 +87,8 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method, verbose):
 # -------------------
 # Computations made on dataset level
 # -------------------
-def compute_band_powers(datasets, frequency_bands, aggregation_method, average_reference, verbose, autoreject, epochs,
-                        crop, min_epochs):
+def compute_band_powers(datasets, *, frequency_bands, aggregation_method, average_reference, verbose, autoreject,
+                        epochs, crop, min_epochs, band_pass, notch_filter, resample):
     """
     Function for computing band powers of entire datasets
 
@@ -103,6 +103,9 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
     epochs : dict[str, Any] | None
     crop : dict[str, Any] | None
     min_epochs : int
+    band_pass : tuple[float, float] | None
+    notch_filter : float | None
+    resample : float 1 None
 
     Returns
     -------
@@ -130,6 +133,17 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
             if crop is not None:
                 eeg.crop(tmin=crop["tmin"], tmax=eeg.n_times / eeg.info["sfreq"] - crop["cut"], verbose=False)
 
+            # Maybe filter
+            if band_pass is not None:
+                eeg.filter(*band_pass, verbose=False)
+
+            if notch_filter is not None:
+                eeg.notch_filter(notch_filter, verbose=False)
+
+            # Maybe resample
+            if resample is not None:
+                eeg.resample(resample, verbose=False)
+
             # Maybe epoch
             if epochs is not None:
                 eeg = mne.make_fixed_length_epochs(raw=eeg, **epochs)
@@ -140,7 +154,7 @@ def compute_band_powers(datasets, frequency_bands, aggregation_method, average_r
 
             # Maybe run autoreject
             if autoreject is not None:
-                eeg = run_autoreject(eeg, **autoreject)
+                eeg = run_autoreject(eeg, **autoreject, autoreject_resample=None)
 
             # Again, maybe skip this subject if the number of epochs is insufficient after autoreject
             if len(eeg) < min_epochs:

@@ -43,5 +43,7 @@ Epochs:
 Autoreject:
   seed: 1
   default_num_splits: 10
-  autoreject_resample: 180
+resample: 180
+band_pass: [1, 45]
+notch_filter: null
 min_epochs: 15
