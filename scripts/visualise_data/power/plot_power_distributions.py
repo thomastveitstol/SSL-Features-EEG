@@ -3,6 +3,8 @@ Script for plotting the power distributions which are supposed to be used as pse
 
 From the plot, log-transforming the pseudo targets looks the best
 """
+import os.path
+
 import numpy
 import pandas
 import seaborn
@@ -79,10 +81,11 @@ def main():
     targets = tuple(thresholds)
     normalise = True
 
-    lower_kind = {"func": seaborn.scatterplot, "hue_order": datasets, "s": 30, "alpha": 0.7}
+    lower_kind = {"func": seaborn.scatterplot, "hue_order": datasets, "s": 30, "alpha": 1}
     upper_kind = {"func": seaborn.kdeplot, "alpha": 1, "levels": 5}
     diag_kind = {"func": seaborn.kdeplot, "fill": True}
     height = 2.5
+    dpi = 70
 
     # --------------
     # Get the powers
@@ -103,8 +106,6 @@ def main():
     # Maybe normalise
     if normalise:
         pseudo_targets = [col for col in df.columns if col not in ("Dataset", "Subject-ID")]
-        print(df)
-        #print(df[pseudo_targets].sum(axis="columns"))
         df[pseudo_targets] = df[pseudo_targets].div(df[pseudo_targets].sum(axis=1), axis=0)
         print(df)
 
@@ -112,14 +113,16 @@ def main():
     # Plot
     # --------------
     pairplot_fig = seaborn.PairGrid(df, vars=FREQ_BAND_ORDER, hue="Dataset", height=height, hue_order=datasets)
-    # seaborn.pairplot()
 
     pairplot_fig.map_lower(**lower_kind)
     pairplot_fig.map_upper(**upper_kind)
     pairplot_fig.map_diag(**diag_kind)
     pairplot_fig.add_legend()
 
-    pyplot.show()
+    fig_name = (f"power_distribution_{ocular_state}_log_{str(log_transform).lower()}_normalised_"
+                f"{str(normalise).lower()}.png")
+    save_path = os.path.join(os.path.dirname(__file__), fig_name)
+    pairplot_fig.savefig(save_path, dpi=dpi)
 
 
 if __name__ == "__main__":
