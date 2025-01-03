@@ -19,6 +19,7 @@ PRETTY_NAME = MappingProxyType({
 })
 FREQ_BAND_ORDER = ("Delta", "Theta", "Alpha", "Beta", "Gamma")
 
+
 # ----------------
 # Smaller convenient classes
 # ----------------
