@@ -1,4 +1,5 @@
 import os
+from types import MappingProxyType
 from typing import NamedTuple
 
 import pandas
@@ -6,6 +7,21 @@ import pandas
 from elecssl.data.datasets.dataset_base import OcularState
 
 
+# ----------------
+# Globals
+# ----------------
+PRETTY_NAME = MappingProxyType({
+    "delta": "Delta",
+    "theta": "Theta",
+    "alpha": "Alpha",
+    "beta": "Beta",
+    "gamma": "Gamma"
+})
+FREQ_BAND_ORDER = ("Delta", "Theta", "Alpha", "Beta", "Gamma")
+
+# ----------------
+# Smaller convenient classes
+# ----------------
 class InOutOcularStates(NamedTuple):
     input_data: OcularState
     target: OcularState

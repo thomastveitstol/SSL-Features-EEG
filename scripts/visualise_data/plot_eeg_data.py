@@ -1,7 +1,8 @@
 """
 Script for getting to know the data. Channel names and stuff
+
+Dortmund Vital sub-342 looks bad without any cleaning.
 """
-from autoreject import autoreject
 from matplotlib import pyplot
 from mne import make_fixed_length_epochs
 
@@ -14,15 +15,15 @@ def main():
     # -------------
     # Choices
     # -------------
-    subject = 229
-    ocular_state = OcularState.EC
+    subject = "sub-342"
+    ocular_state = OcularState.EO
     acquisition = "pre"
     session = 1
 
     duration = 4
-    use_epochs = False
-    autoreject_resample = None
-    apply_autoreject = False
+    use_epochs = True
+    resample = None  # 180
+    apply_autoreject = True
 
     preload = True
 
@@ -37,17 +38,20 @@ def main():
     eeg = DortmundVital().load_single_mne_object(
         subject_id=subject_id, ocular_state=ocular_state, session=session, acquisition=acquisition, preload=preload
     )
+    # Crop
+    eeg.crop(30, eeg.n_times / eeg.info["sfreq"] - 10)
+
     eeg.filter(1, 45, verbose=False)
     eeg.notch_filter(50, verbose=False)
 
-    # Crop
-    eeg.crop(30, eeg.n_times / eeg.info["sfreq"] - 10)
+    if resample is not None:
+        eeg.resample(resample, verbose=False)
 
     if use_epochs:
         eeg = make_fixed_length_epochs(raw=eeg, duration=duration, preload=True, verbose=False)
 
         if apply_autoreject:
-            eeg = run_autoreject(eeg, autoreject_resample=autoreject_resample, seed=42, default_num_splits=10)
+            eeg = run_autoreject(eeg, autoreject_resample=None, seed=1, default_num_splits=10)
 
     # -------------
     # Plot

@@ -9,12 +9,13 @@ import seaborn
 from matplotlib import pyplot
 
 from elecssl.data.paths import get_eeg_features_storage_path
+from elecssl.data.results_analysis import PRETTY_NAME, FREQ_BAND_ORDER
 
 
 def _get_power_distributions(datasets, targets, log_transform):
     path = get_eeg_features_storage_path()
     _folder_paths = (path / target for target in targets)
-    powers = {"Dataset": [], "Freq band": [], "Value": []}
+    powers = {"Dataset": [], "Freq band": [], "Subject-ID": [], "Value": []}
     for target in targets:
         # Load the .csv file
         df = pandas.read_csv((path / target / target).with_suffix(".csv"))
@@ -23,12 +24,13 @@ def _get_power_distributions(datasets, targets, log_transform):
         band_name = target.split("_")[-2]
 
         # Add the pseudo target values for all subjects in the datasets of interest
-        for dataset, target_value in zip(df["Dataset"], df[band_name]):
+        for dataset, subject_id, target_value in zip(df["Dataset"], df["Subject-ID"], df[band_name]):
             if dataset not in datasets:
                 continue
 
             powers["Dataset"].append(dataset)
-            powers["Freq band"].append(band_name)
+            powers["Freq band"].append(PRETTY_NAME[band_name])
+            powers["Subject-ID"].append(subject_id)
             powers["Value"].append(numpy.log10(target_value) if log_transform else target_value)
 
     return powers
@@ -69,26 +71,53 @@ def main():
     # Make selections
     # --------------
     log_transform = True
-    datasets = ("Wang", "LEMON", "DortmundVital")
+    datasets = ("DortmundVital", "LEMON", "Wang")
     ocular_state = "eo"
-    thresholds = {f"band_power_delta_{ocular_state}": 2, f"band_power_theta_{ocular_state}": 1.5,
-                  f"band_power_alpha_{ocular_state}": 2, f"band_power_beta_{ocular_state}": 1.7,
-                  f"band_power_gamma_{ocular_state}": 1.5}
+    thresholds = {f"band_power_delta_{ocular_state}": 4.5, f"band_power_theta_{ocular_state}": 4.5,
+                  f"band_power_alpha_{ocular_state}": 4.5, f"band_power_beta_{ocular_state}": 4.5,
+                  f"band_power_gamma_{ocular_state}": 4.5}
     targets = tuple(thresholds)
+    normalise = True
+
+    lower_kind = {"func": seaborn.scatterplot, "hue_order": datasets, "s": 30, "alpha": 0.7}
+    upper_kind = {"func": seaborn.kdeplot, "alpha": 1, "levels": 5}
+    diag_kind = {"func": seaborn.kdeplot, "fill": True}
+    height = 2.5
 
     # --------------
     # Get the powers
     # --------------
     power = _get_power_distributions(datasets, targets, log_transform=log_transform)
     above_thresholds = _get_above_threshold(datasets, targets, log_transform, thresholds)
-    for dataset_name, subject_id, freq_band in zip(above_thresholds["Dataset"], above_thresholds["Subject-ID"],
-                                                   above_thresholds["Freq band"]):
-        print(f"{dataset_name} ({freq_band}): {subject_id}")
+    for dataset_name, subject_id, freq_band, value in zip(above_thresholds["Dataset"], above_thresholds["Subject-ID"],
+                                                          above_thresholds["Freq band"], above_thresholds["Value"]):
+        print(f"{dataset_name} ({freq_band} = {value:.2f}): {subject_id}")
+
+    # Convert to dataframe
+    df = pandas.DataFrame(power)
+    df = df.pivot(index=["Subject-ID", "Dataset"], columns="Freq band", values="Value")
+    df.columns.name = None  # Remove the name "Freq band" from columns
+    df.reset_index(inplace=True)
+    df.sort_values(by="Dataset", inplace=True)
+
+    # Maybe normalise
+    if normalise:
+        pseudo_targets = [col for col in df.columns if col not in ("Dataset", "Subject-ID")]
+        print(df)
+        #print(df[pseudo_targets].sum(axis="columns"))
+        df[pseudo_targets] = df[pseudo_targets].div(df[pseudo_targets].sum(axis=1), axis=0)
+        print(df)
 
     # --------------
     # Plot
     # --------------
-    seaborn.violinplot(power, x="Freq band", y="Value", hue="Dataset")
+    pairplot_fig = seaborn.PairGrid(df, vars=FREQ_BAND_ORDER, hue="Dataset", height=height, hue_order=datasets)
+    # seaborn.pairplot()
+
+    pairplot_fig.map_lower(**lower_kind)
+    pairplot_fig.map_upper(**upper_kind)
+    pairplot_fig.map_diag(**diag_kind)
+    pairplot_fig.add_legend()
 
     pyplot.show()
 

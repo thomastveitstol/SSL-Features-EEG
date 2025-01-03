@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added minimum number of epochs for power calculations instead of preprocessing">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="improved pipeline for computing band power">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/visualise_data/plot_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/visualise_data/power/plot_power_distributions.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -155,14 +157,16 @@
     "Python.mts_module_base.executor": "Run",
     "Python.plot_eeg_data.executor": "Run",
     "Python.plot_power.executor": "Run",
+    "Python.plot_power_distributions.executor": "Run",
     "Python.regression_performance.executor": "Run",
     "Python.srm.executor": "Run",
     "Python.test_paths.executor": "Run",
     "Python.wang.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/CrossDatasetLearningEEG",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
@@ -175,10 +179,11 @@
       <recent name="$PROJECT_DIR$/tests" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts/visualise_data/power" />
       <recent name="$PROJECT_DIR$/scripts/debugging" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.plot_eeg_data">
+  <component name="RunManager" selected="Python.plot_power_distributions">
     <configuration name="band_power" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -245,7 +250,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="plot_power" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="plot_power_distributions" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -258,7 +263,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/visualise_data/plot_power.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/visualise_data/power/plot_power_distributions.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -288,9 +293,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.plot_power_distributions" />
         <item itemvalue="Python.plot_eeg_data" />
         <item itemvalue="Python.band_power" />
-        <item itemvalue="Python.plot_power" />
         <item itemvalue="Python tests.Doctests in DortmundVital" />
         <item itemvalue="Python.dortmund_vital (1)" />
       </list>
@@ -299,7 +304,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-d7ad00fb9fc3-c546a90a8094-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.23726.102" />
+        <option value="bundled-python-sdk-1b1018131e27-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.22562.180" />
       </set>
     </attachedChunks>
   </component>
@@ -311,22 +316,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00286" summary="changed staticmethod to classmethod">
-      <option name="closed" value="true" />
-      <created>1729669177372</created>
-      <option name="number" value="00286" />
-      <option name="presentableId" value="LOCAL-00286" />
-      <option name="project" value="LOCAL" />
-      <updated>1729669177373</updated>
-    </task>
-    <task id="LOCAL-00287" summary="flake fix">
-      <option name="closed" value="true" />
-      <created>1729669212138</created>
-      <option name="number" value="00287" />
-      <option name="presentableId" value="LOCAL-00287" />
-      <option name="project" value="LOCAL" />
-      <updated>1729669212138</updated>
     </task>
     <task id="LOCAL-00288" summary="made deepnet available in config file">
       <option name="closed" value="true" />
@@ -704,7 +693,23 @@
       <option name="project" value="LOCAL" />
       <updated>1733733679286</updated>
     </task>
-    <option name="localTasksCounter" value="335" />
+    <task id="LOCAL-00335" summary="fixes for computing band power. skipping subject if insufficient amount of epochs">
+      <option name="closed" value="true" />
+      <created>1733742750941</created>
+      <option name="number" value="00335" />
+      <option name="presentableId" value="LOCAL-00335" />
+      <option name="project" value="LOCAL" />
+      <updated>1733742750941</updated>
+    </task>
+    <task id="LOCAL-00336" summary="improved pipeline for computing band power">
+      <option name="closed" value="true" />
+      <created>1735906361295</created>
+      <option name="number" value="00336" />
+      <option name="presentableId" value="LOCAL-00336" />
+      <option name="project" value="LOCAL" />
+      <updated>1735906361295</updated>
+    </task>
+    <option name="localTasksCounter" value="337" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -719,8 +724,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix of commputing number of time steps" />
-    <MESSAGE value="minor refactoring" />
     <MESSAGE value="added method to enum class" />
     <MESSAGE value="minor cosmetic" />
     <MESSAGE value="added script for data visualisation" />
@@ -744,6 +747,8 @@
     <MESSAGE value="minor changes" />
     <MESSAGE value="added minimum number of epochs for power calculations" />
     <MESSAGE value="added minimum number of epochs for power calculations instead of preprocessing" />
-    <option name="LAST_COMMIT_MESSAGE" value="added minimum number of epochs for power calculations instead of preprocessing" />
+    <MESSAGE value="fixes for computing band power. skipping subject if insufficient amount of epochs" />
+    <MESSAGE value="improved pipeline for computing band power" />
+    <option name="LAST_COMMIT_MESSAGE" value="improved pipeline for computing band power" />
   </component>
 </project>
