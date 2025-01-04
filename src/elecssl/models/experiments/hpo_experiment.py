@@ -303,7 +303,7 @@ def _get_preprocessing_config_path(ocular_state):
 
     # Make sure there is only one and return it
     assert len(config_files) == 1, f"Expected only one config file, but found {len(config_files)}: {config_files}"
-    return Path(config_files[0])
+    return preprocessing_path / config_files[0]
 
 
 def _get_best_val_epoch(path, *, pretext_main_metric):
