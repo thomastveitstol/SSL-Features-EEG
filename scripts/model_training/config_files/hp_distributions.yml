@@ -75,7 +75,7 @@ MLModel:
 # Varied numbers of channels
 # -----------------
 _channel_system: # todo: not elegant
-Interpolation: &Interpolation
+Interpolation:
   # todo: not elegant, consider inferring these at runtime
   main_channel_system: { choices: [ LEMON ] }
   methods: { choices: [ MNE, spline ] }
