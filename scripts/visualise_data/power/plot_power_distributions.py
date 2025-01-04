@@ -3,12 +3,12 @@ Script for plotting the power distributions which are supposed to be used as pse
 
 From the plot, log-transforming the pseudo targets looks the best
 """
+import itertools
 import os.path
 
 import numpy
 import pandas
 import seaborn
-from matplotlib import pyplot
 
 from elecssl.data.paths import get_eeg_features_storage_path
 from elecssl.data.results_analysis import PRETTY_NAME, FREQ_BAND_ORDER
@@ -68,33 +68,17 @@ def _get_above_threshold(datasets, targets, log_transform, thresholds):
     return powers
 
 
-def main():
-    # --------------
-    # Make selections
-    # --------------
-    log_transform = True
-    datasets = ("DortmundVital", "LEMON", "Wang")
-    ocular_state = "eo"
-    thresholds = {f"band_power_delta_{ocular_state}": 4.5, f"band_power_theta_{ocular_state}": 4.5,
-                  f"band_power_alpha_{ocular_state}": 4.5, f"band_power_beta_{ocular_state}": 4.5,
-                  f"band_power_gamma_{ocular_state}": 4.5}
-    targets = tuple(thresholds)
-    normalise = True
-
-    lower_kind = {"func": seaborn.scatterplot, "hue_order": datasets, "s": 30, "alpha": 1}
-    upper_kind = {"func": seaborn.kdeplot, "alpha": 1, "levels": 5}
-    diag_kind = {"func": seaborn.kdeplot, "fill": True}
-    height = 2.5
-    dpi = 70
-
+def _create_plots(*, datasets, diag_kind, dpi, height, log_transform, lower_kind, normalise, ocular_state, targets,
+                  thresholds, upper_kind, print_above_thresholds):
     # --------------
     # Get the powers
     # --------------
     power = _get_power_distributions(datasets, targets, log_transform=log_transform)
-    above_thresholds = _get_above_threshold(datasets, targets, log_transform, thresholds)
-    for dataset_name, subject_id, freq_band, value in zip(above_thresholds["Dataset"], above_thresholds["Subject-ID"],
-                                                          above_thresholds["Freq band"], above_thresholds["Value"]):
-        print(f"{dataset_name} ({freq_band} = {value:.2f}): {subject_id}")
+    if print_above_thresholds:
+        above_thresholds = _get_above_threshold(datasets, targets, log_transform, thresholds)
+        for dataset_name, subject_id, freq_band, value in zip(above_thresholds["Dataset"], above_thresholds["Subject-ID"],
+                                                              above_thresholds["Freq band"], above_thresholds["Value"]):
+            print(f"{dataset_name} ({freq_band} = {value:.2f}): {subject_id}")
 
     # Convert to dataframe
     df = pandas.DataFrame(power)
@@ -123,6 +107,35 @@ def main():
                 f"{str(normalise).lower()}.png")
     save_path = os.path.join(os.path.dirname(__file__), fig_name)
     pairplot_fig.savefig(save_path, dpi=dpi)
+
+
+def main():
+    # --------------
+    # Make selections
+    # --------------
+    datasets = ("DortmundVital", "LEMON", "Wang")
+    ocular_state = "eo"
+    thresholds = {f"band_power_delta_{ocular_state}": 4.5, f"band_power_theta_{ocular_state}": 4.5,
+                  f"band_power_alpha_{ocular_state}": 4.5, f"band_power_beta_{ocular_state}": 4.5,
+                  f"band_power_gamma_{ocular_state}": 4.5}
+    targets = tuple(thresholds)
+
+    print_above_thresholds = False
+    lower_kind = {"func": seaborn.scatterplot, "hue_order": datasets, "s": 30, "alpha": 1}
+    upper_kind = {"func": seaborn.kdeplot, "alpha": 1, "levels": 5}
+    diag_kind = {"func": seaborn.kdeplot, "fill": True}
+    height = 2.5
+    dpi = 70
+
+    # --------------
+    # Create plots
+    # --------------
+    for log_transform, normalise in itertools.product((True, False), repeat=2):
+        _create_plots(
+            datasets=datasets, diag_kind=diag_kind, dpi=dpi, height=height, log_transform=log_transform,
+            lower_kind=lower_kind, normalise=normalise, ocular_state=ocular_state, targets=targets, thresholds=thresholds,
+            upper_kind=upper_kind, print_above_thresholds=print_above_thresholds
+        )
 
 
 if __name__ == "__main__":
