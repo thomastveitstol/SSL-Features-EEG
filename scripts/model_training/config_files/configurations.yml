@@ -43,6 +43,10 @@ Datasets: &Datasets
     num_subjects: 30
     num_time_steps: null
     time_series_start: null
+  DortmundVital:
+    num_subjects: 25
+    num_time_steps: null
+    time_series_start: null
 
 # -----------------
 # Configurations for associating prediction errors with
@@ -51,6 +55,7 @@ Datasets: &Datasets
 PredictionErrorAssociations:
   LEMON: [ ]
   Wang: [ ]
+  DortmundVital: [ ]
 
 VariablesMetrics: null
 # age: [ pearson_r, spearman_rho ]

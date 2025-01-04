@@ -115,9 +115,8 @@ class HPOExperiment:
                     # Just a bit of preparation...
                     # ---------------
                     # Get the number of EEG epochs per experiment  todo: a little hard-coded?
-                    preprocessing_path = (get_numpy_data_storage_path() / f"preprocessed_band_pass_{in_ocular_state}" /
-                                          "config.yml")
-                    with open(preprocessing_path) as file:
+                    preprocessing_config_path = _get_preprocessing_config_path(ocular_state=in_ocular_state)
+                    with open(preprocessing_config_path) as file:
                         preprocessing_config = yaml.safe_load(file)
                         num_epochs = preprocessing_config["Details"]["num_epochs"]
 
@@ -134,7 +133,7 @@ class HPOExperiment:
                     suggested_hyperparameters = suggest_hyperparameters(
                         name=feature_extractor_name, config=self._sampling_config, trial=trial,
                         experiments_config=experiment_config_file, in_freq_band=in_freq_band,
-                        preprocessed_config_path=preprocessing_path
+                        preprocessed_config_path=preprocessing_config_path
                     )
 
                     # ---------------
@@ -297,6 +296,16 @@ class HPOExperiment:
 # --------------
 # Functions
 # --------------
+def _get_preprocessing_config_path(ocular_state):
+    # Get file names
+    preprocessing_path = get_numpy_data_storage_path() / f"preprocessed_band_pass_{ocular_state}"
+    config_files = tuple(file_name for file_name in os.listdir(preprocessing_path) if file_name.startswith("config"))
+
+    # Make sure there is only one and return it
+    assert len(config_files) == 1, f"Expected only one config file, but found {len(config_files)}: {config_files}"
+    return Path(config_files[0])
+
+
 def _get_best_val_epoch(path, *, pretext_main_metric):
     # Load the .csv file with the metrics
     val_df = pandas.read_csv(os.path.join(path, "val_history_metrics.csv"))
