@@ -375,7 +375,7 @@ class EEGDatasetBase(abc.ABC):
         available_features: List[str] = []
         for feature in os.listdir(root_features_path):
             # Which datasets are available for a given feature should be specified in the config file
-            with open(root_features_path / feature / "config.yml") as f:
+            with open(_get_pseudo_target_config_file_path(root_features_path=root_features_path, feature=feature)) as f:
                 config = yaml.safe_load(f)
 
             if cls.__name__ in config["Datasets"]:
@@ -556,6 +556,18 @@ class EEGDatasetBase(abc.ABC):
 # ------------------
 # Functions
 # ------------------
+def _get_pseudo_target_config_file_path(root_features_path, feature):
+    """Checks for files with names config*. If there is only one, the path is returned, otherwise and error is raised"""
+    # Get file name
+    config_files = tuple(file_name for file_name in os.listdir(root_features_path / feature)
+                         if file_name.startswith("config"))
+
+    # Make sure there is only one and return it
+    assert len(config_files) == 1, (f"Expected only one config file in {root_features_path / feature}, but found "
+                                    f"{len(config_files)}: {config_files}")
+    return root_features_path / feature / config_files[0]
+
+
 def _no_transform(x):
     return x
 

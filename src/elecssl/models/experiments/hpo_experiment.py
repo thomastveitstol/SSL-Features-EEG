@@ -232,7 +232,7 @@ class HPOExperiment:
                         log_transform_clinical_target, pretext_main_metric, feature_extractor_name):
         """Method for running a single SSL experiments"""
         # Load the preprocessing file and add some necessary info
-        with open(get_numpy_data_storage_path() / f"preprocessed_band_pass_{in_ocular_state}" / "config.yml") as file:
+        with open(_get_preprocessing_config_path(ocular_state=in_ocular_state)) as file:
             f_max = yaml.safe_load(file)["FrequencyBands"][in_freq_band][-1]
 
         preprocessing_config_file = suggested_hyperparameters["Preprocessing"].copy()
