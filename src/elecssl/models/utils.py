@@ -317,7 +317,7 @@ def get_random_distribution(distribution, **kwargs):
 # ------------
 def verify_type(data, types):
     """Function which checks the type of the object. Returns the object if the type is as expected, otherwise raises a
-    ypeError"""
+    TypeError"""
     if isinstance(data, types):
         return data
     raise TypeError(f"Failed when trying to verify type. Expected input to be of type(s) {types}, but found "
