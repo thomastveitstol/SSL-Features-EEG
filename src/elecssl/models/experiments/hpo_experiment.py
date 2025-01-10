@@ -93,8 +93,9 @@ class HPOExperiment:
             # ---------------
             # Create configurations for all feature extractors
             # ---------------
-            spaces = (self._experiments_config["OcularStates"], self._experiments_config["FrequencyBands"],
-                      self._experiments_config["FrequencyBands"])
+            spaces = self._experiments_config["IOSpaces"]
+            # spaces = (self._experiments_config["OcularStates"], self._experiments_config["FrequencyBands"],
+            #           self._experiments_config["FrequencyBands"])
 
             # Make directory for current iteration
             _debug_mode = "debug_" if verify_type(self._experiments_config["debugging"], bool) else ""
@@ -108,7 +109,8 @@ class HPOExperiment:
             with ProcessPoolExecutor(max_workers=self.hpo_study_config["MultiProcessing"]["max_workers"]) as executor:
                 print("Multiprocessing")
                 experiments = []
-                for (in_ocular_state, out_ocular_state), in_freq_band, out_freq_band in itertools.product(*spaces):
+                # for (in_ocular_state, out_ocular_state), in_freq_band, out_freq_band in itertools.product(*spaces):
+                for (in_ocular_state, out_ocular_state), (in_freq_band, out_freq_band) in spaces:
                     feature_extractor_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
 
                     # ---------------
