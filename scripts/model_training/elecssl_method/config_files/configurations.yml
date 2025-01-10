@@ -10,8 +10,16 @@ Saving:
   save_metrics_per_fold_plots: false
   save_final_test_histories_plots: false
 
-OcularStates: [ [ eo, ec ], [ ec, eo ] ]
-FrequencyBands: [ delta, theta ]  # [ delta, theta, alpha, beta, gamma ]
+
+IOSpaces:  # In ocular state, out ocular state, in frequency band, out frequency band
+  - [ [ ec, eo ], [ theta, theta ] ]
+  - [ [ eo, ec ], [ theta, theta ] ]
+  - [ [ ec, eo ], [ alpha, alpha ] ]
+  - [ [ eo, ec ], [ alpha, alpha ] ]
+  - [ [ ec, eo ], [ beta, beta ] ]
+  - [ [ eo, ec ], [ beta, beta ] ]
+# OcularStates: [ [ eo, ec ], [ ec, eo ] ]
+# FrequencyBands: [ theta, alpha, beta ]  # [ delta, theta, alpha, beta, gamma ]
 # The preprocessed version must be during runtime
 
 clinical_target: age
@@ -36,15 +44,15 @@ Device: cpu
 # -----------------
 Datasets: &Datasets
   LEMON:
-    num_subjects: 40
+    num_subjects: 203
     num_time_steps: null
     time_series_start: null
   Wang:
-    num_subjects: 30
+    num_subjects: 100
     num_time_steps: null
     time_series_start: null
   DortmundVital:
-    num_subjects: 25
+    num_subjects: 100
     num_time_steps: null
     time_series_start: null
 
@@ -102,7 +110,7 @@ Training:
   continuous_testing: true
   metrics: regression
   prediction_activation_function: null
-  main_metric: mae
+  main_metric: pearson_r
 Warnings:
   ignore: [ NearConstantInputWarning, ConstantInputWarning, PlotNotSavedWarning ]
 
