@@ -1,5 +1,4 @@
 import concurrent
-import itertools
 import os
 import warnings
 from concurrent.futures import ProcessPoolExecutor
