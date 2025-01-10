@@ -2,9 +2,11 @@ import os
 from typing import Literal
 
 import mne
+import numpy
 import openneuro
+import pandas
 
-from elecssl.data.datasets.dataset_base import EEGDatasetBase, OcularState
+from elecssl.data.datasets.dataset_base import EEGDatasetBase, OcularState, target_method
 
 
 class DortmundVital(EEGDatasetBase):
@@ -24,6 +26,8 @@ class DortmundVital(EEGDatasetBase):
     --------
     >>> DortmundVital().num_channels
     64
+    >>> DortmundVital().age(("sub-001", "sub-003", "sub-002", "sub-007"))
+    array([60, 44, 67, 24])
     """
 
     __slots__ = ()
@@ -75,3 +79,17 @@ class DortmundVital(EEGDatasetBase):
 
     def channel_name_to_index(self):
         return {ch_name: i for i, ch_name in enumerate(self._channel_names)}
+
+    # ----------------
+    # Target methods
+    # ----------------
+    @target_method
+    def age(self, subject_ids):
+        # Read the .tsv file
+        df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t")
+
+        # Convert to dict
+        sub_id_to_age = {name: age for name, age in zip(df["participant_id"], df["age"])}
+
+        # Extract the ages of the subjects, in the same order as the input argument
+        return numpy.array([sub_id_to_age[sub_id] for sub_id in subject_ids])
