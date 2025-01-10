@@ -12,12 +12,16 @@ Saving:
 
 
 IOSpaces:  # In ocular state, out ocular state, in frequency band, out frequency band
+  - [ [ ec, eo ], [ delta, delta ] ]
+  - [ [ eo, ec ], [ delta, delta ] ]
   - [ [ ec, eo ], [ theta, theta ] ]
   - [ [ eo, ec ], [ theta, theta ] ]
   - [ [ ec, eo ], [ alpha, alpha ] ]
   - [ [ eo, ec ], [ alpha, alpha ] ]
   - [ [ ec, eo ], [ beta, beta ] ]
   - [ [ eo, ec ], [ beta, beta ] ]
+  - [ [ ec, eo ], [ gamma, gamma ] ]
+  - [ [ eo, ec ], [ gamma, gamma ] ]
 # OcularStates: [ [ eo, ec ], [ ec, eo ] ]
 # FrequencyBands: [ theta, alpha, beta ]  # [ delta, theta, alpha, beta, gamma ]
 # The preprocessed version must be during runtime
@@ -35,7 +39,7 @@ HPO:
     direction: maximize  # todo: this must depend on the selected target
   MultiProcessing:
     max_workers: 1
-  num_trials: 100
+  num_trials: 500
 
 Device: cpu
 
@@ -103,7 +107,7 @@ Scalers:
     name: ZNormalisation
 Training:
   batch_size: 64
-  num_epochs: 10
+  num_epochs: 50
   log_transform_targets: log10
   verbose: true
   verbose_variables: false
