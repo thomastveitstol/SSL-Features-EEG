@@ -57,6 +57,116 @@ class DataSplitBase(abc.ABC):
 # -----------------
 # Classes
 # -----------------
+class RandomSplitsTVTestHoldout(DataSplitBase):
+    """
+    Random splits where the test set is always the same
+
+    Examples
+    --------
+    >>> f1_drivers = {"Mercedes": ("Hamilton", "Russel", "Wolff"), "Red Bull": ("Verstappen", "Checo"),
+    ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
+    ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
+    >>> my_num_splits = 4
+    >>> my_splits = RandomSplitsTVTestHoldout(f1_drivers, val_split=0.2, test_split=0.3,
+    ...                                       num_random_splits=my_num_splits, seed=42).splits
+    >>> len(my_splits) == my_num_splits, type(my_splits)
+    (True, <class 'tuple'>)
+    >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
+    ((3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>), (3, <class 'tuple'>))
+    >>> all(isinstance(my_sub, Subject) for my_split in my_splits for my_split_subset in my_split  # type: ignore
+    ...     for my_sub in my_split_subset)  # type: ignore
+    True
+
+    Train, val and test never overlaps
+
+    >>> for my_train, my_val, my_test in my_splits:
+    ...     len(my_train), len(my_val), len(my_test)
+    ...     assert not set(my_train) & set(my_val)
+    ...     assert not set(my_train) & set(my_test)
+    ...     assert not set(my_val) & set(my_test)
+    (7, 2, 4)
+    (7, 2, 4)
+    (7, 2, 4)
+    (7, 2, 4)
+
+    Test set is always the same
+
+    >>> my_test_subjects = tuple(my_split[-1] for my_split in my_splits)  # type: ignore
+    >>> for test_subjects in my_test_subjects:
+    ...     assert test_subjects == my_test_subjects[0]
+
+    But train and val are not
+
+    >>> my_train_subjects = tuple(my_split[0] for my_split in my_splits)  # type: ignore
+    >>> for train_subjects in my_train_subjects[1:]:
+    ...     assert train_subjects != my_train_subjects[0]
+    >>> my_val_subjects = tuple(my_split[1] for my_split in my_splits)  # type: ignore
+    >>> for val_subjects in my_val_subjects:
+    ...     val_subjects
+    (Subject(subject_id='Leclerc', dataset_name='Ferrari'), Subject(subject_id='Piastri', dataset_name='McLaren'))
+    (Subject(subject_id='Magnussen', dataset_name='Haas'), Subject(subject_id='Verstappen', dataset_name='Red Bull'))
+    (Subject(subject_id='Russel', dataset_name='Mercedes'), Subject(subject_id='Piastri', dataset_name='McLaren'))
+    (Subject(subject_id='Russel', dataset_name='Mercedes'), Subject(subject_id='Wolff', dataset_name='Mercedes'))
+    """
+
+    def __init__(self, dataset_subjects, *, val_split, test_split, num_random_splits, seed=None):
+        """
+        Initialise
+
+        Parameters
+        ----------
+        dataset_subjects : dict[str, tuple[str, ...]]
+        val_split : float
+        test_split : float
+        num_random_splits : int
+        seed : int
+        """
+        # Maybe make data split reproducible
+        if seed is not None:
+            random.seed(seed)
+
+        # ------------
+        # Generate random splits for training/validation
+        # ------------
+        # Get all subjects to a list
+        subjects: List[Subject] = []
+        for dataset_name, subject_ids in dataset_subjects.items():
+            # Add all subjects from the current non-test dataset
+            subjects.extend(
+                [Subject(dataset_name=dataset_name, subject_id=subject_id) for subject_id in subject_ids]
+            )
+
+        # Create splits
+        splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
+
+        # Randomly shuffle the subjects
+        random.shuffle(subjects)
+
+        # Extract test set
+        non_test_subjects, test_subjects = _split_randomly(subjects=subjects, split_percent=test_split)
+        for i in range(num_random_splits):
+            non_test_subjects = non_test_subjects.copy()
+
+            # Randomly shuffle the non-test subjects
+            random.shuffle(non_test_subjects)
+
+            # Split into training/validation and test
+            train_subjects, val_subjects = _split_randomly(subjects=non_test_subjects, split_percent=val_split)
+
+            # Add to splits. The test set will be empty instead of non-existent for consistency reasons
+            splits.append((tuple(train_subjects), tuple(val_subjects), tuple(test_subjects)))
+
+        # Set the attribute
+        self._splits = tuple(splits)
+
+    # ---------------
+    # Properties
+    # ---------------
+    @property
+    def splits(self):
+        return self._splits
+
+
 class RandomSplitsTV(DataSplitBase):
     """
     Random splits without really having a test set
@@ -440,7 +550,7 @@ def get_data_split(split, **kwargs):
     DataSplitBase
     """
     # All available data splits must be included here
-    available_splits = (KFoldDataSplit, LODOCV, KeepDatasetOutRandomSplits, RandomSplitsTV)
+    available_splits = (KFoldDataSplit, LODOCV, KeepDatasetOutRandomSplits, RandomSplitsTV, RandomSplitsTVTestHoldout)
 
     # Loop through and select the correct one
     for split_class in available_splits:
