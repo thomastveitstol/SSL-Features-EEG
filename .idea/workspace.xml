@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="improved pipeline for computing band power">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="optimised imports">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/visualise_data/plot_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/visualise_data/power/plot_power_distributions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/configurations.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/configurations.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -152,6 +151,7 @@
     "Python.group_differences.executor": "Run",
     "Python.hpo_experiment.executor": "Run",
     "Python.lemon.executor": "Run",
+    "Python.linear_regresison.executor": "Run",
     "Python.metrics.executor": "Run",
     "Python.ml_model_base.executor": "Run",
     "Python.mts_module_base.executor": "Run",
@@ -166,7 +166,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/CrossDatasetLearningEEG",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
@@ -179,12 +179,13 @@
       <recent name="$PROJECT_DIR$/tests" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method" />
       <recent name="$PROJECT_DIR$/scripts/visualise_data/power" />
       <recent name="$PROJECT_DIR$/scripts/debugging" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.plot_power_distributions">
-    <configuration name="band_power" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.elecssl_hpo">
+    <configuration name="band_pass" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -193,11 +194,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/feature_computations" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/prepare_input_data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/feature_computations/band_power.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/prepare_input_data/band_pass.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -206,7 +207,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="dortmund_vital (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="elecssl_hpo" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -215,11 +216,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/model_training" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/dortmund_vital.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/model_training/elecssl_method/elecssl_hpo.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -228,7 +229,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="plot_eeg_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="linear_regresison" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -237,11 +238,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/visualise_data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/model_training/linreg_band_power" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/model_training/linreg_band_power/linear_regresison.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -293,11 +294,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.plot_power_distributions" />
-        <item itemvalue="Python.plot_eeg_data" />
-        <item itemvalue="Python.band_power" />
+        <item itemvalue="Python.elecssl_hpo" />
+        <item itemvalue="Python.linear_regresison" />
         <item itemvalue="Python tests.Doctests in DortmundVital" />
-        <item itemvalue="Python.dortmund_vital (1)" />
+        <item itemvalue="Python.band_pass" />
+        <item itemvalue="Python.plot_power_distributions" />
       </list>
     </recent_temporary>
   </component>
@@ -316,150 +317,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00288" summary="made deepnet available in config file">
-      <option name="closed" value="true" />
-      <created>1729669385509</created>
-      <option name="number" value="00288" />
-      <option name="presentableId" value="LOCAL-00288" />
-      <option name="project" value="LOCAL" />
-      <updated>1729669385509</updated>
-    </task>
-    <task id="LOCAL-00289" summary="added log transform of pseudo targets">
-      <option name="closed" value="true" />
-      <created>1729670053388</created>
-      <option name="number" value="00289" />
-      <option name="presentableId" value="LOCAL-00289" />
-      <option name="project" value="LOCAL" />
-      <updated>1729670053388</updated>
-    </task>
-    <task id="LOCAL-00290" summary="deleted deprecated script">
-      <option name="closed" value="true" />
-      <created>1729670132594</created>
-      <option name="number" value="00290" />
-      <option name="presentableId" value="LOCAL-00290" />
-      <option name="project" value="LOCAL" />
-      <updated>1729670132594</updated>
-    </task>
-    <task id="LOCAL-00291" summary="fixed dimensions of deepnet with reduced depth">
-      <option name="closed" value="true" />
-      <created>1729671256943</created>
-      <option name="number" value="00291" />
-      <option name="presentableId" value="LOCAL-00291" />
-      <option name="project" value="LOCAL" />
-      <updated>1729671256943</updated>
-    </task>
-    <task id="LOCAL-00292" summary="mypy fix for old python version">
-      <option name="closed" value="true" />
-      <created>1729671386825</created>
-      <option name="number" value="00292" />
-      <option name="presentableId" value="LOCAL-00292" />
-      <option name="project" value="LOCAL" />
-      <updated>1729671386825</updated>
-    </task>
-    <task id="LOCAL-00293" summary="fixed type hint">
-      <option name="closed" value="true" />
-      <created>1729678433782</created>
-      <option name="number" value="00293" />
-      <option name="presentableId" value="LOCAL-00293" />
-      <option name="project" value="LOCAL" />
-      <updated>1729678433782</updated>
-    </task>
-    <task id="LOCAL-00294" summary="fixes for fitting CentroidPolygon montage split on multiple channel systems">
-      <option name="closed" value="true" />
-      <created>1729681616489</created>
-      <option name="number" value="00294" />
-      <option name="presentableId" value="LOCAL-00294" />
-      <option name="project" value="LOCAL" />
-      <updated>1729681616489</updated>
-    </task>
-    <task id="LOCAL-00295" summary="updates for fitting CentroidPolygon montage split on multiple channel systems">
-      <option name="closed" value="true" />
-      <created>1729682330720</created>
-      <option name="number" value="00295" />
-      <option name="presentableId" value="LOCAL-00295" />
-      <option name="project" value="LOCAL" />
-      <updated>1729682330720</updated>
-    </task>
-    <task id="LOCAL-00296" summary="changes to config file">
-      <option name="closed" value="true" />
-      <created>1729682342290</created>
-      <option name="number" value="00296" />
-      <option name="presentableId" value="LOCAL-00296" />
-      <option name="project" value="LOCAL" />
-      <updated>1729682342290</updated>
-    </task>
-    <task id="LOCAL-00297" summary="changes to config files">
-      <option name="closed" value="true" />
-      <created>1729682508687</created>
-      <option name="number" value="00297" />
-      <option name="presentableId" value="LOCAL-00297" />
-      <option name="project" value="LOCAL" />
-      <updated>1729682508687</updated>
-    </task>
-    <task id="LOCAL-00298" summary="flake8 fix">
-      <option name="closed" value="true" />
-      <created>1729682550341</created>
-      <option name="number" value="00298" />
-      <option name="presentableId" value="LOCAL-00298" />
-      <option name="project" value="LOCAL" />
-      <updated>1729682550341</updated>
-    </task>
-    <task id="LOCAL-00299" summary="fixes for not using test data while debugging">
-      <option name="closed" value="true" />
-      <created>1729843388675</created>
-      <option name="number" value="00299" />
-      <option name="presentableId" value="LOCAL-00299" />
-      <option name="project" value="LOCAL" />
-      <updated>1729843388675</updated>
-    </task>
-    <task id="LOCAL-00300" summary="config file">
-      <option name="closed" value="true" />
-      <created>1729844955932</created>
-      <option name="number" value="00300" />
-      <option name="presentableId" value="LOCAL-00300" />
-      <option name="project" value="LOCAL" />
-      <updated>1729844955932</updated>
-    </task>
-    <task id="LOCAL-00301" summary="started on new dataset class">
-      <option name="closed" value="true" />
-      <created>1729844964267</created>
-      <option name="number" value="00301" />
-      <option name="presentableId" value="LOCAL-00301" />
-      <option name="project" value="LOCAL" />
-      <updated>1729844964267</updated>
-    </task>
-    <task id="LOCAL-00302" summary="added download script for Dortmund Vital dataset">
-      <option name="closed" value="true" />
-      <created>1729845150398</created>
-      <option name="number" value="00302" />
-      <option name="presentableId" value="LOCAL-00302" />
-      <option name="project" value="LOCAL" />
-      <updated>1729845150398</updated>
-    </task>
-    <task id="LOCAL-00303" summary="changed download bash file to download dortmund vital">
-      <option name="closed" value="true" />
-      <created>1729845205055</created>
-      <option name="number" value="00303" />
-      <option name="presentableId" value="LOCAL-00303" />
-      <option name="project" value="LOCAL" />
-      <updated>1729845205055</updated>
-    </task>
-    <task id="LOCAL-00304" summary="config file">
-      <option name="closed" value="true" />
-      <created>1729852445089</created>
-      <option name="number" value="00304" />
-      <option name="presentableId" value="LOCAL-00304" />
-      <option name="project" value="LOCAL" />
-      <updated>1729852445089</updated>
-    </task>
-    <task id="LOCAL-00305" summary="flake8 fix">
-      <option name="closed" value="true" />
-      <created>1729852515265</created>
-      <option name="number" value="00305" />
-      <option name="presentableId" value="LOCAL-00305" />
-      <option name="project" value="LOCAL" />
-      <updated>1729852515265</updated>
     </task>
     <task id="LOCAL-00306" summary="ran tox">
       <option name="closed" value="true" />
@@ -709,7 +566,151 @@
       <option name="project" value="LOCAL" />
       <updated>1735906361295</updated>
     </task>
-    <option name="localTasksCounter" value="337" />
+    <task id="LOCAL-00337" summary="improved plot scripts">
+      <option name="closed" value="true" />
+      <created>1735913224429</created>
+      <option name="number" value="00337" />
+      <option name="presentableId" value="LOCAL-00337" />
+      <option name="project" value="LOCAL" />
+      <updated>1735913224429</updated>
+    </task>
+    <task id="LOCAL-00338" summary="falke8 fix">
+      <option name="closed" value="true" />
+      <created>1735913256449</created>
+      <option name="number" value="00338" />
+      <option name="presentableId" value="LOCAL-00338" />
+      <option name="project" value="LOCAL" />
+      <updated>1735913256449</updated>
+    </task>
+    <task id="LOCAL-00339" summary="saving fig instead of .plot()">
+      <option name="closed" value="true" />
+      <created>1735913818687</created>
+      <option name="number" value="00339" />
+      <option name="presentableId" value="LOCAL-00339" />
+      <option name="project" value="LOCAL" />
+      <updated>1735913818687</updated>
+    </task>
+    <task id="LOCAL-00340" summary="made it possible to compute power in parallel">
+      <option name="closed" value="true" />
+      <created>1735919805298</created>
+      <option name="number" value="00340" />
+      <option name="presentableId" value="LOCAL-00340" />
+      <option name="project" value="LOCAL" />
+      <updated>1735919805298</updated>
+    </task>
+    <task id="LOCAL-00341" summary="fixed path">
+      <option name="closed" value="true" />
+      <created>1735994271621</created>
+      <option name="number" value="00341" />
+      <option name="presentableId" value="LOCAL-00341" />
+      <option name="project" value="LOCAL" />
+      <updated>1735994271621</updated>
+    </task>
+    <task id="LOCAL-00342" summary="fixed path">
+      <option name="closed" value="true" />
+      <created>1735994338203</created>
+      <option name="number" value="00342" />
+      <option name="presentableId" value="LOCAL-00342" />
+      <option name="project" value="LOCAL" />
+      <updated>1735994338203</updated>
+    </task>
+    <task id="LOCAL-00343" summary="fixed paths">
+      <option name="closed" value="true" />
+      <created>1735996346786</created>
+      <option name="number" value="00343" />
+      <option name="presentableId" value="LOCAL-00343" />
+      <option name="project" value="LOCAL" />
+      <updated>1735996346786</updated>
+    </task>
+    <task id="LOCAL-00344" summary="improved plot script">
+      <option name="closed" value="true" />
+      <created>1735996371032</created>
+      <option name="number" value="00344" />
+      <option name="presentableId" value="LOCAL-00344" />
+      <option name="project" value="LOCAL" />
+      <updated>1735996371032</updated>
+    </task>
+    <task id="LOCAL-00345" summary="changed bash script">
+      <option name="closed" value="true" />
+      <created>1735996382099</created>
+      <option name="number" value="00345" />
+      <option name="presentableId" value="LOCAL-00345" />
+      <option name="project" value="LOCAL" />
+      <updated>1735996382099</updated>
+    </task>
+    <task id="LOCAL-00346" summary="removed unused anchor">
+      <option name="closed" value="true" />
+      <created>1736008068800</created>
+      <option name="number" value="00346" />
+      <option name="presentableId" value="LOCAL-00346" />
+      <option name="project" value="LOCAL" />
+      <updated>1736008068800</updated>
+    </task>
+    <task id="LOCAL-00347" summary="fixed typo">
+      <option name="closed" value="true" />
+      <created>1736500305193</created>
+      <option name="number" value="00347" />
+      <option name="presentableId" value="LOCAL-00347" />
+      <option name="project" value="LOCAL" />
+      <updated>1736500305193</updated>
+    </task>
+    <task id="LOCAL-00348" summary="added target method to dortmund vital">
+      <option name="closed" value="true" />
+      <created>1736512836964</created>
+      <option name="number" value="00348" />
+      <option name="presentableId" value="LOCAL-00348" />
+      <option name="project" value="LOCAL" />
+      <updated>1736512836964</updated>
+    </task>
+    <task id="LOCAL-00349" summary="Started on baseline script">
+      <option name="closed" value="true" />
+      <created>1736516438397</created>
+      <option name="number" value="00349" />
+      <option name="presentableId" value="LOCAL-00349" />
+      <option name="project" value="LOCAL" />
+      <updated>1736516438397</updated>
+    </task>
+    <task id="LOCAL-00350" summary="refactoring and added more runs">
+      <option name="closed" value="true" />
+      <created>1736516456845</created>
+      <option name="number" value="00350" />
+      <option name="presentableId" value="LOCAL-00350" />
+      <option name="project" value="LOCAL" />
+      <updated>1736516456846</updated>
+    </task>
+    <task id="LOCAL-00351" summary="refactoring">
+      <option name="closed" value="true" />
+      <created>1736516472132</created>
+      <option name="number" value="00351" />
+      <option name="presentableId" value="LOCAL-00351" />
+      <option name="project" value="LOCAL" />
+      <updated>1736516472132</updated>
+    </task>
+    <task id="LOCAL-00352" summary="improved how to select input/output frequency bands and ocular states">
+      <option name="closed" value="true" />
+      <created>1736516501461</created>
+      <option name="number" value="00352" />
+      <option name="presentableId" value="LOCAL-00352" />
+      <option name="project" value="LOCAL" />
+      <updated>1736516501461</updated>
+    </task>
+    <task id="LOCAL-00353" summary="changed configurations">
+      <option name="closed" value="true" />
+      <created>1736516729239</created>
+      <option name="number" value="00353" />
+      <option name="presentableId" value="LOCAL-00353" />
+      <option name="project" value="LOCAL" />
+      <updated>1736516729239</updated>
+    </task>
+    <task id="LOCAL-00354" summary="optimised imports">
+      <option name="closed" value="true" />
+      <created>1736516781398</created>
+      <option name="number" value="00354" />
+      <option name="presentableId" value="LOCAL-00354" />
+      <option name="project" value="LOCAL" />
+      <updated>1736516781398</updated>
+    </task>
+    <option name="localTasksCounter" value="355" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -724,23 +725,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added method to enum class" />
-    <MESSAGE value="minor cosmetic" />
-    <MESSAGE value="added script for data visualisation" />
-    <MESSAGE value="added methods to DortmundVital dataset" />
-    <MESSAGE value="added average referencing" />
-    <MESSAGE value="added doctest" />
-    <MESSAGE value="added DortmundVital to available datasets" />
-    <MESSAGE value="flake8 fix" />
-    <MESSAGE value="auto update" />
-    <MESSAGE value="keyfix" />
-    <MESSAGE value="using all subjects" />
-    <MESSAGE value="added autoreject for pseudo-targets" />
-    <MESSAGE value="fix" />
-    <MESSAGE value="fixes for converting to epochs before autoreject" />
-    <MESSAGE value="added cropping and fixes for PSD on epochs object" />
-    <MESSAGE value="key fix" />
-    <MESSAGE value="clean up and optimised imports" />
     <MESSAGE value="fixes for preprocessing a new dataset without re-preprocessing existing ones" />
     <MESSAGE value="config files" />
     <MESSAGE value="ran tox" />
@@ -749,6 +733,23 @@
     <MESSAGE value="added minimum number of epochs for power calculations instead of preprocessing" />
     <MESSAGE value="fixes for computing band power. skipping subject if insufficient amount of epochs" />
     <MESSAGE value="improved pipeline for computing band power" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved pipeline for computing band power" />
+    <MESSAGE value="improved plot scripts" />
+    <MESSAGE value="falke8 fix" />
+    <MESSAGE value="saving fig instead of .plot()" />
+    <MESSAGE value="made it possible to compute power in parallel" />
+    <MESSAGE value="fixed path" />
+    <MESSAGE value="fixed paths" />
+    <MESSAGE value="improved plot script" />
+    <MESSAGE value="changed bash script" />
+    <MESSAGE value="removed unused anchor" />
+    <MESSAGE value="fixed typo" />
+    <MESSAGE value="added target method to dortmund vital" />
+    <MESSAGE value="Started on baseline script" />
+    <MESSAGE value="refactoring and added more runs" />
+    <MESSAGE value="refactoring" />
+    <MESSAGE value="improved how to select input/output frequency bands and ocular states" />
+    <MESSAGE value="changed configurations" />
+    <MESSAGE value="optimised imports" />
+    <option name="LAST_COMMIT_MESSAGE" value="optimised imports" />
   </component>
 </project>
