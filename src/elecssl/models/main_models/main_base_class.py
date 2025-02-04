@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import torch
 import torch.nn as nn
 
 
@@ -11,8 +12,19 @@ class MainModuleBase(nn.Module):
 
     @classmethod
     def load_model(cls, path: Path) -> "MainModuleBase":
-        raise NotImplementedError
+        model = torch.load(path)
+        if not isinstance(model, cls):
+            raise ModuleLoadError(f"Expected the loaded module to be from the same class as attempted loaded from "
+                                  f"({cls.__name__}), but got {type(model)}")
+        return model
 
-    @classmethod
-    def save_model(cls, name: str, path: Path):
-        raise NotImplementedError
+    def save_model(self, name: str, path: Path):
+        # todo: Sub-optimal to use this saving
+        torch.save(self, (path / name).with_suffix(".pt"))
+
+
+# ----------
+# Errors
+# ----------
+class ModuleLoadError(Exception):
+    ...
