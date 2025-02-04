@@ -21,7 +21,7 @@ from elecssl.models.metrics import Histories, save_discriminator_histories_plots
 from elecssl.models.utils import tensor_dict_to_device
 
 
-class SSLExperiment:
+class SingleExperiment:
     """
     Class for running a single experiment. The model is trained on an SSL task while relationships to other variables
     (specified in the config file, such as age or a cognitive test score)
@@ -69,7 +69,7 @@ class SSLExperiment:
         # Otherwise, document the error received in a text file
         with open((self._results_path / exc_type.__name__).with_suffix(".txt"), "w") as file:
             file.write("Traceback (most recent call last):\n")
-            traceback.print_tb(exc_tb, file=file)
+            traceback.print_tb(exc_tb, file=file)  # type: ignore
             file.write(f"{exc_type.__name__}: {exc_val}")
 
     # -------------
