@@ -2,20 +2,20 @@ import copy
 from typing import List, Dict
 
 import torch
-import torch.nn as nn
 from progressbar import progressbar
 
 from elecssl.data.data_generators.data_generator import strip_tensors
-from elecssl.data.subject_split import Subject
 from elecssl.data.datasets.dataset_base import ChannelSystem
+from elecssl.data.subject_split import Subject
 from elecssl.models.domain_adaptation.domain_discriminators.getter import get_domain_discriminator
+from elecssl.models.main_models.main_base_class import MainModuleBase
 from elecssl.models.metrics import Histories, is_improved_model
 from elecssl.models.mts_modules.getter import get_mts_module
 from elecssl.models.region_based_pooling.region_based_pooling import RegionBasedPooling, RBPDesign, RBPPoolType
 from elecssl.models.utils import tensor_dict_to_device, flatten_targets, ReverseLayerF
 
 
-class MainRBPModel(nn.Module):
+class MainRBPModel(MainModuleBase):
     """
     Main model supporting use of RBP. That is, this class uses RBP as a first layer, followed by an MTS module
 
