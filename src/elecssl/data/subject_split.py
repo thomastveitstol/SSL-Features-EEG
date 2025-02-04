@@ -109,7 +109,7 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
     (Subject(subject_id='Russel', dataset_name='Mercedes'), Subject(subject_id='Wolff', dataset_name='Mercedes'))
     """
 
-    def __init__(self, dataset_subjects, *, val_split, test_split, num_random_splits, seed=None):
+    def __init__(self, dataset_subjects, *, val_split, test_split, num_random_splits, seed):
         """
         Initialise
 
@@ -119,7 +119,7 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
         val_split : float
         test_split : float
         num_random_splits : int
-        seed : int
+        seed : int, optional
         """
         # Maybe make data split reproducible
         if seed is not None:
