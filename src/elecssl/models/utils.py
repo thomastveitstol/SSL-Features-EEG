@@ -1,4 +1,7 @@
 import abc
+import copy
+from collections.abc import Mapping
+from functools import reduce
 
 import numpy
 import torch
@@ -322,6 +325,56 @@ def verify_type(data, types):
         return data
     raise TypeError(f"Failed when trying to verify type. Expected input to be of type(s) {types}, but found "
                     f"{type(data)}")
+
+
+def merge_dicts(*dicts):
+    """
+    Recursively merges multiple nested dictionaries without modifying the inputs. Convenient for merging dictionaries
+    loaded from .yaml files, where there is a hierarchical system. It was written by ChatGPT
+
+    If two dictionaries have the same key:
+    - If the values are dictionaries, they are merged recursively.
+    - Otherwise, the value from the last dictionary is used.
+
+    Notes
+    -----
+    This function ensures that the input dictionaries remain unchanged.
+
+    Parameters
+    ----------
+    *dicts : dict
+        One or more dictionaries to be merged.
+
+    Returns
+    -------
+    dict
+        A new dictionary with merged values.
+
+    Examples
+    --------
+    >>> d1 = {"a": {"x": 1, "y": 2}, "b": {"z": 3}}
+    >>> d2 = {"a": {"y": 20, "z": 30}, "b": {"w": 40}}
+    >>> d3 = {"c": {"m": 50}}
+    >>> merge_dicts(d1, d2, d3)
+    {'a': {'x': 1, 'y': 20, 'z': 30}, 'b': {'z': 3, 'w': 40}, 'c': {'m': 50}}
+
+    The input dictionaries remain unchanged
+
+    >>> d1, d2, d3  # doctest: +NORMALIZE_WHITESPACE
+    ({'a': {'x': 1, 'y': 2}, 'b': {'z': 3}},
+     {'a': {'y': 20, 'z': 30}, 'b': {'w': 40}},
+     {'c': {'m': 50}})
+    """
+    def merge_two(d1, d2):
+        merged = copy.deepcopy(d1)  # Ensure immutability
+        for key, value in d2.items():
+            if isinstance(value, Mapping) and isinstance(merged.get(key), Mapping):
+                merged[key] = merge_two(merged[key], value)  # Recursive merge
+            else:
+                merged[key] = copy.deepcopy(value)  # Copy value to avoid mutation
+        return merged
+
+    return reduce(merge_two, dicts, {})
 
 
 # -------------------------
