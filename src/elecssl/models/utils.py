@@ -359,6 +359,8 @@ def merge_dicts(*dicts):
     {'a': {'x': 1, 'y': 20, 'z': 30}, 'b': {'z': 3, 'w': 40}, 'c': {'m': 50}}
     >>> merge_dicts(d1)
     {'a': {'x': 1, 'y': 2}, 'b': {'z': 3}}
+    >>> merge_dicts(d1, {})
+    {'a': {'x': 1, 'y': 2}, 'b': {'z': 3}}
 
     The input dictionaries remain unchanged
 
