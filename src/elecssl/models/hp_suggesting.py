@@ -18,7 +18,7 @@ def _get_num_time_steps(preprocessed_config_path, freq_band, suggested_preproces
     return f_max * suggested_preprocessing_steps["sfreq_multiple"] * suggested_preprocessing_steps["input_length"]
 
 
-def _suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps, preprocessed_config_path, freq_band):
+def suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps, preprocessed_config_path, freq_band):
     # Architecture
     model = trial.suggest_categorical(f"{name}_architecture", choices=config.keys())
 
@@ -37,7 +37,7 @@ def _suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps,
     return {"model": model, "kwargs": kwargs}
 
 
-def _suggest_loss(name, trial, config):
+def suggest_loss(name, trial, config):
     loss = trial.suggest_categorical(f"{name}_loss", **config["loss"])
 
     # Sample re-weighting
@@ -124,7 +124,7 @@ def _suggest_interpolation(name, trial, config):
     return {"name": "Interpolation", "kwargs": {"method": method, "main_channel_system": main_channel_system}}
 
 
-def _suggest_spatial_dimension_mismatch(name, trial, config, normalisation, cmmn):
+def suggest_spatial_dimension_mismatch(name, trial, config, normalisation, cmmn):
     method = trial.suggest_categorical(f"{name}_spatial_dimension_handling", **config["SpatialDimensionMismatch"])
     if method == "RegionBasedPooling":
         return _suggest_rbp(name=name, trial=trial, config=config["RegionBasedPooling"], normalisation=normalisation,
@@ -180,6 +180,7 @@ def make_trial_suggestion(trial, *, name, method, kwargs):
     return func(name, **kwargs)
 
 
+# Deprecated, should use self.suggest_hyperparameters instead
 def suggest_hyperparameters(name, config, trial, experiments_config, in_freq_band, preprocessed_config_path):
     """
     Function for suggesting HPs using optuna
@@ -238,17 +239,17 @@ def suggest_hyperparameters(name, config, trial, experiments_config, in_freq_ban
         cmmn = {"use_cmmn_layer": False, "kwargs": {}}
 
     # DL architecture
-    suggested_hps["DLArchitecture"] = _suggest_dl_architecture(
+    suggested_hps["DLArchitecture"] = suggest_dl_architecture(
         name=name, trial=trial, config=config["DLArchitectures"],
         suggested_preprocessing_steps=suggested_hps["Preprocessing"], freq_band=in_freq_band,
         preprocessed_config_path=preprocessed_config_path
     )
 
     # Loss
-    suggested_hps["Loss"] = _suggest_loss(name=name, trial=trial, config=config["Loss"])
+    suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=config["Loss"])
 
     # Handling varied numbers of electrodes
-    suggested_hps["SpatialDimensionMismatch"] = _suggest_spatial_dimension_mismatch(
+    suggested_hps["SpatialDimensionMismatch"] = suggest_spatial_dimension_mismatch(
         name=name, trial=trial, config=config, normalisation=normalisation, cmmn=cmmn
     )
 
