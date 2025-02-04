@@ -327,6 +327,53 @@ def verify_type(data, types):
                     f"{type(data)}")
 
 
+def verified_performance_score(score, metric):
+    """
+    Returns a verified performance score, handling NaN values appropriately.
+
+    If the score is NaN:
+    - Returns `0.0` for correlation-based metrics.
+    - Raises a `ValueError` for other metrics.
+
+    Parameters
+    ----------
+    score : float
+        The performance score to verify.
+    metric : str
+        The name of the metric associated with the score.
+
+    Returns
+    -------
+    float
+        The original score if it is valid, or a default value if the score is NaN.
+
+    Raises
+    ------
+    ValueError
+        If the score is NaN and no default behavior is implemented for the given metric.
+
+    Examples
+    --------
+    >>> verified_performance_score(0.85, "accuracy")
+    0.85
+    >>> verified_performance_score(float("nan"), "pearson_r")
+    0.0
+    >>> verified_performance_score(float("nan"), "unknown_metric")
+    Traceback (most recent call last):
+    ...
+    ValueError: Received the non-numeric score 'nan' for a metric 'unknown_metric' without an implemented default
+    """
+    # Not a problem
+    if not numpy.isnan(score):
+        return score
+
+    # We set correlations to 0
+    if metric in ("pearson_r", "spearman_rho"):
+        return 0.0
+
+    raise ValueError(f"Received the non-numeric score '{score}' for a metric '{metric}' without an implemented default")
+
+
 def merge_dicts(*dicts):
     """
     Recursively merges multiple nested dictionaries without modifying the inputs. Convenient for merging dictionaries
