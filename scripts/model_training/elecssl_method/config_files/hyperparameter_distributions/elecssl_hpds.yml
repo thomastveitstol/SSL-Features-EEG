@@ -1,0 +1,6 @@
+# -----------------
+# The ML model operating on the biomarkers
+# -----------------
+MLModel:
+  model: LinearRegression
+  kwargs: {}

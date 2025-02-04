@@ -1,0 +1,30 @@
+# -----------------
+# Datasets
+# -----------------
+Datasets: &Datasets
+  LEMON:
+    num_subjects: 203
+    num_time_steps: null
+    time_series_start: null
+
+# -----------------
+# Configuration for subject splitting
+# -----------------
+SubjectSplit:
+  name: RandomSplitsTVTestHoldout
+  kwargs:
+    val_split: 0.2
+    test_split: 0.3
+    num_random_splits: 5
+    seed: 42
+val_scores_aggregation: median  # To use median or average of folds
+SubGroups:
+  sub_groups:
+    dataset_name: !GetKeys { <<: *Datasets }
+  verbose: false
+
+# -----------------
+# Training configurations
+# -----------------
+Training:
+  target: age
