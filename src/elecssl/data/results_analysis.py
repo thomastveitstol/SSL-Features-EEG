@@ -1,7 +1,9 @@
 import os
+from pathlib import Path
 from types import MappingProxyType
 from typing import NamedTuple
 
+import optuna
 import pandas
 
 from elecssl.data.datasets.dataset_base import OcularState
@@ -56,6 +58,11 @@ def is_better(metric, *, old_performance, new_performance):
 # ----------------
 # Functions for getting stuff
 # ----------------
+def load_hpo_study(path: Path):
+    storage_url = f"sqlite:///{path / 'optuna-study.db'}"
+    return optuna.load_study(study_name="optuna-study", storage=storage_url)
+
+
 def get_successful_regression_performance_runs(results_dir):
     # Get all folder names
     all_runs = os.listdir(results_dir)
