@@ -377,7 +377,7 @@ def verified_performance_score(score, metric):
 def merge_dicts(*dicts):
     """
     Recursively merges multiple nested dictionaries without modifying the inputs. Convenient for merging dictionaries
-    loaded from .yaml files, where there is a hierarchical system. It was written by ChatGPT
+    loaded from .yaml files, where there is a hierarchical system. It was mostly written by ChatGPT
 
     If two dictionaries have the same key:
     - If the values are dictionaries, they are merged recursively.
