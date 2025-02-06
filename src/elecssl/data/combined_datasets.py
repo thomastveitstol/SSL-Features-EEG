@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple, Union, Any
 import numpy
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, ChannelSystem
-from elecssl.data.datasets.getter import get_dataset
+from elecssl.data.datasets.getter import get_dataset, get_channel_system
 from elecssl.data.interpolate_datasets import interpolate_datasets
 from elecssl.data.subject_split import Subject
 
@@ -116,9 +116,13 @@ class CombinedDatasets:
                 }
 
             # Interpolate
+            if main_channel_system in non_interpolated:
+                target_channel_system = non_interpolated[main_channel_system]["channel_system"]
+            else:
+                target_channel_system = get_channel_system(main_channel_system)
             self._data = interpolate_datasets(
                 datasets=non_interpolated, method=interpolation_method, sampling_freq=sampling_freq,
-                main_channel_system=non_interpolated[main_channel_system]["channel_system"]
+                main_channel_system=target_channel_system
             )
 
         self._targets = None if target is None \
