@@ -20,7 +20,7 @@ HPO:
   HPOStudy:
     sampler: !HPOSampler [ TPESampler, { } ]
     direction: maximize  # todo: this must depend on the selected target
-  num_trials: 11
+  num_trials: 50
 
 # -----------------
 # Configuration for subject splitting

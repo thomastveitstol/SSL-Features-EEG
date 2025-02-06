@@ -3,7 +3,7 @@
 # -----------------
 Datasets: &DownstreamDatasets
   LEMON:
-    num_subjects: 40
+    num_subjects: 203
     num_time_steps: null
     time_series_start: null
 
@@ -15,7 +15,7 @@ SubjectSplit:
   kwargs:
     val_split: 0.2
     test_split: 0.3
-    num_random_splits: 5  # todo: this should be the same as the pretext task
+    num_random_splits: 1  # todo: this should be the same as the pretext task
     seed: 42
 val_scores_aggregation: median  # To use median or average of folds
 SubGroups:
