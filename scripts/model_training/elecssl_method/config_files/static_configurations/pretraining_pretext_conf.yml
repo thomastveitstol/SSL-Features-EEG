@@ -1,11 +1,8 @@
 # -----------------
-# Datasets
+# Training configurations
 # -----------------
-Datasets: &Datasets
-  LEMON:
-    num_subjects: 20
-    num_time_steps: null
-    time_series_start: null
+Training:  # log transforming the power values
+  log_transform_targets: log10
 
 # -----------------
 # Configuration for subject splitting
@@ -15,16 +12,10 @@ SubjectSplit:
   kwargs:
     val_split: 0.2
     test_split: 0.3
-    num_random_splits: 5
+    num_random_splits: 2
     seed: 42
 val_scores_aggregation: median  # To use median or average of folds
 SubGroups:
   sub_groups:
-    dataset_name: !GetKeys { <<: *Datasets }
+    dataset_name: UNAVAILABLE  # This will be inferred after the datasets have been selection by the HPO algorithm
   verbose: false
-
-# -----------------
-# Training configurations
-# -----------------
-Training:
-  target: age

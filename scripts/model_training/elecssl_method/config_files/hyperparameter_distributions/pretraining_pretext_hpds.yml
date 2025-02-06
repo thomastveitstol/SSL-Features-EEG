@@ -1,0 +1,19 @@
+out_freq_band: { choices: [ delta, theta, alpha, beta, gamma ] }
+selection_metric: { choices: [ mae, mse, r2_score, pearson_r, spearman_rho ] }
+
+# -----------------
+# Dataset pretext tasks
+# -----------------
+Datasets:
+  LEMON:
+    num_subjects: 21
+    num_time_steps: null
+    time_series_start: null
+  Wang:
+    num_subjects: 22
+    num_time_steps: null
+    time_series_start: null
+  DortmundVital:
+    num_subjects: 23
+    num_time_steps: null
+    time_series_start: null

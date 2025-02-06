@@ -1,0 +1,4 @@
+force_pretraining: false  # If no datasets, are used for pre-training, prune the trial (true) or not (false)
+in_ocular_state: ec  # It is possible to make these HPs, but we would lose the connection to reactivity I think
+out_ocular_state: eo
+in_freq_band: all

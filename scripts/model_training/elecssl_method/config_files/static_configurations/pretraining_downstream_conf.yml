@@ -1,9 +1,9 @@
 # -----------------
 # Datasets
 # -----------------
-Datasets: &Datasets
+Datasets: &DownstreamDatasets
   LEMON:
-    num_subjects: 20
+    num_subjects: 40
     num_time_steps: null
     time_series_start: null
 
@@ -15,12 +15,12 @@ SubjectSplit:
   kwargs:
     val_split: 0.2
     test_split: 0.3
-    num_random_splits: 5
+    num_random_splits: 2  # todo: this should be the same as the pretext task
     seed: 42
 val_scores_aggregation: median  # To use median or average of folds
 SubGroups:
   sub_groups:
-    dataset_name: !GetKeys { <<: *Datasets }
+    dataset_name: !GetKeys { <<: *DownstreamDatasets }
   verbose: false
 
 # -----------------
