@@ -1,1 +1,15 @@
 python3 -m elecssl_hpo
+python3 -m pretraining_hpo
+python3 -m prediction_models_hpo
+python3 -m elecssl_hpo
+python3 -m pretraining_hpo
+python3 -m prediction_models_hpo
+python3 -m elecssl_hpo
+python3 -m pretraining_hpo
+python3 -m prediction_models_hpo
+python3 -m elecssl_hpo
+python3 -m pretraining_hpo
+python3 -m prediction_models_hpo
+python3 -m elecssl_hpo
+python3 -m pretraining_hpo
+python3 -m prediction_models_hpo

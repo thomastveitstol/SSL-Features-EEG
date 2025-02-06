@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from elecssl.data.paths import get_results_dir
-from elecssl.models.experiments.hpo_experiment import ElecsslHPO
+from elecssl.models.experiments.hpo_experiment import PredictionModelsHPO
 
 
 def main():
@@ -14,25 +14,25 @@ def main():
     # Non-HPO related configurations
     static_conf_folder = config_folder / "static_configurations"
     shared_static_path = static_conf_folder / "shared_conf.yml"
-    elecssl_static_path = static_conf_folder / "elecssl_conf.yml"
+    prediction_models_static_path = static_conf_folder / "prediction_models_conf.yml"
 
     # HPO related configurations
     hpd_folder = config_folder / "hyperparameter_distributions"
     shared_hpd_path = hpd_folder / "shared_hpds.yml"
-    elecssl_hpd_path = hpd_folder / "elecssl_hpds.yml"
+    prediction_models_hpd_path = hpd_folder / "prediction_models_hpds.yml"
 
     results_dir = get_results_dir()
 
     # ----------------
     # Run experiment
     # ----------------
-    # Elecssl
-    elecssl_experiment = ElecsslHPO(
-        hp_config_paths=(shared_hpd_path, elecssl_hpd_path),
-        experiments_config_paths=(shared_static_path, elecssl_static_path),
+    # Non-pretrained prediction models
+    prediction_models_experiment = PredictionModelsHPO(
+        hp_config_paths=(shared_hpd_path, prediction_models_hpd_path),
+        experiments_config_paths=(shared_static_path, prediction_models_static_path),
         results_dir=results_dir
     )
-    with elecssl_experiment as experiment:
+    with prediction_models_experiment as experiment:
         experiment.run_hyperparameter_optimisation()
 
 
