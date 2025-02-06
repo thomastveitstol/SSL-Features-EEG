@@ -4,16 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added option to use interpolation to a channel system which is not part of the loaded input data">
-      <change afterPath="$PROJECT_DIR$/scripts/results/plots/sandbox.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/.coverage" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="updates and fixes to run script">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/elecssl_conf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/elecssl_conf.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/elecssl_hpo.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/elecssl_hpo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/multiple_scripts.bash" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/multiple_scripts.bash" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl.egg-info/SOURCES.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl.egg-info/SOURCES.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/models/main_models/main_base_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/models/main_models/main_base_class.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -324,46 +316,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00309" summary="minor refactoring">
-      <option name="closed" value="true" />
-      <created>1733484650798</created>
-      <option name="number" value="00309" />
-      <option name="presentableId" value="LOCAL-00309" />
-      <option name="project" value="LOCAL" />
-      <updated>1733484650799</updated>
-    </task>
-    <task id="LOCAL-00310" summary="added method to enum class">
-      <option name="closed" value="true" />
-      <created>1733485216135</created>
-      <option name="number" value="00310" />
-      <option name="presentableId" value="LOCAL-00310" />
-      <option name="project" value="LOCAL" />
-      <updated>1733485216135</updated>
-    </task>
-    <task id="LOCAL-00311" summary="minor cosmetic">
-      <option name="closed" value="true" />
-      <created>1733485238307</created>
-      <option name="number" value="00311" />
-      <option name="presentableId" value="LOCAL-00311" />
-      <option name="project" value="LOCAL" />
-      <updated>1733485238307</updated>
-    </task>
-    <task id="LOCAL-00312" summary="added script for data visualisation">
-      <option name="closed" value="true" />
-      <created>1733486916086</created>
-      <option name="number" value="00312" />
-      <option name="presentableId" value="LOCAL-00312" />
-      <option name="project" value="LOCAL" />
-      <updated>1733486916086</updated>
-    </task>
-    <task id="LOCAL-00313" summary="added methods to DortmundVital dataset">
-      <option name="closed" value="true" />
-      <created>1733486979589</created>
-      <option name="number" value="00313" />
-      <option name="presentableId" value="LOCAL-00313" />
-      <option name="project" value="LOCAL" />
-      <updated>1733486979589</updated>
     </task>
     <task id="LOCAL-00314" summary="added average referencing">
       <option name="closed" value="true" />
@@ -717,7 +669,47 @@
       <option name="project" value="LOCAL" />
       <updated>1738835799515</updated>
     </task>
-    <option name="localTasksCounter" value="358" />
+    <task id="LOCAL-00358" summary="improvements to loading main torch model">
+      <option name="closed" value="true" />
+      <created>1738835826075</created>
+      <option name="number" value="00358" />
+      <option name="presentableId" value="LOCAL-00358" />
+      <option name="project" value="LOCAL" />
+      <updated>1738835826075</updated>
+    </task>
+    <task id="LOCAL-00359" summary="Implemented Pretraining HPO. Also, improvements to context manager, some tidying">
+      <option name="closed" value="true" />
+      <created>1738835939325</created>
+      <option name="number" value="00359" />
+      <option name="presentableId" value="LOCAL-00359" />
+      <option name="project" value="LOCAL" />
+      <updated>1738835939325</updated>
+    </task>
+    <task id="LOCAL-00360" summary="added sandbox script">
+      <option name="closed" value="true" />
+      <created>1738835977508</created>
+      <option name="number" value="00360" />
+      <option name="presentableId" value="LOCAL-00360" />
+      <option name="project" value="LOCAL" />
+      <updated>1738835977508</updated>
+    </task>
+    <task id="LOCAL-00361" summary="irrelevant changes">
+      <option name="closed" value="true" />
+      <created>1738835991161</created>
+      <option name="number" value="00361" />
+      <option name="presentableId" value="LOCAL-00361" />
+      <option name="project" value="LOCAL" />
+      <updated>1738835991161</updated>
+    </task>
+    <task id="LOCAL-00362" summary="updates and fixes to run script">
+      <option name="closed" value="true" />
+      <created>1738836070096</created>
+      <option name="number" value="00362" />
+      <option name="presentableId" value="LOCAL-00362" />
+      <option name="project" value="LOCAL" />
+      <updated>1738836070096</updated>
+    </task>
+    <option name="localTasksCounter" value="363" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -732,11 +724,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="minor changes" />
-    <MESSAGE value="added minimum number of epochs for power calculations" />
-    <MESSAGE value="added minimum number of epochs for power calculations instead of preprocessing" />
-    <MESSAGE value="fixes for computing band power. skipping subject if insufficient amount of epochs" />
-    <MESSAGE value="improved pipeline for computing band power" />
     <MESSAGE value="improved plot scripts" />
     <MESSAGE value="falke8 fix" />
     <MESSAGE value="saving fig instead of .plot()" />
@@ -757,6 +744,11 @@
     <MESSAGE value="refactoring of config files" />
     <MESSAGE value="clean-up and added fine-tuning to SingleExperiment" />
     <MESSAGE value="added option to use interpolation to a channel system which is not part of the loaded input data" />
-    <option name="LAST_COMMIT_MESSAGE" value="added option to use interpolation to a channel system which is not part of the loaded input data" />
+    <MESSAGE value="improvements to loading main torch model" />
+    <MESSAGE value="Implemented Pretraining HPO. Also, improvements to context manager, some tidying" />
+    <MESSAGE value="added sandbox script" />
+    <MESSAGE value="irrelevant changes" />
+    <MESSAGE value="updates and fixes to run script" />
+    <option name="LAST_COMMIT_MESSAGE" value="updates and fixes to run script" />
   </component>
 </project>

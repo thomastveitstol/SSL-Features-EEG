@@ -54,9 +54,13 @@ class SingleExperiment:
         if fine_tuning is None:
             os.mkdir(results_path)
 
-        # Save HP file (experiments should be stored before running this)
+        # Save HP file
         with open(results_path / "hpo_config.yml", "w") as file:
             yaml.safe_dump(hp_config, file)
+
+        # Save experiments file
+        with open(results_path / "experiments_config.yml", "w") as file:
+            yaml.safe_dump(experiments_config, file)
 
         # Store attributes
         self._hp_config = hp_config
