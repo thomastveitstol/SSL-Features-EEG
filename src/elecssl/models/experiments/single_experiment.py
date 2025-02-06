@@ -54,12 +54,11 @@ class SingleExperiment:
         if fine_tuning is None:
             os.mkdir(results_path)
 
-        # Save HP file
-        with open(results_path / "hpo_config.yml", "w") as file:
+        # Save config files
+        prefix_name = "" if experiment_name is None else f"{experiment_name}_"
+        with open(results_path / f"{prefix_name}hpc_config.yml", "w") as file:
             yaml.safe_dump(hp_config, file)
-
-        # Save experiments file
-        with open(results_path / "experiments_config.yml", "w") as file:
+        with open(results_path / f"{prefix_name}experiments_config.yml", "w") as file:
             yaml.safe_dump(experiments_config, file)
 
         # Store attributes
@@ -86,7 +85,8 @@ class SingleExperiment:
             return None
 
         # Otherwise, document the error received in a text file
-        with open((self._results_path / exc_type.__name__).with_suffix(".txt"), "w") as file:
+        prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
+        with open((self._results_path / f"{prefix_name}{exc_type.__name__}").with_suffix(".txt"), "w") as file:
             file.write("Traceback (most recent call last):\n")
             traceback.print_tb(exc_tb, file=file)  # type: ignore
             file.write(f"{exc_type.__name__}: {exc_val}")
