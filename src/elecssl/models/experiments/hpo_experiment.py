@@ -6,7 +6,7 @@ import warnings
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, Any, Callable, Tuple, List
+from typing import Dict, Any, Callable, Tuple, List, Iterable
 
 import numpy
 import optuna
@@ -46,9 +46,11 @@ class HPOExperiment(abc.ABC):
     def __exit__(self, exc_type, exc_val, exc_tb):
         """This will execute when exiting the with statement. It will NOT execute if the run was killed by the operating
         system, which can happen if too much data is loaded into memory"""
-        # If everything was as it should, just exit
+        # If everything was as it should, create an open file that indicates no errors
         if exc_val is None:
-            return None
+            with open(self._results_path / "finished_successfully.txt", "w"):
+                pass
+            return
 
         # Otherwise, document the error received in a text file
         with open((self._results_path / exc_type.__name__).with_suffix(".txt"), "w") as file:
@@ -61,49 +63,22 @@ class HPOExperiment(abc.ABC):
         # ---------------
         # Load HP distributions files
         # ---------------
-        # Get loader for the sampling distributions
-        loader = get_yaml_loader()
-
-        # Add additional formatting
-        loader = add_yaml_constructors(loader)
-
         # Merge all HP distribution files. Typically (most likely always) a shared HPD yml file and a specific one
-        hp_configs: List[Dict[str, Any]] = []
-        for hp_config_path in hp_config_paths:
-            if hp_config_path.suffix not in (".yml", "yaml"):
-                raise ValueError(f"Tried to open as a .yml file, but the suffix was not recognised: "
-                                 f"{hp_config_path.suffix}")
-            with open(hp_config_path) as file:
-                config_file = yaml.load(file, Loader=loader)
-
-                # If the config file is empty, we interpret this as if the dict should be empty
-                hp_configs.append(dict() if config_file is None else config_file)
-        hp_config = merge_dicts(*hp_configs)
+        hp_config = _merge_config_files_from_paths(hp_config_paths)
 
         # ---------------
         # Load the other configurations
         # ---------------
-        # Merge all configuration setting files. Typically (most likely always) a shared settings yml file and a
-        # specific one
-        experiments_configs: List[Dict[str, Any]] = []
-        for experiments_config_path in experiments_config_paths:
-            if experiments_config_path.suffix not in (".yml", "yaml"):
-                raise ValueError(f"Tried to open as a .yml file, but the suffix was not recognised: "
-                                 f"{experiments_config_path.suffix}")
-            with open(experiments_config_path) as file:
-                config_file = yaml.load(file, Loader=loader)
-
-                # If the config file is empty, we interpret this as if the dict should be empty
-                experiments_configs.append(dict() if config_file is None else config_file)
-        experiments_config = merge_dicts(*experiments_configs)
+        # Merge all configuration setting files.
+        experiments_config = _merge_config_files_from_paths(experiments_config_paths)
 
         # ---------------
         # Set attributes
         # ---------------
         self._experiments_config: Dict[str, Any] = experiments_config
         self._sampling_config: Dict[str, Any] = hp_config
-        self._results_path = results_dir / (f"{self._name}_hpo_experiment_{date.today()}_"
-                                            f"{datetime.now().strftime('%H%M%S')}")
+        self._results_path = results_dir / self._name / (f"{self._name}_hpo_experiment_{date.today()}_"
+                                                         f"{datetime.now().strftime('%H%M%S')}")
 
         # Make directory
         os.mkdir(self._results_path)
@@ -203,18 +178,6 @@ class HPOExperiment(abc.ABC):
         return self._experiments_config["HPO"]
 
 
-class PretrainHPO(HPOExperiment):
-    """
-    Class for using the pretext task for pretraining
-    """
-
-    __slots__ = ()
-    _name = "pretraining"
-
-    def _create_objective(self):
-        raise NotImplementedError
-
-
 class PredictionModelsHPO(HPOExperiment):
     """
     Class for the prediction models
@@ -250,13 +213,15 @@ class PredictionModelsHPO(HPOExperiment):
             # Make directory for current iteration
             results_dir = self._get_hpo_folder_path(trial)
             with SingleExperiment(hp_config=suggested_hyperparameters, pre_processing_config=preprocessing_config_file,
-                                  experiments_config=experiments_config, results_path=results_dir) as experiment:
+                                  experiments_config=experiments_config, results_path=results_dir,
+                                  fine_tuning=None, experiment_name=None) as experiment:
                 experiment.run_experiment()
 
             # ---------------
             # Get the performance
             # ---------------
-            return self._get_aggregated_val_score(results_dir)
+            return _get_aggregated_val_score(trial_results_dir=results_dir, metric=self.train_config["main_metric"],
+                                             aggregation_method=self._experiments_config["val_scores_aggregation"])
 
         return _objective
 
@@ -268,30 +233,183 @@ class PredictionModelsHPO(HPOExperiment):
         suggested_hps["ocular_state"] = in_ocular_state
         return suggested_hps
 
-    def _get_aggregated_val_score(self, trial_results_dir):
-        """Get the validation score of a trial"""
-        metric = self.train_config["main_metric"]
-        eval_method = max if higher_is_better(metric=metric) else min
+    # --------------
+    # Properties
+    # --------------
+    @property
+    def train_config(self):
+        return {**self._sampling_config["Training"], **self._experiments_config["Training"]}
 
-        # Get scores from all folds. Using best scores
-        scores: List[float] = []
-        for fold in os.listdir(trial_results_dir):
-            if not os.path.isdir(trial_results_dir / fold):
-                # All folders are assumed to be folds, for allowing possible changes in the future
-                continue
-            df = pandas.read_csv(trial_results_dir / fold / "val_history_metrics.csv")
-            score = eval_method(df[metric])
-            print(score)
-            scores.append(verified_performance_score(score=score, metric=metric))
 
-        # Aggregate and return
-        aggregation_method = self._experiments_config["val_scores_aggregation"]
-        if aggregation_method == "mean":
-            return numpy.mean(scores)
-        elif aggregation_method == "median":
-            return numpy.median(scores)
-        raise ValueError(f"Method for aggregating the validation scores across folds was not recognised: "
-                         f"{aggregation_method}")
+class PretrainHPO(HPOExperiment):
+    """
+    Class for using the pretext task for pretraining
+    """
+
+    __slots__ = ("_pretext_experiments_config", "_pretext_sampling_config", "_downstream_experiments_config",
+                 "_downstream_sampling_config")
+    _name = "pretraining"
+
+    def __init__(self, hp_config_paths: Tuple[Path, ...], experiments_config_paths: Tuple[Path, ...],
+                 downstream_hp_config_paths: Tuple[Path, ...], downstream_experiments_config_paths: Tuple[Path, ...],
+                 pretext_hp_config_paths: Tuple[Path, ...], pretext_experiments_config_paths: Tuple[Path, ...],
+                 results_dir: Path):
+        """The 'hp_config_paths' and 'experiments_config_paths' are shared configurations for the pretext and downstream
+        task, such as if using no datasets for pre-training should lead to a pruning of the trial"""
+        # ---------------
+        # Initialise and create everything for the shared stuff
+        # ---------------
+        super().__init__(hp_config_paths, experiments_config_paths, results_dir)
+
+        # ---------------
+        # Create the pretext-specific configurations
+        # ---------------
+        self._downstream_experiments_config = _merge_config_files_from_paths(downstream_experiments_config_paths)
+        self._downstream_sampling_config = _merge_config_files_from_paths(downstream_hp_config_paths)
+
+        self._pretext_experiments_config = _merge_config_files_from_paths(pretext_experiments_config_paths)
+        self._pretext_sampling_config = _merge_config_files_from_paths(pretext_hp_config_paths)
+
+        # ---------------
+        # Save the config files
+        # ---------------
+        safe_dumper = add_yaml_representers(yaml.SafeDumper)
+
+        # Downstream config files
+        with open(self._results_path / "downstream_experiments_config.yml", "w") as file:
+            yaml.dump(self._downstream_experiments_config, file, Dumper=safe_dumper)
+        with open(self._results_path / "downstream_hpd_config.yml", "w") as file:
+            yaml.dump(self._downstream_sampling_config, file, Dumper=safe_dumper)
+
+        # Pretext config files
+        with open(self._results_path / "pretext_experiments_config.yml", "w") as file:
+            yaml.dump(self._pretext_experiments_config, file, Dumper=safe_dumper)
+        with open(self._results_path / "pretext_hpd_config.yml", "w") as file:
+            yaml.dump(self._pretext_sampling_config, file, Dumper=safe_dumper)
+
+    def _create_objective(self):
+        def _objective(trial: optuna.Trial):
+            # todo: should I also add these as HPs?
+            in_ocular_state = self._experiments_config["in_ocular_state"]
+            in_freq_band = self._experiments_config["in_freq_band"]
+            out_ocular_state = self._experiments_config["out_ocular_state"]
+
+            # ---------------
+            # Suggest / sample hyperparameters
+            # ---------------
+            # These HPCs are shared between pretext task and downstream task. Such as the DL architecture
+            suggested_shared_hyperparameters = self._suggest_shared_hyperparameters(
+                name=self._name, trial=trial, in_freq_band=in_freq_band
+            )
+
+            # These HPCs are specific to the pretext task
+            pretext_specific_hpcs, datasets_to_use = self._suggest_pretext_specific_hyperparameters(name="pretext",
+                                                                                                    trial=trial)
+
+            # These HPCs are specific to the downstream task
+            downstream_specific_hpcs = self._suggest_downstream_specific_hyperparameters(name="downstream", trial=trial)
+
+            # Combine the shared and specific HPCs
+            pretext_hpcs = {**suggested_shared_hyperparameters, **pretext_specific_hpcs}
+            downstream_hpcs = {**suggested_shared_hyperparameters, **downstream_specific_hpcs}
+
+            # ---------------
+            # Some additions to the experiment configs
+            # ---------------
+            # For the pretext task
+            incomplete_pretext_experiments_config = self._pretext_experiments_config.copy()
+
+            # Add the selected datasets to pretext task
+            assert "Datasets" not in incomplete_pretext_experiments_config
+            incomplete_pretext_experiments_config["Datasets"] = dict()
+            for dataset_name, dataset_info in datasets_to_use.items():
+                incomplete_pretext_experiments_config["Datasets"][dataset_name] = dataset_info
+
+            pretext_experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
+                experiments_config=incomplete_pretext_experiments_config, in_freq_band=in_freq_band,
+                in_ocular_state=in_ocular_state, suggested_hyperparameters=pretext_hpcs
+            )
+
+            # Must set saving model of pretext task to true
+            pretext_experiments_config["Saving"]["save_model"] = True
+
+            # Adding target
+            target_name = f"band_power_{pretext_specific_hpcs['out_freq_band']}_{out_ocular_state}"
+            pretext_experiments_config["Training"]["target"] = target_name
+
+            # Downstream task
+            downstream_experiments_config, _ = _get_prepared_experiments_config(
+                experiments_config=self._downstream_experiments_config.copy(), in_freq_band=in_freq_band,
+                in_ocular_state=in_ocular_state, suggested_hyperparameters=downstream_hpcs
+            )
+
+            # ---------------
+            # Train on pretext task
+            # ---------------
+            # Make directory for current iteration
+            results_dir = self._get_hpo_folder_path(trial)
+
+            # Only pre-train if we have datasets to pre-train on. Trial pruning is handled elsewhere
+            if pretext_experiments_config["Datasets"]:
+                with SingleExperiment(hp_config=pretext_hpcs, pre_processing_config=preprocessing_config_file,
+                                      experiments_config=pretext_experiments_config, results_path=results_dir,
+                                      fine_tuning=None, experiment_name="pretext") as experiment:
+                    experiment.run_experiment()
+
+            # ---------------
+            # Train on downstream task
+            # ---------------
+            fine_tuning = "pretext" if pretext_experiments_config["Datasets"] else None
+            with SingleExperiment(hp_config=downstream_hpcs, pre_processing_config=preprocessing_config_file,
+                                  experiments_config=downstream_experiments_config, results_path=results_dir,
+                                  fine_tuning=fine_tuning, experiment_name=None) as experiment:
+                experiment.run_experiment()
+
+            # ---------------
+            # Return the performance
+            # ---------------
+            return _get_aggregated_val_score(
+                trial_results_dir=results_dir, metric=self._downstream_experiments_config["Training"]["main_metric"],
+                aggregation_method=self._downstream_experiments_config["val_scores_aggregation"]
+            )
+
+        return _objective
+
+    def _suggest_pretext_specific_hyperparameters(self, trial, name):
+        suggested_hps = dict()
+
+        # Suggest e.g. alpha or beta band power
+        suggested_hps["out_freq_band"] = trial.suggest_categorical(
+            name=f"{name}_out_freq_band", **self._pretext_sampling_config["out_freq_band"]
+        )
+        suggested_hps["pretext_main_metric"] = trial.suggest_categorical(
+            name=f"{name}_selection_metric", **self._pretext_sampling_config["selection_metric"]
+        )
+
+        # Pick the datasets to be used for pre-training
+        datasets_to_use = dict()
+        for dataset_name, dataset_info in self._pretext_sampling_config["Datasets"].items():
+            to_use = trial.suggest_categorical(name=f"{name}_{dataset_name}", choices={True, False})
+            if to_use:
+                datasets_to_use[dataset_name] = dataset_info
+
+        # (Maybe) prune the trial
+        if not datasets_to_use and self._experiments_config["force_pretraining"]:
+            raise optuna.TrialPruned
+
+        return suggested_hps, datasets_to_use
+
+    @staticmethod
+    def _suggest_downstream_specific_hyperparameters(name, trial):
+        return dict()  # todo: should sample Adam HPCs as it makes no sense to use the same as in the pretext task
+
+    def _suggest_shared_hyperparameters(self, trial, name, in_freq_band):
+        preprocessing_config_path = _get_preprocessing_config_path(
+            ocular_state=self._experiments_config["in_ocular_state"]
+        )
+        suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
+                                                             preprocessed_config_path=preprocessing_config_path)
+        return suggested_hps
 
     # --------------
     # Properties
@@ -465,10 +583,12 @@ class ElecsslHPO(HPOExperiment):
         # ---------------
         # Learn on the pretext regression task
         # ---------------
+        experiment_name = "pretext"
         results_path = results_dir / (f"hpo_{trial_number}_{feature_extractor_name}_{date.today()}_"
                                       f"{datetime.now().strftime('%H%M%S')}")
         with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
-                              pre_processing_config=preprocessing_config_file, results_path=results_path) as experiment:
+                              pre_processing_config=preprocessing_config_file, results_path=results_path,
+                              fine_tuning=None, experiment_name=experiment_name) as experiment:
             experiment.run_experiment()
 
         # ---------------
@@ -479,7 +599,7 @@ class ElecsslHPO(HPOExperiment):
         subject_ids, deviation, clinical_target = _get_delta_and_variable(
             path=results_path / "Fold_0", target=f"band_power_{out_freq_band}_{out_ocular_state}",
             variable=clinical_target, deviation_method=deviation_method, log_var=log_transform_clinical_target,
-            num_eeg_epochs=num_eeg_epochs, pretext_main_metric=pretext_main_metric
+            num_eeg_epochs=num_eeg_epochs, pretext_main_metric=pretext_main_metric, experiment_name=experiment_name
         )
 
         return subject_ids, deviation, clinical_target, feature_extractor_name
@@ -499,6 +619,52 @@ class ElecsslHPO(HPOExperiment):
 # --------------
 # Functions
 # --------------
+def _get_aggregated_val_score(*, trial_results_dir, aggregation_method, metric):
+    """Get the validation score of a trial"""
+    eval_method = max if higher_is_better(metric=metric) else min
+
+    # Get scores from all folds. Using best scores
+    scores: List[float] = []
+    for fold in os.listdir(trial_results_dir):
+        if not os.path.isdir(trial_results_dir / fold):
+            # All folders are assumed to be folds, for allowing possible changes in the future
+            continue
+        df = pandas.read_csv(trial_results_dir / fold / "val_history_metrics.csv")
+        score = eval_method(df[metric])
+        scores.append(verified_performance_score(score=score, metric=metric))
+
+    # Aggregate and return
+    if aggregation_method == "mean":
+        return numpy.mean(scores)
+    elif aggregation_method == "median":
+        return numpy.median(scores)
+    raise ValueError(f"Method for aggregating the validation scores across folds was not recognised: "
+                     f"{aggregation_method}")
+
+
+def _merge_config_files_from_paths(paths: Iterable[Path]):
+    # Get loader for the sampling distributions
+    loader = get_yaml_loader()
+
+    # Add additional formatting
+    loader = add_yaml_constructors(loader)
+
+    # Load the config files
+    configs: List[Dict[str, Any]] = []
+    for config_path in paths:
+        if config_path.suffix not in (".yml", "yaml"):
+            raise ValueError(f"Tried to open as a .yml file, but the suffix was not recognised: "
+                             f"{config_path.suffix}")
+        with open(config_path) as file:
+            config_file = yaml.load(file, Loader=loader)
+
+            # If the config file is empty, we interpret this as if the dict should be empty
+            configs.append(dict() if config_file is None else config_file)
+
+    # Merge and return
+    return merge_dicts(*configs)
+
+
 def _get_preprocessing_config_path(ocular_state):
     # Get file names
     preprocessing_path = get_numpy_data_storage_path() / f"preprocessed_band_pass_{ocular_state}"
@@ -509,9 +675,10 @@ def _get_preprocessing_config_path(ocular_state):
     return preprocessing_path / config_files[0]
 
 
-def _get_best_val_epoch(path, *, pretext_main_metric):
+def _get_best_val_epoch(path, experiment_name, *, pretext_main_metric):
     # Load the .csv file with the metrics
-    val_df = pandas.read_csv(os.path.join(path, "val_history_metrics.csv"))
+    prefix_name = "" if experiment_name is None else f"{experiment_name}_"
+    val_df = pandas.read_csv(os.path.join(path, f"{prefix_name}val_history_metrics.csv"))
 
     # Get the epoch which maximises the performance
     if higher_is_better(metric=pretext_main_metric):
@@ -520,17 +687,19 @@ def _get_best_val_epoch(path, *, pretext_main_metric):
         return numpy.argmin(val_df[pretext_main_metric])
 
 
-def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var, num_eeg_epochs, pretext_main_metric):
+def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var, num_eeg_epochs, pretext_main_metric,
+                            experiment_name):
     # ----------------
     # Select epoch
     # ----------------
     # todo: not really 'fold' anymore...
-    epoch = _get_best_val_epoch(path=path, pretext_main_metric=pretext_main_metric)
+    epoch = _get_best_val_epoch(path=path, pretext_main_metric=pretext_main_metric, experiment_name=experiment_name)
 
     # ----------------
     # Get the biomarkers and the (clinical) variable
     # ----------------
-    test_predictions = pandas.read_csv(os.path.join(path, "test_history_predictions.csv"))
+    prefix_name = "" if experiment_name is None else f"{experiment_name}_"
+    test_predictions = pandas.read_csv(os.path.join(path, f"{prefix_name}test_history_predictions.csv"))
     subject_ids = test_predictions["sub_id"]
 
     # Check the number of datasets in the test set
@@ -585,6 +754,8 @@ def _get_warning(warning):
         return UserWarning
     elif warning == "PlotNotSavedWarning":
         return PlotNotSavedWarning
+    elif warning == "FutureWarning":
+        return FutureWarning
     else:
         raise ValueError(f"Warning {warning} not understood")
 
