@@ -24,8 +24,8 @@ from elecssl.models.utils import tensor_dict_to_device
 
 class SingleExperiment:
     """
-    Class for running a single experiment. The model is trained on an SSL task while relationships to other variables
-    (specified in the config file, such as age or a cognitive test score)
+    Class for running a single experiment. Note that this is a context manager, so to actually run an experiment, use a
+    'with' statement and call .run_experiment()
     """
 
     __slots__ = ("_hp_config", "_experiments_config", "_pre_processing_config", "_results_path", "_device",
