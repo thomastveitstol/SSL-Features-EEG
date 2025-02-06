@@ -14,6 +14,7 @@ from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.scalers.target_scalers import get_target_scaler
 from elecssl.data.subject_split import get_data_split
 from elecssl.models.losses import CustomWeightedLoss, get_activation_function
+from elecssl.models.main_models.main_base_class import MainModuleBase
 from elecssl.models.main_models.main_fixed_channels_model import MainFixedChannelsModel
 from elecssl.models.main_models.main_rbp_model import MainRBPModel
 from elecssl.models.metrics import Histories, save_discriminator_histories_plots, save_histories_plots, \
@@ -27,7 +28,11 @@ class SingleExperiment:
     (specified in the config file, such as age or a cognitive test score)
     """
 
-    def __init__(self, hp_config, experiments_config, pre_processing_config, results_path):
+    __slots__ = ("_hp_config", "_experiments_config", "_pre_processing_config", "_results_path", "_device",
+                 "_fine_tuning", "_experiment_name")
+
+    def __init__(self, hp_config, experiments_config, pre_processing_config, results_path, fine_tuning,
+                 experiment_name):
         """
         Initialise
 
@@ -37,9 +42,17 @@ class SingleExperiment:
         experiments_config : dict[str, Any]
         pre_processing_config : dict[str, Any]
         results_path : pathlib.Path
+        fine_tuning : str | None
+            This is the name of the model to fine-tune. If it is a string, then a pytorch model with this name is
+            expected to exist in the 'Fold_{i}' folder for every fold that is made. If it is None, it indicates that
+            this experiment is not a fine-tuning experiment
+        experiment_name: str | None
+            This name will be used for saving e.g. models, performance scores and predictions. Its main purpose was to
+            distinguish pretraining from downstream training, and its default to None is recommended otherwise
         """
         # Create path
-        os.mkdir(results_path)
+        if fine_tuning is None:
+            os.mkdir(results_path)
 
         # Save HP file (experiments should be stored before running this)
         with open(results_path / "hpo_config.yml", "w") as file:
@@ -51,6 +64,8 @@ class SingleExperiment:
         self._pre_processing_config = pre_processing_config
         self._results_path = results_path
         self._device = torch.device(experiments_config["Device"])
+        self._fine_tuning = fine_tuning
+        self._experiment_name = experiment_name
 
     # -------------
     # Dunder methods for context manager (using the 'with' statement). See this video from mCoding for more information
@@ -75,7 +90,7 @@ class SingleExperiment:
     # -------------
     # Methods for making and preparing model
     # -------------
-    def _make_interpolation_model(self, *, combined_dataset, train_subjects, test_subjects):
+    def _make_interpolation_model(self):
         """Method for defining a model which expects the same number of channels"""
         # Maybe add number of time steps
         mts_config = copy.deepcopy(self.dl_architecture_config)
@@ -95,16 +110,9 @@ class SingleExperiment:
             cmmn_config=self.cmmn_config
         ).to(self._device)
 
-        # Maybe fit CMMN layers
-        if model.has_cmmn_layer:
-            self._fit_cmmn_layers(model=model, train_data=combined_dataset.get_data(train_subjects))
-
-            # Fit the test data as well (just the monge filters)
-            self._fit_cmmn_layers_test_data(model=model, test_data=combined_dataset.get_data(test_subjects))
-
         return model
 
-    def _make_rbp_model(self, *, channel_systems, combined_dataset, train_subjects, test_subjects):
+    def _make_rbp_model(self):
         """Method for defining a model with RBP as the first layer"""
         # Maybe add number of time steps
         mts_config = copy.deepcopy(self.dl_architecture_config)
@@ -119,6 +127,25 @@ class SingleExperiment:
             else self.domain_discriminator_config["discriminator"]
         ).to(self._device)
 
+        return model
+
+    def _make_model(self):
+        if self.spatial_dimension_handling_config["name"] == "RegionBasedPooling":
+            return self._make_rbp_model()
+        elif self.spatial_dimension_handling_config["name"] == "Interpolation":
+            return self._make_interpolation_model()
+        raise ValueError(f"Unexpected method for handling a varied number of channels: "
+                         f"{self.spatial_dimension_handling_config['name']}")
+
+    def _load_pretrained_model(self, path):
+        if self.spatial_dimension_handling_config["name"] == "RegionBasedPooling":
+            return MainRBPModel.load_model(name=f"{self._fine_tuning}_model", path=path)
+        elif self.spatial_dimension_handling_config["name"] == "Interpolation":
+            return MainFixedChannelsModel.load_model(name=f"{self._fine_tuning}_model", path=path)
+        raise ValueError(f"Unexpected method for handling a varied number of channels: "
+                         f"{self.spatial_dimension_handling_config['name']}")
+
+    def _prepare_rbp_model(self, *, model, channel_systems, combined_dataset, train_subjects, test_subjects):
         # Fit channel systems
         self._fit_channel_systems(model=model, channel_systems=channel_systems)
 
@@ -132,6 +159,26 @@ class SingleExperiment:
                                             channel_systems=channel_systems)
 
         return model
+
+    def _prepare_interpolation_model(self, *, model, combined_dataset, train_subjects, test_subjects):
+        # Maybe fit CMMN layers
+        if model.has_cmmn_layer:
+            self._fit_cmmn_layers(model=model, train_data=combined_dataset.get_data(train_subjects))
+
+            # Fit the test data as well (just the monge filters)
+            self._fit_cmmn_layers_test_data(model=model, test_data=combined_dataset.get_data(test_subjects))
+
+        return model
+
+    def _prepare_model(self, *, model, channel_systems, combined_dataset, train_subjects, test_subjects):
+        if isinstance(model, MainRBPModel):
+            return self._prepare_rbp_model(model=model, channel_systems=channel_systems,
+                                           combined_dataset=combined_dataset, train_subjects=train_subjects,
+                                           test_subjects=test_subjects)
+        elif isinstance(model, MainFixedChannelsModel):
+            return self._prepare_interpolation_model(model=model, combined_dataset=combined_dataset,
+                                                     train_subjects=train_subjects, test_subjects=test_subjects)
+        raise TypeError(f"Did not recognise the model type: {type(model)}")
 
     @staticmethod
     def _fit_channel_systems(model, channel_systems):
@@ -308,6 +355,34 @@ class SingleExperiment:
 
         return test_loader
 
+    def _create_loaders(self, *, model, combined_dataset, train_subjects, val_subjects, test_subjects):
+        train_loader, val_loader, target_scaler = self._load_train_val_data_loaders(
+            model=model, train_subjects=train_subjects, val_subjects=val_subjects, combined_dataset=combined_dataset
+        )
+
+        # Maybe create loaders for test data
+        test_loader: Optional[DataLoader[Any]]
+        if self.train_config["continuous_testing"]:
+            test_loader = self._load_test_data_loader(
+                model=model, test_subjects=test_subjects, combined_dataset=combined_dataset,
+                target_scaler=target_scaler
+            )
+        else:
+            test_loader = None
+
+        # Some type checks
+        _allowed_dataset_types = (RBPDataGenerator, InterpolationDataGenerator)
+        if not isinstance(train_loader.dataset, _allowed_dataset_types):
+            raise TypeError(f"Expected training Pytorch datasets to inherit from "
+                            f"{tuple(data_gen.__name__ for data_gen in _allowed_dataset_types)}, but found "
+                            f"{type(train_loader.dataset)}")
+        if not isinstance(val_loader.dataset, _allowed_dataset_types):
+            raise TypeError(f"Expected validation Pytorch datasets to inherit from "
+                            f"{tuple(data_gen.__name__ for data_gen in _allowed_dataset_types)}, but found "
+                            f"{type(val_loader.dataset)}")
+
+        return train_loader, val_loader, test_loader, target_scaler
+
     def _get_pre_computed_features(self, *, model, train_data, val_data):
         # Perform pre-computing of features
         train_pre_computed = model.pre_compute(
@@ -377,29 +452,37 @@ class SingleExperiment:
     def _save_results(self, *, histories, test_estimate, results_path):
         decimals = 3  # todo: cmon...
 
+        prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
+
         # Save prediction histories
         if self.domain_discriminator_config is None:
             train_history, val_history, test_history = histories
 
-            train_history.save_main_history(history_name="train_history", path=results_path, decimals=decimals)
-            val_history.save_main_history(history_name="val_history", path=results_path, decimals=decimals)
+            train_history.save_main_history(history_name=f"{prefix_name}train_history", path=results_path,
+                                            decimals=decimals)
+            val_history.save_main_history(history_name=f"{prefix_name}val_history", path=results_path,
+                                          decimals=decimals)
             if test_history is not None:
-                test_history.save_main_history(history_name="test_history", path=results_path, decimals=decimals)
+                test_history.save_main_history(history_name=f"{prefix_name}test_history", path=results_path,
+                                               decimals=decimals)
         else:
-            domain_discriminator_path = os.path.join(results_path, "domain_discriminator")
+            domain_discriminator_path = os.path.join(results_path, f"{prefix_name}domain_discriminator")
             os.mkdir(domain_discriminator_path)
 
             train_history, val_history, test_history, dd_train_history, dd_val_history = histories
 
-            train_history.save_main_history(history_name="train_history", path=results_path, decimals=decimals)
-            val_history.save_main_history(history_name="val_history", path=results_path, decimals=decimals)
+            train_history.save_main_history(history_name=f"{prefix_name}train_history", path=results_path,
+                                            decimals=decimals)
+            val_history.save_main_history(history_name=f"{prefix_name}val_history", path=results_path,
+                                          decimals=decimals)
             if test_history is not None:
-                test_history.save_main_history(history_name="test_history", path=results_path, decimals=decimals)
-
-            dd_train_history.save_main_history(history_name="dd_train_history", path=domain_discriminator_path,
+                test_history.save_main_history(history_name=f"{prefix_name}test_history", path=results_path,
                                                decimals=decimals)
-            dd_val_history.save_main_history(history_name="dd_val_history", path=domain_discriminator_path,
-                                             decimals=decimals)
+
+            dd_train_history.save_main_history(history_name=f"{prefix_name}dd_train_history",
+                                               path=domain_discriminator_path, decimals=decimals)
+            dd_val_history.save_main_history(history_name=f"{prefix_name}dd_val_history",
+                                             path=domain_discriminator_path, decimals=decimals)
 
             # Save domain discriminator metrics plots
             if self.saving_config["save_discriminator_plots"]:
@@ -407,7 +490,7 @@ class SingleExperiment:
                                                    histories=(dd_train_history, dd_val_history))
 
         # Save subgroup plots
-        sub_group_path = os.path.join(results_path, "sub_groups_plots")
+        sub_group_path = os.path.join(results_path, f"{prefix_name}sub_groups_plots")
         os.mkdir(sub_group_path)
 
         train_history.save_subgroup_metrics(history_name="train", path=sub_group_path, decimals=decimals,
@@ -422,7 +505,7 @@ class SingleExperiment:
         _histories = (train_history, val_history) if test_history is None else (train_history, val_history,
                                                                                 test_history)
         if any(history.has_variables_history for history in _histories):
-            variables_history_path = results_path / "error_associations"
+            variables_history_path = results_path / f"{prefix_name}error_associations"
             os.mkdir(variables_history_path)
             train_history.save_variables_histories(history_name="train", path=variables_history_path,
                                                    decimals=decimals,
@@ -445,53 +528,29 @@ class SingleExperiment:
     def _run_single_fold(self, *, train_subjects, val_subjects, test_subjects, channel_systems, channel_name_to_index,
                          combined_dataset: CombinedDatasets, results_path):
         # -----------------
-        # Define model
+        # Define or load model
         # -----------------
-        print("Defining model...")
-        if self.spatial_dimension_handling_config["name"] == "RegionBasedPooling":
-            model = self._make_rbp_model(channel_systems=channel_systems, combined_dataset=combined_dataset,
-                                         train_subjects=train_subjects, test_subjects=test_subjects)
-        elif self.spatial_dimension_handling_config["name"] == "Interpolation":
-            model = self._make_interpolation_model(combined_dataset=combined_dataset, train_subjects=train_subjects,
-                                                   test_subjects=test_subjects)
+        model: MainModuleBase
+        if self._fine_tuning is not None:
+            model = self._load_pretrained_model(results_path)
         else:
-            raise ValueError(f"Unexpected method for handling a varied number of channels: "
-                             f"{self.spatial_dimension_handling_config['name']}")
+            model = self._make_model()
+        model = self._prepare_model(model=model, channel_systems=channel_systems, combined_dataset=combined_dataset,
+                                    train_subjects=train_subjects, test_subjects=test_subjects)
 
         # -----------------
         # Create data loaders (and target scaler)
         # -----------------
         print("Creating data loaders...")
-        # Create loaders for training and validation
-        train_loader, val_loader, target_scaler = self._load_train_val_data_loaders(
-            model=model, train_subjects=train_subjects, val_subjects=val_subjects, combined_dataset=combined_dataset
+        train_loader, val_loader, test_loader, target_scaler = self._create_loaders(
+            model=model, combined_dataset=combined_dataset, train_subjects=train_subjects, val_subjects=val_subjects,
+            test_subjects=test_subjects
         )
-
-        # Maybe create loaders for test data
-        test_loader: Optional[DataLoader[Any]]
-        if self.train_config["continuous_testing"]:
-            test_loader = self._load_test_data_loader(
-                model=model, test_subjects=test_subjects, combined_dataset=combined_dataset,
-                target_scaler=target_scaler
-            )
-        else:
-            test_loader = None
-
-        # Some type checks
-        _allowed_dataset_types = (RBPDataGenerator, InterpolationDataGenerator)
-        if not isinstance(train_loader.dataset, _allowed_dataset_types):
-            raise TypeError(f"Expected training Pytorch datasets to inherit from "
-                            f"{tuple(data_gen.__name__ for data_gen in _allowed_dataset_types)}, but found "
-                            f"{type(train_loader.dataset)}")
-        if not isinstance(val_loader.dataset, _allowed_dataset_types):
-            raise TypeError(f"Expected validation Pytorch datasets to inherit from "
-                            f"{tuple(data_gen.__name__ for data_gen in _allowed_dataset_types)}, but found "
-                            f"{type(val_loader.dataset)}")
 
         # -----------------
         # Create loss and optimiser
         # -----------------
-        dataset_sizes = train_loader.dataset.dataset_sizes
+        dataset_sizes = train_loader.dataset.dataset_sizes  # type: ignore[attr-defined]
 
         # For the downstream model
         optimiser, criterion = self._create_loss_and_optimiser(model=model, dataset_sizes=dataset_sizes)
@@ -555,7 +614,14 @@ class SingleExperiment:
         # -----------------
         # Save results
         # -----------------
+        # Performance scores
         self._save_results(histories=histories, test_estimate=test_estimate, results_path=results_path)
+
+        # (Maybe) the model itself
+        if self.saving_config["save_model"]:
+            model = model.to(device=torch.device("cpu"))
+            prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
+            model.save_model(name=f"{prefix_name}model", path=results_path)
 
         return histories
 
@@ -570,7 +636,8 @@ class SingleExperiment:
             # Make folder for the current fold
             # -----------------
             fold_path = self._results_path / f"Fold_{i}"
-            os.mkdir(fold_path)
+            if self._fine_tuning is None:
+                os.mkdir(fold_path)
 
             # -----------------
             # Run the current fold
@@ -640,7 +707,8 @@ class SingleExperiment:
         # -----------------
         # Create a file indicating that everything ran as expected
         # -----------------
-        with open(self._results_path / "finished_successfully.txt", "w"):
+        prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
+        with open(self._results_path / f"{prefix_name}finished_successfully.txt", "w"):
             pass
 
     # -------------
