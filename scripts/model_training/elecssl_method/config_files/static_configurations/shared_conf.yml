@@ -38,7 +38,7 @@ Scalers:  # Remember that this is whatever the SingleExperiment is working on
     name: ZNormalisation
 Training:  # Remember that this is whatever the SingleExperiment is working on
   batch_size: 16
-  num_epochs: 12
+  num_epochs: 50
   verbose: true
   verbose_variables: false
   continuous_testing: true
