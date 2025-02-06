@@ -4,8 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="updates and fixes to run script">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="made HPCs unequal for training, loss, and DD HPs between pretext task and downstream task in PretrainingHPO">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/shared_conf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/shared_conf.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/elecssl_hpo.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/elecssl_hpo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/multiple_scripts.bash" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/multiple_scripts.bash" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -316,38 +319,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00314" summary="added average referencing">
-      <option name="closed" value="true" />
-      <created>1733489180779</created>
-      <option name="number" value="00314" />
-      <option name="presentableId" value="LOCAL-00314" />
-      <option name="project" value="LOCAL" />
-      <updated>1733489180779</updated>
-    </task>
-    <task id="LOCAL-00315" summary="added doctest">
-      <option name="closed" value="true" />
-      <created>1733489188391</created>
-      <option name="number" value="00315" />
-      <option name="presentableId" value="LOCAL-00315" />
-      <option name="project" value="LOCAL" />
-      <updated>1733489188391</updated>
-    </task>
-    <task id="LOCAL-00316" summary="added DortmundVital to available datasets">
-      <option name="closed" value="true" />
-      <created>1733489205357</created>
-      <option name="number" value="00316" />
-      <option name="presentableId" value="LOCAL-00316" />
-      <option name="project" value="LOCAL" />
-      <updated>1733489205357</updated>
-    </task>
-    <task id="LOCAL-00317" summary="flake8 fix">
-      <option name="closed" value="true" />
-      <created>1733489264645</created>
-      <option name="number" value="00317" />
-      <option name="presentableId" value="LOCAL-00317" />
-      <option name="project" value="LOCAL" />
-      <updated>1733489264645</updated>
     </task>
     <task id="LOCAL-00318" summary="auto update">
       <option name="closed" value="true" />
@@ -709,7 +680,39 @@
       <option name="project" value="LOCAL" />
       <updated>1738836070096</updated>
     </task>
-    <option name="localTasksCounter" value="363" />
+    <task id="LOCAL-00363" summary="added saving experiment config file for each Single experiment">
+      <option name="closed" value="true" />
+      <created>1738839869167</created>
+      <option name="number" value="00363" />
+      <option name="presentableId" value="LOCAL-00363" />
+      <option name="project" value="LOCAL" />
+      <updated>1738839869167</updated>
+    </task>
+    <task id="LOCAL-00364" summary="added prefix to conf files and improved name">
+      <option name="closed" value="true" />
+      <created>1738841051994</created>
+      <option name="number" value="00364" />
+      <option name="presentableId" value="LOCAL-00364" />
+      <option name="project" value="LOCAL" />
+      <updated>1738841051994</updated>
+    </task>
+    <task id="LOCAL-00365" summary="improved docstring">
+      <option name="closed" value="true" />
+      <created>1738841794438</created>
+      <option name="number" value="00365" />
+      <option name="presentableId" value="LOCAL-00365" />
+      <option name="project" value="LOCAL" />
+      <updated>1738841794439</updated>
+    </task>
+    <task id="LOCAL-00366" summary="made HPCs unequal for training, loss, and DD HPs between pretext task and downstream task in PretrainingHPO">
+      <option name="closed" value="true" />
+      <created>1738843611855</created>
+      <option name="number" value="00366" />
+      <option name="presentableId" value="LOCAL-00366" />
+      <option name="project" value="LOCAL" />
+      <updated>1738843611856</updated>
+    </task>
+    <option name="localTasksCounter" value="367" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -724,10 +727,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improved plot scripts" />
-    <MESSAGE value="falke8 fix" />
-    <MESSAGE value="saving fig instead of .plot()" />
-    <MESSAGE value="made it possible to compute power in parallel" />
     <MESSAGE value="fixed path" />
     <MESSAGE value="fixed paths" />
     <MESSAGE value="improved plot script" />
@@ -749,6 +748,21 @@
     <MESSAGE value="added sandbox script" />
     <MESSAGE value="irrelevant changes" />
     <MESSAGE value="updates and fixes to run script" />
-    <option name="LAST_COMMIT_MESSAGE" value="updates and fixes to run script" />
+    <MESSAGE value="added saving experiment config file for each Single experiment" />
+    <MESSAGE value="added prefix to conf files and improved name" />
+    <MESSAGE value="improved docstring" />
+    <MESSAGE value="made HPCs unequal for training, loss, and DD HPs between pretext task and downstream task in PretrainingHPO" />
+    <option name="LAST_COMMIT_MESSAGE" value="made HPCs unequal for training, loss, and DD HPs between pretext task and downstream task in PretrainingHPO" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py</url>
+          <line>127</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

@@ -35,13 +35,17 @@ def main():
     # ----------------
     # Run experiments
     # ----------------
-    """PredictionModelsHPO(
-        hp_config_paths=(shared_hpd_path, prediction_models_hpd_path),
-        experiments_config_paths=(shared_static_path, prediction_models_static_path),
+    # Elecssl
+    elecssl_experiment = ElecsslHPO(
+        hp_config_paths=(shared_hpd_path, elecssl_hpd_path),
+        experiments_config_paths=(shared_static_path, elecssl_static_path),
         results_dir=results_dir
-    ).run_hyperparameter_optimisation()"""
+    )
+    with elecssl_experiment as experiment:
+        experiment.run_hyperparameter_optimisation()
 
-    pretrain = PretrainHPO(
+    # Pre-training
+    pretrain_experiment = PretrainHPO(
         hp_config_paths=(shared_hpd_path,),
         experiments_config_paths=(shared_static_path, pretraining_shared_static_path),
         results_dir=results_dir,
@@ -52,14 +56,17 @@ def main():
                                              pretraining_downstream_static_path,),
         downstream_hp_config_paths=(shared_hpd_path, pretraining_downstream_hpd_path,)
     )
-    with pretrain as experiment:
+    with pretrain_experiment as experiment:
         experiment.run_hyperparameter_optimisation()
 
-    """ElecsslHPO(
-        hp_config_paths=(shared_hpd_path, elecssl_hpd_path),
-        experiments_config_paths=(shared_static_path, elecssl_static_path),
+    # Non-pretrained prediction models
+    prediction_models_experiment = PredictionModelsHPO(
+        hp_config_paths=(shared_hpd_path, prediction_models_hpd_path),
+        experiments_config_paths=(shared_static_path, prediction_models_static_path),
         results_dir=results_dir
-    ).run_hyperparameter_optimisation()"""
+    )
+    with prediction_models_experiment as experiment:
+        experiment.run_hyperparameter_optimisation()
 
 
 if __name__ == "__main__":
