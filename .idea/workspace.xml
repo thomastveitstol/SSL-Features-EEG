@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="made HPCs unequal for training, loss, and DD HPs between pretext task and downstream task in PretrainingHPO">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/shared_conf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/shared_conf.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/elecssl_hpo.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/elecssl_hpo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/multiple_scripts.bash" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/multiple_scripts.bash" afterDir="false" />
-    </list>
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="setting up for dummy run" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -319,14 +314,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00318" summary="auto update">
-      <option name="closed" value="true" />
-      <created>1733489272067</created>
-      <option name="number" value="00318" />
-      <option name="presentableId" value="LOCAL-00318" />
-      <option name="project" value="LOCAL" />
-      <updated>1733489272067</updated>
     </task>
     <task id="LOCAL-00319" summary="keyfix">
       <option name="closed" value="true" />
@@ -712,7 +699,15 @@
       <option name="project" value="LOCAL" />
       <updated>1738843611856</updated>
     </task>
-    <option name="localTasksCounter" value="367" />
+    <task id="LOCAL-00367" summary="setting up for dummy run">
+      <option name="closed" value="true" />
+      <created>1738844471052</created>
+      <option name="number" value="00367" />
+      <option name="presentableId" value="LOCAL-00367" />
+      <option name="project" value="LOCAL" />
+      <updated>1738844471052</updated>
+    </task>
+    <option name="localTasksCounter" value="368" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -727,7 +722,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed path" />
     <MESSAGE value="fixed paths" />
     <MESSAGE value="improved plot script" />
     <MESSAGE value="changed bash script" />
@@ -752,7 +746,8 @@
     <MESSAGE value="added prefix to conf files and improved name" />
     <MESSAGE value="improved docstring" />
     <MESSAGE value="made HPCs unequal for training, loss, and DD HPs between pretext task and downstream task in PretrainingHPO" />
-    <option name="LAST_COMMIT_MESSAGE" value="made HPCs unequal for training, loss, and DD HPs between pretext task and downstream task in PretrainingHPO" />
+    <MESSAGE value="setting up for dummy run" />
+    <option name="LAST_COMMIT_MESSAGE" value="setting up for dummy run" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

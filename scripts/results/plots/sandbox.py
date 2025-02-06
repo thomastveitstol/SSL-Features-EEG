@@ -6,12 +6,18 @@ from elecssl.data.results_analysis import load_hpo_study
 
 
 def main():
-    study = load_hpo_study(get_results_dir() / "hpo_experiment_2025-01-31_163041")
+    results_dir = get_results_dir()
+    study_paths = (results_dir /  "elecssl" / "elecssl_hpo_experiment_2025-02-06_132313",
+                   results_dir /  "pretraining" / "pretraining_hpo_experiment_2025-02-06_133604",
+                   results_dir /  "prediction_models" / "prediction_models_hpo_experiment_2025-02-06_134542")
 
-    scores = tuple(trial.value for trial in study.trials)
-    trial_number = tuple(trial.number for trial in study.trials)
+    for study_path in study_paths:
+        study = load_hpo_study(study_path)
 
-    seaborn.scatterplot(x=trial_number, y=scores)
+        scores = tuple(trial.value for trial in study.trials)
+        trial_number = tuple(trial.number for trial in study.trials)
+
+        seaborn.scatterplot(x=trial_number, y=scores)
     pyplot.show()
 
 
