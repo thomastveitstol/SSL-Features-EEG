@@ -116,7 +116,7 @@ class HPOExperiment(abc.ABC):
         and return a score"""
 
     def _suggest_common_hyperparameters(self, trial, name, in_freq_band, preprocessed_config_path):
-        suggested_hps: Dict[str, Any] = {"Preprocessing": {}, "Training": {}}
+        suggested_hps: Dict[str, Any] = {"Preprocessing": {}}
 
         # Preprocessing
         for param_name, (distribution, distribution_kwargs) in self._sampling_config["Preprocessing"].items():
@@ -125,10 +125,8 @@ class HPOExperiment(abc.ABC):
             )
 
         # Training
-        for param_name, (distribution, distribution_kwargs) in self._sampling_config["Training"].items():
-            suggested_hps["Training"][param_name] = make_trial_suggestion(
-                trial=trial, name=f"{name}_{param_name}", method=distribution, kwargs=distribution_kwargs
-            )
+        suggested_hps["Training"] = self._suggest_training_hpcs(trial=trial, name=name,
+                                                                hpd_config=self._sampling_config)
 
         # Normalisation
         normalisation = trial.suggest_categorical(f"{name}_normalisation", **self._sampling_config["normalisation"])
@@ -169,6 +167,16 @@ class HPOExperiment(abc.ABC):
             suggested_hps["DomainDiscriminator"] = None
 
         return suggested_hps
+
+    @staticmethod
+    def _suggest_training_hpcs(trial, name, hpd_config):
+        # Training
+        suggested_train_hpcs = dict()
+        for param_name, (distribution, distribution_kwargs) in hpd_config["Training"].items():
+            suggested_train_hpcs[param_name] = make_trial_suggestion(
+                trial=trial, name=f"{name}_{param_name}", method=distribution, kwargs=distribution_kwargs
+            )
+        return suggested_train_hpcs
 
     # --------------
     # Properties
@@ -310,8 +318,13 @@ class PretrainHPO(HPOExperiment):
             downstream_specific_hpcs = self._suggest_downstream_specific_hyperparameters(name="downstream", trial=trial)
 
             # Combine the shared and specific HPCs
-            pretext_hpcs = {**suggested_shared_hyperparameters, **pretext_specific_hpcs}
             downstream_hpcs = {**suggested_shared_hyperparameters, **downstream_specific_hpcs}
+
+            suggested_shared_hyperparameters = suggested_shared_hyperparameters.copy()  # Remove train and loss HPCs
+            del suggested_shared_hyperparameters["Training"]
+            del suggested_shared_hyperparameters["Loss"]
+            del suggested_shared_hyperparameters["DomainDiscriminator"]
+            pretext_hpcs = {**suggested_shared_hyperparameters.copy(), **pretext_specific_hpcs}
 
             # ---------------
             # Some additions to the experiment configs
@@ -396,6 +409,22 @@ class PretrainHPO(HPOExperiment):
         # (Maybe) prune the trial
         if not datasets_to_use and self._experiments_config["force_pretraining"]:
             raise optuna.TrialPruned
+
+        # Training
+        suggested_hps["Training"] = self._suggest_training_hpcs(trial=trial, name=name,
+                                                                hpd_config=self._pretext_sampling_config)
+
+        # Loss
+        suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=self._pretext_sampling_config["Loss"])
+
+        # Domain discriminator
+        if self._experiments_config["enable_domain_discriminator"]:
+            raise NotImplementedError(
+                "Hyperparameter sampling with domain discriminator has not been implemented yet...")
+        else:
+            # todo: not a fan of having to specify training method, especially now that the name is somewhat misleading
+            suggested_hps["Training"]["method"] = "downstream_training"
+            suggested_hps["DomainDiscriminator"] = None
 
         return suggested_hps, datasets_to_use
 
