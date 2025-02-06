@@ -98,7 +98,7 @@ class HPOExperiment(abc.ABC):
     def run_hyperparameter_optimisation(self):
         """Run HPO with optuna"""
         # Create study
-        study_name = "optuna-study"
+        study_name = f"{self._name}-study"
         storage_path = (self._results_path / study_name).with_suffix(".db")
         study = optuna.create_study(
             study_name=study_name, storage=f"sqlite:///{storage_path}", **self.hpo_study_config["HPOStudy"]
