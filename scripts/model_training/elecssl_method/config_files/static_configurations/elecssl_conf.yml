@@ -20,7 +20,7 @@ Datasets: &Datasets
     num_time_steps: null
     time_series_start: null
   Wang:
-    num_subjects: 20
+    num_subjects: 60
     num_time_steps: null
     time_series_start: null
   DortmundVital:
