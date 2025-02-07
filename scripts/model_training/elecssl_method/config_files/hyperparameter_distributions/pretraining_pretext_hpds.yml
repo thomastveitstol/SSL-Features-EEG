@@ -6,14 +6,14 @@ selection_metric: { choices: [ mae, mse, r2_score, pearson_r, spearman_rho ] }
 # -----------------
 Datasets:
   LEMON:
-    num_subjects: 21
+    num_subjects: 203
     num_time_steps: null
     time_series_start: null
   Wang:
-    num_subjects: 22
+    num_subjects: 60
     num_time_steps: null
     time_series_start: null
   DortmundVital:
-    num_subjects: 23
+    num_subjects: 100
     num_time_steps: null
     time_series_start: null

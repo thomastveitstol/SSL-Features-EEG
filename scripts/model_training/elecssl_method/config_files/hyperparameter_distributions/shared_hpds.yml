@@ -27,7 +27,7 @@ Discriminators:
 # Training
 # -----------------
 Training:
-  learning_rate: !Float { low: 0.00001, high: 0.001, step: null, log: true }
+  learning_rate: !Float { low: 0.000001, high: 0.01, step: null, log: true }
   beta_1: !Float { low: 0.8, high: 1.0, step: null, log: false }
   beta_2: !Float { low: 0.9, high: 1.0, step: null, log: false }
   eps: !Float { low: 0.0000000001, high: 0.000001, step: null, log: true }
@@ -44,18 +44,18 @@ DLArchitectures:
   InceptionNetwork:
     num_classes: 1
     cnn_units: { low: 4, high: 16, log: true }  # { low: 8, high: 64, log: true }
-    depth: { low: 1, high: 3, log: true }  # Remember that this value will be multiplied by 3
+    depth: { low: 1, high: 14, log: true }  # Remember that this value will be multiplied by 3
   ShallowFBCSPNetMTS:
     num_classes: 1
     num_time_steps: UNAVAILABLE
-    num_filters: { low: 30, high: 50, step: 1, log: false }
+    num_filters: { low: 20, high: 60, step: 1, log: false }
     filter_time_length: { low: 5, high: 45, step: 1, log: false }
     pool_time_stride: { low: 5, high: 25, step: 1, log: false }
     drop_prob: { low: 0.0, high: 0.5, step: null, log: false }
   Deep4NetMTS:
     num_classes: 1
     num_time_steps: UNAVAILABLE
-    num_first_filters: { low: 15, high: 35, step: 1, log: false }
+    num_first_filters: { low: 10, high: 40, step: 1, log: false }
     filter_length: { low: 5, high: 15, step: 1, log: false }
     drop_prob: { low: 0.0, high: 0.5, log: false }  # todo: should this be independent from shallownet?
 normalisation: { choices: [ true, false ] }
@@ -65,7 +65,7 @@ normalisation: { choices: [ true, false ] }
 # -----------------
 Interpolation:
   # todo: not elegant, consider inferring these at runtime
-  main_channel_system: { choices: [ LEMON ] }
+  main_channel_system: { choices: [ LEMON, Wang, DortmundVital ] }
   methods: { choices: [ MNE, spline ] }
 
 _num_kernels: &num_kernels !Int { low: 10, high: 100, log: true }
