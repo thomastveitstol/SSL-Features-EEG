@@ -6,12 +6,13 @@ import warnings
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, Any, Callable, Tuple, List, Iterable
+from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal
 
 import numpy
 import optuna
 import pandas
 import yaml  # type: ignore[import-untyped]
+from progressbar import progressbar
 from scipy.stats import NearConstantInputWarning, ConstantInputWarning
 
 from elecssl.data.datasets.getter import get_dataset
@@ -77,7 +78,8 @@ class HPOExperiment(abc.ABC):
         # ---------------
         self._experiments_config: Dict[str, Any] = experiments_config
         self._sampling_config: Dict[str, Any] = hp_config
-        self._results_path = results_dir / self._name / (f"{self._name}_hpo_experiment_{date.today()}_"
+        _debug_mode = "debug_" if verify_type(self._experiments_config["debugging"], bool) else ""
+        self._results_path = results_dir / self._name / (f"{_debug_mode}{self._name}_hpo_experiment_{date.today()}_"
                                                          f"{datetime.now().strftime('%H%M%S')}")
 
         # Make directory
@@ -91,8 +93,7 @@ class HPOExperiment(abc.ABC):
             yaml.dump(hp_config, file, Dumper=safe_dumper)
 
     def _get_hpo_folder_path(self, trial: optuna.Trial):
-        _debug_mode = "debug_" if verify_type(self._experiments_config["debugging"], bool) else ""
-        return self._results_path / (f"{_debug_mode}{self._name}_hpo_{trial.number}_{date.today()}_"
+        return self._results_path / (f"{self._name}_hpo_{trial.number}_{date.today()}_"
                                      f"{datetime.now().strftime('%H%M%S')}")
 
     def run_hyperparameter_optimisation(self):
@@ -177,6 +178,131 @@ class HPOExperiment(abc.ABC):
                 trial=trial, name=f"{name}_{param_name}", method=distribution, kwargs=distribution_kwargs
             )
         return suggested_train_hpcs
+
+    # --------------
+    # Methods for analysis
+    # --------------
+    @classmethod
+    def generate_test_scores_df(cls, path, *, target_metrics, selection_metric, method: Literal["mean", "median"]):
+        """
+        Method for generate a dataframe which summarises the performance scores of an HPO run, such that it can be
+        analysed
+
+        todo: How to aggregate results when model selection gives multiple models? Current implementation aggregates
+            performance scores, but could aggregate predictions too...
+
+        Parameters
+        ----------
+        path : Path
+            The path to the HPO run
+        target_metrics : tuple[str, ...]
+        selection_metric : str
+            Metric used for model selection
+        method : {"mean", "median"}
+            To aggregate predictions/scores by mean or median
+
+        Returns
+        -------
+        pandas.DataFrame
+        """
+        # Check if the study object is found
+        if f"{cls._name}-study.db" not in os.listdir(path):
+            raise FileNotFoundError(f"Could not find the study object at the path provided ('{cls._name}') {path}. "
+                                    f"Remember to use the correct class for the study object. File names in the "
+                                    f"provided path: {os.listdir(path)}")
+
+        # --------------
+        # Loop through all iterations in the HPO
+        # --------------
+        # Initialisation  todo: must implement _refit metrics
+        scores: Dict[str, List[float]] = {
+            "run": [], "trial_number": [], **{f"val_{metric}": [] for metric in target_metrics},
+            **{f"test_{metric}": [] for metric in target_metrics}
+        }
+
+        # todo: the 'debug_' prefix should be removed
+        hpo_iterations = tuple(folder for folder in os.listdir(path) if os.path.isdir(path / folder)
+                               and (folder.startswith(cls._name) or folder.startswith(f"debug_{cls._name}")))
+        for hpo_iteration in progressbar(hpo_iterations, redirect_stdout=True, prefix="Trial "):
+            trial_path = path / hpo_iteration
+
+            # Initialise dictionaries with all scores for the trial
+            trial_val_scores: Dict[str, List[float]] = {metric: [] for metric in target_metrics}
+            trial_test_scores: Dict[str, List[float]] = {metric: [] for metric in target_metrics}
+
+            # Get the performance for each fold
+            folds = (fold for fold in os.listdir(trial_path) if os.path.isdir(trial_path / fold)
+                     and fold.startswith("Fold_"))
+            for fold in folds:
+                # Get fold scores
+                fold_val_scores, fold_test_scores = cls._get_performance_scores(
+                    trial_path / fold, selection_metric=selection_metric, target_metrics=target_metrics
+                )
+
+                # Add them to trial scores
+                for metric, val_score in fold_val_scores.items():
+                    trial_val_scores[metric].append(val_score)
+                for metric, test_score in fold_test_scores.items():
+                    trial_test_scores[metric].append(test_score)
+
+            # Aggregate fold scores
+            if method == "mean":
+                agg_folds_method = numpy.mean
+            elif method == "median":
+                agg_folds_method = numpy.median  # type: ignore[assignment]
+            else:
+                raise ValueError(f"Unexpected method to aggregate scores across folds: '{method}'")
+            for metric, val_scores in trial_val_scores.items():
+                scores[f"val_{metric}"].append(agg_folds_method(val_scores))  # type: ignore[arg-type]
+            for metric, test_scores in trial_test_scores.items():
+                scores[f"test_{metric}"].append(agg_folds_method(test_scores))  # type: ignore[arg-type]
+
+            # Add the rest of the info
+            _indicator = "hpo_"
+            start_idx = hpo_iteration.find(_indicator) + len(_indicator)
+            end_idx = hpo_iteration.find('_', start_idx)
+
+            scores["trial_number"].append(int(hpo_iteration[start_idx:end_idx]))
+            scores["run"].append(hpo_iteration)
+
+        # Convert to dataframe, fix stuff and return
+        df = pandas.DataFrame(scores)
+        df.sort_values(by="trial_number", inplace=True)
+        df.reset_index(inplace=True)
+        return df
+
+    @classmethod
+    def _get_performance_scores(cls, path, *, selection_metric, target_metrics):
+        # --------------
+        # Get validation performance and optimal epoch
+        # --------------
+        val_scores, epoch = cls._get_validation_scores_and_epoch(path, selection_metric=selection_metric,
+                                                                 target_metrics=target_metrics)
+
+        # --------------
+        # Get test performance
+        # --------------
+        test_df = pandas.read_csv(os.path.join(path, "test_history_metrics.csv"))
+        test_scores = {target_metric: test_df[target_metric].iat[epoch] for target_metric in target_metrics}
+
+        # Todo: get refit performance scores and add to results
+        return val_scores, test_scores
+
+    @staticmethod
+    def _get_validation_scores_and_epoch(path, *, selection_metric, target_metrics):
+        # Load the dataframe of the validation performances
+        val_df = pandas.read_csv(os.path.join(path, "val_history_metrics.csv"))
+
+        # Get the best performance and its epoch. If all scores are nan values (which happens for correlation
+        # coefficients constant with constant prediction arrays), the epoch is set to -1, which is acceptable
+        if higher_is_better(metric=selection_metric):
+            epoch = numpy.argmax(val_df[selection_metric])
+        else:
+            epoch = numpy.argmin(val_df[selection_metric])
+
+        # Performance
+        val_scores = {target_metric: val_df[target_metric].iat[epoch] for target_metric in target_metrics}
+        return val_scores, epoch
 
     # --------------
     # Properties
@@ -471,8 +597,7 @@ class ElecsslHPO(HPOExperiment):
             spaces = self._experiments_config["IOSpaces"]
 
             # Make directory for current iteration
-            _debug_mode = "debug_" if verify_type(self._experiments_config["debugging"], bool) else ""
-            results_dir = self._results_path / (f"{_debug_mode}hpo_{trial.number}_{date.today()}_"
+            results_dir = self._results_path / (f"hpo_{trial.number}_{date.today()}_"
                                                 f"{datetime.now().strftime('%H%M%S')}")
             os.mkdir(results_dir)
 
@@ -632,6 +757,13 @@ class ElecsslHPO(HPOExperiment):
         )
 
         return subject_ids, deviation, clinical_target, feature_extractor_name
+
+    # --------------
+    # Methods for analysis
+    # --------------
+    @classmethod
+    def generate_test_scores_df(cls, path, *, target_metrics, selection_metric, method: Literal["mean", "median"]):
+        raise NotImplementedError
 
     # --------------
     # Properties
