@@ -1,3 +1,4 @@
+import pandas
 import seaborn
 from matplotlib import pyplot
 
@@ -22,28 +23,46 @@ def plot_studies():
     pyplot.show()
 
 
-def get_df():
-    results_dir = get_results_dir()
+def make_boxplots():
+    # ---------------
+    # Some design choices
+    # ---------------
+    # How to compute and aggregate
     selection_metric = "r2_score"
     target_metrics = ("pearson_r", "spearman_rho", "r2_score", "mae", "mse", "mape")
     method = "mean"
 
-    # Generate dataframes
+    # Plot details
+    x = "test_pearson_r"
+    y = "experiment_name"
+
+    # Other stuff
+    results_dir = get_results_dir()
+
+    # ---------------
+    # Analysis
+    # ---------------
+    # Generate dataframe
     prediction_models_df = PredictionModelsHPO.generate_test_scores_df(
         path=results_dir / "prediction_models" / "prediction_models_hpo_experiment_2025-02-07_064413",
-        selection_metric=selection_metric, target_metrics=target_metrics, method=method
+        selection_metric=selection_metric, target_metrics=target_metrics, method=method, include_experiment_name=True
     )
-    print(prediction_models_df[["run", "test_r2_score"]])
-
     pretraining_df = PretrainHPO.generate_test_scores_df(
         path=results_dir / "pretraining" / "pretraining_hpo_experiment_2025-02-07_030752",
-        selection_metric=selection_metric, target_metrics=target_metrics, method=method
+        selection_metric=selection_metric, target_metrics=target_metrics, method=method, include_experiment_name=True
     )
-    print(pretraining_df[["run", "test_r2_score"]])
+    df = pandas.concat((prediction_models_df, pretraining_df), axis="rows")
+    df.reset_index(inplace=True)
+
+    # Plotting
+    seaborn.boxplot(data=df, x=x, y=y, linewidth=1.2, dodge=True, showfliers=False, fill=False)
+    seaborn.stripplot(data=df, x=x, y=y, jitter=True, dodge=True, size=3, alpha=0.5, marker='o')
+
+    pyplot.show()
 
 
 def main():
-    get_df()
+    make_boxplots()
 
 
 if __name__ == "__main__":
