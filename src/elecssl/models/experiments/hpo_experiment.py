@@ -183,7 +183,8 @@ class HPOExperiment(abc.ABC):
     # Methods for analysis
     # --------------
     @classmethod
-    def generate_test_scores_df(cls, path, *, target_metrics, selection_metric, method: Literal["mean", "median"]):
+    def generate_test_scores_df(cls, path, *, target_metrics, selection_metric, method: Literal["mean", "median"],
+                                include_experiment_name=True):
         """
         Method for generate a dataframe which summarises the performance scores of an HPO run, such that it can be
         analysed
@@ -200,6 +201,8 @@ class HPOExperiment(abc.ABC):
             Metric used for model selection
         method : {"mean", "median"}
             To aggregate predictions/scores by mean or median
+        include_experiment_name : bool
+            If the name of the experiment (e.g., 'prediction_models') should be added in a column
 
         Returns
         -------
@@ -265,10 +268,15 @@ class HPOExperiment(abc.ABC):
             scores["trial_number"].append(int(hpo_iteration[start_idx:end_idx]))
             scores["run"].append(hpo_iteration)
 
-        # Convert to dataframe, fix stuff and return
+        # Convert to dataframe
         df = pandas.DataFrame(scores)
         df.sort_values(by="trial_number", inplace=True)
         df.reset_index(inplace=True)
+
+        # Maybe add experiment name indicator
+        if include_experiment_name:
+            df["experiment_name"] = [cls._name] * df.shape[0]
+
         return df
 
     @classmethod
@@ -762,7 +770,8 @@ class ElecsslHPO(HPOExperiment):
     # Methods for analysis
     # --------------
     @classmethod
-    def generate_test_scores_df(cls, path, *, target_metrics, selection_metric, method: Literal["mean", "median"]):
+    def generate_test_scores_df(cls, path, *, target_metrics, selection_metric, method: Literal["mean", "median"],
+                                include_experiment_name=True):
         raise NotImplementedError
 
     # --------------
