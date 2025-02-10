@@ -16,3 +16,4 @@ PyYAML~=6.0.2
 progressbar2~=4.4.2
 seaborn~=0.13.2
 optuna~=4.0.0
+ConfigSpace~=1.2.1
