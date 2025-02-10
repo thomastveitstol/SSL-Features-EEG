@@ -351,7 +351,7 @@ class HPOExperiment(abc.ABC):
 
         # Loop through all unique runs to make dataframe
         trial_numbers = set(df["trial_number"])
-        configs = {"trial_number": [], **{hp_name: [] for hp_name in hps}}
+        configs: Dict[str, Any] = {"trial_number": [], **{hp_name: [] for hp_name in hps}}
         for trial_number in trial_numbers:
             configs["trial_number"].append(trial_number)
             for hp_name in hps:
