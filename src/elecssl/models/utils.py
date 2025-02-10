@@ -428,6 +428,48 @@ def merge_dicts(*dicts):
     return reduce(merge_two, dicts, {})
 
 
+def merge_dicts_strict(*dicts):
+    """
+    Merge multiple dictionaries into a new dictionary without modifying inputs. Written by ChatGPT
+
+    Ensures that no duplicate keys exist between the dictionaries.
+    Raises a KeyError if any duplicate keys are found.
+
+    Parameters
+    ----------
+    *dicts : dict
+        Any number of dictionaries to be merged.
+
+    Returns
+    -------
+    dict
+        A new dictionary containing all key-value pairs from input dictionaries.
+
+    Raises
+    ------
+    KeyError
+        If any duplicate keys are found across the input dictionaries.
+
+    Examples
+    --------
+    >>> merge_dicts_strict({"a": 1, "b": 2}, {"c": 3, "d": 4})
+    {'a': 1, 'b': 2, 'c': 3, 'd': 4}
+    >>> merge_dicts_strict({"x": 10}, {"y": 20}, {"z": 30})
+    {'x': 10, 'y': 20, 'z': 30}
+    >>> merge_dicts_strict({"p": 1, "q": 2}, {"q": 3, "r": 4})
+    Traceback (most recent call last):
+    ...
+    KeyError: "Duplicate keys found: {'q'}"
+    """
+    merged = {}  # Create a new dictionary to avoid modifying inputs
+    for d in dicts:
+        duplicate_keys = merged.keys() & d.keys()
+        if duplicate_keys:
+            raise KeyError(f"Duplicate keys found: {duplicate_keys}")
+        merged = {**merged, **copy.deepcopy(d)}  # Merge safely without modifying inputs
+    return merged
+
+
 # -------------------------
 # Functions for yaml loader
 # -------------------------
