@@ -399,8 +399,6 @@ class HPOExperiment(abc.ABC):
 
         return merge_dicts_strict(train_config_space, config_space, preprocessing_config_space)
 
-
-
     @staticmethod
     def _get_training_config_space(name, hpd_config):
         # Training

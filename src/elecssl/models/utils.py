@@ -2,6 +2,7 @@ import abc
 import copy
 from collections.abc import Mapping
 from functools import reduce
+from typing import Any, Dict
 
 import numpy
 import torch
@@ -461,7 +462,7 @@ def merge_dicts_strict(*dicts):
     ...
     KeyError: "Duplicate keys found: {'q'}"
     """
-    merged = {}  # Create a new dictionary to avoid modifying inputs
+    merged: Dict[str, Any] = {}  # Create a new dictionary to avoid modifying inputs
     for d in dicts:
         duplicate_keys = merged.keys() & d.keys()
         if duplicate_keys:
