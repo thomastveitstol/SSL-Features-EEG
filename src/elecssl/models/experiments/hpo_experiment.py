@@ -17,7 +17,8 @@ from scipy.stats import NearConstantInputWarning, ConstantInputWarning
 
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.paths import get_numpy_data_storage_path
-from elecssl.data.results_analysis import higher_is_better
+from elecssl.data.results_analysis.hyperparameters import to_hyperparameter
+from elecssl.data.results_analysis.utils import higher_is_better, load_hpo_study
 from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split, simple_random_split
 from elecssl.models.experiments.single_experiment import SingleExperiment
 from elecssl.models.hp_suggesting import make_trial_suggestion, \
@@ -26,7 +27,7 @@ from elecssl.models.metrics import PlotNotSavedWarning
 from elecssl.models.ml_models.ml_model_base import MLModel
 from elecssl.models.sampling_distributions import get_yaml_loader
 from elecssl.models.utils import add_yaml_constructors, add_yaml_representers, verify_type, merge_dicts, \
-    verified_performance_score
+    verified_performance_score, merge_dicts_strict
 
 
 class HPOExperiment(abc.ABC):
@@ -311,6 +312,104 @@ class HPOExperiment(abc.ABC):
         # Performance
         val_scores = {target_metric: val_df[target_metric].iat[epoch] for target_metric in target_metrics}
         return val_scores, epoch
+
+    # --------------
+    # Methods for HP analysis
+    # --------------
+    @classmethod
+    def get_study_name(cls):
+        return f"{cls._name}-study"
+
+    @classmethod
+    def add_hp_configurations_to_dataframe(cls, df, hps, results_dir, skip_if_exists=True):
+        """
+        Method for adding hyperparameter configurations to a dataframe.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            The input dataframe needs the 'run' column to know which run to extract the HPC from
+        hps : str | tuple[str, ...]
+            Hyperparameter configurations to add to the dataframe
+        results_dir : pathlib.Path
+        skip_if_exists : bool
+            To skip the HP if it already exists in the dataframe
+
+        Returns
+        -------
+        pandas.DataFrame
+        """
+        hps = (hps,) if isinstance(hps, str) else hps
+
+        # (Maybe) skipping HPs which are already in the dataframe
+        if skip_if_exists:
+            hps = tuple(hp for hp in hps if hp not in df.columns)
+
+        # Infer the HPCs from the study object
+        study = load_hpo_study(name=cls.get_study_name(), path=results_dir)
+        hpcs = {trial.number: trial.params for trial in study.get_trials()}
+
+        # Loop through all unique runs to make dataframe
+        trial_numbers = set(df["trial_number"])
+        configs = {"trial_number": [], **{hp_name: [] for hp_name in hps}}
+        for trial_number in trial_numbers:
+            configs["trial_number"].append(trial_number)
+            for hp_name in hps:
+                configs[hp_name].append(hpcs[trial_number][f"{cls._name}_{hp_name}"])
+
+        # Add to existing df
+        return df.merge(pandas.DataFrame(configs), on="trial_number")
+
+    def create_unconditional_hp_config_space(self, name, hpd_config):
+        # todo: havent tested this, not sure if I completed it
+        preprocessing_config_space: Dict[str, Any] = dict()
+
+        # Preprocessing
+        for param_name, (distribution, distribution_kwargs) in hpd_config["Preprocessing"].items():
+            preprocessing_config_space[param_name] = to_hyperparameter(
+                name=f"{name}_{param_name}", method=distribution, **distribution_kwargs
+            )
+
+        # Training
+        train_config_space = self._get_training_config_space(name=name, hpd_config=hpd_config)
+
+        # Normalisation
+        config_space: Dict[str, Any] = dict()
+        config_space["normalisation"] = to_hyperparameter(name=f"{name}_normalisation", method="categorical",
+                                                          **hpd_config["normalisation"])
+
+        # Domain adaptation
+        domain_adaptation = []
+        if self._experiments_config["enable_cmmn"]:
+            domain_adaptation.append("CMMN")
+        if self._experiments_config["enable_domain_discriminator"]:
+            domain_adaptation.append("DD")
+        if self._experiments_config["enable_cmmn"] and self._experiments_config["enable_domain_discriminator"]:
+            domain_adaptation.append("CMMN + DD")
+        if domain_adaptation:
+            domain_adaptation.append("Nothing")
+            config_space["Domain adaptation"] = to_hyperparameter(name=f"{name}_domain_adpatation",
+                                                                  method="categorical", choices=domain_adaptation)
+        # Loss
+        config_space["Loss"] = to_hyperparameter(name=f"{name}_loss", **hpd_config["Loss"]["loss"])
+
+        # Handling varied numbers of electrodes
+        config_space["Spatial method"] = to_hyperparameter(name=f"{name}_spatial_method", method="categorical",
+                                                           **hpd_config["SpatialDimensionMismatch"])
+
+        return merge_dicts_strict(train_config_space, config_space, preprocessing_config_space)
+
+
+
+    @staticmethod
+    def _get_training_config_space(name, hpd_config):
+        # Training
+        configs = dict()
+        for param_name, (distribution, distribution_kwargs) in hpd_config["Training"].items():
+            configs[param_name] = to_hyperparameter(
+                name=f"{name}_{param_name}", method=distribution, kwargs=distribution_kwargs
+            )
+        return configs
 
     # --------------
     # Properties
