@@ -220,7 +220,63 @@ class GreenModel(MTSModuleBase):
     # ----------------
     @classmethod
     def suggest_hyperparameters(cls, name, trial, config):
-        raise NotImplementedError
+        # ----------------
+        # The parametrised convolutions
+        # ----------------
+        n_freqs = trial.suggest_int(f"{name}_n_freqs", **config["n_freqs"])
+        kernel_width_s = trial.suggest_float(f"{name}_kernel_width_s", **config["kernel_width_s"])
+        conv_stride = trial.suggest_int(f"{name}_conv_stride", **config["conv_stride"])
+        oct_min = trial.suggest_float(f"{name}_oct_min", **config["oct_min"])
+        oct_max_addition = trial.suggest_float(f"{name}_oct_max_addition", **config["oct_max_addition"])
+        oct_max = oct_min + oct_max_addition
+        random_f_init = trial.suggest_categorical(f"{name}_random_f_init", **config["random_f_init"])
+
+        # ----------------
+        # The pooling layer
+        # ----------------
+        pooling_layer = trial.suggest_categorical(f"{name}_pooling_layer", config["pooling_layer"])
+        pooling_layer_kwargs = _suggest_pooling_layer_hpcs(trial=trial, name=name, config=config,
+                                                           pooling_layer=pooling_layer)
+
+        # ----------------
+        # Shrinkage layer
+        # ----------------
+        shrinkage_init = trial.suggest_float(f"{name}_shrinkage_init", **config["shrinkage_init"])
+
+        # ----------------
+        # BiMap layer
+        # ----------------
+        bi_out = trial.suggest_int(f"{name}_bi_out", **config["bi_out"])
+
+        # ----------------
+        # Combined ReEig and LogMap layer
+        # ----------------
+        logref = trial.suggest_categorical(f"{name}_logref", **config["logref"])
+        reg = trial.suggest_float(f"{name}_reg", **config["reg"])
+
+        # ----------------
+        # Fully connected module
+        # ----------------
+        # Going for a 'decrease by factor of two'
+        dropout = trial.suggest_float(f"{name}_drop_prob", **config["drop_prob"])
+        num_fc_layers = trial.suggest_int(f"{name}_num_fc_layers", config["num_fc_layers"])
+        num_first_fc_filters = trial.suggest_int(f"{name}_num_first_fc_filters", config["num_first_fc_filters"])
+        hidden_dim = tuple(num_first_fc_filters // 2 for _ in range(num_fc_layers))
+
+        return {"n_freqs": n_freqs,
+                "kernel_width_s": kernel_width_s,
+                "conv_stride": conv_stride,
+                "oct_min": oct_min,
+                "oct_max": oct_max,
+                "random_f_init": random_f_init,
+                "pooling_layer": pooling_layer,
+                "pooling_layer_kwargs": pooling_layer_kwargs,
+                "shrinkage_init": shrinkage_init,
+                "bi_out": bi_out,
+                "logref": logref,
+                "reg": reg,
+                "dropout": dropout,
+                "hidden_dim": hidden_dim}
 
     # ----------------
     # Properties
@@ -229,3 +285,15 @@ class GreenModel(MTSModuleBase):
     def latent_features_dim(self) -> int:
         # Infer it from the final layer
         return self._model.head[-1].in_features  # type: ignore[no-any-return]
+
+
+# ----------------
+# Functions
+# ----------------
+def _suggest_pooling_layer_hpcs(trial, name, config, pooling_layer):
+    if pooling_layer.lower() in ("real_covariance", "realcovariance"):
+        return dict()
+    elif pooling_layer.lower() in ("cross_covariance", "crosscovariance"):
+        return dict()
+
+    raise NotImplementedError(f"HP sampling has not been implemente for the pooling layer {pooling_layer}")
