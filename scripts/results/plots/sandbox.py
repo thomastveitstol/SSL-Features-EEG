@@ -85,17 +85,16 @@ def make_hue_boxplots_single_study():
     selection_metric = "r2_score"
     target_metrics = ("pearson_r", "spearman_rho", "r2_score", "mae", "mse", "mape")
     method = "mean"
-    hp = "architecture"
-
+    y = "architecture"
+    hue = "normalisation"
 
     # Plot details
     x = "test_r2_score"
-    y = hp
 
     # x, y = y, x
 
     # Other stuff
-    results_dir = get_results_dir() / "prediction_models" / "prediction_models_hpo_experiment_2025-02-07_064413"
+    results_dir = get_results_dir() / "prediction_models" / "debug_prediction_models_hpo_experiment_2025-02-10_181802"
 
     # ---------------
     # Analysis
@@ -107,12 +106,12 @@ def make_hue_boxplots_single_study():
     )
 
     # Add HPCs
-    df = PredictionModelsHPO.add_hp_configurations_to_dataframe(df, hps=hp, results_dir=results_dir)
+    df = PredictionModelsHPO.add_hp_configurations_to_dataframe(df, hps=(y, hue), results_dir=results_dir)
 
     # Plotting
     # seaborn.scatterplot(data=df, x=x, y=y)
-    seaborn.boxplot(data=df, x=x, y=y, linewidth=1.2, dodge=True, showfliers=False, fill=False)
-    seaborn.stripplot(data=df, x=x, y=y, jitter=True, dodge=True, size=3, alpha=0.5, marker='o')
+    seaborn.boxplot(data=df, x=x, y=y, hue=hue, linewidth=1.2, dodge=True, showfliers=False, fill=False)
+    seaborn.stripplot(data=df, x=x, y=y, hue=hue, jitter=True, dodge=True, size=3, alpha=0.5, marker='o')
     # pyplot.xscale("log")
 
     pyplot.show()
