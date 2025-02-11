@@ -62,8 +62,13 @@ src/elecssl/models/ml_models/ml_model_base.py
 src/elecssl/models/mts_modules/__init__.py
 src/elecssl/models/mts_modules/braindecode_models.py
 src/elecssl/models/mts_modules/getter.py
+src/elecssl/models/mts_modules/green_model.py
 src/elecssl/models/mts_modules/inception_network.py
 src/elecssl/models/mts_modules/mts_module_base.py
+src/elecssl/models/mts_modules/green/__init__.py
+src/elecssl/models/mts_modules/green/pl_utils.py
+src/elecssl/models/mts_modules/green/spd_layers.py
+src/elecssl/models/mts_modules/green/wavelet_layers.py
 src/elecssl/models/region_based_pooling/__init__.py
 src/elecssl/models/region_based_pooling/hyperparameter_sampling.py
 src/elecssl/models/region_based_pooling/region_based_pooling.py
