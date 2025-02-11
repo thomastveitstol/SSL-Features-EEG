@@ -298,4 +298,4 @@ def _suggest_pooling_layer_hpcs(trial, name, config, pooling_layer):
     elif pooling_layer.lower() in ("cross_covariance", "crosscovariance"):
         return dict()
 
-    raise NotImplementedError(f"HP sampling has not been implemente for the pooling layer {pooling_layer}")
+    raise NotImplementedError(f"HP sampling has not been implemented for the pooling layer {pooling_layer}")

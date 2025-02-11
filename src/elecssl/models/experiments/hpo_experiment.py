@@ -1040,7 +1040,7 @@ def _get_prepared_experiments_config(experiments_config, in_freq_band, in_ocular
 
     # Add the sampling frequency if required for the DL model
     if "sampling_freq" in suggested_hyperparameters["DLArchitecture"]["kwargs"] \
-        and suggested_hyperparameters["DLArchitecture"]["kwargs"]["sampling_freq"] == "UNAVAILABLE":
+            and suggested_hyperparameters["DLArchitecture"]["kwargs"]["sampling_freq"] == "UNAVAILABLE":
         sampling_freq = preprocessing_config_file['sfreq_multiple'] * f_max
         suggested_hyperparameters["DLArchitecture"]["kwargs"]["sampling_freq"] = sampling_freq
 
