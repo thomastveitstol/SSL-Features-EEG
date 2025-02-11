@@ -107,7 +107,7 @@ def get_green(
     out_dim: int = 1,
     use_age: bool = False,
     orth_weights=True,
-    reg: Optional[float] = None  # Added by TT
+    reg: float = 1e-4  # Added by TT
 ):
     """
     Helper function to get a Green model.
