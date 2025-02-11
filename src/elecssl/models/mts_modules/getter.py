@@ -2,6 +2,7 @@
 Contains only a function for returning a specified MTS module
 """
 from elecssl.models.mts_modules.braindecode_models import Deep4NetMTS, ShallowFBCSPNetMTS
+from elecssl.models.mts_modules.green_model import GreenModel
 from elecssl.models.mts_modules.inception_network import InceptionNetwork
 
 
@@ -30,7 +31,7 @@ def get_mts_module(mts_module_name, **kwargs):
     ('InceptionNetwork',...)
     """
     # All available MTS modules must be included here
-    available_mts_modules = (InceptionNetwork, ShallowFBCSPNetMTS, Deep4NetMTS)
+    available_mts_modules = (InceptionNetwork, ShallowFBCSPNetMTS, Deep4NetMTS, GreenModel)
 
     # Loop through and select the correct one
     for mts_module in available_mts_modules:
@@ -45,7 +46,7 @@ def get_mts_module(mts_module_name, **kwargs):
 def get_mts_module_type(mts_module_name):
     """Function for getting a specified MTS module class"""
     # All available MTS modules must be included here
-    available_mts_modules = (InceptionNetwork, ShallowFBCSPNetMTS, Deep4NetMTS)
+    available_mts_modules = (InceptionNetwork, ShallowFBCSPNetMTS, Deep4NetMTS, GreenModel)
 
     # Loop through and select the correct one
     for mts_module in available_mts_modules:
