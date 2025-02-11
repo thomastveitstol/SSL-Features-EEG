@@ -109,7 +109,7 @@ class GreenModel(MTSModuleBase):
 
         Examples
         --------
-        >>> # TODO: Doesn't work with 'pw_plv'
+        >>> # TODO: Doesn't work with ('pw_plv', 'cross_covariance')
         >>> import torch
         >>> my_num_seconds = 10
         >>> my_sfreq = 200
@@ -230,13 +230,13 @@ class GreenModel(MTSModuleBase):
         oct_max_addition = trial.suggest_float(f"{name}_oct_max_addition", **config["oct_max_addition"])
         oct_max = oct_min + oct_max_addition
         random_f_init = trial.suggest_categorical(f"{name}_random_f_init", **config["random_f_init"])
+        sampling_freq = config["sampling_freq"]  # Just copy sampling frequency
 
         # ----------------
         # The pooling layer
         # ----------------
-        pooling_layer = trial.suggest_categorical(f"{name}_pooling_layer", config["pooling_layer"])
-        pooling_layer_kwargs = _suggest_pooling_layer_hpcs(trial=trial, name=name, config=config,
-                                                           pooling_layer=pooling_layer)
+        pool_layer = trial.suggest_categorical(f"{name}_pool_layer", **config["pool_layer"])
+        pool_layer_kwargs = _suggest_pooling_layer_hpcs(trial=trial, name=name, config=config, pooling_layer=pool_layer)
 
         # ----------------
         # Shrinkage layer
@@ -259,18 +259,20 @@ class GreenModel(MTSModuleBase):
         # ----------------
         # Going for a 'decrease by factor of two'
         dropout = trial.suggest_float(f"{name}_drop_prob", **config["drop_prob"])
-        num_fc_layers = trial.suggest_int(f"{name}_num_fc_layers", config["num_fc_layers"])
-        num_first_fc_filters = trial.suggest_int(f"{name}_num_first_fc_filters", config["num_first_fc_filters"])
+        num_fc_layers = trial.suggest_int(f"{name}_num_fc_layers", **config["num_fc_layers"])
+        num_first_fc_filters = trial.suggest_int(f"{name}_num_first_fc_filters", **config["num_first_fc_filters"])
         hidden_dim = tuple(num_first_fc_filters // 2 for _ in range(num_fc_layers))
 
-        return {"n_freqs": n_freqs,
+        return {"num_classes": config["num_classes"],
+                "n_freqs": n_freqs,
+                "sampling_freq": sampling_freq,
                 "kernel_width_s": kernel_width_s,
                 "conv_stride": conv_stride,
                 "oct_min": oct_min,
                 "oct_max": oct_max,
                 "random_f_init": random_f_init,
-                "pooling_layer": pooling_layer,
-                "pooling_layer_kwargs": pooling_layer_kwargs,
+                "pool_layer": pool_layer,
+                "pool_layer_kwargs": pool_layer_kwargs,
                 "shrinkage_init": shrinkage_init,
                 "bi_out": bi_out,
                 "logref": logref,
