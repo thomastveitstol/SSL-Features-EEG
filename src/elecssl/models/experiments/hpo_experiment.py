@@ -1038,6 +1038,12 @@ def _get_prepared_experiments_config(experiments_config, in_freq_band, in_ocular
         _resample = preprocessing_config_file["resample"]
         suggested_hyperparameters["DLArchitecture"]["kwargs"]["num_time_steps"] = _resample
 
+    # Add the sampling frequency if required for the DL model
+    if "sampling_freq" in suggested_hyperparameters["DLArchitecture"]["kwargs"] \
+        and suggested_hyperparameters["DLArchitecture"]["kwargs"]["sampling_freq"] == "UNAVAILABLE":
+        sampling_freq = preprocessing_config_file['sfreq_multiple'] * f_max
+        suggested_hyperparameters["DLArchitecture"]["kwargs"]["sampling_freq"] = sampling_freq
+
     # Add the preprocessed version to all datasets
     preprocessed_version = (f"preprocessed_band_pass_{in_ocular_state}/data--band_pass-{in_freq_band}--"
                             f"input_length-{preprocessing_config_file['input_length']}s--"
