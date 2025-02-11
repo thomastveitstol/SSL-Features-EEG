@@ -106,7 +106,8 @@ def get_green(
     bi_out: Optional[Union[int, Tuple[int, ...]]] = None,  # Modified by TT: changed type hint from 'int' only
     out_dim: int = 1,
     use_age: bool = False,
-    orth_weights=True
+    orth_weights=True,
+    reg: Optional[float] = None  # Added by TT
 ):
     """
     Helper function to get a Green model.
@@ -247,7 +248,7 @@ def get_green(
                   n_freqs=n_freqs,
                   ref=logref,
                   momentum=0.9,
-                  reg=1e-4)
+                  reg=reg)  # Modified by TT: using a 'reg' input argument now
 
     # Head
     if hidden_dim is None:
