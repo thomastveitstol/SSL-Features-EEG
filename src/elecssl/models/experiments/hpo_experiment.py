@@ -22,11 +22,11 @@ from elecssl.data.results_analysis.utils import higher_is_better, load_hpo_study
 from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split, simple_random_split
 from elecssl.models.experiments.single_experiment import SingleExperiment
 from elecssl.models.hp_suggesting import make_trial_suggestion, \
-    suggest_spatial_dimension_mismatch, suggest_loss, suggest_dl_architecture
+    suggest_spatial_dimension_mismatch, suggest_loss, suggest_dl_architecture, get_optuna_sampler
 from elecssl.models.metrics import PlotNotSavedWarning
 from elecssl.models.ml_models.ml_model_base import MLModel
 from elecssl.models.sampling_distributions import get_yaml_loader
-from elecssl.models.utils import add_yaml_constructors, add_yaml_representers, verify_type, merge_dicts, \
+from elecssl.models.utils import add_yaml_constructors, verify_type, merge_dicts, \
     verified_performance_score, merge_dicts_strict
 
 
@@ -87,11 +87,10 @@ class HPOExperiment(abc.ABC):
         os.mkdir(self._results_path)
 
         # Save the config files
-        safe_dumper = add_yaml_representers(yaml.SafeDumper)
         with open(self._results_path / "experiments_config.yml", "w") as file:
-            yaml.dump(experiments_config, file, Dumper=safe_dumper)
+            yaml.safe_dump(experiments_config, file)
         with open(self._results_path / "hpd_config.yml", "w") as file:
-            yaml.dump(hp_config, file, Dumper=safe_dumper)
+            yaml.safe_dump(hp_config, file)
 
     def _get_hpo_folder_path(self, trial: optuna.Trial):
         return self._results_path / (f"{self._name}_hpo_{trial.number}_{date.today()}_"
@@ -102,9 +101,9 @@ class HPOExperiment(abc.ABC):
         # Create study
         study_name = f"{self._name}-study"
         storage_path = (self._results_path / study_name).with_suffix(".db")
-        study = optuna.create_study(
-            study_name=study_name, storage=f"sqlite:///{storage_path}", **self.hpo_study_config["HPOStudy"]
-        )
+        sampler = get_optuna_sampler(self.hpo_study_config["HPOStudy"]["sampler"],
+                                     **self.hpo_study_config["HPOStudy"]["sampler_kwargs"])
+        study = optuna.create_study(study_name=study_name, storage=f"sqlite:///{storage_path}", sampler=sampler)
 
         # Optimise
         with warnings.catch_warnings():
@@ -512,19 +511,17 @@ class PretrainHPO(HPOExperiment):
         # ---------------
         # Save the config files
         # ---------------
-        safe_dumper = add_yaml_representers(yaml.SafeDumper)
-
         # Downstream config files
         with open(self._results_path / "downstream_experiments_config.yml", "w") as file:
-            yaml.dump(self._downstream_experiments_config, file, Dumper=safe_dumper)
+            yaml.safe_dump(self._downstream_experiments_config, file)
         with open(self._results_path / "downstream_hpd_config.yml", "w") as file:
-            yaml.dump(self._downstream_sampling_config, file, Dumper=safe_dumper)
+            yaml.safe_dump(self._downstream_sampling_config, file)
 
         # Pretext config files
         with open(self._results_path / "pretext_experiments_config.yml", "w") as file:
-            yaml.dump(self._pretext_experiments_config, file, Dumper=safe_dumper)
+            yaml.safe_dump(self._pretext_experiments_config, file)
         with open(self._results_path / "pretext_hpd_config.yml", "w") as file:
-            yaml.dump(self._pretext_sampling_config, file, Dumper=safe_dumper)
+            yaml.safe_dump(self._pretext_sampling_config, file)
 
     def _create_objective(self):
         def _objective(trial: optuna.Trial):

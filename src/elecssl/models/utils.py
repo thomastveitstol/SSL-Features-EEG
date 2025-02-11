@@ -1,5 +1,6 @@
 import abc
 import copy
+import warnings
 from collections.abc import Mapping
 from functools import reduce
 from typing import Any, Dict
@@ -543,15 +544,3 @@ def add_yaml_constructors(loader):
     loader.add_constructor("!CategoricalDict", _yaml_optuna_categorical_dict)
     loader.add_constructor("!NotAHyperparameterList", _yaml_optuna_not_a_hyperparameter_list)
     return loader
-
-
-# ---------------
-# Functions for yaml representers
-# ---------------
-def _yaml_representer_hpo_sampler(dumper, data):
-    return dumper.represent_sequence("!HPOSampler", [data.__class__.__name__, "KWARGS_UNAVAILABLE"])
-
-
-def add_yaml_representers(dumper):
-    dumper.add_multi_representer(BaseSampler, _yaml_representer_hpo_sampler)
-    return dumper
