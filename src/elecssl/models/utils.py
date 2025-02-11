@@ -1,13 +1,11 @@
 import abc
 import copy
-import warnings
 from collections.abc import Mapping
 from functools import reduce
 from typing import Any, Dict
 
 import numpy
 import torch
-from optuna.samplers import BaseSampler
 from torch.autograd import Function
 
 from elecssl.models.hp_suggesting import get_optuna_sampler
