@@ -553,6 +553,7 @@ class _ModifiedTCN(TCN):
 
         # Dimension check
         if x.size()[2] < self.min_len:
+            # todo: consider raising optuna.TrialPruned instead
             raise RuntimeError(f"Number of time steps {x.size()[3]} was smaller than allowed {self.min_len}")
 
         # Pass through the temporal blocks
