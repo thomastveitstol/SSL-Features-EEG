@@ -76,6 +76,7 @@ DLArchitectures:
     shrinkage_init: { low: -4.0, high: -2.0, step: null, log: false }  # todo: now we are skipping identity...
     # BiMap layer  todo: in the documentation it seems like it should be int, be code looked like iterable of ints
     bi_out: { low: 10, high: 30, step: 1, log: false }  # todo: should be possible with None too
+    orth_weights: { choices: [ false ] }  # todo: setting to True makes current method for saving impossible
     # Combined ReEig and LogMap layer
     logref: { choices: [ identity, logeuclid ] }
     reg: { low: 0.000001, high: 0.0001, step: null, log: true }  # todo: can be None in the code too...

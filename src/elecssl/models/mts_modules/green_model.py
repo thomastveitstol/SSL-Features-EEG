@@ -247,6 +247,7 @@ class GreenModel(MTSModuleBase):
         # BiMap layer
         # ----------------
         bi_out = trial.suggest_int(f"{name}_bi_out", **config["bi_out"])
+        orth_weights = trial.suggest_categorical(f"{name}_orth_weights", **config["orth_weights"])
 
         # ----------------
         # Combined ReEig and LogMap layer
@@ -275,6 +276,7 @@ class GreenModel(MTSModuleBase):
                 "pool_layer_kwargs": pool_layer_kwargs,
                 "shrinkage_init": shrinkage_init,
                 "bi_out": bi_out,
+                "orth_weights": orth_weights,
                 "logref": logref,
                 "reg": reg,
                 "dropout": dropout,
