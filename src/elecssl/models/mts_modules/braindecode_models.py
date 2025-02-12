@@ -717,7 +717,11 @@ class TCNMTS(MTSModuleBase):
     # ----------------
     @classmethod
     def suggest_hyperparameters(cls, name, trial, config):
-        raise NotImplementedError
+        return {"num_classes": config["num_classes"],
+                "n_blocks": trial.suggest_int(name=f"{name}_n_blocks", **config["n_blocks"]),
+                "n_filters": trial.suggest_int(name=f"{name}_n_filters", **config["n_filters"]),
+                "kernel_size": trial.suggest_int(name=f"{name}_kernel_size", **config["kernel_size"]),
+                "drop_prob": trial.suggest_float(name=f"{name}_drop_prob", **config["drop_prob"])}
 
     # ----------------
     # Properties
