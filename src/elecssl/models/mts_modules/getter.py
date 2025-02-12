@@ -1,9 +1,17 @@
 """
 Contains only a function for returning a specified MTS module
 """
-from elecssl.models.mts_modules.braindecode_models import Deep4NetMTS, ShallowFBCSPNetMTS
+from typing import Type, Tuple
+
+from elecssl.models.mts_modules.braindecode_models import Deep4NetMTS, ShallowFBCSPNetMTS, TCNMTS
 from elecssl.models.mts_modules.green_model import GreenModel
 from elecssl.models.mts_modules.inception_network import InceptionNetwork
+from elecssl.models.mts_modules.mts_module_base import MTSModuleBase
+
+
+def get_available_architectures() -> Tuple[Type[MTSModuleBase], ...]:
+    """All MTS modules must be available from here"""
+    return InceptionNetwork, ShallowFBCSPNetMTS, Deep4NetMTS, GreenModel, TCNMTS
 
 
 def get_mts_module(mts_module_name, **kwargs):
@@ -30,8 +38,8 @@ def get_mts_module(mts_module_name, **kwargs):
     ValueError: The MTS module 'NotAnMTSModule' was not recognised. Please select among the following:
     ('InceptionNetwork',...)
     """
-    # All available MTS modules must be included here
-    available_mts_modules = (InceptionNetwork, ShallowFBCSPNetMTS, Deep4NetMTS, GreenModel)
+    # Get all available MTS modules
+    available_mts_modules = get_available_architectures()
 
     # Loop through and select the correct one
     for mts_module in available_mts_modules:
@@ -45,8 +53,8 @@ def get_mts_module(mts_module_name, **kwargs):
 
 def get_mts_module_type(mts_module_name):
     """Function for getting a specified MTS module class"""
-    # All available MTS modules must be included here
-    available_mts_modules = (InceptionNetwork, ShallowFBCSPNetMTS, Deep4NetMTS, GreenModel)
+    # Get all available MTS modules
+    available_mts_modules = get_available_architectures()
 
     # Loop through and select the correct one
     for mts_module in available_mts_modules:

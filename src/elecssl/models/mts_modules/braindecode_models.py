@@ -7,7 +7,8 @@ Braindecode citation:
     visualization. Hum. Brain Mapp., 38: 5391-5420. https://doi.org/10.1002/hbm.23730
 """
 import torch
-from braindecode.models import Deep4Net, ShallowFBCSPNet
+import torch.nn as nn
+from braindecode.models import Deep4Net, ShallowFBCSPNet, TCN
 
 from elecssl.models.mts_modules.mts_module_base import MTSModuleBase
 
@@ -529,3 +530,198 @@ class Deep4NetMTS(MTSModuleBase):
     def latent_features_dim(self):
         # The latent features dimension is inferred from the dimension of their 'classifier_conv'
         return self._model.n_filters_4 * self._model.final_conv_length
+
+
+class _ModifiedTCN(TCN):
+    def __init__(self, in_channels, num_classes, **kwargs):
+        super().__init__(n_chans=in_channels, n_outputs=num_classes, add_log_softmax=False, **kwargs)
+
+        # Remove the current final layer
+        del self.final_layer
+
+        # Add the flattening which ensures that the (new) final layer receives a tensor with shape=(batch, num_features)
+        self._flattening_layer = nn.Sequential()
+        self._flattening_layer.add_module(name="gap", module=nn.AdaptiveAvgPool1d(1))
+        self._flattening_layer.add_module(name="flatten", module=nn.Flatten(start_dim=1, end_dim=-1))
+
+        # Add the final FC layer
+        self._final_fc_layer = nn.Linear(in_features=kwargs["n_filters"], out_features=num_classes)
+
+    def forward(self, x, return_features=False):
+        # Partly following braindecode
+        x = torch.squeeze(self.ensuredims(x), dim=-1)  # Should be (batch, channels, time)
+
+        # Dimension check
+        if x.size()[2] < self.min_len:
+            raise RuntimeError(f"Number of time steps {x.size()[3]} was smaller than allowed {self.min_len}")
+
+        # Pass through the temporal blocks
+        x = self.temporal_blocks(x)
+
+        # Global average pooling and flattening
+        x = self._flattening_layer(x)
+
+        # Pass through the final layer or return the features
+        if return_features:
+            return x
+
+        return self.latent_features_to_prediction(x)
+
+    def latent_features_to_prediction(self, x):
+        return self._final_fc_layer(x)
+
+    # ------------
+    # Properties
+    # ------------
+    @property
+    def latent_features_dim(self):
+        return self._final_fc_layer.in_features
+
+
+class TCNMTS(MTSModuleBase):
+    """
+    TCN network
+
+    Paper:
+        Bai, S., Kolter, J. Z., & Koltun, V. (2018). An empirical evaluation of generic convolutional and recurrent
+        networks for sequence modeling. arXiv. https://arxiv.org/abs/1803.01271
+
+    Examples
+    --------
+    >>> my_model = TCNMTS(in_channels=19, num_classes=3, n_blocks=3, kernel_size=10, n_filters=16, drop_prob=0.42)
+    >>> my_model  # doctest: +NORMALIZE_WHITESPACE
+    TCNMTS(
+      (_model): _ModifiedTCN(
+        (ensuredims): Ensure4d()
+        (temporal_blocks): Sequential(
+          (temporal_block_0): TemporalBlock(
+            (conv1): Conv1d(19, 16, kernel_size=(10,), stride=(1,), padding=(9,))
+            (chomp1): Chomp1d(chomp_size=9)
+            (relu1): ReLU()
+            (dropout1): Dropout2d(p=0.42, inplace=False)
+            (conv2): Conv1d(16, 16, kernel_size=(10,), stride=(1,), padding=(9,))
+            (chomp2): Chomp1d(chomp_size=9)
+            (relu2): ReLU()
+            (dropout2): Dropout2d(p=0.42, inplace=False)
+            (downsample): Conv1d(19, 16, kernel_size=(1,), stride=(1,))
+            (relu): ReLU()
+          )
+          (temporal_block_1): TemporalBlock(
+            (conv1): Conv1d(16, 16, kernel_size=(10,), stride=(1,), padding=(18,), dilation=(2,))
+            (chomp1): Chomp1d(chomp_size=18)
+            (relu1): ReLU()
+            (dropout1): Dropout2d(p=0.42, inplace=False)
+            (conv2): Conv1d(16, 16, kernel_size=(10,), stride=(1,), padding=(18,), dilation=(2,))
+            (chomp2): Chomp1d(chomp_size=18)
+            (relu2): ReLU()
+            (dropout2): Dropout2d(p=0.42, inplace=False)
+            (relu): ReLU()
+          )
+          (temporal_block_2): TemporalBlock(
+            (conv1): Conv1d(16, 16, kernel_size=(10,), stride=(1,), padding=(36,), dilation=(4,))
+            (chomp1): Chomp1d(chomp_size=36)
+            (relu1): ReLU()
+            (dropout1): Dropout2d(p=0.42, inplace=False)
+            (conv2): Conv1d(16, 16, kernel_size=(10,), stride=(1,), padding=(36,), dilation=(4,))
+            (chomp2): Chomp1d(chomp_size=36)
+            (relu2): ReLU()
+            (dropout2): Dropout2d(p=0.42, inplace=False)
+            (relu): ReLU()
+          )
+        )
+        (_flattening_layer): Sequential(
+          (gap): AdaptiveAvgPool1d(output_size=1)
+          (flatten): Flatten(start_dim=1, end_dim=-1)
+        )
+        (_final_fc_layer): Linear(in_features=16, out_features=3, bias=True)
+      )
+    )
+    >>> my_model.latent_features_dim
+    16
+    """
+
+    def __init__(self, in_channels, num_classes, **kwargs):
+        super().__init__()
+
+        self._model = _ModifiedTCN(in_channels=in_channels, num_classes=num_classes,**kwargs)
+
+    def forward(self, x, return_features=False):
+        """
+        Forward method
+
+        Parameters
+        ----------
+        x : torch.Tensor
+        return_features : bool
+
+        Returns
+        -------
+        torch.Tensor
+
+        Examples
+        --------
+        >>> import torch
+        >>> my_batch, my_channels, my_time_steps = 10, 103, 6000*3
+        >>> my_model = TCNMTS(in_channels=my_channels, num_classes=3, n_blocks=3, kernel_size=10, n_filters=16,
+        ...                   drop_prob=0.42,)
+        >>> my_model(torch.rand(size=(my_batch, my_channels, my_time_steps))).size()
+        torch.Size([10, 3])
+        >>> my_model(torch.rand(size=(my_batch, my_channels, my_time_steps)), return_features=True).size()
+        torch.Size([10, 16])
+        """
+        return self._model(x, return_features)
+
+    # ----------------
+    # Methods which are needed for training with a domain discriminator
+    # ----------------
+    def extract_latent_features(self, input_tensor):
+        return self(input_tensor, return_features=True)
+
+    def classify_latent_features(self, input_tensor):
+        """
+        Method for classifying the latent features
+
+        Parameters
+        ----------
+        input_tensor : torch.Tensor
+
+        Returns
+        -------
+        torch.Tensor
+
+        Examples
+        --------
+        >>> my_batch, my_channels, my_time_steps = 10, 103, 600*3
+        >>> my_num_filters = 16
+        >>> my_model = TCNMTS(in_channels=my_channels, num_classes=3, n_blocks=3, kernel_size=10,
+        ...                   n_filters=my_num_filters, drop_prob=0.42)
+        >>> my_model.classify_latent_features(torch.rand(size=(10, my_num_filters))).size()
+        torch.Size([10, 3])
+
+        Running (1) feature extraction and (2) classifying is the excact same as just running forward
+
+        >>> my_model = TCNMTS(in_channels=my_channels, num_classes=3, n_blocks=3, kernel_size=10,
+        ...                   n_filters=my_num_filters, drop_prob=0.42)
+        >>> _ = my_model.eval()
+        >>> my_input = torch.rand(size=(my_batch, my_channels, my_time_steps))
+        >>> my_output_1 = my_model.classify_latent_features(my_model.extract_latent_features(my_input))
+        >>> my_output_2 = my_model(my_input)
+        >>> torch.equal(my_output_1, my_output_2)
+        True
+        """
+        return self._model.latent_features_to_prediction(input_tensor)
+
+    # ----------------
+    # Methods used for HPO
+    # ----------------
+    @classmethod
+    def suggest_hyperparameters(cls, name, trial, config):
+        raise NotImplementedError
+
+    # ----------------
+    # Properties
+    # ----------------
+    @property
+    def latent_features_dim(self):
+        # Infer it from the final layer
+        return self._model.latent_features_dim
