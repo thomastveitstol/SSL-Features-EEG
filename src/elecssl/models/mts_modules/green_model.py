@@ -49,7 +49,7 @@ class GreenModel(MTSModuleBase):
     An example with different HPCs
 
     >>> my_model = GreenModel(in_channels=3, num_classes=1, sampling_freq=128, hidden_dim=(123, 11, 67), n_freqs=30,
-    ...                       kernel_width_s=4, dropout=0.435, pool_layer="pw_plv", bi_out=(39, 51))
+    ...                       kernel_width_s=4, dropout=0.435, pool_layer="pw_plv", bi_out=39)
     >>> my_model
     GreenModel(
       (_model): Green(
@@ -60,13 +60,12 @@ class GreenModel(MTSModuleBase):
         (spd_layers): Sequential(
           (0): LedoitWold(n_freqs=30, init_shrinkage=-3.0, learnable=True)
           (1): BiMap(d_in=3, d_out=39, n_freqs=30
-          (2): BiMap(d_in=39, d_out=51, n_freqs=30
         )
-        (proj): LogEig(ref=logeuclid, reg=0.0001, n_freqs=30, size=51
+        (proj): LogEig(ref=logeuclid, reg=0.0001, n_freqs=30, size=39
         (head): Sequential(
-          (0): BatchNorm1d(39780, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (0): BatchNorm1d(23400, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
           (1): Dropout(p=0.435, inplace=False)
-          (2): Linear(in_features=39780, out_features=123, bias=True)
+          (2): Linear(in_features=23400, out_features=123, bias=True)
           (3): GELU(approximate='none')
           (4): BatchNorm1d(123, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
           (5): Dropout(p=0.435, inplace=False)
@@ -131,7 +130,7 @@ class GreenModel(MTSModuleBase):
 
         >>> my_model = GreenModel(in_channels=my_channels, num_classes=3, sampling_freq=128, hidden_dim=(123, 11, 67),
         ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance",
-        ...                       bi_out=(39,))
+        ...                       bi_out=39)
         >>> my_model(torch.rand(size=(my_batch, my_channels, my_time_steps))).size()
         torch.Size([10, 3])
         """
@@ -181,16 +180,14 @@ class GreenModel(MTSModuleBase):
         >>> import torch
         >>> my_batch, my_channels, my_time_steps = 10, 103, 600*3
         >>> my_model = GreenModel(in_channels=my_channels, num_classes=3, sampling_freq=128, hidden_dim=(123, 11, 67),
-        ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance",
-        ...                       bi_out=(39, 51))
+        ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance", bi_out=39)
         >>> my_model.classify_latent_features(torch.rand(size=(10, 67))).size()
         torch.Size([10, 3])
 
         Running (1) feature extraction and (2) classifying is the excact same as just running forward
 
         >>> my_model = GreenModel(in_channels=my_channels, num_classes=3, sampling_freq=128, hidden_dim=(123, 11, 67),
-        ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance",
-        ...                       bi_out=(39, 51))
+        ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance", bi_out=39)
         >>> _ = my_model.eval()
         >>> my_input = torch.rand(size=(my_batch, my_channels, my_time_steps))
         >>> my_output_1 = my_model.classify_latent_features(my_model.extract_latent_features(my_input))
