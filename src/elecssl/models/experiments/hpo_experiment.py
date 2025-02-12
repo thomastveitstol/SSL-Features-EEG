@@ -103,7 +103,8 @@ class HPOExperiment(abc.ABC):
         storage_path = (self._results_path / study_name).with_suffix(".db")
         sampler = get_optuna_sampler(self.hpo_study_config["HPOStudy"]["sampler"],
                                      **self.hpo_study_config["HPOStudy"]["sampler_kwargs"])
-        study = optuna.create_study(study_name=study_name, storage=f"sqlite:///{storage_path}", sampler=sampler)
+        study = optuna.create_study(study_name=study_name, storage=f"sqlite:///{storage_path}", sampler=sampler,
+                                    direction=self.hpo_study_config["HPOStudy"]["direction"])
 
         # Optimise
         with warnings.catch_warnings():
