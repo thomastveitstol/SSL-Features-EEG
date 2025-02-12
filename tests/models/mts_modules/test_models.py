@@ -25,8 +25,8 @@ def test_extract_latent_features(dummy_data, models):
         # Check if the shape is correct
         latent_shape = latent_features.size()
         expected_shape = torch.Size([batch_size, model.latent_features_dim])
-        assert latent_shape == expected_shape,(f"Model {model.__class__.__name__} latent features shape mismatch. "
-                                               f"Expected {expected_shape}, but received {latent_shape}")
+        assert latent_shape == expected_shape, (f"Model {model.__class__.__name__} latent features shape mismatch. "
+                                                f"Expected {expected_shape}, but received {latent_shape}")
 
 
 def test_classify_latent_features(dummy_data, models):

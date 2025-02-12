@@ -31,7 +31,7 @@ def inception_network(dummy_data, dummy_num_classes):
 @pytest.fixture
 def green(dummy_data, dummy_num_classes):
     return GreenModel(in_channels=dummy_data.size()[1], num_classes=dummy_num_classes, sampling_freq=128,
-                      hidden_dim=(123, 11, 67), n_freqs = 30,  kernel_width_s=4, dropout = 0.435,
+                      hidden_dim=(123, 11, 67), n_freqs=30, kernel_width_s=4, dropout=0.435,
                       pool_layer="real_covariance", bi_out=39, orth_weights=False)
 
 
