@@ -647,8 +647,10 @@ class TCNMTS(MTSModuleBase):
     29
     >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=3, kernel_size=7, n_filters=16, drop_prob=0.42).min_time_steps
     85
-    >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=6, kernel_size=7, n_filters=16, drop_prob=0.42).min_time_steps
-    757
+    >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=5, kernel_size=7, n_filters=16, drop_prob=0.42).min_time_steps
+    373
+    >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=5, kernel_size=8, n_filters=16, drop_prob=0.42).min_time_steps
+    435
     >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=7, kernel_size=7, n_filters=16, drop_prob=0.42).min_time_steps
     1525
     >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=5, kernel_size=10, n_filters=16, drop_prob=0.42).min_time_steps
