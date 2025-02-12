@@ -6,6 +6,8 @@ Braindecode citation:
     Hutter, F., Burgard, W. and Ball, T. (2017), Deep learning with convolutional neural networks for EEG decoding and
     visualization. Hum. Brain Mapp., 38: 5391-5420. https://doi.org/10.1002/hbm.23730
 """
+import warnings
+
 import torch
 import torch.nn as nn
 from braindecode.models import Deep4Net, ShallowFBCSPNet, TCN
@@ -670,7 +672,10 @@ class TCNMTS(MTSModuleBase):
         >>> my_model(torch.rand(size=(my_batch, my_channels, my_time_steps)), return_features=True).size()
         torch.Size([10, 16])
         """
-        return self._model(x, return_features)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(action="ignore", category=UserWarning)  # todo: ideally this should be fixed...
+            x = self._model(x, return_features)
+        return x
 
     # ----------------
     # Methods which are needed for training with a domain discriminator
