@@ -58,6 +58,12 @@ DLArchitectures:
   #  num_first_filters: { low: 10, high: 40, step: 1, log: false }
   #  filter_length: { low: 5, high: 15, step: 1, log: false }
   #  drop_prob: { low: 0.0, high: 0.5, log: false }  # todo: should this be independent from shallownet?
+  TCNMTS:
+    num_classes: 1
+    n_blocks: { low: 1, high: 10, step: 1, log: false }
+    n_filters:  { low: 4, high: 128, step: 1, log: True }
+    kernel_size: { low: 5, high: 15, step: 1, log: True }
+    drop_prob: { low: 0.0, high: 0.5, log: false }
   GreenModel:
     # General requirements
     num_classes: 1
