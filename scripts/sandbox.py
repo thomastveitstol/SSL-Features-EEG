@@ -4,11 +4,13 @@ from pathlib import Path
 import ConfigSpace
 import pandas
 import seaborn
+import torch
 from matplotlib import pyplot
 
 from elecssl.data.paths import get_results_dir
 from elecssl.data.results_analysis.utils import load_hpo_study
 from elecssl.models.experiments.hpo_experiment import PredictionModelsHPO, PretrainHPO
+from elecssl.models.mts_modules.green_model import GreenModel
 
 
 def get_config_space():
@@ -131,8 +133,30 @@ def try_making_config_space_json():
     print(ConfigSpace.ConfigurationSpace.from_json(path))
 
 
+def save_green():
+    kwargs = {"bi_out": 28,
+              "orth_weights": True,
+
+              "conv_stride": 3,
+              "dropout": 0.4166762566834736,
+              "hidden_dim": [11],
+              "kernel_width_s": 3.5051339860376958,
+              "logref": "logeuclid",
+              "n_freqs": 48,
+              "oct_max": 6.228701883563893,
+              "oct_min": 0.6851740516683408,
+              "pool_layer": "RealCovariance",
+              "pool_layer_kwargs": {},
+              "random_f_init": False,
+              "reg": 6.0727362401454394e-06,
+              "shrinkage_init": -2.67768716062845
+              }
+    torch.save(GreenModel(in_channels=5, num_classes=1, sampling_freq=90, **kwargs),
+               Path(os.path.dirname(__file__)) / "green_model.pt")
+
+
 def main():
-    make_hue_boxplots_single_study()
+    save_green()
 
 
 if __name__ == "__main__":
