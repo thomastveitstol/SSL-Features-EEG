@@ -641,6 +641,20 @@ class TCNMTS(MTSModuleBase):
     )
     >>> my_model.latent_features_dim
     16
+    >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=3, kernel_size=10, n_filters=16, drop_prob=0.42).min_time_steps
+    127
+    >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=3, kernel_size=3, n_filters=16, drop_prob=0.42).min_time_steps
+    29
+    >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=3, kernel_size=7, n_filters=16, drop_prob=0.42).min_time_steps
+    85
+    >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=6, kernel_size=7, n_filters=16, drop_prob=0.42).min_time_steps
+    757
+    >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=7, kernel_size=7, n_filters=16, drop_prob=0.42).min_time_steps
+    1525
+    >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=5, kernel_size=10, n_filters=16, drop_prob=0.42).min_time_steps
+    559
+    >>> TCNMTS(in_channels=19, num_classes=3, n_blocks=6, kernel_size=10, n_filters=16, drop_prob=0.42).min_time_steps
+    1135
     """
 
     def __init__(self, in_channels, num_classes, **kwargs):
@@ -735,3 +749,8 @@ class TCNMTS(MTSModuleBase):
     def latent_features_dim(self):
         # Infer it from the final layer
         return self._model.latent_features_dim
+
+    @property
+    def min_time_steps(self):
+        """Minimum number of allowed input time steps"""
+        return self._model.min_len
