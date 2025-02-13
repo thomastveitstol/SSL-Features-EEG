@@ -43,7 +43,7 @@ Loss:
 DLArchitectures:
   InceptionNetwork:
     num_classes: 1
-    cnn_units: { low: 4, high: 16, log: true }  # { low: 8, high: 64, log: true }
+    cnn_units: { low: 4, high: 64, log: true }  # { low: 8, high: 64, log: true }
     depth: { low: 1, high: 14, log: true }  # Remember that this value will be multiplied by 3
   ShallowFBCSPNetMTS:
     num_classes: 1

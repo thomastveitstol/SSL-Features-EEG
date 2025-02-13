@@ -6,6 +6,7 @@ import pandas
 import seaborn
 import torch
 from matplotlib import pyplot
+from optuna.samplers import TPESampler
 
 from elecssl.data.paths import get_results_dir
 from elecssl.data.results_analysis.utils import load_hpo_study
@@ -88,7 +89,7 @@ def make_hue_boxplots_single_study():
     target_metrics = ("pearson_r", "spearman_rho", "r2_score", "mae", "mse", "mape")
     method = "mean"
     y = "architecture"
-    hue = "normalisation"
+    hue = "spatial_dimension_handling"
 
     # Plot details
     x = "test_r2_score"
@@ -96,7 +97,7 @@ def make_hue_boxplots_single_study():
     # x, y = y, x
 
     # Other stuff
-    results_dir = get_results_dir() / "prediction_models" / "debug_prediction_models_hpo_experiment_2025-02-10_181802"
+    results_dir = get_results_dir() / "prediction_models" / "debug_prediction_models_hpo_experiment_2025-02-12_164640"
 
     # ---------------
     # Analysis
@@ -156,7 +157,7 @@ def save_green():
 
 
 def main():
-    save_green()
+    make_hue_boxplots_single_study()
 
 
 if __name__ == "__main__":
