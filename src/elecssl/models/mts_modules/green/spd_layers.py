@@ -4,12 +4,15 @@ https://github.com/Roche/neuro-green/blob/main/green/spd_layers.py
 """
 # mypy: disable-error-code="unreachable,arg-type,type-arg,assignment"
 import numpy as np
+import optuna
 import torch
 from torch import Tensor
 from torch import nn
+# noinspection PyProtectedMember
+from torch._C import _LinAlgError  # added by TT
 
 
-def _modify_eigenvalues(X: Tensor, function) -> Tensor:
+def _modify_eigenvalues(X: Tensor, function, raise_upon_error=optuna.TrialPruned) -> Tensor:
     """Apply function to the eigenvalues of a covariance matrix
 
     Parameters
@@ -18,13 +21,20 @@ def _modify_eigenvalues(X: Tensor, function) -> Tensor:
         Covariances matrices considered. Shape N x F x C x C
     function : _type_
         Function to apply to the eigenvalues
+    raise_upon_error : Exception
+        Which error to raise if getting _LinAlgError when computing eigenvalues. Added by TT
 
     Returns
     -------
     Tensor
         Set of covariance matrices with modified eigenvalues
     """
-    D, Q = torch.linalg.eigh(X)
+    try:
+        # Added by TT
+        D, Q = torch.linalg.eigh(X)
+    except _LinAlgError:
+        raise raise_upon_error
+
     D_out = function(D)
     X_out = Q @ torch.diag_embed(D_out) @ torch.transpose(Q, -2, -1)
     return X_out
