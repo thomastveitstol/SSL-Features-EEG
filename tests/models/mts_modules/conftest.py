@@ -1,23 +1,8 @@
 import pytest
-import torch
 
 from elecssl.models.mts_modules.braindecode_models import TCNMTS, Deep4NetMTS, ShallowFBCSPNetMTS
 from elecssl.models.mts_modules.green_model import GreenModel
 from elecssl.models.mts_modules.inception_network import InceptionNetwork
-
-
-@pytest.fixture
-def dummy_num_classes():
-    return 3
-
-
-@pytest.fixture
-def dummy_data():
-    # Some configurations
-    batch_size, num_channels, num_time_steps = 10, 19, 2000
-
-    # Make a random tensor
-    return torch.rand(size=(batch_size, num_channels, num_time_steps))
 
 
 # ------------
