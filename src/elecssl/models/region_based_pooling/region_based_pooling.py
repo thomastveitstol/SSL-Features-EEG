@@ -516,7 +516,7 @@ class RegionBasedPooling(nn.Module):
 
         Parameters
         ----------
-        channel_system : cdl_eeg.data.datasets.dataset_base.ChannelSystem
+        channel_system : elecssl.data.datasets.dataset_base.ChannelSystem
             The channel system to fit
 
         Returns
