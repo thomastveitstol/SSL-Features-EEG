@@ -131,12 +131,23 @@ class MainRBPModel(MainModuleBase):
         torch.Tensor
             Outputs of MTS module without applying a final activation function
         """
+        # Input check
+        if any(tensor_.isnan().any() for tensor_ in input_tensors.values()):
+            datasets_with_nans = []
+            for name, tensor_ in input_tensors.items():
+                if tensor_.isnan().any():
+                    datasets_with_nans.append(name)
+            raise ValueError(f"Input tensors from {datasets_with_nans} contain NaN values")
+
         # Pass through RBP layer
         x = self._region_based_pooling(input_tensors, channel_name_to_index=channel_name_to_index,
                                        pre_computed=pre_computed)
 
         # Merge by concatenation
         x = torch.cat(x, dim=1)
+
+        if x.isnan().any():
+            raise ValueError("Output of RBP contains (nan values)")
 
         # Maybe normalise region representations
         if self._normalise_region_representations:
