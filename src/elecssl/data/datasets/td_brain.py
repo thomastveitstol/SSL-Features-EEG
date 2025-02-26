@@ -27,7 +27,7 @@ class TDBRAIN(EEGDatasetBase):
 
     Examples
     --------
-    >>> len(TDBRAIN().get_subject_ids())  # doctest: +SKIP# doctest: +SKIP
+    >>> len(TDBRAIN().get_subject_ids())  # doctest: +SKIP
     1273
     >>> TDBRAIN().get_subject_ids()[:3]  # doctest: +SKIP
     ('sub-19681349', 'sub-19681385', 'sub-19684666')
