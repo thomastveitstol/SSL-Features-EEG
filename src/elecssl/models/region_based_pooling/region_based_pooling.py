@@ -93,19 +93,15 @@ class MultiMontageSplitsRegionBasedPooling(RegionBasedPoolingBase):
 
     Examples
     --------
-    >>> my_pooling_method = "MultiCSSharedRocket"
+    >>> my_pooling_method = "MultiMSSharedRocket"
     >>> my_pooling_kwargs = {"num_regions": (3, 7, 4), "num_kernels": 43, "max_receptive_field": 37}
-    >>> my_split_methods = ("VoronoiSplit", "VoronoiSplit", "VoronoiSplit")
-    >>> my_box = {"x_min": 0, "x_max": 1, "y_min": 0, "y_max": 1}
-    >>> my_split_kwargs = ({"min_nodes": 1, "channel_systems": ("HatlestadHall",), **my_box},
-    ...                    {"min_nodes": 1, "channel_systems": ("HatlestadHall",), **my_box},
-    ...                    {"min_nodes": 1, "channel_systems": ("HatlestadHall",), **my_box})
-    >>> my_model = MultiMontageSplitsRegionBasedPooling(pooling_method=my_pooling_method,
-    ...                                                 pooling_method_kwargs=my_pooling_kwargs,
-    ...                                                 split_methods=my_split_methods,
-    ...                                                 split_methods_kwargs=my_split_kwargs,
-    ...                                                 use_cmmn_layer=True,
-    ...                                                 cmmn_kwargs={"kernel_size": 32})
+    >>> my_split_methods = ("CentroidPolygons", "CentroidPolygons", "CentroidPolygons")
+    >>> my_split_kwargs = ({"min_nodes": 1, "channel_positions": ("LEMON",), "k": [2, 2, 2, 2, 2, 2, 2, 2, 2]},
+    ...                    {"min_nodes": 3, "channel_positions": ("LEMON",), "k": [3, 3, 3, 3, 3, 3, 3, 3, 3]},
+    ...                    {"min_nodes": 2, "channel_positions": ("LEMON",), "k": [2, 3, 2, 3, 2, 3, 2, 3, 2]})
+    >>> my_model = MultiMontageSplitsRegionBasedPooling(
+    ...     pooling_method=my_pooling_method, pooling_method_kwargs=my_pooling_kwargs, split_methods=my_split_methods,
+    ...     split_methods_kwargs=my_split_kwargs, use_cmmn_layer=True, cmmn_kwargs={"kernel_size": 32})
     >>> my_model.supports_precomputing
     True
     """
@@ -364,28 +360,7 @@ class RegionBasedPooling(nn.Module):
         Introducing Region Based Pooling for handling a varied number of EEG channels for deep learning models.
         Front. Neuroinform. 17:1272791. doi: 10.3389/fninf.2023.1272791
 
-    Examples
-    --------
-    >>> p_method_0 = "MultiCSSharedRocket"
-    >>> p_kwargs_0 = {"num_regions": (1, 1, 1), "num_kernels": 43, "max_receptive_field": 37}
-    >>> s_methods_0 = ("VoronoiSplit", "VoronoiSplit", "VoronoiSplit")
-    >>> my_box = {"x_min": 0, "x_max": 1, "y_min": 0, "y_max": 1}
-    >>> s_kwargs_0 = ({"min_nodes": 1, "channel_systems": ("HatlestadHall",),  **my_box},
-    ...               {"min_nodes": 1, "channel_systems": ("HatlestadHall",), **my_box},
-    ...               {"min_nodes": 1, "channel_systems": ("HatlestadHall",), **my_box})
-    >>> design_0 = RBPDesign(pooling_type=RBPPoolType.MULTI_CS, pooling_methods=p_method_0,
-    ...                      pooling_methods_kwargs=p_kwargs_0, split_methods=s_methods_0,
-    ...                      split_methods_kwargs=s_kwargs_0, num_designs=2)
-    >>> p_method_1 = "MultiCSSharedRocket"
-    >>> p_kwargs_1 = {"num_regions": (1, 1, 1), "num_kernels": 32, "max_receptive_field": 11}
-    >>> s_methods_1 = ("VoronoiSplit", "VoronoiSplit", "VoronoiSplit")
-    >>> s_kwargs_1 = ({"min_nodes": 1, "channel_systems": ("HatlestadHall",),  **my_box},
-    ...               {"min_nodes": 1, "channel_systems": ("HatlestadHall",), **my_box},
-    ...               {"min_nodes": 1, "channel_systems": ("HatlestadHall",), **my_box})
-    >>> design_1 = RBPDesign(pooling_type=RBPPoolType.MULTI_CS, pooling_methods=p_method_1,
-    ...                      pooling_methods_kwargs=p_kwargs_1, split_methods=s_methods_1,
-    ...                      split_methods_kwargs=s_kwargs_1, num_designs=3)
-    >>> _ = RegionBasedPooling((design_0, design_1))
+    (See test folder for examples)
     """
 
     def __init__(self, rbp_designs):

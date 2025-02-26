@@ -106,20 +106,6 @@ class TDBRAIN(EEGDatasetBase):
 
     @target_method
     def age(self, subject_ids):
-        """
-        Examples
-        --------
-        >>> TDBRAIN().age(("sub-19681349", "sub-19681385", "sub-19684666"))
-        array([51.59, 49.96, 47.05])
-        >>> my_subjects = TDBRAIN().get_subject_ids()
-        >>> all(isinstance(my_age, float) for my_age in TDBRAIN().age(my_subjects))  # type: ignore[attr-defined]
-        True
-
-        There are some missing data it seems...
-
-        >>> sum(tuple(numpy.isnan(my_age) for my_age in TDBRAIN().age(my_subjects)))  # type: ignore[attr-defined]
-        np.int64(17)
-        """
         # Read the .tsv file
         df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t")
 

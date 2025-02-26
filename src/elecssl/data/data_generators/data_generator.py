@@ -185,12 +185,16 @@ class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
     >>> my_subjects = {"d1": (Subject("P1", "d1"), Subject("P2", "d1"), Subject("P3", "d1")),
     ...                "d2": (Subject("P1", "d2"), Subject("P2", "d2"), Subject("P3", "d2"), Subject("P4", "d2")),
     ...                "d3": (Subject("P1", "d2"),)}
-    >>> _ = InterpolationDataGenerator(my_data, my_targets, my_subjects)
+    >>> my_subjects_info = {subject_: {} for subjects_ in my_subjects.values()  # type: ignore[attr-defined]
+    ...                     for subject_ in subjects_}  # type: ignore[attr-defined]
+    >>> _ = InterpolationDataGenerator(my_data, my_targets, my_subjects, subjects_info=my_subjects_info,
+    ...                                expected_variables={})
 
     A ValueError is raise if spatial dimension is inconsistent
 
     >>> my_data["d2"] = numpy.random.rand(4, 77, 300)
-    >>> InterpolationDataGenerator(my_data, my_targets, my_subjects)  # doctest: +NORMALIZE_WHITESPACE
+    >>> InterpolationDataGenerator(my_data, my_targets, my_subjects,subjects_info=my_subjects_info,
+    ...                            expected_variables={})  # doctest: +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
     ValueError: Expected spatial dimension consistency of all EEG data passed, as the data should already be
@@ -350,13 +354,14 @@ def _select_dataset_and_index(item, dataset_shapes):
     Examples
     --------
     >>> my_shapes = {"a": (3, 3, 19, 3000), "b": (4, 4, 19, 3000), "c": (6, 1, 19, 3000), "d": (7, 2, 19, 3000)}
-    >>> _select_dataset_and_index(item=15, dataset_shapes=my_shapes)
+    >>> def _round(x): return x[0], int(x[1]), int(x[2])
+    >>> _round(_select_dataset_and_index(item=15, dataset_shapes=my_shapes))
     ('b', 1, 2)
-    >>> _select_dataset_and_index(item=27, dataset_shapes=my_shapes)
+    >>> _round(_select_dataset_and_index(item=27, dataset_shapes=my_shapes))
     ('c', 2, 0)
-    >>> _select_dataset_and_index(item=36, dataset_shapes=my_shapes)
+    >>> _round(_select_dataset_and_index(item=36, dataset_shapes=my_shapes))
     ('d', 2, 1)
-    >>> _select_dataset_and_index(item=44, dataset_shapes=my_shapes)
+    >>> _round(_select_dataset_and_index(item=44, dataset_shapes=my_shapes))
     ('d', 6, 1)
     >>> _select_dataset_and_index(item=45, dataset_shapes=my_shapes)
     Traceback (most recent call last):

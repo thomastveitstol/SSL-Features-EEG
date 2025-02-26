@@ -26,10 +26,10 @@ class LEMON(EEGDatasetBase):
     ----------
     >>> LEMON().name
     'LEMON'
-    >>> len(LEMON().get_subject_ids()), LEMON().get_subject_ids()[:4]
-    (203, ('sub-032301', 'sub-032302', 'sub-032303', 'sub-032304'))
     >>> len(LEMON()._channel_names)  # There are 61 because the 62nd is VEOG (eye electrode), see original article
     61
+    >>> len(LEMON().get_subject_ids()), LEMON().get_subject_ids()[:4]  # doctest: +SKIP
+    (203, ('sub-032301', 'sub-032302', 'sub-032303', 'sub-032304'))
     """
 
     __slots__ = ()

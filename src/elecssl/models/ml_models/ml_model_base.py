@@ -22,54 +22,52 @@ class MLModel:
     >>> my_num_splits = 4
     >>> my_splits = RandomSplitsTV(my_subjects, val_split=0.2, num_random_splits=my_num_splits, seed=42).splits
     >>> idxs_ = [Subject(subject_id=s_id, dataset_name=d) for d, s in my_subjects.items() for s_id in s]  # type: ignore
-    >>> cols_ = ['clinical_target'] + [f'var{i}' for i in range(1, 11)]  # type: ignore
+    >>> cols_ = ['clinical_target'] + [f'var{i}' for i in range(1, 4)]  # type: ignore
     >>> numpy.random.seed(42)
     >>> my_df = pandas.DataFrame(numpy.random.rand(len(idxs_), len(cols_)), index=idxs_, columns=cols_).round(2)
-    >>> my_df.head()
-                                                 clinical_target  var1  ...  var9  var10
-    Subject(subject_id='S1', dataset_name='D1')             0.37  0.95  ...  0.71   0.02
-    Subject(subject_id='S2', dataset_name='D1')             0.97  0.83  ...  0.61   0.14
-    Subject(subject_id='S1', dataset_name='D2')             0.29  0.37  ...  0.17   0.07
-    Subject(subject_id='S2', dataset_name='D2')             0.95  0.97  ...  0.03   0.91
-    Subject(subject_id='S3', dataset_name='D2')             0.26  0.66  ...  0.89   0.60
-    <BLANKLINE>
-    [5 rows x 11 columns]
+    >>> my_df.head()  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+                                                 clinical_target  var1  var2  var3
+    Subject(subject_id='S1', dataset_name='D1')             0.37  0.95  0.73  0.60
+    Subject(subject_id='S2', dataset_name='D1')             0.16  0.16  0.06  0.87
+    Subject(subject_id='S1', dataset_name='D2')             0.60  0.71  0.02  0.97
+    Subject(subject_id='S2', dataset_name='D2')             0.83  0.21  0.18  0.18
+    Subject(subject_id='S3', dataset_name='D2')             0.30  0.52  0.43  0.29
     >>> my_model = MLModel(model="LinearRegression", model_kwargs={}, splits=my_splits, evaluation_metric="mae",
     ...                    aggregation_method="mean")
-    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
-    np.float64(0.578...)
+    >>> float(round(my_model.evaluate_features(non_test_df=my_df), 3))
+    0.191
     >>> my_model = MLModel(model="Lasso", model_kwargs={"alpha": 0.5}, splits=my_splits, evaluation_metric="mae",
     ...                    aggregation_method="mean")
-    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
-    np.float64(0.404...)
+    >>> float(round(my_model.evaluate_features(non_test_df=my_df), 3))
+    0.212
     >>> my_model = MLModel(model="ElasticNet", model_kwargs={"alpha": 0.5, "l1_ratio": 0.3}, splits=my_splits,
     ... evaluation_metric="mae", aggregation_method="mean")
-    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
-    np.float64(0.404...)
+    >>> float(round(my_model.evaluate_features(non_test_df=my_df), 3))
+    0.212
     >>> my_model = MLModel(model="Ridge", model_kwargs={"alpha": 0.5}, splits=my_splits, evaluation_metric="mae",
     ...                    aggregation_method="mean")
-    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
-    np.float64(0.428...)
+    >>> float(round(my_model.evaluate_features(non_test_df=my_df), 3))
+    0.201
     >>> my_model = MLModel(model="Lars", model_kwargs={"n_nonzero_coefs": 4}, splits=my_splits, evaluation_metric="mae",
     ...                    aggregation_method="mean")
-    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
-    np.float64(0.360...)
+    >>> float(round(my_model.evaluate_features(non_test_df=my_df), 3))
+    0.191
     >>> my_model = MLModel(model="LassoLars", model_kwargs={"alpha": 0.5}, splits=my_splits, evaluation_metric="mae",
     ...                    aggregation_method="mean")
-    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
-    np.float64(0.404...)
+    >>> float(round(my_model.evaluate_features(non_test_df=my_df), 3))
+    0.212
     >>> my_model = MLModel(model="OrthogonalMatchingPursuit", model_kwargs={}, splits=my_splits,
     ...                    evaluation_metric="mae", aggregation_method="mean")
-    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
-    np.float64(0.305...)
+    >>> float(round(my_model.evaluate_features(non_test_df=my_df), 3))
+    0.273
     >>> my_model = MLModel(model="BayesianRidge", model_kwargs={}, splits=my_splits, evaluation_metric="mae",
     ...                    aggregation_method="mean")
-    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
-    np.float64(0.598...)
+    >>> float(round(my_model.evaluate_features(non_test_df=my_df), 3))
+    0.22
     >>> my_model = MLModel(model="ARDRegression", model_kwargs={}, splits=my_splits, evaluation_metric="mae",
     ...                    aggregation_method="mean")
-    >>> my_model.evaluate_features(non_test_df=my_df)  # doctest: +ELLIPSIS
-    np.float64(0.502...)
+    >>> float(round(my_model.evaluate_features(non_test_df=my_df), 3))
+    0.209
     """
 
     __slots__ = ("_ml_model", "_splits", "_evaluation_metric", "_aggregation_method", "_fitted_ml_models")
@@ -184,6 +182,7 @@ def _aggregate_predictions(method, predictions):
     --------
     >>> my_agg = _aggregate_predictions("mean", numpy.random.rand(4, 5, 6))
     >>> my_agg.shape, type(my_agg)  # type: ignore
+    ((5, 6), <class 'numpy.ndarray'>)
     """
     if method == "mean":
         return numpy.mean(predictions, axis=0)  # type: ignore

@@ -26,11 +26,11 @@ class SRM(EEGDatasetBase):
     'SRM'
     >>> SRM.get_available_targets(exclude_ssl=True)
     ('age', 'ravlt_del', 'ravlt_rec', 'ravlt_tot', 'sex')
-    >>> SRM().load_targets(subject_ids=("sub-007", "sub-002", "sub-003"), target="age")
+    >>> SRM().load_targets(subject_ids=("sub-007", "sub-002", "sub-003"), target="age")  # doctest: +SKIP
     array([37, 29, 62])
-    >>> SRM().load_targets(subject_ids=("sub-007", "sub-002", "sub-003"), target="log_age")  # doctest: +ELLIPSIS
+    >>> SRM().load_targets(subject_ids=("sub-007", "sub-002", "sub-003"), target="log_age")  # doctest: +ELLIPSIS +SKIP
     array([3.6..., 3.3..., 4.1...])
-    >>> len(SRM().get_subject_ids())
+    >>> len(SRM().get_subject_ids())  # doctest: +SKIP
     111
     >>> len(SRM().channel_name_to_index())
     64

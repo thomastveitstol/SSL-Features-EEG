@@ -157,11 +157,11 @@ class BiMap(nn.Module):
         ----
         To add semi-orthogonal constaint for the weight matrix, use the
         reparametrization trick:
-        >>> # Doctest modified by TT: added try-except and type ignore to avoid error if geotorch is not installed.
-        >>> # Also, removed '''
+        >>> # Doctest modified by TT
+        >>> bimap = BiMap(d_in=64, d_out=32, n_freqs=10)  # d_out < d_in is recommended
         >>> try:
         ...     import geotorch
-        ...     geotorch.orthogonal(bimap, 'weight')
+        ...     _ = geotorch.orthogonal(bimap, 'weight')
         ... except ImportError:
         ...     pass
         """

@@ -98,7 +98,7 @@ class Edge:
         Examples
         --------
         >>> Edge(Point2D(0, 0), Point2D(2, 2)).line_intersect(Point2D(2, 0), angle=3/4*numpy.pi)  # doctest: +ELLIPSIS
-        Point2D(x=1.0, y=1.0...)
+        Point2D(x=1.0..., y=1.0...)
 
         If no intersection is found, None is returned
 
@@ -769,8 +769,8 @@ def _euclidean_distance(node_1, node_2):
 
     Examples
     --------
-    >>> _euclidean_distance(Point2D(0, 0), Point2D(1, 1))  # doctest: +ELLIPSIS
-    np.float64(1.414...)
+    >>> float(_euclidean_distance(Point2D(0, 0), Point2D(1, 1)))  # doctest: +ELLIPSIS
+    1.414...
     """
     return numpy.linalg.norm((node_1.x - node_2.x, node_1.y - node_2.y))
 
@@ -789,8 +789,8 @@ def _compute_centroid(nodes):
 
     Examples
     --------
-    >>> _compute_centroid((Point2D(0.2, 0.1), Point2D(0.3, -50)))
-    Point2D(x=np.float64(0.25), y=np.float64(-24.95))
+    >>> _compute_centroid((Point2D(0.2, 0.1), Point2D(0.3, -50)))  # doctest: +ELLIPSIS
+    Point2D(x=...0.25..., y=...-24.95...)
     """
     return Point2D(*numpy.mean(numpy.array([(node.x, node.y) for node in nodes]), axis=0))
 
@@ -814,9 +814,10 @@ def _compute_separating_angles(nodes, centroid, k, seed=None):
     Examples
     --------
     >>> numpy.random.seed(2)
-    >>> _compute_separating_angles((Point2D(-4, 1), Point2D(2, 3), Point2D(4, -4)), Point2D(1, 1), 3)
+    >>> my_angles = _compute_separating_angles((Point2D(-4, 1), Point2D(2, 3), Point2D(4, -4)), Point2D(1, 1), 3)
+    >>> tuple(round(float(my_angle), 3) for my_angle in my_angles) # type: ignore[attr-defined]
     ... # doctest: +ELLIPSIS
-    (2.73..., np.float64(4.19...), np.float64(0.038...))
+    (2.739, 4.197, 0.038)
 
     The number of points must be equal or greater than the number of separating lines
 

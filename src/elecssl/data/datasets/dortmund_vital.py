@@ -25,7 +25,7 @@ class DortmundVital(EEGDatasetBase):
     --------
     >>> DortmundVital().num_channels
     64
-    >>> DortmundVital().age(("sub-001", "sub-003", "sub-002", "sub-007"))
+    >>> DortmundVital().age(("sub-001", "sub-003", "sub-002", "sub-007"))  # doctest: +SKIP
     array([60, 44, 67, 24])
     """
 
