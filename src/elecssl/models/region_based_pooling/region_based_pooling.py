@@ -9,6 +9,11 @@ based_pooling.py
 Note that 'channel split' and 'region split' are occasionally wrongly used instead of 'montage split'. Some of the code
 was made before I settled on the term 'montage split'.
 
+Original paper:
+    Tveitstøl T, Tveter M, Pérez T. AS, Hatlestad-Hall C, Yazidi A, Hammer HL and Hebold Haraldsen IRJ (2024)
+    Introducing Region Based Pooling for handling a varied number of EEG channels for deep learning models.
+    Front. Neuroinform. 17:1272791. doi: 10.3389/fninf.2023.1272791
+
 Authored by:
     Thomas Tveitstøl (Oslo University Hospital)
 """
@@ -352,7 +357,12 @@ class MultiChannelSplitsRegionBasedPooling(RegionBasedPoolingBase):  # todo: abo
 # ------------------
 class RegionBasedPooling(nn.Module):
     """
-    The main implementation of Region Based Pooling (Tveitstøl et al., 2023, submitted)
+    The main implementation of Region Based Pooling
+
+    Paper:
+        Tveitstøl T, Tveter M, Pérez T. AS, Hatlestad-Hall C, Yazidi A, Hammer HL and Hebold Haraldsen IRJ (2024)
+        Introducing Region Based Pooling for handling a varied number of EEG channels for deep learning models.
+        Front. Neuroinform. 17:1272791. doi: 10.3389/fninf.2023.1272791
 
     Examples
     --------
