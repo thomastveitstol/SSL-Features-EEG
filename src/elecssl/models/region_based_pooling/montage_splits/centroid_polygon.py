@@ -957,7 +957,8 @@ if __name__ == "__main__":
     # ------------------
     # Generate split and plot it
     # ------------------
-    my_split_ = CentroidPolygons({"my_dataset": my_points_}, min_nodes=1, k=(5, 5, 3))
+    # my_split_ = CentroidPolygons({"my_dataset": my_points_}, min_nodes=1, k=(5, 5, 3))
+    my_split_ = CentroidPolygons(channel_positions=("LEMON", "Wang"), min_nodes=6, k=[3, 3, 3, 3, 3, 3, 3, 3])
 
     print(f"Number of regions: {my_split_.num_regions}")
     pyplot.figure()
