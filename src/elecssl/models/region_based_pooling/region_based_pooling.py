@@ -86,7 +86,7 @@ class RegionBasedPoolingBase(nn.Module, abc.ABC):
 # ------------------
 # Implementations of RBP
 # ------------------
-class MultiChannelSplitsRegionBasedPooling(RegionBasedPoolingBase):  # todo: about time to update to montage split
+class MultiMontageSplitsRegionBasedPooling(RegionBasedPoolingBase):
     """
     Region Based Pooling when pooling module operates on multiple channel/region split at once (when the pooling
     module used inherits from MultiChannelSplitPoolingBase)
@@ -100,7 +100,7 @@ class MultiChannelSplitsRegionBasedPooling(RegionBasedPoolingBase):  # todo: abo
     >>> my_split_kwargs = ({"min_nodes": 1, "channel_systems": ("HatlestadHall",), **my_box},
     ...                    {"min_nodes": 1, "channel_systems": ("HatlestadHall",), **my_box},
     ...                    {"min_nodes": 1, "channel_systems": ("HatlestadHall",), **my_box})
-    >>> my_model = MultiChannelSplitsRegionBasedPooling(pooling_method=my_pooling_method,
+    >>> my_model = MultiMontageSplitsRegionBasedPooling(pooling_method=my_pooling_method,
     ...                                                 pooling_method_kwargs=my_pooling_kwargs,
     ...                                                 split_methods=my_split_methods,
     ...                                                 split_methods_kwargs=my_split_kwargs,
@@ -409,7 +409,7 @@ class RegionBasedPooling(nn.Module):
                 # Select the correct class
                 rbp: RegionBasedPoolingBase
                 if design.pooling_type == RBPPoolType.MULTI_CS:
-                    rbp = MultiChannelSplitsRegionBasedPooling(
+                    rbp = MultiMontageSplitsRegionBasedPooling(
                         pooling_method=design.pooling_methods,
                         pooling_method_kwargs=design.pooling_methods_kwargs,
                         split_methods=design.split_methods,
@@ -463,12 +463,12 @@ class RegionBasedPooling(nn.Module):
             # Handle the unsupported case, or when pre-computing is not desired
             if not rbp_module.supports_precomputing or pre_comp_features is None:
                 # TODO: somewhat hard-coded
-                if isinstance(rbp_module, MultiChannelSplitsRegionBasedPooling):
+                if isinstance(rbp_module, MultiMontageSplitsRegionBasedPooling):
                     rbp_outputs.extend(rbp_module(input_tensors, channel_name_to_index=channel_name_to_index))
                 else:
                     rbp_outputs.append(rbp_module(input_tensors, channel_name_to_index=channel_name_to_index))
             else:
-                if isinstance(rbp_module, MultiChannelSplitsRegionBasedPooling):
+                if isinstance(rbp_module, MultiMontageSplitsRegionBasedPooling):
                     rbp_outputs.extend(rbp_module(input_tensors, channel_name_to_index=channel_name_to_index,
                                                   pre_computed=pre_comp_features))
                 else:
