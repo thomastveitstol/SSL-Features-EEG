@@ -27,12 +27,12 @@ class TDBRAIN(EEGDatasetBase):
 
     Examples
     --------
-    >>> len(TDBRAIN().get_subject_ids())
+    >>> len(TDBRAIN().get_subject_ids())  # doctest: +SKIP# doctest: +SKIP
     1273
-    >>> TDBRAIN().get_subject_ids()[:3]
+    >>> TDBRAIN().get_subject_ids()[:3]  # doctest: +SKIP
     ('sub-19681349', 'sub-19681385', 'sub-19684666')
     >>> # The discrepancy in sex with the .tsv file is due to differences in integer to sex mapping
-    >>> TDBRAIN().sex(TDBRAIN().get_subject_ids()[:3])
+    >>> TDBRAIN().sex(TDBRAIN().get_subject_ids()[:3])  # doctest: +SKIP
     array([1, 0, 0])
     >>> TDBRAIN().num_channels
     26

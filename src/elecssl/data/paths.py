@@ -16,8 +16,8 @@ def get_results_dir():
 
     Examples
     --------
-    >>> get_results_dir()  # doctest: +ELLIPSIS
-    PosixPath('.../SSL-Features-EEG/src/elecssl/data/results')
+    >>> str(get_results_dir() ) # doctest: +ELLIPSIS
+    '.../SSL-Features-EEG/src/elecssl/data/results'
     """
     return Path(os.path.join(os.path.dirname(__file__), "results"))
 

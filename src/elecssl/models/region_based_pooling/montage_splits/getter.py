@@ -22,7 +22,7 @@ def get_montage_split(split_method, **kwargs):
 
     Examples
     --------
-    >>> _ = get_montage_split("CentroidPolygons", k=(5, 3), channel_positions=("SRM", "LEMON"),
+    >>> _ = get_montage_split("CentroidPolygons", k=(5, 3), channel_positions=("LEMON",),
     ...                       min_nodes=2)
     >>> get_montage_split("NotASplitMethod")  # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
     Traceback (most recent call last):

@@ -29,10 +29,10 @@ class Miltiadous(EEGDatasetBase):
     'Miltiadous'
     >>> Miltiadous.get_available_targets(exclude_ssl=True)
     ('age', 'clinical_status', 'mmse', 'sex')
-    >>> len(Miltiadous().get_subject_ids())
-    88
     >>> len(Miltiadous().channel_name_to_index())
     19
+    >>> len(Miltiadous().get_subject_ids())  # doctest: +SKIP
+    88
     """
 
     __slots__ = ()

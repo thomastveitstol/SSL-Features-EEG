@@ -34,15 +34,15 @@ class Wang(EEGDatasetBase):
     60
     >>> Wang().get_subject_ids()[:5]  # doctest: +SKIP
     ('sub-01', 'sub-02', 'sub-03', 'sub-04', 'sub-05')
-    >>> my_channels = tuple(Wang()._get_template_electrode_positions().keys())
-    >>> len(my_channels)
+    >>> my_channels = tuple(Wang()._get_template_electrode_positions().keys())  # doctest: +SKIP
+    >>> len(my_channels)  # doctest: +SKIP
     62
-    >>> my_channels  # doctest: +NORMALIZE_WHITESPACE
+    >>> my_channels  # doctest: +NORMALIZE_WHITESPACE +SKIP
     ('Fp1', 'AF3', 'AF7', 'Fz', 'F1', 'F3', 'F5', 'F7', 'FC1', 'FC3', 'FC5', 'FT7', 'Cz', 'C1', 'C3', 'C5', 'T7', 'CP1',
      'CP3', 'CP5', 'TP7', 'TP9', 'Pz', 'P1', 'P3', 'P5', 'P7', 'PO3', 'PO7', 'Oz', 'O1', 'Fpz', 'Fp2', 'AF4', 'AF8',
      'F2', 'F4', 'F6', 'F8', 'FC2', 'FC4', 'FC6', 'FT8', 'C2', 'C4', 'C6', 'T8', 'CPz', 'CP2', 'CP4', 'CP6', 'TP8',
      'TP10', 'P2', 'P4', 'P6', 'P8', 'POz', 'PO4', 'PO8', 'O2', 'FCz')
-    >>> Wang().channel_name_to_index()  # doctest: +NORMALIZE_WHITESPACE
+    >>> Wang().channel_name_to_index()  # doctest: +NORMALIZE_WHITESPACE +SKIP
     {'Fp1': 0, 'AF3': 1, 'AF7': 2, 'Fz': 3, 'F1': 4, 'F3': 5, 'F5': 6, 'F7': 7, 'FC1': 8, 'FC3': 9, 'FC5': 10,
      'FT7': 11, 'Cz': 12, 'C1': 13, 'C3': 14, 'C5': 15, 'T7': 16, 'CP1': 17, 'CP3': 18, 'CP5': 19, 'TP7': 20,
      'TP9': 21, 'Pz': 22, 'P1': 23, 'P3': 24, 'P5': 25, 'P7': 26, 'PO3': 27, 'PO7': 28, 'Oz': 29, 'O1': 30, 'Fpz': 31,

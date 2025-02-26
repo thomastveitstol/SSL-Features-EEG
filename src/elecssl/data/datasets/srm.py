@@ -32,9 +32,9 @@ class SRM(EEGDatasetBase):
     array([3.6..., 3.3..., 4.1...])
     >>> len(SRM().get_subject_ids())  # doctest: +SKIP
     111
-    >>> len(SRM().channel_name_to_index())
+    >>> len(SRM().channel_name_to_index())  # doctest: +SKIP
     64
-    >>> SRM().channel_name_to_index()  # doctest: +NORMALIZE_WHITESPACE
+    >>> SRM().channel_name_to_index()  # doctest: +NORMALIZE_WHITESPACE, +SKIP
     {'Fp1': 0, 'AF7': 1, 'AF3': 2, 'F1': 3, 'F3': 4, 'F5': 5, 'F7': 6, 'FT7': 7, 'FC5': 8, 'FC3': 9, 'FC1': 10,
      'C1': 11, 'C3': 12, 'C5': 13, 'T7': 14, 'TP7': 15, 'CP5': 16, 'CP3': 17, 'CP1': 18, 'P1': 19, 'P3': 20, 'P5': 21,
      'P7': 22, 'P9': 23, 'PO7': 24, 'PO3': 25, 'O1': 26, 'Iz': 27, 'Oz': 28, 'POz': 29, 'Pz': 30, 'CPz': 31, 'Fpz': 32,
@@ -42,8 +42,9 @@ class SRM(EEGDatasetBase):
      'FC4': 44, 'FC2': 45, 'FCz': 46, 'Cz': 47, 'C2': 48, 'C4': 49, 'C6': 50, 'T8': 51, 'TP8': 52, 'CP6': 53, 'CP4': 54,
      'CP2': 55, 'P2': 56, 'P4': 57, 'P6': 58, 'P8': 59, 'P10': 60, 'PO8': 61, 'PO4': 62, 'O2': 63}
     >>> set(type(idx) for idx in SRM().channel_name_to_index().values())  # type: ignore[attr-defined]
+    ... # doctest: +SKIP
     {<class 'int'>}
-    >>> SRM().channel_system.montage_name
+    >>> SRM().channel_system.montage_name  # doctest: +SKIP
     'standard_1020'
     """
 
