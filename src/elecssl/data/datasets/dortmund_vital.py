@@ -3,7 +3,6 @@ from typing import Literal
 
 import mne
 import numpy
-import openneuro
 import pandas
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, OcularState, target_method
@@ -47,6 +46,7 @@ class DortmundVital(EEGDatasetBase):
         os.mkdir(path)
 
         # Download from OpenNeuro
+        import openneuro
         openneuro.download(dataset="ds005385", target_dir=path)
 
     # ----------------
