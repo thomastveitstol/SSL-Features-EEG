@@ -2,7 +2,6 @@ import os
 
 import mne
 import numpy
-import openneuro
 import pandas
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method, OcularState
@@ -115,6 +114,7 @@ class SRM(EEGDatasetBase):
         os.mkdir(path)
 
         # Download from OpenNeuro
+        import openneuro
         openneuro.download(dataset="ds003775", target_dir=path)
 
     # ----------------

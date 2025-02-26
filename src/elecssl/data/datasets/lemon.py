@@ -179,16 +179,18 @@ class LEMON(EEGDatasetBase):
     # ----------------
     # Channel system
     # ----------------
-    def _get_template_electrode_positions(self):
+    @classmethod
+    def _get_template_electrode_positions(cls):
         # Following the standard 10-20 system according to the original article
-        montage = mne.channels.make_standard_montage(self._montage_name)
+        montage = mne.channels.make_standard_montage(cls._montage_name)
         channel_positions = montage.get_positions()["ch_pos"]
 
         # Return dict with channel positions, keeping only the ones in the data
-        return {ch_name: tuple(pos) for ch_name, pos in channel_positions.items() if ch_name in self._channel_names}
+        return {ch_name: tuple(pos) for ch_name, pos in channel_positions.items() if ch_name in cls._channel_names}
 
-    def channel_name_to_index(self):
-        return {ch_name: i for i, ch_name in enumerate(self._channel_names)}
+    @classmethod
+    def channel_name_to_index(cls):
+        return {ch_name: i for i, ch_name in enumerate(cls._channel_names)}
 
     # ----------------
     # Target methods

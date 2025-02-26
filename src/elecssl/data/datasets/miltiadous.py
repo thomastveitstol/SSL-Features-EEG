@@ -2,7 +2,6 @@ import os
 
 import mne
 import numpy
-import openneuro
 import pandas
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method, OcularState
@@ -68,6 +67,7 @@ class Miltiadous(EEGDatasetBase):
         os.mkdir(path)
 
         # Download from OpenNeuro
+        import openneuro
         openneuro.download(dataset="ds004504", target_dir=path)
 
     # ----------------

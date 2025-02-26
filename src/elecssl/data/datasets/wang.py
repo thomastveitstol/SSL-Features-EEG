@@ -6,7 +6,6 @@ import warnings
 
 import mne
 import numpy
-import openneuro
 import pandas
 from pymatreader import read_mat
 
@@ -156,6 +155,7 @@ class Wang(EEGDatasetBase):
         os.mkdir(path)
 
         # Download from OpenNeuro
+        import openneuro
         openneuro.download(dataset="ds004148", target_dir=path)  # todo: downloading more than resting state now...
 
     # ----------------
