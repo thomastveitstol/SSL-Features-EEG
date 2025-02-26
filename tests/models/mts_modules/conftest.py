@@ -23,16 +23,42 @@ def dummy_data():
 # ------------
 # DL architectures
 # ------------
+# Many different versions of green
+@pytest.fixture
+def green_models(dummy_data, dummy_num_classes):
+    num_channels = dummy_data.shape[1]
+
+    # Create models with different single pooling layer
+    m1 = GreenModel(in_channels=num_channels, num_classes=dummy_num_classes, sampling_freq=128, shrinkage_init=-4.,
+                    hidden_dim=(123, 11, 67), n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance",
+                    bi_out_perc=None)
+    m2 = GreenModel(in_channels=num_channels, num_classes=dummy_num_classes, sampling_freq=128, shrinkage_init=None,
+                    hidden_dim=(123, 11, 67), n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="pw_plv",
+                    bi_out_perc=None, pool_layer_kwargs={"reg": 1e-5})
+    m3 = GreenModel(in_channels=num_channels, num_classes=dummy_num_classes, sampling_freq=128, shrinkage_init=None,
+                    hidden_dim=(123, 11, 67), n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="cross_pw_plv",
+                    bi_out_perc=0.8,  pool_layer_kwargs={"reg": 1e-5})
+    m4 = GreenModel(in_channels=num_channels, num_classes=dummy_num_classes, sampling_freq=128, shrinkage_init=-2.,
+                    hidden_dim=(123, 11, 67), n_freqs=30, kernel_width_s=4, dropout=0.435,
+                    pool_layer="cross_covariance", bi_out_perc=0.5)
+
+    # Can only combine cross-frequency with cross-frequency, and vice versa
+    m5 = GreenModel(in_channels=num_channels, num_classes=dummy_num_classes, sampling_freq=128, shrinkage_init=None,
+                    hidden_dim=(123, 11, 67), n_freqs=30, kernel_width_s=4, dropout=0.435,
+                    pool_layer="combined_pooling", bi_out_perc=0.5,
+                    pool_layer_kwargs=(("pw_plv", {"reg": 3e-6}), ("real_covariance", {})))
+    m6 = GreenModel(in_channels=num_channels, num_classes=dummy_num_classes, sampling_freq=128, shrinkage_init=None,
+                    hidden_dim=(123, 11, 67), n_freqs=30, kernel_width_s=4, dropout=0.435,
+                    pool_layer="combined_pooling", bi_out_perc=0.5,
+                    pool_layer_kwargs=(("cross_pw_plv", {"reg": 1e-5}), ("cross_covariance", {})))
+
+    return m1, m2, m3, m4, m5, m6
+
+
+# The other ones
 @pytest.fixture
 def inception_network(dummy_data, dummy_num_classes):
     return InceptionNetwork(in_channels=dummy_data.size()[1], num_classes=dummy_num_classes, cnn_units=31, depth=12)
-
-
-@pytest.fixture
-def green(dummy_data, dummy_num_classes):
-    return GreenModel(in_channels=dummy_data.size()[1], num_classes=dummy_num_classes, sampling_freq=128,
-                      hidden_dim=(123, 11, 67), n_freqs=30, kernel_width_s=4, dropout=0.435,
-                      pool_layer="real_covariance", bi_out=39, orth_weights=False)
 
 
 @pytest.fixture
@@ -54,5 +80,5 @@ def shallow_net(dummy_data, dummy_num_classes):
 
 
 @pytest.fixture
-def models(inception_network, green, tcn, deep_net, shallow_net):
-    return inception_network, green, tcn, deep_net, shallow_net
+def models(inception_network, green_models, tcn, deep_net, shallow_net):
+    return inception_network, *green_models, tcn, deep_net, shallow_net

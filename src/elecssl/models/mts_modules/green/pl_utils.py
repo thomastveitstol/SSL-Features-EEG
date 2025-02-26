@@ -13,7 +13,7 @@ from torch import nn
 
 from elecssl.models.mts_modules.green.spd_layers import BiMap, Shrinkage, LogMap
 from elecssl.models.mts_modules.green.wavelet_layers import RealCovariance, CombinedPooling, CrossCovariance, \
-    CrossPW_PLV, WaveletConv, PW_PLV
+    CrossPW_PLV, WaveletConv, PW_PLV, get_pooling_layer
 
 
 class Green(nn.Module):
@@ -68,16 +68,10 @@ class Green(nn.Module):
         X_hat = self.pooling_layers(X_hat)
         X_hat = self.spd_layers(X_hat)
         X_hat = self.proj(X_hat)
-        if isinstance(
-            self.pooling_layers, RealCovariance
-        ) or isinstance(self.pooling_layers, CombinedPooling):
-            X_hat = vectorize_upper(X_hat)
+        if isinstance(self.pooling_layers, (RealCovariance, PW_PLV, CombinedPooling)):
+            X_hat = vectorize_upper(X_hat)  # todo: I have a feeling it should be PW_PLV? So I just added it
 
-        elif isinstance(
-            self.pooling_layers, CrossCovariance
-        ) or isinstance(
-            self.pooling_layers, CrossPW_PLV
-        ):
+        elif isinstance(self.pooling_layers, (CrossCovariance, CrossPW_PLV)):
             X_hat = vectorize_upper_one(X_hat)
 
         X_hat = torch.flatten(X_hat, start_dim=1)
@@ -103,11 +97,12 @@ def get_green(
     dtype: torch.dtype = torch.float32,
     pool_layer: Union[str, nn.Module] = RealCovariance(),  # Modified by TT: added str as allowed type
     pool_layer_kwargs: Dict[str, Any] = None,  # Added by TT
-    bi_out: Optional[Union[int, Tuple[int, ...]]] = None,  # Modified by TT: changed type hint from 'int' only
+    bi_out_perc: Optional[Union[float, Tuple[float, ...]]] = None,  # Modified by TT
     out_dim: int = 1,
     use_age: bool = False,
     orth_weights=True,
-    reg: float = 1e-4  # Added by TT
+    reeig_reg: float = 1e-4,  # Added by TT
+    momentum: float = 0.9  # added by TT
 ):
     """
     Helper function to get a Green model.
@@ -144,8 +139,8 @@ def get_green(
         Pooling layer, by default RealCovariance()
     pool_layer_kwargs
         Kwargs to be passed to the poling layer, if it was specified as a string
-    bi_out : int, optional
-        Dimension of the output layer after BiMap, by default None
+    bi_out_perc : float, optional
+        Determines the dimension of the output layer after BiMap
     out_dim : int, optional
         Dimension of the output layer, by default 1
     use_age : bool, optional
@@ -156,9 +151,13 @@ def get_green(
     Green
         The Green model
     """
+    bi_out_perc = (bi_out_perc,) if isinstance(bi_out_perc, float) else bi_out_perc
+    bi_out = None if bi_out_perc is None else tuple(round(perc * (n_ch - 1)) for perc in bi_out_perc)
     pool_layer_kwargs = dict() if pool_layer_kwargs is None else pool_layer_kwargs  # Added by TT
 
+    # -------------
     # Convolution
+    # -------------
     cplx_dtype = torch.complex128 if (
         dtype == torch.float64) else torch.complex64
     if random_f_init:
@@ -179,55 +178,44 @@ def get_green(
             scaling='oct'
         )])
 
-    pool_layer = _get_pooling_layer(pool_layer, **pool_layer_kwargs)  # Line added by TT
-    if isinstance(
-            pool_layer, RealCovariance
-    ) or isinstance(
-            pool_layer, PW_PLV):
+    # -------------
+    # Pooling layer
+    # -------------
+    pool_layer = get_pooling_layer(pool_layer, n_ch=n_ch, n_freqs=n_freqs, pool_layer_kwargs=pool_layer_kwargs)
+    if isinstance(pool_layer, (RealCovariance, PW_PLV)):
         n_compo = n_ch
         feat_dim = int(n_freqs * n_compo * (n_compo + 1) / 2)
 
-    elif isinstance(pool_layer, CrossCovariance):
+    elif isinstance(pool_layer, (CrossCovariance, CrossPW_PLV)):
         n_compo = int(n_ch * n_freqs)
         feat_dim = int(n_compo * (n_compo + 1) / 2)
         n_freqs = None
 
     elif isinstance(pool_layer, CombinedPooling):
         pool_layer_0 = pool_layer.pooling_layers[0]
-        if isinstance(
-            pool_layer_0, RealCovariance
-        ) or isinstance(
-                pool_layer_0, PW_PLV):
+        if isinstance(pool_layer_0, (RealCovariance, PW_PLV)):
             n_compo = n_ch
-            feat_dim = int(n_freqs * n_compo * (n_compo + 1) /
-                           2) * len(pool_layer.pooling_layers)
+            feat_dim = int(n_freqs * n_compo * (n_compo + 1) / 2) * len(pool_layer.pooling_layers)
             n_freqs = n_freqs * len(pool_layer.pooling_layers)
-
-        elif isinstance(pool_layer_0, CrossCovariance
-                        ) or isinstance(pool_layer_0, CrossPW_PLV):
+        elif isinstance(pool_layer_0, (CrossCovariance, CrossPW_PLV)):
             n_compo = int(n_ch * n_freqs)
-            feat_dim = int(n_compo * (n_compo + 1) / 2) * \
-                len(pool_layer.pooling_layers)
+            feat_dim = int(n_compo * (n_compo + 1) / 2) * len(pool_layer.pooling_layers)
             n_freqs = len(pool_layer.pooling_layers)
-
-    # pooling
-    pool_layer = pool_layer
-
+    else:
+        raise TypeError(f"Unexpected pooling layer: {type(pool_layer)}")
+    # -------------
     # SPD layers
+    # -------------
+    # Shrinkage
     if shrinkage_init is None:
         spd_layers_list = [nn.Identity()]
     else:
-        spd_layers_list = [Shrinkage(n_freqs=n_freqs,
-                                     size=n_compo,
-                                     init_shrinkage=shrinkage_init,
-                                     learnable=True
-                                     )]
+        spd_layers_list = [Shrinkage(n_freqs=n_freqs, size=n_compo, init_shrinkage=shrinkage_init, learnable=True)]
+
+    # BiMap
     if bi_out is not None:
-        bi_out = (bi_out,) if isinstance(bi_out, int) else bi_out  # Line added by TT
         for bo in bi_out:
-            bimap = BiMap(d_in=n_compo,
-                          d_out=bo,
-                          n_freqs=n_freqs)
+            bimap = BiMap(d_in=n_compo, d_out=bo, n_freqs=n_freqs)
             if orth_weights:
                 geotorch.orthogonal(bimap, 'weight')
             spd_layers_list.append(bimap)
@@ -239,18 +227,17 @@ def get_green(
         else:
             feat_dim = int(n_freqs * n_compo * (n_compo + 1) / 2)
 
+    # If age should be used as feature too
     if use_age:
         feat_dim += 1
     spd_layers = nn.Sequential(*spd_layers_list)
 
-    # Projection to tangent space
-    proj = LogMap(size=n_compo,
-                  n_freqs=n_freqs,
-                  ref=logref,
-                  momentum=0.9,
-                  reg=reg)  # Modified by TT: using a 'reg' input argument now
+    # Projection to tangent space. Modified by TT: using 'reg' and 'momentum' input arguments now
+    proj = LogMap(size=n_compo, n_freqs=n_freqs, ref=logref, momentum=momentum, reeig_reg=reeig_reg)
 
+    # -------------
     # Head
+    # -------------
     if hidden_dim is None:
         head = torch.nn.Sequential(*[
             torch.nn.BatchNorm1d(feat_dim,
@@ -288,7 +275,9 @@ def get_green(
         ])
         head = torch.nn.Sequential(*sequential_list)
 
+    # -------------
     # Gather everything
+    # -------------
     model = Green(
         conv_layers=conv_layers,
         pooling_layers=pool_layer,
@@ -303,24 +292,6 @@ def get_green(
 # -------------
 # Functions
 # -------------
-def _get_pooling_layer(pool_layer: Union[str, nn.Module], **kwargs):
-    """Helper function to allow specifying desired pooling layer by a string. Function added by TT"""
-    if isinstance(pool_layer, nn.Module):
-        return pool_layer
-
-    if pool_layer.lower() in ("real_covariance", "realcovariance"):
-        return RealCovariance(**kwargs)  # type: ignore[call-arg]
-    elif pool_layer.lower() in ("pw_plv", "pwplv"):
-        return PW_PLV(**kwargs)
-    elif pool_layer.lower() in ("cross_covariance", "crosscovariance"):
-        return CrossCovariance(**kwargs)  # type: ignore[call-arg]
-    elif pool_layer.lower() in ("combined_pooling", "combinedpooling"):
-        # todo: not the best solution for CombinedPooling tbh...
-        CombinedPooling(**kwargs)
-
-    raise ValueError(f"Unexpected pool layer: '{pool_layer}'")
-
-
 def vectorize_upper_one(X: Tensor):
     """
     Upper vectorisation of a single SPD matrix with multiplication of

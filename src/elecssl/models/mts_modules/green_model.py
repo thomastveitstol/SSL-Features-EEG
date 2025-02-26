@@ -7,6 +7,7 @@ TODO: update LICENCE file
 import torch.nn as nn
 
 from elecssl.models.mts_modules.green.pl_utils import get_green
+from elecssl.models.mts_modules.green.wavelet_layers import get_pooling_layer_type
 from elecssl.models.mts_modules.mts_module_base import MTSModuleBase
 
 
@@ -48,8 +49,8 @@ class GreenModel(MTSModuleBase):
 
     An example with different HPCs
 
-    >>> my_model = GreenModel(in_channels=3, num_classes=1, sampling_freq=128, hidden_dim=(123, 11, 67), n_freqs=30,
-    ...                       kernel_width_s=4, dropout=0.435, pool_layer="pw_plv", bi_out=39)
+    >>> my_model = GreenModel(in_channels=20, num_classes=1, sampling_freq=128, hidden_dim=(123, 11, 67), n_freqs=30,
+    ...                       kernel_width_s=4, dropout=0.435, pool_layer="pw_plv", bi_out_perc=0.7)
     >>> my_model
     GreenModel(
       (_model): Green(
@@ -59,13 +60,13 @@ class GreenModel(MTSModuleBase):
         (pooling_layers): PW_PLV()
         (spd_layers): Sequential(
           (0): LedoitWold(n_freqs=30, init_shrinkage=-3.0, learnable=True)
-          (1): BiMap(d_in=3, d_out=39, n_freqs=30
+          (1): BiMap(d_in=20, d_out=13, n_freqs=30
         )
-        (proj): LogEig(ref=logeuclid, reg=0.0001, n_freqs=30, size=39
+        (proj): LogEig(ref=logeuclid, reg=0.0001, n_freqs=30, size=13
         (head): Sequential(
-          (0): BatchNorm1d(23400, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (0): BatchNorm1d(2730, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
           (1): Dropout(p=0.435, inplace=False)
-          (2): Linear(in_features=23400, out_features=123, bias=True)
+          (2): Linear(in_features=2730, out_features=123, bias=True)
           (3): GELU(approximate='none')
           (4): BatchNorm1d(123, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
           (5): Dropout(p=0.435, inplace=False)
@@ -108,7 +109,6 @@ class GreenModel(MTSModuleBase):
 
         Examples
         --------
-        >>> # TODO: Doesn't work with ('pw_plv', 'cross_covariance')
         >>> import torch
         >>> my_num_seconds = 10
         >>> my_sfreq = 200
@@ -130,7 +130,7 @@ class GreenModel(MTSModuleBase):
 
         >>> my_model = GreenModel(in_channels=my_channels, num_classes=3, sampling_freq=128, hidden_dim=(123, 11, 67),
         ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance",
-        ...                       bi_out=39)
+        ...                       bi_out_perc=0.8)
         >>> my_model(torch.rand(size=(my_batch, my_channels, my_time_steps))).size()
         torch.Size([10, 3])
         """
@@ -180,14 +180,16 @@ class GreenModel(MTSModuleBase):
         >>> import torch
         >>> my_batch, my_channels, my_time_steps = 10, 103, 600*3
         >>> my_model = GreenModel(in_channels=my_channels, num_classes=3, sampling_freq=128, hidden_dim=(123, 11, 67),
-        ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance", bi_out=39)
+        ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance",
+        ...                       bi_out_perc=0.8)
         >>> my_model.classify_latent_features(torch.rand(size=(10, 67))).size()
         torch.Size([10, 3])
 
         Running (1) feature extraction and (2) classifying is the excact same as just running forward
 
         >>> my_model = GreenModel(in_channels=my_channels, num_classes=3, sampling_freq=128, hidden_dim=(123, 11, 67),
-        ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance", bi_out=39)
+        ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="real_covariance",
+        ...                       bi_out_perc=0.8)
         >>> _ = my_model.eval()
         >>> my_input = torch.rand(size=(my_batch, my_channels, my_time_steps))
         >>> my_output_1 = my_model.classify_latent_features(my_model.extract_latent_features(my_input))
@@ -223,9 +225,15 @@ class GreenModel(MTSModuleBase):
         n_freqs = trial.suggest_int(f"{name}_n_freqs", **config["n_freqs"])
         kernel_width_s = trial.suggest_float(f"{name}_kernel_width_s", **config["kernel_width_s"])
         conv_stride = trial.suggest_int(f"{name}_conv_stride", **config["conv_stride"])
-        oct_min = trial.suggest_float(f"{name}_oct_min", **config["oct_min"])
-        oct_max_addition = trial.suggest_float(f"{name}_oct_max_addition", **config["oct_max_addition"])
-        oct_max = oct_min + oct_max_addition
+        if isinstance(config["oct_min"], float):
+            oct_min = config["oct_min"]
+        else:
+            oct_min = trial.suggest_float(f"{name}_oct_min", **config["oct_min"])
+        if isinstance(config["oct_max_addition"], float):
+            oct_max = oct_min + config["oct_max_addition"]
+        else:
+            oct_max_addition = trial.suggest_float(f"{name}_oct_max_addition", **config["oct_max_addition"])
+            oct_max = oct_min + oct_max_addition
         random_f_init = trial.suggest_categorical(f"{name}_random_f_init", **config["random_f_init"])
         sampling_freq = config["sampling_freq"]  # Just copy sampling frequency
 
@@ -233,7 +241,8 @@ class GreenModel(MTSModuleBase):
         # The pooling layer
         # ----------------
         pool_layer = trial.suggest_categorical(f"{name}_pool_layer", **config["pool_layer"])
-        pool_layer_kwargs = _suggest_pooling_layer_hpcs(trial=trial, name=name, config=config, pooling_layer=pool_layer)
+        pool_layer_kwargs = _suggest_pooling_layer_hpcs(trial=trial, name=name, config=config["pool_layer_kwargs"],
+                                                        pooling_layer=pool_layer)
 
         # ----------------
         # Shrinkage layer
@@ -243,14 +252,14 @@ class GreenModel(MTSModuleBase):
         # ----------------
         # BiMap layer
         # ----------------
-        bi_out = trial.suggest_int(f"{name}_bi_out", **config["bi_out"])
+        bi_out_perc = trial.suggest_float(f"{name}_bi_out_perc", **config["bi_out_perc"])
         orth_weights = trial.suggest_categorical(f"{name}_orth_weights", **config["orth_weights"])
 
         # ----------------
         # Combined ReEig and LogMap layer
         # ----------------
         logref = trial.suggest_categorical(f"{name}_logref", **config["logref"])
-        reg = trial.suggest_float(f"{name}_reg", **config["reg"])
+        reeig_reg = trial.suggest_float(f"{name}_reeig_reg", **config["reeig_reg"])
 
         # ----------------
         # Fully connected module
@@ -272,10 +281,10 @@ class GreenModel(MTSModuleBase):
                 "pool_layer": pool_layer,
                 "pool_layer_kwargs": pool_layer_kwargs,
                 "shrinkage_init": shrinkage_init,
-                "bi_out": bi_out,
+                "bi_out_perc": bi_out_perc,
                 "orth_weights": orth_weights,
                 "logref": logref,
-                "reg": reg,
+                "reeig_reg": reeig_reg,
                 "dropout": dropout,
                 "hidden_dim": hidden_dim}
 
@@ -292,9 +301,6 @@ class GreenModel(MTSModuleBase):
 # Functions
 # ----------------
 def _suggest_pooling_layer_hpcs(trial, name, config, pooling_layer):
-    if pooling_layer.lower() in ("real_covariance", "realcovariance"):
-        return dict()
-    elif pooling_layer.lower() in ("cross_covariance", "crosscovariance"):
-        return dict()
-
-    raise NotImplementedError(f"HP sampling has not been implemented for the pooling layer {pooling_layer}")
+    return get_pooling_layer_type(pool_layer=pooling_layer).suggest_hyperparameters(
+            name, trial, config[pooling_layer]
+    )

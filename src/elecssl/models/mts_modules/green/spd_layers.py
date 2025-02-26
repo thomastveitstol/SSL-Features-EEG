@@ -257,7 +257,7 @@ class LogMap(nn.Module):
             size: int = None,
             n_freqs: int = None,
             momentum: float = None,
-            reg=1e-6):
+            reeig_reg=1e-6):
         """Log-Euclidean layer
 
         Parameters
@@ -271,7 +271,7 @@ class LogMap(nn.Module):
             see RunningMeanCov, by default None
         momentum : float, optional
             see RunningMeanCov, by default None
-        reg : float, optional
+        reeig_reg : float, optional
             If not None, compute a ReEig forward before applying the log using
             the given value, by default 1e-6. Merging the two operations in a
             single layer is more efficient. Also provides numerical stability
@@ -284,22 +284,16 @@ class LogMap(nn.Module):
         self.size = size
         if self.ref == 'logeuclid':
             if n_freqs is not None:
-                self.running_mean = nn.Parameter(
-                    torch.stack([torch.eye(size) for _ in range(n_freqs)],
-                                dim=0),
-                    requires_grad=False
-                )
-                self.weights = nn.Parameter(torch.Tensor(
-                    [1, 1 - self.momentum]).reshape(2, 1, 1, 1),
-                    requires_grad=False)
-            else:
-                self.running_mean = nn.Parameter(torch.eye(size),
+                self.running_mean = nn.Parameter(torch.stack([torch.eye(size) for _ in range(n_freqs)], dim=0),
                                                  requires_grad=False)
-                self.weights = nn.Parameter(torch.Tensor(
-                    [1, 1 - self.momentum]).reshape(2, 1, 1),
-                    requires_grad=False)
+                self.weights = nn.Parameter(torch.Tensor([1, 1 - self.momentum]).reshape(2, 1, 1, 1),
+                                            requires_grad=False)
+            else:
+                self.running_mean = nn.Parameter(torch.eye(size), requires_grad=False)
+                self.weights = nn.Parameter(torch.Tensor([1, 1 - self.momentum]).reshape(2, 1, 1),
+                                            requires_grad=False)
 
-        self.reg = reg
+        self.reg = reeig_reg
 
     def forward(self, X: Tensor):
         # Replace negative eigenvalue by reg
@@ -323,6 +317,9 @@ class LogMap(nn.Module):
             log_C_ref = torch.Tensor(
                 _modify_eigenvalues(self.running_mean, rec_log)
             )
+        else:
+            raise ValueError(f"Could not recognise method for computing the reference point for the projection to "
+                             f"tangent space '{self.ref}'")
         X_out -= log_C_ref
         return X_out
 
