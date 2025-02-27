@@ -16,6 +16,7 @@ Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
 Requires-Python: >=3.8
+License-File: LICENSE
 Requires-Dist: requests>=2
 Requires-Dist: numpy>=1.2
 Requires-Dist: inflection~=0.5.1
