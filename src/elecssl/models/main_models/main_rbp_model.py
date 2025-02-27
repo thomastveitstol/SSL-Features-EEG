@@ -146,9 +146,6 @@ class MainRBPModel(MainModuleBase):
         # Merge by concatenation
         x = torch.cat(x, dim=1)
 
-        if x.isnan().any():
-            raise ValueError("Output of RBP contains (nan values)")
-
         # Maybe normalise region representations
         if self._normalise_region_representations:
             x = (x - torch.mean(x, dim=-1, keepdim=True)) / (torch.std(x, dim=-1, keepdim=True) + 1e-8)
