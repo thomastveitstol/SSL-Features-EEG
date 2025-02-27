@@ -260,6 +260,7 @@ class GreenModel(MTSModuleBase):
         # ----------------
         logref = trial.suggest_categorical(f"{name}_logref", **config["logref"])
         reeig_reg = trial.suggest_float(f"{name}_reeig_reg", **config["reeig_reg"])
+        momentum = trial.suggest_float(f"{name}_momentum", **config["momentum"])
 
         # ----------------
         # Fully connected module
@@ -285,6 +286,7 @@ class GreenModel(MTSModuleBase):
                 "orth_weights": orth_weights,
                 "logref": logref,
                 "reeig_reg": reeig_reg,
+                "momentum": momentum,
                 "dropout": dropout,
                 "hidden_dim": hidden_dim}
 
