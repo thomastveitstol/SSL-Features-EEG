@@ -18,12 +18,12 @@ from scipy.stats import NearConstantInputWarning, ConstantInputWarning
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.paths import get_numpy_data_storage_path
 from elecssl.data.results_analysis.hyperparameters import to_hyperparameter
-from elecssl.data.results_analysis.utils import higher_is_better, load_hpo_study
+from elecssl.data.results_analysis.utils import load_hpo_study
 from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split, simple_random_split
 from elecssl.models.experiments.single_experiment import SingleExperiment
 from elecssl.models.hp_suggesting import make_trial_suggestion, \
     suggest_spatial_dimension_mismatch, suggest_loss, suggest_dl_architecture, get_optuna_sampler
-from elecssl.models.metrics import PlotNotSavedWarning
+from elecssl.models.metrics import PlotNotSavedWarning, higher_is_better
 from elecssl.models.ml_models.ml_model_base import MLModel
 from elecssl.models.sampling_distributions import get_yaml_loader
 from elecssl.models.utils import add_yaml_constructors, verify_type, merge_dicts, \

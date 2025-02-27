@@ -7,7 +7,7 @@ import optuna
 import pandas
 
 from elecssl.data.datasets.dataset_base import OcularState
-
+from elecssl.models.metrics import higher_is_better
 
 # ----------------
 # Globals
@@ -33,15 +33,6 @@ class InOutOcularStates(NamedTuple):
 # ----------------
 # Smaller convenient functions
 # ----------------
-def higher_is_better(metric):
-    if metric in ("pearson_r", "spearman_rho", "r2_score"):
-        return True
-    elif metric in ("mae", "mse", "mape"):
-        return False
-    else:
-        raise ValueError(f"Metric {metric} not recognised")
-
-
 def is_better(metric, *, old_performance, new_performance):
     # Input checks
     assert isinstance(metric, str), f"Expected metric to be string, but found {type(metric)}"

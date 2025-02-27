@@ -15,11 +15,12 @@ from typing import Dict, List, Tuple, Optional, Any, NamedTuple, Union
 
 import numpy
 import pandas
+import torch
 from matplotlib import pyplot
 from scipy.stats import pearsonr, spearmanr
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, roc_auc_score, \
-    r2_score, accuracy_score, balanced_accuracy_score, matthews_corrcoef, cohen_kappa_score
-import torch
+    r2_score, accuracy_score, balanced_accuracy_score, matthews_corrcoef, cohen_kappa_score, median_absolute_error, \
+    explained_variance_score, max_error, mean_poisson_deviance, mean_gamma_deviance
 from torch import nn
 
 from elecssl.data.subject_split import Subject
@@ -1019,6 +1020,26 @@ class Histories:
 
     @staticmethod
     @regression_metric
+    def median_abs_error(y_pred: torch.Tensor, y_true: torch.Tensor):
+        return median_absolute_error(y_true=y_true.cpu(), y_pred=y_pred.cpu())
+
+    @staticmethod
+    @regression_metric
+    def max_error(y_pred: torch.Tensor, y_true: torch.Tensor):
+        return max_error(y_true=y_true.cpu(), y_pred=y_pred.cpu())
+
+    @staticmethod
+    @regression_metric
+    def mpd(y_pred: torch.Tensor, y_true: torch.Tensor):
+        return mean_poisson_deviance(y_true=y_true.cpu(), y_pred=y_pred.cpu())
+
+    @staticmethod
+    @regression_metric
+    def mgd(y_pred: torch.Tensor, y_true: torch.Tensor):
+        return mean_gamma_deviance(y_true=y_true.cpu(), y_pred=y_pred.cpu())
+
+    @staticmethod
+    @regression_metric
     def mape(y_pred: torch.Tensor, y_true: torch.Tensor):
         return mean_absolute_percentage_error(y_true=y_true.cpu(), y_pred=y_pred.cpu())
 
@@ -1051,6 +1072,13 @@ class Histories:
     @regression_metric
     def r2_score(y_pred: torch.Tensor, y_true: torch.Tensor):
         return r2_score(y_true=y_true.cpu(), y_pred=y_pred.cpu())
+
+    @staticmethod
+    @regression_metric
+    def explained_variance(y_pred: torch.Tensor, y_true: torch.Tensor):
+        """Similar to r2_score, but does not account for systematic offset in the prediction (see sklearn
+        documentation)"""
+        return explained_variance_score(y_true=y_true.cpu(), y_pred=y_pred.cpu(), force_finite=True)
 
     # -----------------
     # Classification metrics
@@ -1244,6 +1272,15 @@ class NaNPredictionError(Exception):
 # ----------------
 # Functions
 # ----------------
+def higher_is_better(metric):
+    if metric in ("pearson_r", "spearman_rho", "r2_score"):
+        return True
+    elif metric in ("mae", "mse", "mape"):
+        return False
+    else:
+        raise ValueError(f"Metric {metric} not recognised")
+
+
 def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true):
     """Function for aggregating predictions when predictions have been made for multiple EEG epochs per subject. This
     function computes the new prediction as the average of all, and also checks that the ground truth is always the same
@@ -1520,17 +1557,10 @@ def is_improved_model(old_metrics, new_metrics, main_metric):
     if old_metrics is None:
         return True
 
-    # Define the metrics where the higher, the better, and the lower, the better
-    higher_is_better = ("pearson_r", "spearman_rho", "r2_score", "auc")
-    lower_is_better = ("mae", "mse", "mape")
-
     # ----------------
     # Evaluate
     # ----------------
-    if main_metric in higher_is_better:
+    if higher_is_better(main_metric):
         return old_metrics[main_metric] < new_metrics[main_metric]
-    elif main_metric in lower_is_better:
-        return old_metrics[main_metric] > new_metrics[main_metric]
     else:
-        raise ValueError(f"Expected the metric to be in {higher_is_better + lower_is_better}, but found "
-                         f"'{main_metric}'")
+        return old_metrics[main_metric] > new_metrics[main_metric]
