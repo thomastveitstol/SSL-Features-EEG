@@ -3,8 +3,7 @@ import pytest
 from elecssl.models.region_based_pooling.region_based_pooling import RegionBasedPooling, RBPDesign, RBPPoolType
 
 
-@pytest.fixture
-def rbp_modules():
+def _get_rgb_modules():
     k_1 = [2, 2, 2, 2, 2, 2, 2]
     k_2 = [3, 3, 3, 3, 3, 3, 3, 3]
     k_3 = [2, 3, 2, 3, 2, 3, 2, 3, 2]
@@ -147,3 +146,11 @@ def rbp_modules():
     model_6 = RegionBasedPooling((design_0, design_1, design_2, design_3, design_4))
 
     return model_1, model_2, model_3, model_4, model_5, model_6
+
+
+@pytest.fixture
+def rbp_modules():
+    try:
+        return _get_rgb_modules()
+    except OSError:
+        pytest.skip("Skipping test: Fixture requires data not available on GitHub Actions")
