@@ -20,7 +20,7 @@ from matplotlib import pyplot
 from scipy.stats import pearsonr, spearmanr
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, roc_auc_score, \
     r2_score, accuracy_score, balanced_accuracy_score, matthews_corrcoef, cohen_kappa_score, median_absolute_error, \
-    explained_variance_score, max_error, mean_poisson_deviance, mean_gamma_deviance
+    explained_variance_score, max_error
 from torch import nn
 
 from elecssl.data.subject_split import Subject
@@ -1285,15 +1285,13 @@ def higher_is_better(metric):
     False
     >>> higher_is_better("balanced_acc")
     True
-    >>> higher_is_better("mgd")
-    False
     >>> higher_is_better("auc_ovr")
     True
     """
     # Define which metrics are higher the better, and which are lower the better
     high = ("pearson_r", "spearman_rho", "r2_score", "explained_variance", "auc", "acc", "balanced_acc", "mcc",
             "auc_ovo", "auc_ovr", "kappa")
-    low = ("mae", "mse", "mape", "med_ae", "max_error", "mpd", "mgd", "ce_loss")
+    low = ("mae", "mse", "mape", "med_ae", "max_error", "ce_loss")
 
     # Check metric
     if metric in high:
