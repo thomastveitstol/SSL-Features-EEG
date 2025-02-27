@@ -37,7 +37,7 @@ def test_nan_predictions_error_multiclass_classification_metrics():
     multiclass classification scores"""
     # Create invalid predicted tensor and valid ground truth tensor
     pred_tensor = torch.rand(size=(10, 5))
-    pred_tensor[5] = float("nan")
+    pred_tensor[5, 3] = float("nan")
     ground_truth = torch.rand(size=(10, 5))
 
     # Test metrics
