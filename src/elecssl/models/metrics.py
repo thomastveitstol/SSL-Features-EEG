@@ -1273,9 +1273,42 @@ class NaNPredictionError(Exception):
 # Functions
 # ----------------
 def higher_is_better(metric):
-    if metric in ("pearson_r", "spearman_rho", "r2_score"):
+    """
+    Function for determining if a metric is 'higher the better' or 'lower the better'. If True, 'higher the better'
+    applies, if False, 'lower the better', if the metric is not recognised, an error is raised
+
+    Parameters
+    ----------
+    metric : str
+
+    Returns
+    -------
+    bool
+
+    Examples
+    --------
+    >>> higher_is_better("r2_score")
+    True
+    >>> higher_is_better("ce_loss")
+    False
+    >>> higher_is_better("median_abs_error")
+    False
+    >>> higher_is_better("balanced_acc")
+    True
+    >>> higher_is_better("mgd")
+    False
+    >>> higher_is_better("auc_ovr")
+    True
+    """
+    # Define which metrics are higher the better, and which are lower the better
+    high = ("pearson_r", "spearman_rho", "r2_score", "explained_variance", "auc", "acc", "balanced_acc", "mcc",
+            "auc_ovo", "auc_ovr", "kappa")
+    low = ("mae", "mse", "mape", "median_abs_error", "max_error", "mpd", "mgd", "ce_loss")
+
+    # Check metric
+    if metric in high:
         return True
-    elif metric in ("mae", "mse", "mape"):
+    elif metric in low:
         return False
     else:
         raise ValueError(f"Metric {metric} not recognised")
