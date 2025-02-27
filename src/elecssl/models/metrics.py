@@ -621,7 +621,17 @@ class Histories:
 
     @classmethod
     def compute_metric(cls, metric: str, *, y_pred, y_true):
-        return cls._compute_metric(metric=metric, y_pred=torch.tensor(y_pred), y_true=torch.tensor(y_true))
+        # Ensure torch tensors
+        y_hat = torch.tensor(y_pred)
+        y = torch.tensor(y_true)
+
+        # Sometimes, NaN values in the prediction can occur due to numerical instabilities, see
+        # https://stackoverflow.com/questions/33962226/common-causes-of-nans-during-training-of-neural-networks. In that
+        # case, we raise a custom error
+        if y_hat.isnan().any():
+            raise NaNPredictionError
+        return cls._compute_metric(metric=metric, y_pred=y_hat, y_true=y)
+
 
     @classmethod
     def _compute_groups_metric(cls, metric: str, *, variable: torch.Tensor, groups: torch.Tensor):
@@ -1222,10 +1232,13 @@ class Histories:
 
 
 # ----------------
-# Warnings
+# Warnings and exceptions
 # ----------------
 class PlotNotSavedWarning(UserWarning):
     ...
+
+class NaNPredictionError(Exception):
+    """Should be raised when the predictions of a model contain NaN values."""
 
 
 # ----------------
