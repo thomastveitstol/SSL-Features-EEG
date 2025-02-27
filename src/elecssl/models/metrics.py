@@ -72,13 +72,14 @@ class Histories:
     --------
     >>> Histories.get_available_classification_metrics()
     ('auc',)
-    >>> Histories.get_available_regression_metrics()
-    ('mae', 'mape', 'mse', 'pearson_r', 'r2_score', 'spearman_rho')
+    >>> Histories.get_available_regression_metrics()  # doctest: +NORMALIZE_WHITESPACE
+    ('explained_variance', 'mae', 'mape', 'max_error', 'median_abs_error', 'mgd', 'mpd', 'mse', 'pearson_r', 'r2_score',
+     'spearman_rho')
     >>> Histories.get_available_multiclass_classification_metrics()
     ('acc', 'auc_ovo', 'auc_ovr', 'balanced_acc', 'ce_loss', 'kappa', 'mcc')
     >>> Histories.get_available_metrics()  # doctest: +NORMALIZE_WHITESPACE
-    ('auc', 'acc', 'auc_ovo', 'auc_ovr', 'balanced_acc', 'ce_loss', 'kappa', 'mcc', 'mae', 'mape', 'mse', 'pearson_r',
-     'r2_score', 'spearman_rho')
+    ('auc', 'acc', 'auc_ovo', 'auc_ovr', 'balanced_acc', 'ce_loss', 'kappa', 'mcc', 'explained_variance', 'mae', 'mape',
+     'max_error', 'median_abs_error', 'mgd', 'mpd', 'mse', 'pearson_r', 'r2_score', 'spearman_rho')
     """
 
     __slots__ = ("_history", "_prediction_history", "_subgroup_histories", "_epoch_y_pred", "_epoch_y_true",
@@ -1311,7 +1312,7 @@ def higher_is_better(metric):
     elif metric in low:
         return False
     else:
-        raise ValueError(f"Metric {metric} not recognised")
+        raise ValueError(f"Expected the metric to be in {high + low}, but found '{metric}'")
 
 
 def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true):
@@ -1580,11 +1581,10 @@ def is_improved_model(old_metrics, new_metrics, main_metric):
     True
     >>> is_improved_model(my_old_metrics, my_new_metrics, main_metric="r2_score")
     True
-    >>> is_improved_model(my_old_metrics, my_new_metrics, main_metric="not_a_metric")  # doctest: +NORMALIZE_WHITESPACE
+    >>> is_improved_model(my_old_metrics, my_new_metrics, main_metric="not_a_metric")  # doctest: +ELLIPSIS
     Traceback (most recent call last):
     ...
-    ValueError: Expected the metric to be in ('pearson_r', 'spearman_rho', 'r2_score', 'auc', 'mae', 'mse', 'mape'),
-    but found 'not_a_metric'
+    ValueError: Expected the metric to be in (...), but found 'not_a_metric'
     """
     # If the old metrics is None, it means that this is the first epoch
     if old_metrics is None:
