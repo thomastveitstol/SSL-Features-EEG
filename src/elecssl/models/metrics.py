@@ -72,14 +72,13 @@ class Histories:
     --------
     >>> Histories.get_available_classification_metrics()
     ('auc',)
-    >>> Histories.get_available_regression_metrics()  # doctest: +NORMALIZE_WHITESPACE
-    ('explained_variance', 'mae', 'mape', 'max_error', 'median_abs_error', 'mgd', 'mpd', 'mse', 'pearson_r', 'r2_score',
-     'spearman_rho')
+    >>> Histories.get_available_regression_metrics()
+    ('explained_variance', 'mae', 'mape', 'max_error', 'med_ae', 'mse', 'pearson_r', 'r2_score', 'spearman_rho')
     >>> Histories.get_available_multiclass_classification_metrics()
     ('acc', 'auc_ovo', 'auc_ovr', 'balanced_acc', 'ce_loss', 'kappa', 'mcc')
     >>> Histories.get_available_metrics()  # doctest: +NORMALIZE_WHITESPACE
     ('auc', 'acc', 'auc_ovo', 'auc_ovr', 'balanced_acc', 'ce_loss', 'kappa', 'mcc', 'explained_variance', 'mae', 'mape',
-     'max_error', 'median_abs_error', 'mgd', 'mpd', 'mse', 'pearson_r', 'r2_score', 'spearman_rho')
+     'max_error', 'med_ae', 'mse', 'pearson_r', 'r2_score', 'spearman_rho')
     """
 
     __slots__ = ("_history", "_prediction_history", "_subgroup_histories", "_epoch_y_pred", "_epoch_y_true",
@@ -1021,23 +1020,13 @@ class Histories:
 
     @staticmethod
     @regression_metric
-    def median_abs_error(y_pred: torch.Tensor, y_true: torch.Tensor):
+    def med_ae(y_pred: torch.Tensor, y_true: torch.Tensor):
         return median_absolute_error(y_true=y_true.cpu(), y_pred=y_pred.cpu())
 
     @staticmethod
     @regression_metric
     def max_error(y_pred: torch.Tensor, y_true: torch.Tensor):
         return max_error(y_true=y_true.cpu(), y_pred=y_pred.cpu())
-
-    @staticmethod
-    @regression_metric
-    def mpd(y_pred: torch.Tensor, y_true: torch.Tensor):
-        return mean_poisson_deviance(y_true=y_true.cpu(), y_pred=y_pred.cpu())
-
-    @staticmethod
-    @regression_metric
-    def mgd(y_pred: torch.Tensor, y_true: torch.Tensor):
-        return mean_gamma_deviance(y_true=y_true.cpu(), y_pred=y_pred.cpu())
 
     @staticmethod
     @regression_metric
@@ -1292,7 +1281,7 @@ def higher_is_better(metric):
     True
     >>> higher_is_better("ce_loss")
     False
-    >>> higher_is_better("median_abs_error")
+    >>> higher_is_better("med_ae")
     False
     >>> higher_is_better("balanced_acc")
     True
@@ -1304,7 +1293,7 @@ def higher_is_better(metric):
     # Define which metrics are higher the better, and which are lower the better
     high = ("pearson_r", "spearman_rho", "r2_score", "explained_variance", "auc", "acc", "balanced_acc", "mcc",
             "auc_ovo", "auc_ovr", "kappa")
-    low = ("mae", "mse", "mape", "median_abs_error", "max_error", "mpd", "mgd", "ce_loss")
+    low = ("mae", "mse", "mape", "med_ae", "max_error", "mpd", "mgd", "ce_loss")
 
     # Check metric
     if metric in high:
