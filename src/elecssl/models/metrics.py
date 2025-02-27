@@ -632,7 +632,6 @@ class Histories:
             raise NaNPredictionError
         return cls._compute_metric(metric=metric, y_pred=y_hat, y_true=y)
 
-
     @classmethod
     def _compute_groups_metric(cls, metric: str, *, variable: torch.Tensor, groups: torch.Tensor):
         """Method for computing the specified groups metric"""
@@ -1236,6 +1235,7 @@ class Histories:
 # ----------------
 class PlotNotSavedWarning(UserWarning):
     ...
+
 
 class NaNPredictionError(Exception):
     """Should be raised when the predictions of a model contain NaN values."""

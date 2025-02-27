@@ -587,8 +587,10 @@ class SingleExperiment:
                 **discriminator_kwargs, num_epochs=self.train_config["num_epochs"],
                 verbose=self.train_config["verbose"],
                 device=self._device, target_scaler=target_scaler, **channel_name_to_index_kwarg,
-                prediction_activation_function=get_activation_function(self.train_config["prediction_activation_function"]),
-                sub_group_splits=self.sub_groups_config["sub_groups"], sub_groups_verbose=self.sub_groups_config["verbose"],
+                prediction_activation_function=get_activation_function(self.train_config["prediction_activation_"
+                                                                                         "function"]),
+                sub_group_splits=self.sub_groups_config["sub_groups"],
+                sub_groups_verbose=self.sub_groups_config["verbose"],
                 verbose_variables=self.train_config["verbose_variables"], variable_metrics=self.variables_metrics
             )
         except NaNPredictionError as e:
@@ -824,6 +826,7 @@ class SingleExperiment:
     @property
     def saving_config(self):
         return self._experiments_config["Saving"]
+
 
 # -------------
 # Functions
