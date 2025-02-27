@@ -69,23 +69,31 @@ DLArchitectures:
     num_classes: 1
     sampling_freq: UNAVAILABLE
     # Parameterised convolutions
-    n_freqs: { low: 5, high: 50, step: 1, log: false }
+    n_freqs: { low: 1, high: 32, step: 1, log: true }
     kernel_width_s: { low: 2, high: 4, step: null, log: false }  # todo: how to sample this?
-    conv_stride: { low: 3, high: 7, step: 1, log: false }
-    oct_min: { low: 0.0, high: 1.0, step: null, log: false }
-    oct_max_addition: { low: 5.0, high: 6.0, step: null, log: false }  # This will be added to oct_min to give oct_max todo
+    conv_stride: { low: 1, high: 5, step: 1, log: false }
+    oct_min: 0.0  # { low: 0.0, high: 0.2, step: null, log: false }
+    oct_max_addition: 5.5  # { low: 5.5, high: 5.7, step: null, log: false }
     random_f_init: { choices: [ False, True ] }
     # Pooling layer
-    pool_layer: { choices: [ RealCovariance ] }
-    # todo: add HPDs for the different pooling layer
+    pool_layer: { choices: [ RealCovariance, CrossCovariance, PW_PLV, CrossPW_PLV, CombinedPoolingNoCross,
+                             CombinedPoolingCross ] }
+    pool_layer_kwargs:
+      RealCovariance: &RC {}
+      CrossCovariance: &CC {}
+      PW_PLV: &PWPLV { reg: { low: 0.0000001, high: 0.00001, log: true } }
+      CrossPW_PLV: &CPWPLV { reg: { low: 0.0000001, high: 0.00001, log: true } }
+      CombinedPoolingNoCross: { RealCovariance: *RC, PW_PLV: *PWPLV }
+      CombinedPoolingCross: { CrossCovariance: *CC, CrossPW_PLV: *CPWPLV }
     # Shrinkage layer
-    shrinkage_init: { low: -4.0, high: -2.0, step: null, log: false }  # todo: now we are skipping identity...
+    shrinkage_init: { low: -5.0, high: -1.0, step: null, log: false }
     # BiMap layer  todo: in the documentation it seems like it should be int, be code looked like iterable of ints
-    bi_out: { low: 10, high: 30, step: 1, log: false }  # todo: should be possible with None too
+    bi_out_perc: { low: 0.5, high: 1, step: null, log: false }
     orth_weights: { choices: [ false ] }  # todo: setting to True makes current method for saving impossible
     # Combined ReEig and LogMap layer
     logref: { choices: [ identity, logeuclid ] }
-    reg: { low: 0.000001, high: 0.0001, step: null, log: true }  # todo: can be None in the code too...
+    reeig_reg: { low: 0.00001, high: 0.001, step: null, log: true }  # todo: can be None in the code too...
+    momentum: { low: 0.8, high: 1.0, step: null, log: false }
     # Fully connected module
     num_fc_layers: { low: 1, high: 3, step: 1, log: false }
     num_first_fc_filters: { low: 16, high: 128, step: 1, log: true }
@@ -116,7 +124,7 @@ RegionBasedPooling:
     MultiMSSharedRocketHeadRegion:
       num_kernels: *num_kernels
       max_receptive_field: *max_receptive_field
-      latent_search_features: !Int { low: 8, high: 128, log: true }
+      latent_search_features: !Int { low: 8, high: 64, log: true }
       share_search_receiver_modules: !Categorical { choices: [ true, false ] }
       bias: !Categorical { choices: [ false ] }
   MontageSplits:
@@ -128,6 +136,6 @@ RegionBasedPooling:
         k_4: [ 4, 3, 2, 3, 4, 3, 2, 3, 4 ]
       min_nodes: !Int { low: 1, high: 6, step: 1, log: false }
       channel_positions: !NotAHyperparameterList
-        [ LEMON, Wang ]
+        [ LEMON, Wang, DortmundVital ]
 
 SpatialDimensionMismatch: { choices: [ Interpolation, RegionBasedPooling ] }

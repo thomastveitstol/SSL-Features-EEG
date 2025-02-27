@@ -35,7 +35,7 @@ SubjectSplit:
   name: KeepDatasetOutRandomSplits
   kwargs:
     left_out_dataset: LEMON
-    val_split: 0.2
+    val_split: 0.3
     num_random_splits: 1
     seed: 42
 SubGroups:
