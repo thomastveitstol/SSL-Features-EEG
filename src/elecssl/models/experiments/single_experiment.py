@@ -3,6 +3,7 @@ import os
 import traceback
 from typing import Any, Dict, Optional
 
+import optuna
 import torch
 import yaml  # type: ignore[import-untyped]
 from torch import optim
@@ -18,7 +19,7 @@ from elecssl.models.main_models.main_base_class import MainModuleBase
 from elecssl.models.main_models.main_fixed_channels_model import MainFixedChannelsModel
 from elecssl.models.main_models.main_rbp_model import MainRBPModel
 from elecssl.models.metrics import Histories, save_discriminator_histories_plots, save_histories_plots, \
-    save_test_histories_plots
+    save_test_histories_plots, NaNPredictionError
 from elecssl.models.utils import tensor_dict_to_device
 
 
@@ -578,16 +579,24 @@ class SingleExperiment:
         channel_name_to_index_kwarg = {"channel_name_to_index": channel_name_to_index} \
             if self.spatial_dimension_handling_config["name"] == "RegionBasedPooling" else dict()
 
-        histories = model.train_model(
-            method=self.train_config["method"], train_loader=train_loader, val_loader=val_loader,
-            test_loader=test_loader, metrics=self.train_config["metrics"], main_metric=self.train_config["main_metric"],
-            classifier_criterion=criterion, optimiser=optimiser, **discriminator_kwargs,
-            num_epochs=self.train_config["num_epochs"], verbose=self.train_config["verbose"],
-            device=self._device, target_scaler=target_scaler, **channel_name_to_index_kwarg,
-            prediction_activation_function=get_activation_function(self.train_config["prediction_activation_function"]),
-            sub_group_splits=self.sub_groups_config["sub_groups"], sub_groups_verbose=self.sub_groups_config["verbose"],
-            verbose_variables=self.train_config["verbose_variables"], variable_metrics=self.variables_metrics
-        )
+        try:
+            histories = model.train_model(
+                method=self.train_config["method"], train_loader=train_loader, val_loader=val_loader,
+                test_loader=test_loader, metrics=self.train_config["metrics"],
+                main_metric=self.train_config["main_metric"], classifier_criterion=criterion, optimiser=optimiser,
+                **discriminator_kwargs, num_epochs=self.train_config["num_epochs"],
+                verbose=self.train_config["verbose"],
+                device=self._device, target_scaler=target_scaler, **channel_name_to_index_kwarg,
+                prediction_activation_function=get_activation_function(self.train_config["prediction_activation_function"]),
+                sub_group_splits=self.sub_groups_config["sub_groups"], sub_groups_verbose=self.sub_groups_config["verbose"],
+                verbose_variables=self.train_config["verbose_variables"], variable_metrics=self.variables_metrics
+            )
+        except NaNPredictionError as e:
+            if self._experiments_config.get("raise_upon_nan_predictions") is None:
+                raise e
+            else:
+                selected_error = _get_error(self._experiments_config["raise_upon_nan_predictions"])
+                raise selected_error
 
         # -----------------
         # Test model (but only if continuous testing was not used)
@@ -815,3 +824,32 @@ class SingleExperiment:
     @property
     def saving_config(self):
         return self._experiments_config["Saving"]
+
+# -------------
+# Functions
+# -------------
+def _get_error(err):
+    """
+    Function for getting an error/exception by string
+
+    Parameters
+    ----------
+    err : str
+
+    Returns
+    -------
+    Exception
+
+    Examples
+    --------
+    >>> _get_error("TrialPruned")
+    <class 'optuna.exceptions.TrialPruned'>
+    >>> _get_error("ThisIsNotAnError")
+    Traceback (most recent call last):
+    ...
+    ValueError: Could not recognise the error 'ThisIsNotAnError'
+    """
+    if err.lower() in ("trialpruned", "optuna.trialpruned", "trialpruned()", "optuna.trialpruned()"):
+        return optuna.TrialPruned
+
+    raise ValueError(f"Could not recognise the error '{err}'")

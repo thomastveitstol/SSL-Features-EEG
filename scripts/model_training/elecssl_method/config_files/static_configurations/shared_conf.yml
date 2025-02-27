@@ -1,5 +1,6 @@
 debugging: true
 save_test_predictions: true
+raise_upon_nan_predictions: TrialPruned
 
 Saving:
   save_subgroups_plots: false
@@ -39,7 +40,7 @@ Scalers:  # Remember that this is whatever the SingleExperiment is working on
     name: ZNormalisation
 Training:  # Remember that this is whatever the SingleExperiment is working on
   batch_size: 16
-  num_epochs: 50
+  num_epochs: 3
   verbose: true
   verbose_variables: false
   continuous_testing: true
