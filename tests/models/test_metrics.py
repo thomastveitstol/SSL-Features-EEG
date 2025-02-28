@@ -107,9 +107,7 @@ def test_nan_target_error_multiclass_classification_metrics():
     """For multiclass classification score, NaNValueError or RuntimeError is raised"""
     # Create an invalid predicted tensor (containing NaN) and a valid ground truth tensor
     pred_tensor = torch.rand(size=(40, 5), dtype=torch.float) * 7
-    # pred_tensor[5] = float("nan")
     ground_truth = torch.tensor([random.randint(0, 4) for _ in range(39)] + [float("nan")])
-    #ground_truth[5] = float("nan")
 
     # Test metrics
     for metric in Histories.get_available_multiclass_classification_metrics():
