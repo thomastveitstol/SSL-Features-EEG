@@ -93,8 +93,7 @@ class HPOExperiment(abc.ABC):
             yaml.safe_dump(hp_config, file)
 
     def _get_hpo_folder_path(self, trial: optuna.Trial):
-        return self._results_path / (f"{self._name}_hpo_{trial.number}_{date.today()}_"
-                                     f"{datetime.now().strftime('%H%M%S')}")
+        return self._results_path / f"hpo_{trial.number}_{date.today()}_{datetime.now().strftime('%H%M%S')}"
 
     def run_hyperparameter_optimisation(self):
         """Run HPO with optuna"""
@@ -830,8 +829,7 @@ class ElecsslHPO(HPOExperiment):
             spaces = self._experiments_config["IOSpaces"]
 
             # Make directory for current iteration
-            results_dir = self._results_path / (f"hpo_{trial.number}_{date.today()}_"
-                                                f"{datetime.now().strftime('%H%M%S')}")
+            results_dir = self._get_hpo_folder_path(trial)
             os.mkdir(results_dir)
 
             # ---------------
@@ -1005,6 +1003,38 @@ class ElecsslHPO(HPOExperiment):
     def generate_test_scores_df(cls, path, *, target_metrics, selection_metric, method: Literal["mean", "median"],
                                 include_experiment_name=True):
         raise NotImplementedError
+
+    # --------------
+    # Methods for checking if results were as expected
+    # --------------
+    @classmethod
+    def verify_test_set_integrity(cls, path):
+        """This class (1) stores test predictions differently and (2) does not currently save train and validation
+        predictions for the ML model. Hence, only checking for test set consistency"""
+        expected_subjects: Set[Subject] = set()
+
+        # Loop through all trials
+        trial_folders = (file_name for file_name in os.listdir(path)
+                         if file_name.startswith("hpo_") and os.path.isdir(file_name))
+        for trial_folder in trial_folders:
+            trial_path = path / trial_folder
+
+            # Load the subjects from the test predictions, but also accept that some trials may have been pruned
+            try:
+                test_subjects_df = pandas.read_csv(trial_path / "test_predictions.csv", usecols=("dataset", "sub_id"))
+            except FileNotFoundError:
+                continue
+
+            # Convert to set of 'Subject'
+            subjects = set(Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                           for row in test_subjects_df.itertuples(index=False))
+
+            # Check with expected subjects (or make it expected subjects, if it is the first)
+            if expected_subjects:
+                if subjects != expected_subjects:
+                    raise InconsistentTestSetError
+            else:
+                expected_subjects = subjects
 
     # --------------
     # Properties
