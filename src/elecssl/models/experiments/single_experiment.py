@@ -1,7 +1,7 @@
 import copy
 import os
 import traceback
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 import optuna
 import torch
@@ -598,7 +598,7 @@ class SingleExperiment:
                 raise e
             else:
                 selected_error = _get_error(self._experiments_config["raise_upon_nan_predictions"])
-                raise selected_error
+                raise selected_error("Error raised due to NaN values, most likely in the predictions")
 
         # -----------------
         # Test model (but only if continuous testing was not used)
@@ -831,7 +831,7 @@ class SingleExperiment:
 # -------------
 # Functions
 # -------------
-def _get_error(err):
+def _get_error(err) -> Type[Exception]:
     """
     Function for getting an error/exception by string
 
@@ -839,14 +839,14 @@ def _get_error(err):
     ----------
     err : str
 
-    Returns
-    -------
-    Exception
-
     Examples
     --------
     >>> _get_error("TrialPruned")
     <class 'optuna.exceptions.TrialPruned'>
+    >>> raise _get_error("TrialPruned")("This is a message")
+    Traceback (most recent call last):
+    ...
+    optuna.exceptions.TrialPruned: This is a message
     >>> _get_error("ThisIsNotAnError")
     Traceback (most recent call last):
     ...
