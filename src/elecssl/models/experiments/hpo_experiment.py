@@ -6,7 +6,7 @@ import warnings
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal, Set
+from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal, Set, Union
 
 import numpy
 import optuna
@@ -939,7 +939,7 @@ class ElecsslHPO(HPOExperiment):
                 )
 
                 # Convert to more convenient format
-                test_predictions_dict = {"dataset": [], "sub_id": [], "pred": []}
+                test_predictions_dict: Dict[str, List[Union[str, float]]] = {"dataset": [], "sub_id": [], "pred": []}
                 for subject, prediction in zip(test_subjects, test_predictions):
                     test_predictions_dict["dataset"].append(subject.dataset_name)
                     test_predictions_dict["sub_id"].append(subject.subject_id)
