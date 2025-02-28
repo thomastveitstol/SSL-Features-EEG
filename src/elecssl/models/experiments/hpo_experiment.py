@@ -413,7 +413,7 @@ class HPOExperiment(abc.ABC):
                     train_subjects_df = pandas.read_csv(fold_path / "train_history_predictions.csv",
                                                         usecols=("dataset", "sub_id"))
                     val_subjects_df = pandas.read_csv(fold_path / "train_history_predictions.csv",
-                                                        usecols=("dataset", "sub_id"))
+                                                      usecols=("dataset", "sub_id"))
                 except FileNotFoundError:
                     continue
 
@@ -438,7 +438,6 @@ class HPOExperiment(abc.ABC):
                         f"Test subjects were found in the validation set for trial {trial_folder}, fold {fold_folder}. "
                         f"These subjects are (N={len(overlap)})): {overlap}"
                     )
-
 
     # --------------
     # Methods for HP analysis
