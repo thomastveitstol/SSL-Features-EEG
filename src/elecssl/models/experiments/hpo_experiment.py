@@ -6,7 +6,7 @@ import warnings
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal
+from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal, Set
 
 import numpy
 import optuna
@@ -314,6 +314,132 @@ class HPOExperiment(abc.ABC):
         return val_scores, epoch
 
     # --------------
+    # Methods for checking if results were as expected
+    # --------------
+    @classmethod
+    def verify_test_set_integrity(cls, path):
+        """
+        Method for checking the test set integrity after HPO has been run
+
+        Parameters
+        ----------
+        path : pathlib.Path
+            The path to where all results of the HPO are
+
+        Returns
+        -------
+        None
+        """
+        # Check if the test set always contain the same set of subject
+        test_subjects = cls._verify_test_set_consistency(path=path)
+
+        # Check if any of the test subjects were in training or validation
+        cls._verify_test_set_exclusivity(path=path, test_subjects=test_subjects)
+
+    @classmethod
+    def _verify_test_set_consistency(cls, path):
+        """
+        Verify that the test set is consistent across trials and folds. If not, an 'InconsistentTestSetError' is raised
+        Parameters
+        ----------
+        path : Path
+
+        Returns
+        -------
+        Set[Subject]
+            The test set subjects
+        """
+        expected_subjects: Set[Subject] = set()
+
+        # Loop through all trials
+        trial_folders = (file_name for file_name in os.listdir(path) if file_name.startswith(cls._name))
+        for trial_folder in trial_folders:
+            trial_path = path / trial_folder
+
+            # Loop through all folds within the trial
+            fold_folders = (name for name in os.listdir(trial_path) if name.lower().startswith("fold_"))
+            for fold_folder in fold_folders:
+                fold_path = path / fold_folder
+
+                # Load the subjects from the test predictions, but also accept that some trials may have been pruned
+                try:
+                    test_history_subjects = pandas.read_csv(fold_path / "test_history_predictions.csv",
+                                                            usecols=("dataset", "sub_id"))
+                except FileNotFoundError:
+                    continue
+
+                # Convert to set of 'Subject'
+                subjects = set(Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                               for row in test_history_subjects.itertuples(index=False))
+
+                # Check with expected subjects (or make it expected subjects, if it is the first)
+                if expected_subjects:
+                    if subjects != expected_subjects:
+                        raise InconsistentTestSetError
+                else:
+                    expected_subjects = subjects
+
+        return expected_subjects
+
+    @classmethod
+    def _verify_test_set_exclusivity(cls, path, test_subjects):
+        """
+        Method which should be used to verify that no test subject were in the validation or train set for any of the
+        trials and folds. If there is overlap, a 'NonExclusiveTestSetError' is raised
+
+        Parameters
+        ----------
+        path : Path
+        test_subjects : Set[Subject]
+
+        Returns
+        -------
+        None
+        """
+        # Loop through all trials
+        trial_folders = (file_name for file_name in os.listdir(path) if file_name.startswith(cls._name))
+        for trial_folder in trial_folders:
+            trial_path = path / trial_folder
+
+            # Loop through all folds within the trial
+            fold_folders = (name for name in os.listdir(trial_path) if name.lower().startswith("fold_"))
+            for fold_folder in fold_folders:
+                fold_path = path / fold_folder
+
+                # Load the subjects from the train and validation predictions, but also accept that some trials may have
+                # been pruned
+                try:
+                    train_subjects_df = pandas.read_csv(fold_path / "train_history_predictions.csv",
+                                                        usecols=("dataset", "sub_id"))
+                    val_subjects_df = pandas.read_csv(fold_path / "train_history_predictions.csv",
+                                                        usecols=("dataset", "sub_id"))
+                except FileNotFoundError:
+                    continue
+
+                # Convert to set of 'Subject'
+                train_subjects = set(
+                    Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                    for row in train_subjects_df.itertuples(index=False))
+                val_subjects = set(
+                    Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                    for row in val_subjects_df.itertuples(index=False))
+
+                # Check if there is overlap
+                if not train_subjects.isdisjoint(test_subjects):
+                    overlap = train_subjects & test_subjects
+                    raise NonExclusiveTestSetError(
+                        f"Test subjects were found in the train set for trial {trial_folder}, fold {fold_folder}. "
+                        f"These subjects are (N={len(overlap)})): {overlap}"
+                    )
+                if not val_subjects.isdisjoint(test_subjects):
+                    overlap = val_subjects & test_subjects
+                    raise NonExclusiveTestSetError(
+                        f"Test subjects were found in the validation set for trial {trial_folder}, fold {fold_folder}. "
+                        f"These subjects are (N={len(overlap)})): {overlap}"
+                    )
+
+
+    # --------------
     # Methods for HP analysis
     # --------------
     @classmethod
@@ -388,7 +514,7 @@ class HPOExperiment(abc.ABC):
             domain_adaptation.append("CMMN + DD")
         if domain_adaptation:
             domain_adaptation.append("Nothing")
-            config_space["Domain adaptation"] = to_hyperparameter(name=f"{name}_domain_adpatation",
+            config_space["Domain adaptation"] = to_hyperparameter(name=f"{name}_domain_adaptation",
                                                                   method="categorical", choices=domain_adaptation)
         # Loss
         config_space["Loss"] = to_hyperparameter(name=f"{name}_loss", **hpd_config["Loss"]["loss"])
@@ -879,6 +1005,18 @@ class ElecsslHPO(HPOExperiment):
     @property
     def ml_model_settings_config(self):
         return self._experiments_config["MLModelSettings"]
+
+
+# --------------
+# Exceptions
+# --------------
+class InconsistentTestSetError(Exception):
+    """This error should be raised if the test set should be consistent across different trials/folds, but is not"""
+
+
+class NonExclusiveTestSetError(Exception):
+    """This error should be raised if there are subject in the test set which are also in train/validation for any
+    trial/fold"""
 
 
 # --------------
