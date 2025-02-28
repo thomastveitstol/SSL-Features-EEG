@@ -883,7 +883,7 @@ class ElecsslHPO(HPOExperiment):
                         )
                     )
 
-                # Collect the resulting biomarkers
+                # Collect the resulting 'biomarkers'
                 biomarkers: Dict[Subject, Dict[str, float]] = dict()
                 for process in concurrent.futures.as_completed(experiments):
                     subjects, deviations, clinical_targets, feature_extractor_name = process.result()
@@ -940,9 +940,16 @@ class ElecsslHPO(HPOExperiment):
                     aggregation_method=self.ml_model_settings_config["test_prediction_aggregation"]
                 )
 
+                # Convert to more convenient format
+                test_predictions_dict = {"dataset": [], "sub_id": [], "pred": []}
+                for subject, prediction in zip(test_subjects, test_predictions):
+                    test_predictions_dict["dataset"].append(subject.dataset_name)
+                    test_predictions_dict["sub_id"].append(subject.subject_id)
+                    test_predictions_dict["pred"].append(prediction)
+
                 # Save predictions and scores on test set (the score provided to the HPO algorithm should be stored by
                 # optuna)
-                test_predictions_df = pandas.DataFrame.from_dict({"sub_id": test_subjects, "pred": test_predictions})
+                test_predictions_df = pandas.DataFrame(test_predictions_dict)
                 test_scores_df = pandas.DataFrame([test_scores])
 
                 test_predictions_df = test_predictions_df.round(
