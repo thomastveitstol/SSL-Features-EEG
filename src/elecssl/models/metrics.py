@@ -644,10 +644,17 @@ class Histories:
         -------
         float
         """
+        # Ensure torch tensor
+        if not isinstance(y_pred, torch.Tensor):
+            y_pred = torch.tensor(y_pred)
+        if not isinstance(y_true, torch.Tensor):
+            y_true = torch.tensor(y_true)
+
+        # Compute score
         try:
             return cls._compute_metric(metric=metric, y_pred=y_pred, y_true=y_true)
         except ValueError as e:
-            if "Input contains NaN" in str(e):
+            if "NaN" in str(e):  # Can't make it too specific due to minor differences in versions
                 raise NaNValueError
             raise e
 
