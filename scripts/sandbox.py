@@ -10,7 +10,7 @@ from optuna.samplers import TPESampler
 
 from elecssl.data.paths import get_results_dir
 from elecssl.data.results_analysis.utils import load_hpo_study
-from elecssl.models.experiments.hpo_experiment import PredictionModelsHPO, PretrainHPO
+from elecssl.models.experiments.hpo_experiment import PredictionModelsHPO, PretrainHPO, ElecsslHPO
 from elecssl.models.mts_modules.green_model import GreenModel
 
 
@@ -80,6 +80,14 @@ def make_boxplots():
     pyplot.show()
 
 
+def check_test_set_integrity():
+    path = get_results_dir() / "prediction_models" / "debug_prediction_models_hpo_experiment_2025-02-27_154700"
+    PredictionModelsHPO.verify_test_set_integrity(path=path)
+
+    path = get_results_dir() / "elecssl" / "debug_elecssl_hpo_experiment_2025-02-28_151005"
+    ElecsslHPO.verify_test_set_integrity(path=path)
+
+
 def make_hue_boxplots_single_study():
     # ---------------
     # Some design choices
@@ -97,7 +105,7 @@ def make_hue_boxplots_single_study():
     # x, y = y, x
 
     # Other stuff
-    results_dir = get_results_dir() / "prediction_models" / "debug_prediction_models_hpo_experiment_2025-02-13_111038"
+    results_dir = get_results_dir() / "prediction_models" / "debug_prediction_models_hpo_experiment_2025-02-27_154700"
 
     # ---------------
     # Analysis
@@ -157,7 +165,8 @@ def save_green():
 
 
 def main():
-    make_hue_boxplots_single_study()
+    check_test_set_integrity()
+    # make_hue_boxplots_single_study()
 
 
 if __name__ == "__main__":
