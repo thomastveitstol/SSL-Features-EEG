@@ -340,6 +340,7 @@ class HPOExperiment(abc.ABC):
     def _verify_test_set_consistency(cls, path):
         """
         Verify that the test set is consistent across trials and folds. If not, an 'InconsistentTestSetError' is raised
+
         Parameters
         ----------
         path : Path
