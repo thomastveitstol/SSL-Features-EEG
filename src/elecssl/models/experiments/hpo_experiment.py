@@ -416,7 +416,7 @@ class HPOExperiment(abc.ABC):
                 try:
                     train_subjects_df = pandas.read_csv(fold_path / "train_history_predictions.csv",
                                                         usecols=("dataset", "sub_id"))
-                    val_subjects_df = pandas.read_csv(fold_path / "train_history_predictions.csv",
+                    val_subjects_df = pandas.read_csv(fold_path / "val_history_predictions.csv",
                                                       usecols=("dataset", "sub_id"))
                 except FileNotFoundError:
                     continue
