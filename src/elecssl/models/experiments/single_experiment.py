@@ -853,6 +853,7 @@ def _get_error(err) -> Type[Exception]:
     ValueError: Could not recognise the error 'ThisIsNotAnError'
     """
     if err.lower() in ("trialpruned", "optuna.trialpruned", "trialpruned()", "optuna.trialpruned()"):
-        return optuna.TrialPruned
+        # I have no idea why mypy is complaining here...
+        return optuna.TrialPruned  # type: ignore[no-any-return]
 
     raise ValueError(f"Could not recognise the error '{err}'")
