@@ -353,12 +353,14 @@ class HPOExperiment(abc.ABC):
         expected_subjects: Set[Subject] = set()
 
         # Loop through all trials
-        trial_folders = (file_name for file_name in os.listdir(path) if file_name.startswith(cls._name))
+        trial_folders = (file_name for file_name in os.listdir(path)
+                         if file_name.startswith(cls._name) and os.path.isdir(file_name))
         for trial_folder in trial_folders:
             trial_path = path / trial_folder
 
             # Loop through all folds within the trial
-            fold_folders = (name for name in os.listdir(trial_path) if name.lower().startswith("fold_"))
+            fold_folders = (name for name in os.listdir(trial_path)
+                            if name.lower().startswith("fold_") and os.path.isdir(name))
             for fold_folder in fold_folders:
                 fold_path = path / fold_folder
 
@@ -398,12 +400,14 @@ class HPOExperiment(abc.ABC):
         None
         """
         # Loop through all trials
-        trial_folders = (file_name for file_name in os.listdir(path) if file_name.startswith(cls._name))
+        trial_folders = (file_name for file_name in os.listdir(path)
+                         if file_name.startswith(cls._name) and os.path.isdir(file_name))
         for trial_folder in trial_folders:
             trial_path = path / trial_folder
 
             # Loop through all folds within the trial
-            fold_folders = (name for name in os.listdir(trial_path) if name.lower().startswith("fold_"))
+            fold_folders = (name for name in os.listdir(trial_path)
+                            if name.lower().startswith("fold_") and os.path.isdir(name))
             for fold_folder in fold_folders:
                 fold_path = path / fold_folder
 
