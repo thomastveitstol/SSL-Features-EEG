@@ -372,7 +372,7 @@ class Histories:
         )
 
         for metric, hist in self._history.items():
-            hist.append(self._compute_metric(metric=metric, y_pred=y_pred_per_subject, y_true=y_true_per_subject))
+            hist.append(self.compute_metric(metric=metric, y_pred=y_pred_per_subject, y_true=y_true_per_subject))
 
         # -------------
         # (Maybe) update all metrics of all subgroups
@@ -431,8 +431,8 @@ class Histories:
                     # Loop through and calculate the metrics
                     for metric_name, metric_values in sub_group_metrics.items():
                         # Compute metrics for the subgroup and store it
-                        metric_values.append(self._compute_metric(metric=metric_name, y_pred=sub_group_y_pred,
-                                                                  y_true=sub_group_y_true))
+                        metric_values.append(self.compute_metric(metric=metric_name, y_pred=sub_group_y_pred,
+                                                                 y_true=sub_group_y_true))
 
         # -------------
         # Build the dicts and lists for the different features to correlate with the delta
@@ -464,7 +464,7 @@ class Histories:
                                 self._variables_history[var_name][dataset_name][metric][group].append(value)
 
                         else:
-                            metric_value = self._compute_metric(
+                            metric_value = self.compute_metric(
                                 metric=metric, y_pred=_tensor[:, 0], y_true=_tensor[:, 1]
                             )
 
@@ -492,7 +492,7 @@ class Histories:
                                 self._variables_history_ratios[var_name][dataset_name][metric][group].append(value)
 
                         else:
-                            metric_value = self._compute_metric(
+                            metric_value = self.compute_metric(
                                 metric=metric, y_pred=_tensor[:, 0], y_true=_tensor[:, 1]
                             )
 
@@ -621,17 +621,35 @@ class Histories:
         return getattr(cls, metric)(y_pred=y_pred, y_true=y_true)
 
     @classmethod
-    def compute_metric(cls, metric: str, *, y_pred, y_true):
-        # Ensure torch tensors
-        y_hat = torch.tensor(y_pred)
-        y = torch.tensor(y_true)
+    def compute_metric(cls, metric, *, y_pred, y_true):
+        """
+        Computes a specified evaluation metric.
 
-        # Sometimes, NaN values in the prediction can occur due to numerical instabilities, see
-        # https://stackoverflow.com/questions/33962226/common-causes-of-nans-during-training-of-neural-networks. In that
-        # case, we raise a custom error
-        if y_hat.isnan().any():
-            raise NaNPredictionError
-        return cls._compute_metric(metric=metric, y_pred=y_hat, y_true=y)
+        Notes
+        -----
+        - NaN values in the prediction MAY occur due to numerical instabilities when training DL models, see
+          https://stackoverflow.com/questions/33962226/common-causes-of-nans-during-training-of-neural-networks. If NaNs
+          are detected, some scores raise an error, others return nan.
+        - Since y_pred.isnan().any() did not always work, did not consistently detect NaN values, a `ValueError` is
+          caught instead. This (unfortunately) means that NaN values in `y_pred` or `y_true` will trigger the same
+          custom error, if a ValueError was originally raised in the sklearn implementation
+
+        Parameters
+        ----------
+        metric : str
+        y_pred : torch.Tensor
+        y_true : torch.Tensor
+
+        Returns
+        -------
+        float
+        """
+        try:
+            return cls._compute_metric(metric=metric, y_pred=y_pred, y_true=y_true)
+        except ValueError as e:
+            if "Input contains NaN" in str(e):
+                raise NaNValueError
+            raise e
 
     @classmethod
     def _compute_groups_metric(cls, metric: str, *, variable: torch.Tensor, groups: torch.Tensor):
@@ -1255,7 +1273,7 @@ class PlotNotSavedWarning(UserWarning):
     ...
 
 
-class NaNPredictionError(Exception):
+class NaNValueError(Exception):
     """Should be raised when the predictions of a model contain NaN values."""
 
 

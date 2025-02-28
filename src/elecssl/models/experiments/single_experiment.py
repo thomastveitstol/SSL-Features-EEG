@@ -19,7 +19,7 @@ from elecssl.models.main_models.main_base_class import MainModuleBase
 from elecssl.models.main_models.main_fixed_channels_model import MainFixedChannelsModel
 from elecssl.models.main_models.main_rbp_model import MainRBPModel
 from elecssl.models.metrics import Histories, save_discriminator_histories_plots, save_histories_plots, \
-    save_test_histories_plots, NaNPredictionError
+    save_test_histories_plots, NaNValueError
 from elecssl.models.utils import tensor_dict_to_device
 
 
@@ -593,7 +593,7 @@ class SingleExperiment:
                 sub_groups_verbose=self.sub_groups_config["verbose"],
                 verbose_variables=self.train_config["verbose_variables"], variable_metrics=self.variables_metrics
             )
-        except NaNPredictionError as e:
+        except NaNValueError as e:
             if self._experiments_config.get("raise_upon_nan_predictions") is None:
                 raise e
             else:
