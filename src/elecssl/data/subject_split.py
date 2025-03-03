@@ -30,12 +30,40 @@ class Subject:
 
     >>> Subject("P1", "D1")["dataset_name"]
     'D1'
+
+    The '<' follows that of strings, first checking 'dataset_name' attribute, followed by 'subject_id'
+
+    >>> Subject("a", "dataset") < Subject("b", "dataset")
+    True
+    >>> Subject("a", "dataset") < Subject("a", "dataset")
+    False
+    >>> Subject("sub-001", "dataset") < Subject("sub-002", "dataset")
+    True
+    >>> Subject("sub-001", "adataset") < Subject("sub-001", "bdataset")
+    True
+    >>> Subject("sub-001", "bdataset") < Subject("sub-001", "adataset")
+    False
+    >>> sorted((Subject("b", "x"), Subject("a", "x"), Subject("a", "x"), Subject("a", "w"), Subject("a", "w"),
+    ...         Subject("c", "y"), Subject("y", "a"), Subject("x", "b"), Subject("w", "a"), Subject("b", "x")))
+    ... # doctest: +NORMALIZE_WHITESPACE
+    [Subject(subject_id='w', dataset_name='a'), Subject(subject_id='y', dataset_name='a'),
+     Subject(subject_id='x', dataset_name='b'), Subject(subject_id='a', dataset_name='w'),
+     Subject(subject_id='a', dataset_name='w'), Subject(subject_id='a', dataset_name='x'),
+     Subject(subject_id='a', dataset_name='x'), Subject(subject_id='b', dataset_name='x'),
+     Subject(subject_id='b', dataset_name='x'), Subject(subject_id='c', dataset_name='y')]
     """
     subject_id: str
     dataset_name: str
 
     def __getitem__(self, item):
         return getattr(self, item)
+
+    def __lt__(self, other):
+        if not isinstance(other, Subject):
+            raise TypeError(f"The operand '<' is not implemented with rhs of type {type(other)}")
+
+        # First, it is based on the dataset, second on the subject ID
+        return (self.dataset_name, self.subject_id) < (other.dataset_name, other.subject_id)
 
 
 # -----------------
