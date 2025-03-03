@@ -58,9 +58,9 @@ class SingleExperiment:
         # Save config files
         prefix_name = "" if experiment_name is None else f"{experiment_name}_"
         with open(results_path / f"{prefix_name}hpc_config.yml", "w") as file:
-            yaml.safe_dump(hp_config, file)
+            yaml.safe_dump(hp_config, file, sort_keys=False)
         with open(results_path / f"{prefix_name}experiments_config.yml", "w") as file:
-            yaml.safe_dump(experiments_config, file)
+            yaml.safe_dump(experiments_config, file, sort_keys=False)
 
         # Store attributes
         self._hp_config = hp_config
