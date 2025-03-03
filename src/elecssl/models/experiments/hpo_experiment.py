@@ -423,7 +423,7 @@ class HPOExperiment(abc.ABC):  # todo: must verify that the test set is the same
             fold_folders = (name for name in os.listdir(trial_path)
                             if name.lower().startswith("fold_") and os.path.isdir(trial_path / name))
             for fold_folder in fold_folders:
-                fold_path = path / fold_folder
+                fold_path = trial_path / fold_folder
 
                 # Load the subjects from the test predictions, but also accept that some trials may have been pruned
                 try:
