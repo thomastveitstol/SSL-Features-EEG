@@ -1149,8 +1149,8 @@ class ElecsslHPO(HPOExperiment):
                         if not subjects.isdisjoint(test_subjects):
                             overlap = subjects & test_subjects
                             raise NonExclusiveTestSetError(
-                                f"Test subjects were found in the optimisation set {predictions} for trial {trial_folder}, "
-                                f"fold {fold_folder}. These subjects are (N={len(overlap)})): {overlap}"
+                                f"Test subjects were found in the optimisation set {predictions} for trial "
+                                f"{trial_folder}, fold {fold_folder}. These subjects are (N={len(overlap)})): {overlap}"
                             )
 
     # --------------
