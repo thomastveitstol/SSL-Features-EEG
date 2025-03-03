@@ -30,7 +30,7 @@ from elecssl.models.utils import add_yaml_constructors, verify_type, merge_dicts
     verified_performance_score, merge_dicts_strict
 
 
-class HPOExperiment(abc.ABC):
+class HPOExperiment(abc.ABC):  # todo: must verify that the test set is the same across HPO runs
     """
     Base class for running hyperparameter optimisation
     """
@@ -762,11 +762,13 @@ class PretrainHPO(HPOExperiment):
             # For the pretext task
             incomplete_pretext_experiments_config = self._pretext_experiments_config.copy()
 
-            # Add the selected datasets to pretext task
+            # Add the selected datasets to pretext task (including subgroups for performance tracking)
             assert "Datasets" not in incomplete_pretext_experiments_config
             incomplete_pretext_experiments_config["Datasets"] = dict()
             for dataset_name, dataset_info in datasets_to_use.items():
                 incomplete_pretext_experiments_config["Datasets"][dataset_name] = dataset_info
+            incomplete_pretext_experiments_config["SubGroups"]["sub_groups"]["dataset_name"] = tuple(
+                dataset_name for dataset_name in datasets_to_use)
 
             pretext_experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
                 experiments_config=incomplete_pretext_experiments_config, in_freq_band=in_freq_band,
