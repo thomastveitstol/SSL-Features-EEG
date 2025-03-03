@@ -37,6 +37,9 @@ class HPOExperiment(abc.ABC):
 
     __slots__ = ("_experiments_config", "_sampling_config", "_results_path")
     _name: str
+    _test_predictions_file_name: str  # The name of the csv file which contains the test predictions
+    _optimisation_predictions_file_name: Tuple[str, ...]  # In these csv files, test subjects should NOT be present
+    # (will be used for checking test set integrity)
 
     # -------------
     # Dunder methods for context manager (using the 'with' statement). See this video from mCoding for more information
@@ -411,21 +414,22 @@ class HPOExperiment(abc.ABC):
         expected_subjects: Set[Subject] = set()
 
         # Loop through all trials
-        trial_folders = (file_name for file_name in os.listdir(path)
-                         if file_name.startswith(cls._name) and os.path.isdir(file_name))
-        for trial_folder in trial_folders:
+        trial_folders = tuple(file_name for file_name in os.listdir(path)
+                              if file_name.startswith("hpo_") and os.path.isdir(path / file_name))
+        for trial_folder in progressbar(trial_folders, redirect_stdout=True, prefix="Trial test set "):
             trial_path = path / trial_folder
 
             # Loop through all folds within the trial
             fold_folders = (name for name in os.listdir(trial_path)
-                            if name.lower().startswith("fold_") and os.path.isdir(name))
+                            if name.lower().startswith("fold_") and os.path.isdir(trial_path / name))
             for fold_folder in fold_folders:
                 fold_path = path / fold_folder
 
                 # Load the subjects from the test predictions, but also accept that some trials may have been pruned
                 try:
-                    test_history_subjects = pandas.read_csv(fold_path / "test_history_predictions.csv",
-                                                            usecols=("dataset", "sub_id"))
+                    test_history_subjects = pandas.read_csv(
+                        (fold_path / cls._test_predictions_file_name).with_suffix(".csv"),
+                        usecols=("dataset", "sub_id"))
                 except FileNotFoundError:
                     continue
 
@@ -458,48 +462,39 @@ class HPOExperiment(abc.ABC):
         None
         """
         # Loop through all trials
-        trial_folders = (file_name for file_name in os.listdir(path)
-                         if file_name.startswith(cls._name) and os.path.isdir(file_name))
-        for trial_folder in trial_folders:
+        trial_folders = tuple(file_name for file_name in os.listdir(path)
+                              if file_name.startswith("hpo_") and os.path.isdir(path / file_name))
+        for trial_folder in progressbar(trial_folders, redirect_stdout=True, prefix="Trial non-test set "):
             trial_path = path / trial_folder
 
             # Loop through all folds within the trial
-            fold_folders = (name for name in os.listdir(trial_path)
-                            if name.lower().startswith("fold_") and os.path.isdir(name))
+            fold_folders = tuple(name for name in os.listdir(trial_path)
+                                 if name.lower().startswith("fold_") and os.path.isdir(trial_path / name))
             for fold_folder in fold_folders:
-                fold_path = path / fold_folder
+                fold_path = trial_path / fold_folder
 
-                # Load the subjects from the train and validation predictions, but also accept that some trials may have
-                # been pruned
-                try:
-                    train_subjects_df = pandas.read_csv(fold_path / "train_history_predictions.csv",
-                                                        usecols=("dataset", "sub_id"))
-                    val_subjects_df = pandas.read_csv(fold_path / "val_history_predictions.csv",
+                # Load the subjects from the predictions that were used for optimisation (typically train and
+                # validation), but also accept that some trials may have been pruned
+                for predictions in cls._optimisation_predictions_file_name:
+                    try:
+                        subjects_df = pandas.read_csv((fold_path / predictions).with_suffix(".csv"),
                                                       usecols=("dataset", "sub_id"))
-                except FileNotFoundError:
-                    continue
+                    except FileNotFoundError:
+                        print(f"OMG: {trial_folder}")
+                        continue
 
-                # Convert to set of 'Subject'
-                train_subjects = set(
-                    Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
-                    for row in train_subjects_df.itertuples(index=False))
-                val_subjects = set(
-                    Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
-                    for row in val_subjects_df.itertuples(index=False))
+                    # Convert to set of 'Subject'
+                    subjects = set(
+                        Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                        for row in subjects_df.itertuples(index=False))
 
-                # Check if there is overlap
-                if not train_subjects.isdisjoint(test_subjects):
-                    overlap = train_subjects & test_subjects
-                    raise NonExclusiveTestSetError(
-                        f"Test subjects were found in the train set for trial {trial_folder}, fold {fold_folder}. "
-                        f"These subjects are (N={len(overlap)})): {overlap}"
-                    )
-                if not val_subjects.isdisjoint(test_subjects):
-                    overlap = val_subjects & test_subjects
-                    raise NonExclusiveTestSetError(
-                        f"Test subjects were found in the validation set for trial {trial_folder}, fold {fold_folder}. "
-                        f"These subjects are (N={len(overlap)})): {overlap}"
-                    )
+                    # Check if there is overlap
+                    if not subjects.isdisjoint(test_subjects):
+                        overlap = subjects & test_subjects
+                        raise NonExclusiveTestSetError(
+                            f"Test subjects were found in the optimisation set {predictions} for trial {trial_folder}, "
+                            f"fold {fold_folder}. These subjects are (N={len(overlap)})): {overlap}"
+                        )
 
     # --------------
     # Methods for HP analysis
@@ -624,6 +619,8 @@ class PredictionModelsHPO(HPOExperiment):
 
     __slots__ = ()
     _name = "prediction_models"
+    _test_predictions_file_name = "test_history_predictions"
+    _optimisation_predictions_file_name = ("train_history_predictions", "val_history_predictions")
 
     def _create_objective(self):
         def _objective(trial: optuna.Trial):
@@ -688,6 +685,9 @@ class PretrainHPO(HPOExperiment):
     __slots__ = ("_pretext_experiments_config", "_pretext_sampling_config", "_downstream_experiments_config",
                  "_downstream_sampling_config")
     _name = "pretraining"
+    _test_predictions_file_name = "test_history_predictions"
+    _optimisation_predictions_file_name = ("train_history_predictions", "val_history_predictions",
+                                           "pretext_train_history_predictions", "pretext_val_history_predictions")
 
     def __init__(self, hp_config_paths: Tuple[Path, ...], experiments_config_paths: Tuple[Path, ...],
                  downstream_hp_config_paths: Tuple[Path, ...], downstream_experiments_config_paths: Tuple[Path, ...],
@@ -885,6 +885,8 @@ class ElecsslHPO(HPOExperiment):
 
     __slots__ = ()
     _name = "elecssl"
+    _test_predictions_file_name = "test_predictions"
+    _optimisation_predictions_file_name = ("pretext_train_history_predictions", "pretext_val_history_predictions")
 
     def suggest_hyperparameters(self, trial, name, in_freq_band, preprocessing_config_path):
         suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
@@ -974,7 +976,7 @@ class ElecsslHPO(HPOExperiment):
             # ---------------
             # Create the subject splitting
             non_test_subjects, test_subjects = simple_random_split(
-                subjects=biomarkers.keys(), split_percent=self._experiments_config["TestSplit"]["split_percentage"],
+                subjects=sorted(biomarkers.keys()), split_percent=self._experiments_config["TestSplit"]["split_percentage"],
                 seed=self._experiments_config["TestSplit"]["seed"], require_seeding=True
             )
 
@@ -1080,20 +1082,20 @@ class ElecsslHPO(HPOExperiment):
     # Methods for checking if results were as expected
     # --------------
     @classmethod
-    def verify_test_set_integrity(cls, path):
-        """This class (1) stores test predictions differently and (2) does not currently save train and validation
-        predictions for the ML model. Hence, only checking for test set consistency"""
+    def _verify_test_set_consistency(cls, path):
+        """This class stores test predictions differently, so need to override it"""
         expected_subjects: Set[Subject] = set()
 
         # Loop through all trials
-        trial_folders = (file_name for file_name in os.listdir(path)
-                         if file_name.startswith("hpo_") and os.path.isdir(file_name))
-        for trial_folder in trial_folders:
+        trial_folders = tuple(file_name for file_name in os.listdir(path)
+                              if file_name.startswith("hpo_") and os.path.isdir(path / file_name))
+        for trial_folder in progressbar(trial_folders, redirect_stdout=True, prefix="Trial test set "):
             trial_path = path / trial_folder
 
             # Load the subjects from the test predictions, but also accept that some trials may have been pruned
             try:
-                test_subjects_df = pandas.read_csv(trial_path / "test_predictions.csv", usecols=("dataset", "sub_id"))
+                test_subjects_df = pandas.read_csv((trial_path / cls._test_predictions_file_name).with_suffix(".csv"),
+                                                   usecols=("dataset", "sub_id"))
             except FileNotFoundError:
                 continue
 
@@ -1107,6 +1109,48 @@ class ElecsslHPO(HPOExperiment):
                     raise InconsistentTestSetError
             else:
                 expected_subjects = subjects
+
+    @classmethod
+    def _verify_test_set_exclusivity(cls, path, test_subjects):
+        """As this class does not store the model train and validation predictions, we will rather check the pretext
+        tasks."""
+        # Loop through all trials
+        trial_folders = tuple(file_name for file_name in os.listdir(path)
+                              if file_name.startswith("hpo_") and os.path.isdir(path / file_name))
+        for trial_folder in progressbar(trial_folders, redirect_stdout=True, prefix="Trial non-test set "):
+            trial_path = path / trial_folder
+
+            # Loop through all pretext tasks within the trial
+            pretext_folders = (name for name in os.listdir(trial_path)
+                               if name.startswith("hpo_") and os.path.isdir(trial_path / name))
+            for pretext_folder in pretext_folders:
+                pretext_path = trial_path / pretext_folder
+
+                # Loop through all folds (should be one, but better to just live with this code now)
+                fold_folders = (name for name in os.listdir(trial_path)
+                                if name.lower().startswith("fold_") and os.path.isdir(pretext_path / name))
+                for fold_folder in fold_folders:
+                    fold_path = pretext_path / fold_folder
+                    # Load the subjects from the predictions that were used for optimisation
+                    for predictions in cls._optimisation_predictions_file_name:
+                        try:
+                            subjects_df = pandas.read_csv((fold_path / predictions).with_suffix(".csv"),
+                                                          usecols=("dataset", "sub_id"))
+                        except FileNotFoundError:
+                            continue
+
+                        # Convert to set of 'Subject'
+                        subjects = set(
+                            Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                            for row in subjects_df.itertuples(index=False))
+
+                        # Check if there is overlap
+                        if not subjects.isdisjoint(test_subjects):
+                            overlap = subjects & test_subjects
+                            raise NonExclusiveTestSetError(
+                                f"Test subjects were found in the optimisation set {predictions} for trial {trial_folder}, "
+                                f"fold {fold_folder}. These subjects are (N={len(overlap)})): {overlap}"
+                            )
 
     # --------------
     # Properties
@@ -1205,6 +1249,7 @@ def _get_best_val_epoch(path, experiment_name, *, pretext_main_metric):
 
 def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var, num_eeg_epochs, pretext_main_metric,
                             experiment_name):
+    # todo: make test
     # ----------------
     # Select epoch
     # ----------------
@@ -1230,13 +1275,13 @@ def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var
     i1 = i0 + num_eeg_epochs
     predictions = test_predictions.iloc[:, i0:i1].mean(axis=1)
 
-    # Get targets
+    # Get pseudo-targets
     ground_truth = get_dataset(dataset_name).load_targets(target=target, subject_ids=subject_ids)
 
-    # Get the variable
+    # Get the clinical variable
     var = get_dataset(dataset_name).load_targets(target=variable, subject_ids=subject_ids)
 
-    # Remove nan values
+    # Remove nan values  todo: should not be necessary...
     mask = ~numpy.isnan(var).copy()
 
     ground_truth = ground_truth[mask]  # type: ignore
