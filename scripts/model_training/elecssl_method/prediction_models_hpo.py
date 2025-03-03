@@ -30,7 +30,7 @@ def main():
     prediction_models_experiment = PredictionModelsHPO(
         hp_config_paths=(shared_hpd_path, prediction_models_hpd_path),
         experiments_config_paths=(shared_static_path, prediction_models_static_path),
-        results_dir=results_dir
+        results_dir=results_dir, is_continuation=False
     )
     with prediction_models_experiment as experiment:
         experiment.run_hyperparameter_optimisation()

@@ -33,7 +33,7 @@ def main():
     pretrain_experiment = PretrainHPO(
         hp_config_paths=(shared_hpd_path,),
         experiments_config_paths=(shared_static_path, pretraining_shared_static_path),
-        results_dir=results_dir,
+        results_dir=results_dir, is_continuation=False,
         pretext_hp_config_paths=(shared_hpd_path, pretraining_pretext_hpd_path,),
         pretext_experiments_config_paths=(shared_static_path, pretraining_shared_static_path,
                                           pretraining_pretext_static_path,),

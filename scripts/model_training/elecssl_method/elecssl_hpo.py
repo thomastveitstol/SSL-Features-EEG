@@ -30,7 +30,7 @@ def main():
     elecssl_experiment = ElecsslHPO(
         hp_config_paths=(shared_hpd_path, elecssl_hpd_path),
         experiments_config_paths=(shared_static_path, elecssl_static_path),
-        results_dir=results_dir
+        results_dir=results_dir, is_continuation=False
     )
     with elecssl_experiment as experiment:
         experiment.run_hyperparameter_optimisation()
