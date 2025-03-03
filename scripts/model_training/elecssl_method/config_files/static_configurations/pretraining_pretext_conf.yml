@@ -8,10 +8,10 @@ Training:  # log transforming the power values
 # Configuration for subject splitting
 # -----------------
 SubjectSplit:
-  name: RandomSplitsTVTestHoldout
+  name: KeepDatasetOutRandomSplits
   kwargs:
-    val_split: 0.2
-    test_split: 0.3
+    left_out_dataset: LEMON
+    val_split: 0.3
     num_random_splits: 1
     seed: 42
 val_scores_aggregation: median  # To use median or average of folds
