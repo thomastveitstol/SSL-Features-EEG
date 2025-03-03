@@ -6,7 +6,7 @@ import warnings
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal, Set, Union
+from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal, Set, Union, Optional
 
 import numpy
 import optuna
@@ -50,21 +50,50 @@ class HPOExperiment(abc.ABC):
         system, which can happen if too much data is loaded into memory"""
         # If everything was as it should, create an open file that indicates no errors
         if exc_val is None:
-            with open(self._results_path / "finished_successfully.txt", "w"):
+            with open(self._results_path / f"finished_successfully_{date.today()}_"
+                                           f"{datetime.now().strftime('%H%M%S')}.txt", "w"):
                 pass
             return
 
         # Otherwise, document the error received in a text file
-        with open((self._results_path / exc_type.__name__).with_suffix(".txt"), "w") as file:
+        file_name = (self._results_path / f"{exc_type.__name__}_{date.today()}_"
+                                          f"{datetime.now().strftime('%H%M%S')}").with_suffix(".txt")
+        with open(file_name, "w") as file:
             file.write("Traceback (most recent call last):\n")
             traceback.print_tb(exc_tb, file=file)
             file.write(f"{exc_type.__name__}: {exc_val}")
 
-    def __init__(self, hp_config_paths: Tuple[Path, ...], experiments_config_paths: Tuple[Path, ...],
-                 results_dir: Path):
+    def __init__(self, hp_config_paths: Optional[Tuple[Path, ...]],
+                 experiments_config_paths: Optional[Tuple[Path, ...]], results_dir: Path, is_continuation: bool):
+        # ---------------
+        # If this is a continuation of a previous experiment, just load everything from it
+        # ---------------
+        if is_continuation:
+            # Make check
+            if not os.path.isdir(results_dir):
+                raise FileNotFoundError(f"The results path {results_dir} of the attempted continued study does not "
+                                        f"exist. This is likely due to (1) the path was incorrect, or (2) the HPO "
+                                        f"experiment should not have been initialised as a continuation")
+
+            # Load the configurations files
+            with open(results_dir / "experiments_config.yml") as file:
+                experiments_config = yaml.safe_load(file)
+            with open(results_dir / "hpd_config.yml") as file:
+                sampling_config = yaml.safe_load(file)
+            self._experiments_config: Dict[str, Any] = experiments_config
+            self._sampling_config: Dict[str, Any] = sampling_config
+            self._results_path = results_dir
+            return
+
         # ---------------
         # Load HP distributions files
         # ---------------
+        # Some quick checks
+        if hp_config_paths is None:
+            raise ValueError("Expected a HP distribution configuration file, but found 'None'")
+        if experiments_config_paths is None:
+            raise ValueError("Expected an experiments configuration file, but found 'None'")
+
         # Merge all HP distribution files. Typically (most likely always) a shared HPD yml file and a specific one
         hp_config = _merge_config_files_from_paths(hp_config_paths)
 
@@ -77,8 +106,8 @@ class HPOExperiment(abc.ABC):
         # ---------------
         # Set attributes
         # ---------------
-        self._experiments_config: Dict[str, Any] = experiments_config
-        self._sampling_config: Dict[str, Any] = hp_config
+        self._experiments_config = experiments_config
+        self._sampling_config = hp_config
         _debug_mode = "debug_" if verify_type(self._experiments_config["debugging"], bool) else ""
         self._results_path = results_dir / self._name / (f"{_debug_mode}{self._name}_hpo_experiment_{date.today()}_"
                                                          f"{datetime.now().strftime('%H%M%S')}")
@@ -88,21 +117,45 @@ class HPOExperiment(abc.ABC):
 
         # Save the config files
         with open(self._results_path / "experiments_config.yml", "w") as file:
-            yaml.safe_dump(experiments_config, file)
+            yaml.safe_dump(experiments_config, file, sort_keys=False)
         with open(self._results_path / "hpd_config.yml", "w") as file:
-            yaml.safe_dump(hp_config, file)
+            yaml.safe_dump(hp_config, file, sort_keys=False)
 
-    def _get_hpo_folder_path(self, trial: optuna.Trial):
-        return self._results_path / f"hpo_{trial.number}_{date.today()}_{datetime.now().strftime('%H%M%S')}"
+    @classmethod
+    def load_previous(cls, path):
+        """Method for loading a previous study"""
+        return cls(hp_config_paths=None, experiments_config_paths=None, results_dir=path, is_continuation=True)
+
+    # --------------
+    # Methods for running HPO
+    # --------------
+    def continue_hyperparameter_optimisation(self, path: Path, num_trials: Optional[int]):
+        """Method for continuing on an HPO study. May be used, e.g., if the initial run was killed."""
+        # Create sampler
+        sampler = get_optuna_sampler(self.hpo_study_config["HPOStudy"]["sampler"],
+                                     **self.hpo_study_config["HPOStudy"]["sampler_kwargs"])
+
+        # Load study
+        study_name, storage_path = self._get_study_name_and_storage_path(results_path=path)
+        study = optuna.load_study(study_name=study_name, storage=storage_path, sampler=sampler)
+
+        # Optimise
+        if num_trials is None:
+            num_trials = self.hpo_study_config["num_trials"] - len(study.trials)
+        with warnings.catch_warnings():
+            for warning in self._experiments_config["Warnings"]["ignore"]:
+                warnings.filterwarnings(action="ignore", category=_get_warning(warning))
+            study.optimize(self._create_objective(), n_trials=num_trials)
 
     def run_hyperparameter_optimisation(self):
         """Run HPO with optuna"""
-        # Create study
-        study_name = f"{self._name}-study"
-        storage_path = (self._results_path / study_name).with_suffix(".db")
+        # Create sampler
         sampler = get_optuna_sampler(self.hpo_study_config["HPOStudy"]["sampler"],
                                      **self.hpo_study_config["HPOStudy"]["sampler_kwargs"])
-        study = optuna.create_study(study_name=study_name, storage=f"sqlite:///{storage_path}", sampler=sampler,
+
+        # Create study  todo: raise error if it already exist
+        study_name, storage_path = self._get_study_name_and_storage_path(results_path=self._results_path)
+        study = optuna.create_study(study_name=study_name, storage=storage_path, sampler=sampler,
                                     direction=self.hpo_study_config["HPOStudy"]["direction"])
 
         # Optimise
@@ -116,6 +169,9 @@ class HPOExperiment(abc.ABC):
         """Method which returns the function to study.optimise. It needs to take a trial argument of type optuna.Trial
         and return a score"""
 
+    # --------------
+    # Methods for HPO sampling
+    # --------------
     def _suggest_common_hyperparameters(self, trial, name, in_freq_band, preprocessed_config_path):
         suggested_hps: Dict[str, Any] = {"Preprocessing": {}}
 
@@ -225,7 +281,7 @@ class HPOExperiment(abc.ABC):
 
         # todo: the 'debug_' prefix should be removed
         hpo_iterations = tuple(folder for folder in os.listdir(path) if os.path.isdir(path / folder)
-                               and (folder.startswith(cls._name) or folder.startswith(f"debug_{cls._name}")))
+                               and (folder.startswith("hpo_")))
         for hpo_iteration in progressbar(hpo_iterations, redirect_stdout=True, prefix="Trial "):
             trial_path = path / hpo_iteration
 
@@ -235,12 +291,15 @@ class HPOExperiment(abc.ABC):
 
             # Get the performance for each fold
             folds = (fold for fold in os.listdir(trial_path) if os.path.isdir(trial_path / fold)
-                     and fold.startswith("Fold_"))
+                     and fold.lower().startswith("fold_"))
             for fold in folds:
-                # Get fold scores
-                fold_val_scores, fold_test_scores = cls._get_performance_scores(
-                    trial_path / fold, selection_metric=selection_metric, target_metrics=target_metrics
-                )
+                # Get fold scores, but accept that some trials may have been pruned
+                try:
+                    fold_val_scores, fold_test_scores = cls._get_performance_scores(
+                        trial_path / fold, selection_metric=selection_metric, target_metrics=target_metrics
+                    )
+                except FileNotFoundError:
+                    continue  # todo: should I skip the fold or the entire trial?
 
                 # Add them to trial scores
                 for metric, val_score in fold_val_scores.items():
@@ -539,6 +598,18 @@ class HPOExperiment(abc.ABC):
         return configs
 
     # --------------
+    # Small convenient methods
+    # --------------
+    def _get_hpo_folder_path(self, trial: optuna.Trial):
+        return self._results_path / f"hpo_{trial.number}_{date.today()}_{datetime.now().strftime('%H%M%S')}"
+
+    @classmethod
+    def _get_study_name_and_storage_path(cls, results_path):
+        study_name = f"{cls._name}-study"
+        path = (results_path / study_name).with_suffix(".db")
+        return study_name, f"sqlite:///{path}"
+
+    # --------------
     # Properties
     # --------------
     @property
@@ -621,13 +692,14 @@ class PretrainHPO(HPOExperiment):
     def __init__(self, hp_config_paths: Tuple[Path, ...], experiments_config_paths: Tuple[Path, ...],
                  downstream_hp_config_paths: Tuple[Path, ...], downstream_experiments_config_paths: Tuple[Path, ...],
                  pretext_hp_config_paths: Tuple[Path, ...], pretext_experiments_config_paths: Tuple[Path, ...],
-                 results_dir: Path):
+                 results_dir: Path, is_continuation: bool):
         """The 'hp_config_paths' and 'experiments_config_paths' are shared configurations for the pretext and downstream
         task, such as if using no datasets for pre-training should lead to a pruning of the trial"""
         # ---------------
         # Initialise and create everything for the shared stuff
         # ---------------
-        super().__init__(hp_config_paths, experiments_config_paths, results_dir)
+        super().__init__(hp_config_paths=hp_config_paths, experiments_config_paths=experiments_config_paths,
+                         results_dir=results_dir, is_continuation=is_continuation)
 
         # ---------------
         # Create the pretext-specific configurations
@@ -643,15 +715,15 @@ class PretrainHPO(HPOExperiment):
         # ---------------
         # Downstream config files
         with open(self._results_path / "downstream_experiments_config.yml", "w") as file:
-            yaml.safe_dump(self._downstream_experiments_config, file)
+            yaml.safe_dump(self._downstream_experiments_config, file, sort_keys=False)
         with open(self._results_path / "downstream_hpd_config.yml", "w") as file:
-            yaml.safe_dump(self._downstream_sampling_config, file)
+            yaml.safe_dump(self._downstream_sampling_config, file, sort_keys=False)
 
         # Pretext config files
         with open(self._results_path / "pretext_experiments_config.yml", "w") as file:
-            yaml.safe_dump(self._pretext_experiments_config, file)
+            yaml.safe_dump(self._pretext_experiments_config, file, sort_keys=False)
         with open(self._results_path / "pretext_hpd_config.yml", "w") as file:
-            yaml.safe_dump(self._pretext_sampling_config, file)
+            yaml.safe_dump(self._pretext_sampling_config, file, sort_keys=False)
 
     def _create_objective(self):
         def _objective(trial: optuna.Trial):
