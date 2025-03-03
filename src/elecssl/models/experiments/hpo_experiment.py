@@ -976,7 +976,8 @@ class ElecsslHPO(HPOExperiment):
             # ---------------
             # Create the subject splitting
             non_test_subjects, test_subjects = simple_random_split(
-                subjects=sorted(biomarkers.keys()), split_percent=self._experiments_config["TestSplit"]["split_percentage"],
+                subjects=sorted(biomarkers.keys()),
+                split_percent=self._experiments_config["TestSplit"]["split_percentage"],
                 seed=self._experiments_config["TestSplit"]["seed"], require_seeding=True
             )
 
