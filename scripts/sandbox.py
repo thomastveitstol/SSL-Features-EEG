@@ -6,11 +6,11 @@ import pandas
 import seaborn
 import torch
 from matplotlib import pyplot
-from optuna.samplers import TPESampler
 
 from elecssl.data.paths import get_results_dir
 from elecssl.data.results_analysis.utils import load_hpo_study
-from elecssl.models.experiments.hpo_experiment import PredictionModelsHPO, PretrainHPO, ElecsslHPO
+from elecssl.models.experiments.hpo_experiment import PredictionModelsHPO, PretrainHPO, ElecsslHPO, HPOExperiment, \
+    HPORun
 from elecssl.models.mts_modules.green_model import GreenModel
 
 
@@ -63,11 +63,11 @@ def make_boxplots():
     # ---------------
     # Generate dataframe
     prediction_models_df = PredictionModelsHPO.generate_test_scores_df(
-        path=results_dir / "prediction_models" / "prediction_models_hpo_experiment_2025-02-07_064413",
+        path=results_dir / "prediction_models" / "prediction_models_hpo_experiment_2025-03-03_135413",
         selection_metric=selection_metric, target_metrics=target_metrics, method=method, include_experiment_name=True
     )
     pretraining_df = PretrainHPO.generate_test_scores_df(
-        path=results_dir / "pretraining" / "pretraining_hpo_experiment_2025-02-07_030752",
+        path=results_dir / "pretraining" / "pretraining_hpo_experiment_2025-03-03_135643",
         selection_metric=selection_metric, target_metrics=target_metrics, method=method, include_experiment_name=True
     )
     df = pandas.concat((prediction_models_df, pretraining_df), axis="rows")
@@ -81,11 +81,25 @@ def make_boxplots():
 
 
 def check_test_set_integrity():
-    path = get_results_dir() / "prediction_models" / "debug_prediction_models_hpo_experiment_2025-02-27_154700"
-    PredictionModelsHPO.verify_test_set_integrity(path=path)
+    results_dir = get_results_dir()
 
-    path = get_results_dir() / "elecssl" / "debug_elecssl_hpo_experiment_2025-02-28_151005"
-    ElecsslHPO.verify_test_set_integrity(path=path)
+    runs = (
+        HPORun(experiment=PredictionModelsHPO,
+               path=results_dir / "prediction_models" / "prediction_models_hpo_experiment_2025-03-04_171931"),
+        HPORun(experiment=ElecsslHPO,
+               path=results_dir / "elecssl" / "elecssl_hpo_experiment_2025-03-04_170224")
+    )
+
+    # Loop through all runs
+    for run in runs:
+        run.experiment.verify_test_set_integrity(path=run.path)
+        print(f"{run.experiment.__name__} test set integrity check complete!")
+
+    # Check if they are all the same
+    HPOExperiment.verify_equal_test_sets(hpo_runs=runs)
+    print("Similarity of test sets complete!")
+
+    print("\nTest set integrity check complete!")
 
 
 def make_hue_boxplots_single_study():
@@ -105,7 +119,7 @@ def make_hue_boxplots_single_study():
     # x, y = y, x
 
     # Other stuff
-    results_dir = get_results_dir() / "prediction_models" / "debug_prediction_models_hpo_experiment_2025-02-27_154700"
+    results_dir = get_results_dir() / "prediction_models" / "debug_prediction_models_hpo_experiment_2025-02-28_155939"
 
     # ---------------
     # Analysis
