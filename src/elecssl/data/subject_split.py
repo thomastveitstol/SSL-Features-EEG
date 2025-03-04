@@ -6,6 +6,8 @@ from typing import List, Tuple, Sequence, Dict
 
 import numpy
 
+from elecssl.models.utils import verify_type
+
 
 # -----------------
 # Convenient dataclasses
@@ -95,7 +97,7 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
     ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
     >>> my_num_splits = 4
-    >>> my_splits = RandomSplitsTVTestHoldout(f1_drivers, val_split=0.2, test_split=0.3,
+    >>> my_splits = RandomSplitsTVTestHoldout(f1_drivers, val_split=0.2, test_split=0.3, sort_first=False,
     ...                                       num_random_splits=my_num_splits, seed=42).splits
     >>> len(my_splits) == my_num_splits, type(my_splits)
     (True, <class 'tuple'>)
@@ -137,7 +139,7 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
     (Subject(subject_id='Russel', dataset_name='Mercedes'), Subject(subject_id='Wolff', dataset_name='Mercedes'))
     """
 
-    def __init__(self, dataset_subjects, *, val_split, test_split, num_random_splits, seed):
+    def __init__(self, dataset_subjects, *, val_split, test_split, num_random_splits, seed, sort_first):
         """
         Initialise
 
@@ -164,11 +166,15 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
                 [Subject(dataset_name=dataset_name, subject_id=subject_id) for subject_id in subject_ids]
             )
 
-        # Create splits
-        splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
+        # Maybe sort it first
+        if verify_type(sort_first, bool):
+            subjects.sort()
 
         # Randomly shuffle the subjects
         random.shuffle(subjects)
+
+        # Create splits
+        splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
 
         # Extract test set
         non_test_subjects, test_subjects = _split_randomly(subjects=subjects, split_percent=test_split)
@@ -205,7 +211,8 @@ class RandomSplitsTV(DataSplitBase):
     ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
     >>> my_num_splits = 4
-    >>> my_splits = RandomSplitsTV(f1_drivers, val_split=0.2, num_random_splits=my_num_splits, seed=42).splits
+    >>> my_splits = RandomSplitsTV(f1_drivers, val_split=0.2, num_random_splits=my_num_splits, seed=42,
+    ...                            sort_first=False).splits
     >>> len(my_splits) == my_num_splits, type(my_splits)
     (True, <class 'tuple'>)
     >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
@@ -232,7 +239,7 @@ class RandomSplitsTV(DataSplitBase):
     ()
     """
 
-    def __init__(self, dataset_subjects, *, val_split, num_random_splits, seed=None):
+    def __init__(self, dataset_subjects, *, val_split, num_random_splits, seed=None, sort_first):
         """
         Initialise
 
@@ -242,6 +249,7 @@ class RandomSplitsTV(DataSplitBase):
         val_split : float
         num_random_splits : int
         seed : int
+        sort_first : bool
         """
         # Maybe make data split reproducible
         if seed is not None:
@@ -256,6 +264,10 @@ class RandomSplitsTV(DataSplitBase):
             subjects.extend(
                 [Subject(dataset_name=dataset_name, subject_id=subject_id) for subject_id in subject_ids]
             )
+
+        # Maybe sort it
+        if verify_type(sort_first, bool):
+            subjects.sort()
 
         # Create splits
         splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
@@ -290,7 +302,8 @@ class KFoldDataSplit(DataSplitBase):
     ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
     >>> meaning_of_life = 42
-    >>> my_splits = KFoldDataSplit(num_folds=4, dataset_subjects=f1_drivers, val_split=0.2, seed=meaning_of_life).splits
+    >>> my_splits = KFoldDataSplit(num_folds=4, dataset_subjects=f1_drivers, val_split=0.2, seed=meaning_of_life,
+    ...                            sort_first=False).splits
     >>> len(my_splits), type(my_splits)
     (4, <class 'tuple'>)
     >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
@@ -315,7 +328,7 @@ class KFoldDataSplit(DataSplitBase):
 
     __slots__ = "_splits",
 
-    def __init__(self, *, num_folds, dataset_subjects, val_split, seed=None):
+    def __init__(self, *, num_folds, dataset_subjects, val_split, seed=None, sort_first):
         """
         Initialise
 
@@ -338,6 +351,10 @@ class KFoldDataSplit(DataSplitBase):
         # Maybe make data split reproducible
         if seed is not None:
             random.seed(seed)
+
+        # Maybe sort it to make order it invariant
+        if verify_type(sort_first, bool):
+            subjects.sort()
 
         # Shuffle
         random.shuffle(subjects)
@@ -374,7 +391,7 @@ class LODOCV(DataSplitBase):
     ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
     >>> meaning_of_life = 42
-    >>> my_splits = LODOCV(dataset_subjects=f1_drivers, seed=meaning_of_life, val_split=0.2).splits
+    >>> my_splits = LODOCV(dataset_subjects=f1_drivers, seed=meaning_of_life, val_split=0.2, sort_first=False).splits
     >>> len(my_splits), type(my_splits)
     (6, <class 'tuple'>)
     >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
@@ -408,7 +425,7 @@ class LODOCV(DataSplitBase):
 
     __slots__ = "_splits",
 
-    def __init__(self, dataset_subjects, *, val_split, seed=None):
+    def __init__(self, dataset_subjects, *, val_split, seed=None, sort_first):
         """
         Initialise
 
@@ -421,6 +438,7 @@ class LODOCV(DataSplitBase):
         val_split : float
             todo: setting val_split=0.2 does not force that all datasets have 20% in validation. This should be an
              option
+        sort_first : bool
         """
         # Maybe make data split reproducible
         if seed is not None:
@@ -432,6 +450,10 @@ class LODOCV(DataSplitBase):
             # Fix type
             sub_ids = [Subject(dataset_name=dataset_name, subject_id=subject_id) for subject_id in subject_ids]
 
+            # Maybe sort it to make order it invariant
+            if verify_type(sort_first, bool):
+                sub_ids.sort()
+
             # Shuffle
             random.shuffle(sub_ids)
 
@@ -439,6 +461,8 @@ class LODOCV(DataSplitBase):
             folds.append(tuple(sub_ids))
 
         # Shuffle the folds (likely not necessary, but why not)
+        if verify_type(sort_first, bool):
+            folds.sort()
         random.shuffle(folds)
 
         # Now that each element contains all subjects from a single dataset, create the folds
@@ -472,7 +496,7 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
     >>> my_num_splits = 5
     >>> my_splits = KeepDatasetOutRandomSplits(f1_drivers, left_out_dataset="McLaren", val_split=0.2,
-    ...                                        num_random_splits=my_num_splits, seed=42).splits
+    ...                                        num_random_splits=my_num_splits, seed=42, sort_first=False).splits
     >>> len(my_splits), type(my_splits)
     (5, <class 'tuple'>)
     >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
@@ -502,7 +526,7 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
 
     __slots__ = "_splits",
 
-    def __init__(self, dataset_subjects, *, left_out_dataset, val_split, num_random_splits, seed=None):
+    def __init__(self, dataset_subjects, *, left_out_dataset, val_split, num_random_splits, seed=None, sort_first):
         """
         Initialise
 
@@ -514,6 +538,7 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
         val_split : float
         num_random_splits : int
         seed : int, optional
+        sort_first : bool
         """
         # Maybe make data split reproducible
         if seed is not None:
@@ -522,6 +547,10 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
         # Just fix the test set
         test_subjects = tuple(Subject(dataset_name=left_out_dataset, subject_id=subject_id)
                               for subject_id in dataset_subjects[left_out_dataset])
+
+        # Maybe sort it first
+        if verify_type(sort_first, bool):
+            test_subjects = tuple(sorted(test_subjects))
 
         # ------------
         # Generate random splits for training/validation
@@ -537,6 +566,9 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
             non_test_subjects.extend(
                 [Subject(dataset_name=dataset_name, subject_id=subject_id) for subject_id in subject_ids]
             )
+
+        if verify_type(sort_first, bool):
+            non_test_subjects.sort()
 
         # Create splits
         splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
@@ -635,9 +667,12 @@ def subjects_tuple_to_dict(subjects):
     return {name: tuple(subject_ids) for name, subject_ids in dataset_dict.items()}
 
 
-def simple_random_split(subjects, split_percent, seed, require_seeding):
+def simple_random_split(subjects, split_percent, seed, require_seeding, sort_first):
     """
     Function for splitting subjects into two
+
+    TODO: it must be possible to follow the test separation from above classes. Can add the class attribute
+        'consistent_test_set' these classes
 
     Parameters
     ----------
@@ -647,6 +682,9 @@ def simple_random_split(subjects, split_percent, seed, require_seeding):
         A seed which is passed to initialise the random number generator of random
     require_seeding : bool
         A boolean which indicates if seeding should be required (True) or not (False). Ignored if a seed is given.
+    sort_first : bool
+        A boolean which indicates if the subjects should be sorted prior to the splitting. This ensures that the
+        splitting is invariant to the input order of the subjects
 
     Returns
     -------
@@ -658,7 +696,7 @@ def simple_random_split(subjects, split_percent, seed, require_seeding):
     ...                Subject("S2", "D2"), Subject("P1", "D3"), Subject("P2", "D3"), Subject("S3", "D3"),
     ...                Subject("S4", "D3"), Subject("S1", "D4"), Subject("S2", "D4"), Subject("P1", "D5"))
     >>> simple_random_split(subjects=my_subjects, split_percent=0.2, seed=42,
-    ...                     require_seeding=False)  # doctest: +NORMALIZE_WHITESPACE
+    ...                     require_seeding=False, sort_first=False)  # doctest: +NORMALIZE_WHITESPACE
     ((Subject(subject_id='S3', dataset_name='D3'), Subject(subject_id='P1', dataset_name='D3'),
       Subject(subject_id='S3', dataset_name='D1'), Subject(subject_id='S4', dataset_name='D3'),
       Subject(subject_id='S1', dataset_name='D4'), Subject(subject_id='P2', dataset_name='D3'),
@@ -666,7 +704,32 @@ def simple_random_split(subjects, split_percent, seed, require_seeding):
       Subject(subject_id='S2', dataset_name='D2')),
      (Subject(subject_id='S1', dataset_name='D1'), Subject(subject_id='S2', dataset_name='D1'),
       Subject(subject_id='S2', dataset_name='D4')))
+
+    If 'sort_first' is True, then the split is invariant to input order
+
+    >>> my_subjects_2 = list(my_subjects)
+    >>> random.seed(42)
+    >>> random.shuffle(my_subjects_2)
+    >>> my_split_1 = simple_random_split(subjects=my_subjects, split_percent=0.2, seed=42,
+    ...                                  require_seeding=False, sort_first=True)
+    >>> my_split_2 = simple_random_split(subjects=tuple(my_subjects_2), split_percent=0.2, seed=42,
+    ...                                  require_seeding=False, sort_first=True)
+    >>> my_split_1 == my_split_2
+    True
+
+    If 'sort_first' is False, then the split is NOT invariant to input order
+
+    >>> my_split_1 = simple_random_split(subjects=my_subjects, split_percent=0.2, seed=42,
+    ...                                  require_seeding=False, sort_first=False)
+    >>> my_split_2 = simple_random_split(subjects=tuple(my_subjects_2), split_percent=0.2, seed=42,
+    ...                                  require_seeding=False, sort_first=False)
+    >>> my_split_1 == my_split_2
+    False
     """
+    # Maybe sort it first
+    if verify_type(sort_first, bool):
+        subjects = tuple(sorted(subjects))
+
     # Maybe make the split reproducible
     if seed is None:
         if not isinstance(require_seeding, bool):
