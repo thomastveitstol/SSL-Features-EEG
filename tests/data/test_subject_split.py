@@ -3,7 +3,6 @@ import random
 import pytest
 
 from elecssl.data.subject_split import simple_random_split, RandomSplitsTVTestHoldout, Subject
-from tests.data.conftest import splits_and_kwargs
 
 
 # --------------
