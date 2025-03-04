@@ -20,7 +20,8 @@ class MLModel:
     >>> from elecssl.data.subject_split import RandomSplitsTV, Subject
     >>> my_subjects = {"D1": ("S1", "S2"), "D2": ("S1", "S2", "S3"), "D3": ("P1", "P2", "P3", "P4"), "D4": ("P1", "P2")}
     >>> my_num_splits = 4
-    >>> my_splits = RandomSplitsTV(my_subjects, val_split=0.2, num_random_splits=my_num_splits, seed=42).splits
+    >>> my_splits = RandomSplitsTV(my_subjects, val_split=0.2, num_random_splits=my_num_splits, seed=42,
+    ...                            sort_first=False).splits
     >>> idxs_ = [Subject(subject_id=s_id, dataset_name=d) for d, s in my_subjects.items() for s_id in s]  # type: ignore
     >>> cols_ = ['clinical_target'] + [f'var{i}' for i in range(1, 4)]  # type: ignore
     >>> numpy.random.seed(42)
