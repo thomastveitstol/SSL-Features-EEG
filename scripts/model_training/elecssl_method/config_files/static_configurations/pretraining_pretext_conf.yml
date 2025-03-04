@@ -14,6 +14,7 @@ SubjectSplit:
     val_split: 0.3
     num_random_splits: 1
     seed: 42
+    sort_first: true
 val_scores_aggregation: median  # To use median or average of folds
 SubGroups:
   sub_groups:

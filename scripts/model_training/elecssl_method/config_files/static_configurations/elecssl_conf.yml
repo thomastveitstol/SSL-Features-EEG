@@ -31,24 +31,26 @@ Datasets: &Datasets
 # -----------------
 # Configuration for subject splitting
 # -----------------
-SubjectSplit:
+SubjectSplit:  # In this config file, this is for the pretext task
   name: KeepDatasetOutRandomSplits
   kwargs:
     left_out_dataset: LEMON
     val_split: 0.3
     num_random_splits: 1
     seed: 42
+    sort_first: true
 SubGroups:
   sub_groups:
     dataset_name: !GetKeys { <<: *Datasets }
   verbose: false
 
-MLModelSubjectSplit:
+MLModelSubjectSplit:  # In this config file, this is for the downstream task AFTER separating a test set. Which is a bad implementation...
   name: RandomSplitsTV
   kwargs:
     val_split: 0.3
     num_random_splits: 50
     seed: 42
+    sort_first: true
 
 # -----------------
 # Training configurations
