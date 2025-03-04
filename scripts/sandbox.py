@@ -86,6 +86,8 @@ def check_test_set_integrity():
     runs = (
         HPORun(experiment=PredictionModelsHPO,
                path=results_dir / "prediction_models" / "prediction_models_hpo_experiment_2025-03-04_171931"),
+        HPORun(experiment=PretrainHPO,
+               path=results_dir / "pretraining" / "pretraining_hpo_experiment_2025-03-04_183045"),
         HPORun(experiment=ElecsslHPO,
                path=results_dir / "elecssl" / "elecssl_hpo_experiment_2025-03-04_170224")
     )
