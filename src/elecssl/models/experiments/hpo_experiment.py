@@ -6,7 +6,7 @@ import warnings
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal, Set, Union, Optional
+from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal, Set, Union, Optional, NamedTuple, Type
 
 import numpy
 import optuna
@@ -30,7 +30,18 @@ from elecssl.models.utils import add_yaml_constructors, verify_type, merge_dicts
     verified_performance_score, merge_dicts_strict
 
 
-class HPOExperiment(abc.ABC):  # todo: must verify that the test set is the same across HPO runs
+# --------------
+# Small convenient classes
+# --------------
+class HPORun(NamedTuple):
+    experiment: Type['HPOExperiment']
+    path: Path
+
+
+# --------------
+# HPO Experiments
+# --------------
+class HPOExperiment(abc.ABC):
     """
     Base class for running hyperparameter optimisation
     """
@@ -480,7 +491,6 @@ class HPOExperiment(abc.ABC):  # todo: must verify that the test set is the same
                         subjects_df = pandas.read_csv((fold_path / predictions).with_suffix(".csv"),
                                                       usecols=("dataset", "sub_id"))
                     except FileNotFoundError:
-                        print(f"OMG: {trial_folder}")
                         continue
 
                     # Convert to set of 'Subject'
@@ -495,6 +505,22 @@ class HPOExperiment(abc.ABC):  # todo: must verify that the test set is the same
                             f"Test subjects were found in the optimisation set {predictions} for trial {trial_folder}, "
                             f"fold {fold_folder}. These subjects are (N={len(overlap)})): {overlap}"
                         )
+
+    @classmethod
+    def get_test_subjects(cls, path):
+        """Get the test subjects, while also checking consistency"""
+        return cls._verify_test_set_consistency(path=path)
+
+    @staticmethod
+    def verify_equal_test_sets(hpo_runs: Tuple[HPORun, ...]):
+        # Get all test sets
+        test_sets: List[Set[Subject]] = []
+        for run in hpo_runs:
+            test_sets.append(run.experiment.get_test_subjects(path=run.path))
+
+        # Check if they are all equal
+        if not all(test_set == test_sets[0] for test_set in test_sets):
+            raise DissimilarTestSetsError
 
     # --------------
     # Methods for HP analysis
@@ -978,9 +1004,9 @@ class ElecsslHPO(HPOExperiment):
             # ---------------
             # Create the subject splitting
             non_test_subjects, test_subjects = simple_random_split(
-                subjects=sorted(biomarkers.keys()),
+                subjects=biomarkers.keys(),
                 split_percent=self._experiments_config["TestSplit"]["split_percentage"],
-                seed=self._experiments_config["TestSplit"]["seed"], require_seeding=True
+                seed=self._experiments_config["TestSplit"]["seed"], require_seeding=True, sort_first=True
             )
 
             split_kwargs = {"dataset_subjects": subjects_tuple_to_dict(non_test_subjects),
@@ -1177,6 +1203,10 @@ class InconsistentTestSetError(Exception):
 class NonExclusiveTestSetError(Exception):
     """This error should be raised if there are subject in the test set which are also in train/validation for any
     trial/fold"""
+
+
+class DissimilarTestSetsError(Exception):
+    """This error should be raised if the test set across different experiments are not the same"""
 
 
 # --------------
