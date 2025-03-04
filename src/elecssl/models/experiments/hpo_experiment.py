@@ -825,9 +825,10 @@ class PretrainHPO(HPOExperiment):
             results_dir = self._get_hpo_folder_path(trial)
 
             # Only pre-train if we have datasets to pre-train on. Trial pruning is handled elsewhere
-            if (pretext_experiments_config["Datasets"] and not _excluded_dataset_only(
+            do_pretraining = pretext_experiments_config["Datasets"] and not _excluded_dataset_only(
                     dataset_config=pretext_experiments_config["Datasets"],
-                    subject_split_config=pretext_experiments_config["SubjectSplit"])):
+                    subject_split_config=pretext_experiments_config["SubjectSplit"])
+            if do_pretraining:
                 with SingleExperiment(hp_config=pretext_hpcs, pre_processing_config=preprocessing_config_file,
                                       experiments_config=pretext_experiments_config, results_path=results_dir,
                                       fine_tuning=None, experiment_name="pretext") as experiment:
@@ -836,7 +837,7 @@ class PretrainHPO(HPOExperiment):
             # ---------------
             # Train on downstream task
             # ---------------
-            fine_tuning = "pretext" if pretext_experiments_config["Datasets"] else None
+            fine_tuning = "pretext" if do_pretraining else None
             with SingleExperiment(hp_config=downstream_hpcs, pre_processing_config=preprocessing_config_file,
                                   experiments_config=downstream_experiments_config, results_path=results_dir,
                                   fine_tuning=fine_tuning, experiment_name=None) as experiment:
