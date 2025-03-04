@@ -867,8 +867,8 @@ class PretrainHPO(HPOExperiment):
         # Pick the datasets to be used for pre-training
         datasets_to_use = dict()
         for dataset_name, dataset_info in self._pretext_sampling_config["Datasets"].items():
-            if ("left_out_dataset" in self._pretext_sampling_config["SubjectSplit"]["kwargs"]
-                    and self._pretext_sampling_config["SubjectSplit"]["kwargs"]["left_out_dataset"] == dataset_name):
+            if ("left_out_dataset" in self._pretext_experiments_config["SubjectSplit"]["kwargs"]
+                    and self._pretext_experiments_config["SubjectSplit"]["kwargs"]["left_out_dataset"] == dataset_name):
                 to_use = True
             else:
                 to_use = trial.suggest_categorical(name=f"{name}_{dataset_name}", choices={True, False})
