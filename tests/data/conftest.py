@@ -1,0 +1,29 @@
+import pytest
+
+from elecssl.data.subject_split import RandomSplitsTVTestHoldout, RandomSplitsTV, KFoldDataSplit, LODOCV, \
+    KeepDatasetOutRandomSplits
+
+
+@pytest.fixture
+def dummy_dataset_subjects():
+    """Get a dummy dict of subjects as they should be passed to the __init__ of the subject split classes"""
+    # This was copied from a doctest made when this was true ;)
+    f1_drivers = {"Mercedes": ("Hamilton", "Russel", "Wolff"), "Red Bull": ("Verstappen", "Checo"),
+                  "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
+                  "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
+    return f1_drivers
+
+
+@pytest.fixture
+def splits_and_kwargs(dummy_dataset_subjects):
+    return (
+        (RandomSplitsTVTestHoldout, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "test_split": 0.3,
+                                     "num_random_splits": 4, "seed": 42, "sort_first": True}),
+        (RandomSplitsTV, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "num_random_splits": 4,
+                          "seed": 42, "sort_first": True}),
+        (KFoldDataSplit, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "num_folds": 4,
+                          "seed": 42, "sort_first": True}),
+        (LODOCV, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "seed": 42, "sort_first": True}),
+        (KeepDatasetOutRandomSplits, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "seed": 42,
+                                      "num_random_splits": 7, "sort_first": True, "left_out_dataset": "Mercedes"})
+    )
