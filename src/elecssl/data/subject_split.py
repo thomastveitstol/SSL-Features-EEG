@@ -133,11 +133,13 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
     >>> my_val_subjects = tuple(my_split[1] for my_split in my_splits)  # type: ignore
     >>> for val_subjects in my_val_subjects:
     ...     val_subjects
-    (Subject(subject_id='Leclerc', dataset_name='Ferrari'), Subject(subject_id='Piastri', dataset_name='McLaren'))
-    (Subject(subject_id='Magnussen', dataset_name='Haas'), Subject(subject_id='Verstappen', dataset_name='Red Bull'))
-    (Subject(subject_id='Russel', dataset_name='Mercedes'), Subject(subject_id='Piastri', dataset_name='McLaren'))
-    (Subject(subject_id='Russel', dataset_name='Mercedes'), Subject(subject_id='Wolff', dataset_name='Mercedes'))
+    (Subject(subject_id='Piastri', dataset_name='McLaren'), Subject(subject_id='Norris', dataset_name='McLaren'))
+    (Subject(subject_id='Magnussen', dataset_name='Haas'), Subject(subject_id='Wolff', dataset_name='Mercedes'))
+    (Subject(subject_id='Smooth Sainz', dataset_name='Ferrari'), Subject(subject_id='Hülkenberg', dataset_name='Haas'))
+    (Subject(subject_id='Magnussen', dataset_name='Haas'), Subject(subject_id='Piastri', dataset_name='McLaren'))
     """
+
+    __slots__ = ("_splits",)
 
     def __init__(self, dataset_subjects, *, val_split, test_split, num_random_splits, seed, sort_first):
         """
@@ -170,13 +172,10 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
         if verify_type(sort_first, bool):
             subjects.sort()
 
-        # Randomly shuffle the subjects
-        random.shuffle(subjects)
-
         # Create splits
         splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
 
-        # Extract test set
+        # Extract test set (shuffling happens in '_split_randomly')
         non_test_subjects, test_subjects = _split_randomly(subjects=subjects, split_percent=test_split)
         for i in range(num_random_splits):
             non_test_subjects = non_test_subjects.copy()
@@ -238,6 +237,8 @@ class RandomSplitsTV(DataSplitBase):
     ()
     ()
     """
+
+    __slots__ = ("_splits",)
 
     def __init__(self, dataset_subjects, *, val_split, num_random_splits, seed=None, sort_first):
         """
@@ -596,6 +597,11 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
 # -----------------
 # Functions
 # -----------------
+def get_available_splits():
+    """All available data splits must be included here"""
+    return KFoldDataSplit, LODOCV, KeepDatasetOutRandomSplits, RandomSplitsTV, RandomSplitsTVTestHoldout
+
+
 def get_data_split(split, **kwargs):
     """
     Function for getting the specified data split
@@ -609,8 +615,7 @@ def get_data_split(split, **kwargs):
     -------
     DataSplitBase
     """
-    # All available data splits must be included here
-    available_splits = (KFoldDataSplit, LODOCV, KeepDatasetOutRandomSplits, RandomSplitsTV, RandomSplitsTVTestHoldout)
+    available_splits = get_available_splits()
 
     # Loop through and select the correct one
     for split_class in available_splits:
@@ -669,10 +674,8 @@ def subjects_tuple_to_dict(subjects):
 
 def simple_random_split(subjects, split_percent, seed, require_seeding, sort_first):
     """
-    Function for splitting subjects into two
-
-    TODO: it must be possible to follow the test separation from above classes. Can add the class attribute
-        'consistent_test_set' these classes
+    Function for splitting subjects into two. Given that 'sort_first' is True, it will reproduce the same test set as
+    the test set of 'RandomSplitsTVTestHoldout' (see test folder)
 
     Parameters
     ----------
