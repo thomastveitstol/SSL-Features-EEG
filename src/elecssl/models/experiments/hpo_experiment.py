@@ -825,7 +825,9 @@ class PretrainHPO(HPOExperiment):
             results_dir = self._get_hpo_folder_path(trial)
 
             # Only pre-train if we have datasets to pre-train on. Trial pruning is handled elsewhere
-            if pretext_experiments_config["Datasets"]:
+            if (pretext_experiments_config["Datasets"]  and not _excluded_dataset_only(
+                    dataset_config=pretext_experiments_config["Datasets"],
+                    subject_split_config=pretext_experiments_config["SubjectSplit"])):
                 with SingleExperiment(hp_config=pretext_hpcs, pre_processing_config=preprocessing_config_file,
                                       experiments_config=pretext_experiments_config, results_path=results_dir,
                                       fine_tuning=None, experiment_name="pretext") as experiment:
@@ -1218,6 +1220,48 @@ class DissimilarTestSetsError(Exception):
 # --------------
 # Functions
 # --------------
+def _excluded_dataset_only(*, dataset_config, subject_split_config):
+    """
+    Check if the only dataset in the dataset config is a hold-out dataset in the subject split config
+
+    Parameters
+    ----------
+    dataset_config : dict[str, Any]
+    subject_split_config : dict[str, Any]
+
+    Returns
+    -------
+    bool
+
+    Examples
+    --------
+    >>> _excluded_dataset_only(dataset_config={"L": {"num_subjects": 20}},
+    ...                        subject_split_config={"kwargs": {"left_out_dataset": "L"}})
+    True
+    >>> _excluded_dataset_only(dataset_config={"L": {"num_subjects": 20}},
+    ...                        subject_split_config={"kwargs": {"left_out_dataset": "B"}})
+    False
+    >>> _excluded_dataset_only(dataset_config={"L": {"num_subjects": 20}, "B": {"num_subjects": 30}},
+    ...                        subject_split_config={"kwargs": {"left_out_dataset": "L"}})
+    False
+    """
+    # todo: quite hard-coding tbh...
+    # Check if more than one datasets
+    datasets = tuple(dataset_config.keys())
+    if len(datasets) > 1:
+        return False
+
+    # Check if there even is a hold-out dataset
+    if "left_out_dataset" not in subject_split_config["kwargs"]:
+        return False
+
+    # Make check
+    assert len(datasets) == 1
+    dataset = datasets[0]
+
+    return dataset == subject_split_config["kwargs"]["left_out_dataset"]
+
+
 def _get_aggregated_val_score(*, trial_results_dir, aggregation_method, metric):
     """Get the validation score of a trial"""
     eval_method = max if higher_is_better(metric=metric) else min
