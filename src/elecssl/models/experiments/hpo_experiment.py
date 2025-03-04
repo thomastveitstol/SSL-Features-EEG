@@ -516,7 +516,11 @@ class HPOExperiment(abc.ABC):
         # Get all test sets
         test_sets: List[Set[Subject]] = []
         for run in hpo_runs:
-            test_sets.append(run.experiment.get_test_subjects(path=run.path))
+            test_set = run.experiment.get_test_subjects(path=run.path)
+            assert isinstance(test_set, set), f"Expected test set to be a set, but found {type(test_set)}"
+            assert all(isinstance(subject, Subject) for subject in test_set), \
+                f"Expected subjects om test set to be of type 'Subject', but found {set(type(s) for s in test_set)}"
+            test_sets.append(test_set)
 
         # Check if they are all equal
         if not all(test_set == test_sets[0] for test_set in test_sets):
@@ -1138,6 +1142,8 @@ class ElecsslHPO(HPOExperiment):
                     raise InconsistentTestSetError
             else:
                 expected_subjects = subjects
+
+        return expected_subjects
 
     @classmethod
     def _verify_test_set_exclusivity(cls, path, test_subjects):
