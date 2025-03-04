@@ -29,7 +29,7 @@ Discriminators:
 Training:
   learning_rate: !Float { low: 0.000001, high: 0.01, step: null, log: true }
   beta_1: !Float { low: 0.7, high: 1.0, step: null, log: false }
-  beta_2: !Float { low: 0.8, high: 1.0, step: null, log: false }
+  beta_2: !Float { low: 0.7, high: 1.0, step: null, log: false }
   eps: !Float { low: 0.0000000001, high: 0.000001, step: null, log: true }
 Loss:
   loss: { choices: [ MSELoss, L1Loss ] }
