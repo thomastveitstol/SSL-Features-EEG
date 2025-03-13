@@ -683,7 +683,6 @@ class PredictionModelsHPO(HPOExperiment):
             # Just a little bit of adding stuff where it needs
             # ---------------
             in_ocular_state = suggested_hyperparameters["ocular_state"]
-
             experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
                 experiments_config=self._experiments_config.copy(), in_freq_band=in_freq_band,
                 in_ocular_state=in_ocular_state, suggested_hyperparameters=suggested_hyperparameters
