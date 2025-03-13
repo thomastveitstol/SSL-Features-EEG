@@ -9,7 +9,7 @@ from matplotlib import pyplot
 
 from elecssl.data.paths import get_results_dir
 from elecssl.data.results_analysis.utils import load_hpo_study
-from elecssl.models.experiments.hpo_experiment import PredictionModelsHPO, PretrainHPO, ElecsslHPO, HPOExperiment, \
+from elecssl.models.experiments.hpo_experiment import PredictionModelsHPO, PretrainHPO, HPOExperiment, \
     HPORun
 from elecssl.models.mts_modules.green_model import GreenModel
 
@@ -63,11 +63,11 @@ def make_boxplots():
     # ---------------
     # Generate dataframe
     prediction_models_df = PredictionModelsHPO.generate_test_scores_df(
-        path=results_dir / "prediction_models" / "prediction_models_hpo_experiment_2025-03-03_135413",
+        path=results_dir / "prediction_models" / "prediction_models_hpo_experiment_2025-03-04_185301",
         selection_metric=selection_metric, target_metrics=target_metrics, method=method, include_experiment_name=True
     )
     pretraining_df = PretrainHPO.generate_test_scores_df(
-        path=results_dir / "pretraining" / "pretraining_hpo_experiment_2025-03-03_135643",
+        path=results_dir / "pretraining" / "pretraining_hpo_experiment_2025-03-06_202750",
         selection_metric=selection_metric, target_metrics=target_metrics, method=method, include_experiment_name=True
     )
     df = pandas.concat((prediction_models_df, pretraining_df), axis="rows")
@@ -85,11 +85,9 @@ def check_test_set_integrity():
 
     runs = (
         HPORun(experiment=PredictionModelsHPO,
-               path=results_dir / "prediction_models" / "prediction_models_hpo_experiment_2025-03-04_171931"),
+               path=results_dir / "prediction_models" / "prediction_models_hpo_experiment_2025-03-04_185301"),
         HPORun(experiment=PretrainHPO,
-               path=results_dir / "pretraining" / "pretraining_hpo_experiment_2025-03-04_183045"),
-        HPORun(experiment=ElecsslHPO,
-               path=results_dir / "elecssl" / "elecssl_hpo_experiment_2025-03-04_170224")
+               path=results_dir / "pretraining" / "pretraining_hpo_experiment_2025-03-06_202750")
     )
 
     # Loop through all runs
@@ -121,19 +119,20 @@ def make_hue_boxplots_single_study():
     # x, y = y, x
 
     # Other stuff
-    results_dir = get_results_dir() / "prediction_models" / "debug_prediction_models_hpo_experiment_2025-02-28_155939"
+    # results_dir = get_results_dir() / "prediction_models" / "prediction_models_hpo_experiment_2025-03-04_185301"
+    results_dir = get_results_dir() / "pretraining" / "pretraining_hpo_experiment_2025-03-06_202750"
 
     # ---------------
     # Analysis
     # ---------------
     # Generate dataframe
-    df = PredictionModelsHPO.generate_test_scores_df(
+    df = PretrainHPO.generate_test_scores_df(
         path=results_dir, selection_metric=selection_metric, target_metrics=target_metrics, method=method,
         include_experiment_name=False
     )
 
     # Add HPCs
-    df = PredictionModelsHPO.add_hp_configurations_to_dataframe(df, hps=(y, hue), results_dir=results_dir)
+    df = PretrainHPO.add_hp_configurations_to_dataframe(df, hps=(y, hue), results_dir=results_dir)
 
     # Plotting
     # seaborn.scatterplot(data=df, x=x, y=y)
@@ -182,7 +181,7 @@ def save_green():
 
 def main():
     check_test_set_integrity()
-    # make_hue_boxplots_single_study()
+    make_boxplots()
 
 
 if __name__ == "__main__":

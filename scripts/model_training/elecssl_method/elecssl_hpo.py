@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from elecssl.data.paths import get_results_dir
-from elecssl.models.experiments.hpo_experiment import ElecsslHPO
+from elecssl.models.experiments.hpo_experiment import MultivariableElecsslHPO
 
 
 def main():
@@ -27,7 +27,7 @@ def main():
     # Run experiment
     # ----------------
     # Elecssl
-    elecssl_experiment = ElecsslHPO(
+    elecssl_experiment = MultivariableElecsslHPO(
         hp_config_paths=(shared_hpd_path, elecssl_hpd_path),
         experiments_config_paths=(shared_static_path, elecssl_static_path),
         results_dir=results_dir, is_continuation=False

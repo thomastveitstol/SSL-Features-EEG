@@ -12,6 +12,7 @@ import numpy
 import optuna
 import pandas
 import yaml  # type: ignore[import-untyped]
+from optuna.trial import FrozenTrial
 from progressbar import progressbar
 from scipy.stats import NearConstantInputWarning, ConstantInputWarning
 
@@ -39,7 +40,7 @@ class HPORun(NamedTuple):
 
 
 # --------------
-# HPO Experiments
+# HPO baseclass
 # --------------
 class HPOExperiment(abc.ABC):
     """
@@ -123,8 +124,7 @@ class HPOExperiment(abc.ABC):
         self._experiments_config = experiments_config
         self._sampling_config = hp_config
         _debug_mode = "debug_" if verify_type(self._experiments_config["debugging"], bool) else ""
-        self._results_path = results_dir / self._name / (f"{_debug_mode}{self._name}_hpo_experiment_{date.today()}_"
-                                                         f"{datetime.now().strftime('%H%M%S')}")
+        self._results_path = results_dir / f"{_debug_mode}{self._name}"
 
         # Make directory
         os.mkdir(self._results_path)
@@ -143,15 +143,14 @@ class HPOExperiment(abc.ABC):
     # --------------
     # Methods for running HPO
     # --------------
-    def continue_hyperparameter_optimisation(self, path: Path, num_trials: Optional[int]):
+    def continue_hyperparameter_optimisation(self, num_trials: Optional[int]):
         """Method for continuing on an HPO study. May be used, e.g., if the initial run was killed."""
         # Create sampler
         sampler = get_optuna_sampler(self.hpo_study_config["HPOStudy"]["sampler"],
                                      **self.hpo_study_config["HPOStudy"]["sampler_kwargs"])
 
         # Load study
-        study_name, storage_path = self._get_study_name_and_storage_path(results_path=path)
-        study = optuna.load_study(study_name=study_name, storage=storage_path, sampler=sampler)
+        study = self.load_study(sampler=sampler)
 
         # Optimise
         if num_trials is None:
@@ -163,20 +162,30 @@ class HPOExperiment(abc.ABC):
 
     def run_hyperparameter_optimisation(self):
         """Run HPO with optuna"""
-        # Create sampler
-        sampler = get_optuna_sampler(self.hpo_study_config["HPOStudy"]["sampler"],
-                                     **self.hpo_study_config["HPOStudy"]["sampler_kwargs"])
-
-        # Create study  todo: raise error if it already exist
-        study_name, storage_path = self._get_study_name_and_storage_path(results_path=self._results_path)
-        study = optuna.create_study(study_name=study_name, storage=storage_path, sampler=sampler,
-                                    direction=self.hpo_study_config["HPOStudy"]["direction"])
+        # Create study
+        study = self._create_study()
 
         # Optimise
         with warnings.catch_warnings():
             for warning in self._experiments_config["Warnings"]["ignore"]:
                 warnings.filterwarnings(action="ignore", category=_get_warning(warning))
             study.optimize(self._create_objective(), n_trials=self.hpo_study_config["num_trials"])
+
+    def _create_study(self):
+        """Creates and returns the study object"""
+        # Create sampler
+        sampler = get_optuna_sampler(self.hpo_study_config["HPOStudy"]["sampler"],
+                                     **self.hpo_study_config["HPOStudy"]["sampler_kwargs"])
+
+        # Create study  todo: raise error if it already exist
+        study_name, storage_path = self._get_study_name_and_storage_path(results_path=self._results_path)
+        return optuna.create_study(study_name=study_name, storage=storage_path, sampler=sampler,
+                                   direction=self.hpo_study_config["HPOStudy"]["direction"])
+
+    def load_study(self, sampler):
+        """Returns the study object"""
+        study_name, storage_path = self._get_study_name_and_storage_path(results_path=self._results_path)
+        return optuna.load_study(study_name=study_name, storage=storage_path, sampler=sampler)
 
     @abc.abstractmethod
     def _create_objective(self) -> Callable[[optuna.Trial], float]:
@@ -625,8 +634,8 @@ class HPOExperiment(abc.ABC):
     # --------------
     # Small convenient methods
     # --------------
-    def _get_hpo_folder_path(self, trial: optuna.Trial):
-        return self._results_path / f"hpo_{trial.number}_{date.today()}_{datetime.now().strftime('%H%M%S')}"
+    def _get_hpo_folder_path(self, trial_number: int):
+        return self._results_path / f"hpo_trial_{trial_number}"
 
     @classmethod
     def _get_study_name_and_storage_path(cls, results_path):
@@ -638,10 +647,17 @@ class HPOExperiment(abc.ABC):
     # Properties
     # --------------
     @property
+    def results_path(self):
+        return self._results_path
+
+    @property
     def hpo_study_config(self):
         return self._experiments_config["HPO"]
 
 
+# --------------
+# Single HPO experiments
+# --------------
 class PredictionModelsHPO(HPOExperiment):
     """
     Class for the prediction models
@@ -677,7 +693,7 @@ class PredictionModelsHPO(HPOExperiment):
             # Train prediction model
             # ---------------
             # Make directory for current iteration
-            results_dir = self._get_hpo_folder_path(trial)
+            results_dir = self._get_hpo_folder_path(trial.number)
             with SingleExperiment(hp_config=suggested_hyperparameters, pre_processing_config=preprocessing_config_file,
                                   experiments_config=experiments_config, results_path=results_dir,
                                   fine_tuning=None, experiment_name=None) as experiment:
@@ -822,7 +838,7 @@ class PretrainHPO(HPOExperiment):
             # Train on pretext task
             # ---------------
             # Make directory for current iteration
-            results_dir = self._get_hpo_folder_path(trial)
+            results_dir = self._get_hpo_folder_path(trial.number)
 
             # Only pre-train if we have datasets to pre-train on. Trial pruning is handled elsewhere
             do_pretraining = pretext_experiments_config["Datasets"] and not _excluded_dataset_only(
@@ -844,12 +860,47 @@ class PretrainHPO(HPOExperiment):
                 experiment.run_experiment()
 
             # ---------------
-            # Return the performance
+            # Compute the performance
             # ---------------
-            return _get_aggregated_val_score(
+            score = _get_aggregated_val_score(
                 trial_results_dir=results_dir, metric=self._downstream_experiments_config["Training"]["main_metric"],
                 aggregation_method=self._downstream_experiments_config["val_scores_aggregation"]
             )
+
+            # ---------------
+            # (Maybe) compute SSL biomarkers for future use. If yes, compute only on the test data (because it should
+            # be the kept-out dataset which is the downstream relevant one in Elecssl)
+            # ---------------
+            if not (self._experiments_config["save_ssl_biomarkers"] and do_pretraining):
+                return score
+
+            # todo: this is copied from SimpleElecsslHPO
+            out_freq_band = pretext_specific_hpcs['out_freq_band']
+            subject_ids, deviations, clinical_targets = _get_delta_and_variable(
+                path=results_dir / "Fold_0",
+                target=f"band_power_{out_freq_band}_{out_ocular_state}",
+                variable=self._experiments_config["elecssl_clinical_target"],
+                deviation_method=self._experiments_config["elecssl_deviation_method"],
+                log_var=self._experiments_config["elecssl_log_transform_clinical_target"],
+                num_eeg_epochs=_get_num_eeg_epochs(ocular_state=in_ocular_state),
+                pretext_main_metric=self._experiments_config["elecssl_pretext_main_metric"],
+                experiment_name="pretext"
+            )
+
+            feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
+            biomarkers: Dict[str, List[Union[str, float]]] = {"dataset": [], "sub_id": [], "clinical_target": [],
+                                                              feature_name: []}
+            for subject, deviation, target in zip(subject_ids, deviations, clinical_targets):
+                # Add everything
+                biomarkers["dataset"].append(subject.dataset_name)
+                biomarkers["sub_id"].append(subject.subject_id)
+                biomarkers["clinical_target"].append(target)
+                biomarkers[feature_name].append(deviation)
+
+            # Make it a dataframe and save it
+            pandas.DataFrame(biomarkers).to_csv(results_dir / "ssl_biomarkers.csv", index=False)
+
+            return score
 
         return _objective
 
@@ -910,6 +961,32 @@ class PretrainHPO(HPOExperiment):
                                                              preprocessed_config_path=preprocessing_config_path)
         return suggested_hps
 
+    def get_trials_and_folders(self, pretrained_only, complete_only):
+        # Load study
+        study = self.load_study(sampler=None)
+
+        # Get the trials and corresponding folder names
+        params_and_folder: List[Tuple[optuna.trial.FrozenTrial, Path]] = []
+        for trial in study.trials:
+            # Folder name
+            folder_name = self._get_hpo_folder_path(trial.number)
+
+            # Check if it exists
+            if not os.path.isdir(folder_name):
+                raise FileNotFoundError(f"For trial number {trial.number}, the corresponding folder {folder_name} was "
+                                        f"not found")
+
+            # (Maybe) skip
+            if verify_type(complete_only, bool) and trial.state != optuna.trial.TrialState.COMPLETE:
+                continue
+            if verify_type(pretrained_only, bool) and not os.path.isfile(folder_name / "ssl_biomarkers.csv"):
+                continue
+
+            # Append
+            params_and_folder.append((trial, folder_name))
+
+        return tuple(params_and_folder)
+
     # --------------
     # Properties
     # --------------
@@ -918,13 +995,199 @@ class PretrainHPO(HPOExperiment):
         return {**self._sampling_config["Training"], **self._experiments_config["Training"]}
 
 
-class ElecsslHPO(HPOExperiment):
+class SimpleElecsslHPO(HPOExperiment):
+    """
+    Class for learning expectation values and using the most predictive one as input to an ML model. This class uses
+    only a single such residual for predictive modelling
+    """
+
+    __slots__ = ()
+    _name = "simple_elecssl"
+    _test_predictions_file_name = "test_predictions"
+    _optimisation_predictions_file_name = ("pretext_train_history_predictions", "pretext_val_history_predictions")
+
+    def suggest_hyperparameters(self, trial, name):
+        # Sample frequency bands
+        out_freq_band = trial.suggest_categorical(f"{name}_out_freq_band", **self._sampling_config["out_freq_band"])
+        _in_freq_band = trial.suggest_categorical(f"{name}_in_freq_band", **self._sampling_config["in_freq_band"])
+        in_freq_band = out_freq_band if _in_freq_band == "same" else _in_freq_band
+
+        # Input ocular state should be fixed
+        in_ocular_state = self._experiments_config["in_ocular_state"]
+        preprocessing_config_path = _get_preprocessing_config_path(ocular_state=in_ocular_state)
+
+        # All other HPs
+        suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
+                                                             preprocessed_config_path=preprocessing_config_path)
+        suggested_hps["MLModel"] = self._sampling_config["MLModel"]
+
+        return in_freq_band, out_freq_band, preprocessing_config_path, suggested_hps
+
+    def _create_objective(self) -> Callable[[optuna.Trial], float]:
+
+        def _objective(trial: optuna.Trial):
+            # Make directory for current iteration
+            results_dir = self._get_hpo_folder_path(trial.number)
+            os.mkdir(results_dir)
+
+            # ---------------
+            # Suggest / sample hyperparameters
+            # ---------------
+            experiment_name = "pretext"
+            (in_freq_band, out_freq_band, preprocessing_config_path,
+             suggested_hyperparameters) = self.suggest_hyperparameters(name=experiment_name, trial=trial)
+
+            # ---------------
+            # Just a bit of preparation...
+            # ---------------
+            # Ocular states are currently fixed
+            in_ocular_state = self._experiments_config["in_ocular_state"]
+            out_ocular_state = self._experiments_config["out_ocular_state"]
+
+            # Get the number of EEG epochs per experiment
+            with open(preprocessing_config_path) as file:
+                preprocessing_config = yaml.safe_load(file)
+                num_eeg_epochs = preprocessing_config["Details"]["num_epochs"]
+
+            # Add the target to config file
+            experiment_config_file = self._experiments_config.copy()
+            target_name = f"band_power_{out_freq_band}_{out_ocular_state}"  # OC fixed
+            if experiment_config_file["Training"]["log_transform_targets"] is not None:
+                target_name = f"{experiment_config_file['Training']['log_transform_targets']}_{target_name}"
+            experiment_config_file["Training"]["target"] = target_name
+
+            # ---------------
+            # Run pretext task
+            # ---------------
+            experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
+                experiments_config=experiment_config_file, in_freq_band=in_freq_band,
+                in_ocular_state=in_ocular_state, suggested_hyperparameters=suggested_hyperparameters
+            )
+            feature_extractor_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
+
+            # Convenient to make folder structure the same as MultivariableElecssl
+            results_path = results_dir / (f"hpo_{trial.number}_{feature_extractor_name}_"
+                                          f"{date.today()}_{datetime.now().strftime('%H%M%S')}")
+            with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
+                                  pre_processing_config=preprocessing_config_file, results_path=results_path,
+                                  fine_tuning=None, experiment_name=experiment_name) as experiment:
+                experiment.run_experiment()
+
+            # ---------------
+            # Extract expectation values and biomarkers
+            # ---------------
+            subject_ids, deviations, clinical_targets = _get_delta_and_variable(
+                path=results_path / "Fold_0", target=f"band_power_{out_freq_band}_{out_ocular_state}",
+                variable=self._experiments_config["clinical_target"],
+                deviation_method=self._experiments_config["deviation_method"],
+                log_var=self._experiments_config["log_transform_clinical_target"],
+                num_eeg_epochs=num_eeg_epochs,
+                pretext_main_metric=self._experiments_config["pretext_main_metric"],
+                experiment_name=experiment_name
+            )
+
+            # todo: this is quite copied from MultivariableElecssl
+            feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
+            biomarkers: Dict[str, List[Union[str, float]]] = {"dataset": [], "sub_id": [], "clinical_target": [],
+                                                              feature_name: []}
+            for subject, deviation, target in zip(subject_ids, deviations, clinical_targets):
+                # Add everything
+                biomarkers["dataset"].append(subject.dataset_name)
+                biomarkers["sub_id"].append(subject.subject_id)
+                biomarkers["clinical_target"].append(target)
+                biomarkers[feature_name].append(deviation)
+
+            # Make it a dataframe and save it
+            df = pandas.DataFrame(biomarkers)
+            df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
+
+            # ---------------
+            # Use the biomarkers
+            # ---------------
+            score = _compute_biomarker_predictive_value(
+                df, test_split_config=self._experiments_config["TestSplit"],
+                subject_split_config=self._experiments_config["MLModelSubjectSplit"],
+                ml_model_hp_config=self.ml_model_hp_config, ml_model_settings_config=self.ml_model_settings_config,
+                save_test_predictions=self._experiments_config["save_test_predictions"], results_dir=results_dir,
+                verbose=True
+            )
+            return score
+
+        return _objective
+
+    # --------------
+    # Methods for running HPO
+    # --------------
+    def reuse_pretrained_runs(self, pretrain_hpo: PretrainHPO):
+        # Load (or create) elecssl study
+        try:
+            study = self.load_study(sampler=None)
+        except KeyError:
+            study = self._create_study()
+        num_previous_studies = len(study.trials)
+
+        # Re-use the trials
+        reused_trials: List[FrozenTrial] = []
+        for i, (trial, trial_path) in enumerate(pretrain_hpo.get_trials_and_folders(complete_only=True,
+                                                                                    pretrained_only=True)):
+            trial_number = num_previous_studies + i
+            folder_path = self._get_hpo_folder_path(trial_number)
+
+            # Copy
+            os.mkdir(folder_path)
+
+            # ---------------
+            # Use the biomarkers to get performance
+            # ---------------
+            # Load the biomarkers
+            df = pandas.read_csv(trial_path / "ssl_biomarkers.csv")
+            df.to_csv(folder_path / "ssl_biomarkers.csv", index=False)  # nice to have here too
+
+            score = _compute_biomarker_predictive_value(
+                df, subject_split_config=self._experiments_config["MLModelSubjectSplit"],
+                test_split_config=self._experiments_config["TestSplit"], ml_model_hp_config=self.ml_model_hp_config,
+                ml_model_settings_config=self.ml_model_settings_config, verbose=True,
+                save_test_predictions=self._experiments_config["save_test_predictions"],
+                results_dir=folder_path
+            )
+
+            # Add trial with info
+            if trial.state != optuna.trial.TrialState.COMPLETE:
+                raise RuntimeError(f"Expected pretrained trial to be complete, but received {trial.state} "
+                                   f"({trial_path})")
+            reused_trials.append(optuna.trial.create_trial(
+                state=trial.state,
+                params={name: value for name, value in trial.params.items() if name.startswith("pretext")},
+                distributions={name: value for name, value in trial.distributions.items()
+                               if name.startswith("pretext")},
+                user_attrs={"Re-used": trial.number},
+                system_attrs=dict(),
+                intermediate_values=dict(),
+                value=score
+            ))
+
+        # Add the trials
+        study.add_trials(reused_trials)
+
+    # --------------
+    # Properties
+    # --------------
+    @property
+    def ml_model_hp_config(self):
+        return self._sampling_config["MLModel"]
+
+    @property
+    def ml_model_settings_config(self):
+        return self._experiments_config["MLModelSettings"]
+
+
+class MultivariableElecsslHPO(HPOExperiment):
     """
     Class for using the learned residuals as input to an ML model
     """
 
     __slots__ = ()
-    _name = "elecssl"
+    _name = "multivariable_elecssl"
     _test_predictions_file_name = "test_predictions"
     _optimisation_predictions_file_name = ("pretext_train_history_predictions", "pretext_val_history_predictions")
 
@@ -943,7 +1206,7 @@ class ElecsslHPO(HPOExperiment):
             spaces = self._experiments_config["IOSpaces"]
 
             # Make directory for current iteration
-            results_dir = self._get_hpo_folder_path(trial)
+            results_dir = self._get_hpo_folder_path(trial.number)
             os.mkdir(results_dir)
 
             # ---------------
@@ -1009,7 +1272,7 @@ class ElecsslHPO(HPOExperiment):
 
                 # Make it a dataframe and save it
                 df = pandas.DataFrame.from_dict(biomarkers, orient="index")
-                df.to_csv(results_dir / "ssl_biomarkers.csv")
+                df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
             # ---------------
             # Use the biomarkers
@@ -1208,6 +1471,144 @@ class ElecsslHPO(HPOExperiment):
 
 
 # --------------
+# Combining all HPO experiments (including baselines)
+# --------------
+class AllHPOExperiments:
+    """
+    Class which combines all the HPO experiments
+    """
+
+    __slots__ = ("_hpd_configs_path", "_experiments_configs_path", "_results_path")
+
+    # -------------
+    # Dunder methods for context manager (using the 'with' statement). See this video from mCoding for more information
+    # on context managers https://www.youtube.com/watch?v=LBJlGwJ899Y&t=640s
+    # -------------
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """This will execute when exiting the with statement. It will NOT execute if the run was killed by the operating
+        system, which can happen if too much data is loaded into memory"""
+        # If everything was as it should, create an open file that indicates no errors
+        if exc_val is None:
+            return
+
+        # Otherwise, document the error received in a text file
+        file_name = (self._results_path / f"{exc_type.__name__}_{date.today()}_"
+                                          f"{datetime.now().strftime('%H%M%S')}").with_suffix(".txt")
+        with open(file_name, "w") as file:
+            file.write("Traceback (most recent call last):\n")
+            traceback.print_tb(exc_tb, file=file)
+            file.write(f"{exc_type.__name__}: {exc_val}")
+
+    def __init__(self, *, results_dir: Path, hpd_configs_path: Path, experiments_configs_path: Path):
+        # Set attributes
+        self._hpd_configs_path = hpd_configs_path
+        self._experiments_configs_path = experiments_configs_path
+        self._results_path = results_dir / f"experiments_{date.today()}_{datetime.now().strftime('%H%M%S')}"
+
+        # Make directory
+        os.mkdir(self._results_path)
+
+    def run_experiments(self):
+        # --------------
+        # HPO experiments
+        # --------------
+        # Prediction models
+        # self.run_prediction_models_hpo()
+
+        # Pretraining
+        pretrain_experiment = self.run_pretraining_hpo()
+
+        # Simple Elecssl
+        self.run_simple_elecssl_hpo(pretrain_experiment)
+
+        # Multivariable Elecssl
+
+        # --------------
+        # Test set integrity tests
+        # --------------
+
+        # --------------
+        # Dataframe creation
+        # --------------
+
+        # --------------
+        # Create file indicating successful finalisation
+        # --------------
+        with open(self._results_path / f"finished_successfully_{date.today()}_"
+                                       f"{datetime.now().strftime('%H%M%S')}.txt", "w"):
+            pass
+
+    # --------------
+    # Single HPO experiments
+    # --------------
+    def run_prediction_models_hpo(self):
+        # Create paths
+        shared_experiments_path = self._experiments_configs_path / "shared_conf.yml"
+        shared_hpd_path = self._hpd_configs_path / "shared_hpds.yml"
+
+        prediction_models_experiments_path = self._experiments_configs_path / "prediction_models_conf.yml"
+        prediction_models_hpd_path = self._hpd_configs_path / "prediction_models_hpds.yml"
+
+        # Run experiment
+        prediction_models_experiment = PredictionModelsHPO(
+            hp_config_paths=(shared_hpd_path, prediction_models_hpd_path),
+            experiments_config_paths=(shared_experiments_path, prediction_models_experiments_path),
+            results_dir=self._results_path, is_continuation=False
+        )
+        with prediction_models_experiment as experiment:
+            experiment.run_hyperparameter_optimisation()
+
+    def run_pretraining_hpo(self):
+        # Create paths
+        shared_experiments_path = self._experiments_configs_path / "shared_conf.yml"
+        shared_hpd_path = self._hpd_configs_path / "shared_hpds.yml"
+
+        pretraining_shared_experiments_path = self._experiments_configs_path / "pretraining_shared_conf.yml"
+        pretraining_downstream_experiments_path = self._experiments_configs_path / "pretraining_downstream_conf.yml"
+        pretraining_pretext_experiments_path = self._experiments_configs_path / "pretraining_pretext_conf.yml"
+        pretraining_downstream_hpd_path = self._hpd_configs_path / "pretraining_downstream_hpds.yml"
+        pretraining_pretext_hpd_path = self._hpd_configs_path / "pretraining_pretext_hpds.yml"
+
+        # Model with pre-training
+        # todo: If saving SSL biomarkers, don't we need to add some information from ElecsslHPO?
+        pretrain_experiment = PretrainHPO(
+            hp_config_paths=(shared_hpd_path,),
+            experiments_config_paths=(shared_experiments_path, pretraining_shared_experiments_path),
+            results_dir=self._results_path, is_continuation=False,
+            pretext_hp_config_paths=(shared_hpd_path, pretraining_pretext_hpd_path,),
+            pretext_experiments_config_paths=(shared_experiments_path, pretraining_shared_experiments_path,
+                                              pretraining_pretext_experiments_path,),
+            downstream_experiments_config_paths=(shared_experiments_path, pretraining_shared_experiments_path,
+                                                 pretraining_downstream_experiments_path,),
+            downstream_hp_config_paths=(shared_hpd_path, pretraining_downstream_hpd_path,)
+        )
+        with pretrain_experiment as experiment:
+            experiment.run_hyperparameter_optimisation()
+
+        return experiment
+
+    def run_simple_elecssl_hpo(self, pretrain_experiment):
+        # Create paths
+        shared_experiments_path = self._experiments_configs_path / "shared_conf.yml"
+        elecssl_experiments_path = self._experiments_configs_path / "simple_elecssl_conf.yml"
+        shared_hpd_path = self._hpd_configs_path / "shared_hpds.yml"
+        elecssl_hpd_path = self._hpd_configs_path / "simple_elecssl_hpds.yml"
+
+        # Elecssl with one independent variable/residual
+        elecssl_experiment = SimpleElecsslHPO(
+            hp_config_paths=(shared_hpd_path, elecssl_hpd_path),
+            experiments_config_paths=(shared_experiments_path, elecssl_experiments_path),
+            results_dir=self._results_path, is_continuation=False
+        )
+        with elecssl_experiment as experiment:
+            experiment.reuse_pretrained_runs(pretrain_experiment)
+            experiment.continue_hyperparameter_optimisation(num_trials=4)  # todo: don't hardcore
+
+
+# --------------
 # Exceptions
 # --------------
 class InconsistentTestSetError(Exception):
@@ -1226,6 +1627,68 @@ class DissimilarTestSetsError(Exception):
 # --------------
 # Functions
 # --------------
+def _compute_biomarker_predictive_value(df, *, subject_split_config, test_split_config, ml_model_hp_config,
+                                        ml_model_settings_config, save_test_predictions, results_dir, verbose):
+    # Create the subject splitting
+    non_test_subjects, test_subjects = simple_random_split(
+        subjects=tuple(Subject(subject_id=row.sub_id, dataset_name=row.dataset)  # type: ignore[attr-defined]
+                       for row in df.itertuples(index=False)),
+        split_percent=test_split_config["split_percentage"], seed=test_split_config["seed"], require_seeding=True,
+        sort_first=True
+    )
+
+    split_kwargs = {"dataset_subjects": subjects_tuple_to_dict(non_test_subjects), **subject_split_config["kwargs"]}
+    biomarker_evaluation_splits = get_data_split(split=subject_split_config["name"], **split_kwargs).splits
+
+    # Create ML model
+    ml_model = MLModel(
+        model=ml_model_hp_config["model"], model_kwargs=ml_model_hp_config["kwargs"],
+        splits=biomarker_evaluation_splits,
+        evaluation_metric=ml_model_settings_config["evaluation_metric"],
+        aggregation_method=ml_model_settings_config["aggregation_method"]
+    )
+
+    # Set index because it is convenient
+    df = df.copy()
+    df["subject"] = [Subject(dataset_name=row.dataset, subject_id=row.sub_id) for row in df.itertuples(index=False)]
+    df = df.set_index("subject")
+
+    # Do evaluation (used as feedback to HPO algorithm)  todo: must implement splitting test
+    score = ml_model.evaluate_features(non_test_df=df.loc[list(non_test_subjects)])
+    if verbose:
+        print(f"Training done! Obtained {ml_model_settings_config['aggregation_method']} "
+              f"{ml_model_settings_config['evaluation_metric']} = {score}")
+
+    # I will save the test results as well for convenience
+    if verify_type(save_test_predictions, bool):
+        test_predictions, test_scores = ml_model.predict_and_score(
+            df=df.loc[list(test_subjects)], metrics=ml_model_settings_config["metrics"],
+            aggregation_method=ml_model_settings_config["test_prediction_aggregation"]
+        )
+
+        # Convert to more convenient format
+        test_predictions_dict: Dict[str, List[Union[str, float]]] = {"dataset": [], "sub_id": [], "pred": []}
+        for subject, prediction in zip(test_subjects, test_predictions):
+            test_predictions_dict["dataset"].append(subject.dataset_name)
+            test_predictions_dict["sub_id"].append(subject.subject_id)
+            test_predictions_dict["pred"].append(prediction)
+
+        # Save predictions and scores on test set (the score provided to the HPO algorithm should be stored by
+        # optuna)
+        test_predictions_df = pandas.DataFrame(test_predictions_dict)
+        test_scores_df = pandas.DataFrame([test_scores])
+
+        test_predictions_df = test_predictions_df.round(
+            decimals=ml_model_settings_config["test_predictions_decimals"]
+        )
+        test_scores_df = test_scores_df.round(decimals=ml_model_settings_config["test_scores_decimals"])
+
+        test_predictions_df.to_csv(results_dir / "test_predictions.csv", index=False)
+        test_scores_df.to_csv(results_dir / "test_scores.csv", index=False)
+
+    return score
+
+
 def _excluded_dataset_only(*, dataset_config, subject_split_config):
     """
     Check if the only dataset in the dataset config is a hold-out dataset in the subject split config
@@ -1322,6 +1785,19 @@ def _get_preprocessing_config_path(ocular_state):
     # Make sure there is only one and return it
     assert len(config_files) == 1, f"Expected only one config file, but found {len(config_files)}: {config_files}"
     return preprocessing_path / config_files[0]
+
+
+def _get_num_eeg_epochs(ocular_state):
+    # Get file names
+    preprocessing_path = get_numpy_data_storage_path() / f"preprocessed_band_pass_{ocular_state}"
+    config_files = tuple(file_name for file_name in os.listdir(preprocessing_path) if file_name.startswith("config"))
+
+    # Make sure there is only one and return it
+    assert len(config_files) == 1, f"Expected only one config file, but found {len(config_files)}: {config_files}"
+    with open(preprocessing_path / config_files[0]) as file:
+        preprocessing_config = yaml.safe_load(file)
+
+    return preprocessing_config["Details"]["num_epochs"]
 
 
 def _get_best_val_epoch(path, experiment_name, *, pretext_main_metric):

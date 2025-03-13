@@ -2,3 +2,8 @@ force_pretraining: false  # If no datasets, are used for pre-training, prune the
 in_ocular_state: ec  # It is possible to make these HPs, but we would lose the connection to reactivity I think
 out_ocular_state: eo
 in_freq_band: all
+save_ssl_biomarkers: true
+elecssl_clinical_target: age  # Needs to be consistent with Elecssl
+elecssl_deviation_method: diff  # Needs to be consistent with Elecssl
+elecssl_log_transform_clinical_target: false  # Needs to be consistent with Elecssl
+elecssl_pretext_main_metric: r2_score  # Needs to be consistent with Elecssl

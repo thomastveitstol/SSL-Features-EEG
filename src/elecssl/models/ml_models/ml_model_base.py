@@ -26,7 +26,10 @@ class MLModel:
     >>> cols_ = ['clinical_target'] + [f'var{i}' for i in range(1, 4)]  # type: ignore
     >>> numpy.random.seed(42)
     >>> my_df = pandas.DataFrame(numpy.random.rand(len(idxs_), len(cols_)), index=idxs_, columns=cols_).round(2)
-    >>> my_df.head()  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> my_df["dataset"] = [sub.dataset_name for sub in idxs_]  # type: ignore[attr-defined]
+    >>> my_df["sub_id"] = [sub.subject_id for sub in idxs_]  # type: ignore[attr-defined]
+    >>> my_df.drop(labels=["dataset", "sub_id"], inplace=False, axis="columns").head()
+    ... # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
                                                  clinical_target  var1  var2  var3
     Subject(subject_id='S1', dataset_name='D1')             0.37  0.95  0.73  0.60
     Subject(subject_id='S2', dataset_name='D1')             0.16  0.16  0.06  0.87
@@ -112,12 +115,14 @@ class MLModel:
 
             # Fit it
             model = model.fit(
-                X=train_df.drop(labels="clinical_target", inplace=False, axis="columns"), y=train_df["clinical_target"]
+                X=train_df.drop(labels=["dataset", "sub_id", "clinical_target"], inplace=False, axis="columns"),
+                y=train_df["clinical_target"]
             )
 
             # Compute evaluation score
             val_df = non_test_df.loc[list(val)]
-            y_pred = model.predict(X=val_df.drop(labels="clinical_target", inplace=False, axis="columns"))
+            y_pred = model.predict(X=val_df.drop(labels=["dataset", "sub_id", "clinical_target"], inplace=False,
+                                                 axis="columns"))
             score = Histories.compute_metric(
                 metric=self._evaluation_metric, y_pred=y_pred, y_true=val_df["clinical_target"].to_numpy()
             )
@@ -137,7 +142,7 @@ class MLModel:
             metrics = Histories.get_default_metrics(metrics=metrics)
 
         # Make predictions for all the available models. The i-th prediction (at axis 0) is from the i-th model
-        input_data = df.drop(labels="clinical_target", inplace=False, axis="columns")
+        input_data = df.drop(labels=["dataset", "sub_id", "clinical_target"], inplace=False, axis="columns")
         predictions = numpy.concatenate([numpy.expand_dims(model.predict(X=input_data), axis=0)
                                          for model in self._fitted_ml_models], axis=0)
 

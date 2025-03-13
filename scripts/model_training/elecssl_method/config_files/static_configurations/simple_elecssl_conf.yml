@@ -1,12 +1,8 @@
 # -----------------
 # Related to the pretext task
 # -----------------
-IOSpaces:  # In ocular state, out ocular state, in frequency band, out frequency band
-  # - [ [ ec, eo ], [ all, delta ] ]
-  # - [ [ ec, eo ], [ all, theta ] ]
-  - [ [ ec, eo ], [ all, alpha ] ]
-  # - [ [ ec, eo ], [ all, beta ] ]
-  # - [ [ ec, eo ], [ all, gamma ] ]
+in_ocular_state: ec
+out_ocular_state: eo
 
 deviation_method: diff
 pretext_main_metric: r2_score
