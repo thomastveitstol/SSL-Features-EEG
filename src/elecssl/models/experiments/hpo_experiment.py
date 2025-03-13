@@ -823,9 +823,12 @@ class PretrainHPO(HPOExperiment):
             # Must set saving model of pretext task to true
             pretext_experiments_config["Saving"]["save_model"] = True
 
-            # Adding target
-            target_name = f"band_power_{pretext_specific_hpcs['out_freq_band']}_{out_ocular_state}"
-            pretext_experiments_config["Training"]["target"] = target_name
+            # Adding target  TODO: verify that band power is not already log-transformed!!!
+            pseudo_target = f"band_power_{pretext_specific_hpcs['out_freq_band']}_{out_ocular_state}"
+            if self._pretext_experiments_config["Training"]["log_transform_targets"] is not None:
+                pseudo_target = (f"{self._pretext_experiments_config['Training']['log_transform_targets']}_"
+                                 f"{pseudo_target}")
+            pretext_experiments_config["Training"]["target"] = pseudo_target
 
             # Downstream task
             downstream_experiments_config, _ = _get_prepared_experiments_config(
@@ -873,20 +876,14 @@ class PretrainHPO(HPOExperiment):
                 # Create and save dataframe with target and residuals
                 out_freq_band = pretext_specific_hpcs['out_freq_band']
                 residual_feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
-                pseudo_target = f"band_power_{out_freq_band}_{out_ocular_state}"  # OC fixed
-                if self._experiments_config["elecssl_log_transform_pseudo_targets"] is not None:
-                    pseudo_target = f"{self._experiments_config['Training']['log_transform_targets']}_{target_name}"
 
                 df = _make_single_residuals_df(
-                    results_dir=results_dir / "Fold_0",
-                    pseudo_target=pseudo_target,
+                    results_dir=results_dir / "Fold_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
                     downstream_target=self._experiments_config["elecssl_clinical_target"],
-                    feature_name=residual_feature_name,
                     deviation_method=self._experiments_config["elecssl_deviation_method"],
-                    in_ocular_state=in_ocular_state,
+                    in_ocular_state=in_ocular_state, experiment_name="pretext",
                     log_transform_downstream_target=self._experiments_config["elecssl_log_transform_clinical_target"],
-                    pretext_main_metric=self._experiments_config["elecssl_pretext_main_metric"],
-                    experiment_name="pretext"
+                    pretext_main_metric=self._experiments_config["elecssl_pretext_main_metric"]
                 )
                 df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
@@ -1037,10 +1034,10 @@ class SimpleElecsslHPO(HPOExperiment):
 
             # Add the target to config file
             experiment_config_file = self._experiments_config.copy()
-            target_name = f"band_power_{out_freq_band}_{out_ocular_state}"  # OC fixed
+            pseudo_target = f"band_power_{out_freq_band}_{out_ocular_state}"  # OC fixed
             if experiment_config_file["Training"]["log_transform_targets"] is not None:
-                target_name = f"{experiment_config_file['Training']['log_transform_targets']}_{target_name}"
-            experiment_config_file["Training"]["target"] = target_name
+                pseudo_target = f"{experiment_config_file['Training']['log_transform_targets']}_{pseudo_target}"
+            experiment_config_file["Training"]["target"] = pseudo_target
 
             # ---------------
             # Run pretext task
@@ -1063,20 +1060,13 @@ class SimpleElecsslHPO(HPOExperiment):
             # Extract expectation values and biomarkers
             # ---------------
             residual_feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
-            pseudo_target = f"band_power_{out_freq_band}_{out_ocular_state}"  # OC fixed
-            if experiment_config_file["Training"]["log_transform_targets"] is not None:
-                pseudo_target = f"{experiment_config_file['Training']['log_transform_targets']}_{target_name}"
 
             df = _make_single_residuals_df(
-                results_dir=results_path / "Fold_0",
-                pseudo_target=pseudo_target,
-                downstream_target=self._experiments_config["clinical_target"],
-                feature_name=residual_feature_name,
-                deviation_method=self._experiments_config["deviation_method"],
-                in_ocular_state=in_ocular_state,
+                results_dir=results_path / "Fold_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
+                downstream_target=self._experiments_config["clinical_target"], in_ocular_state=in_ocular_state,
+                deviation_method=self._experiments_config["deviation_method"], experiment_name=experiment_name,
                 log_transform_downstream_target=self._experiments_config["log_transform_clinical_target"],
-                pretext_main_metric=self._experiments_config["pretext_main_metric"],
-                experiment_name=experiment_name
+                pretext_main_metric=self._experiments_config["pretext_main_metric"]
             )
             df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
