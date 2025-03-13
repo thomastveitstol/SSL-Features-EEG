@@ -7,3 +7,4 @@ elecssl_clinical_target: age  # Needs to be consistent with Elecssl
 elecssl_deviation_method: diff  # Needs to be consistent with Elecssl
 elecssl_log_transform_clinical_target: false  # Needs to be consistent with Elecssl
 elecssl_pretext_main_metric: r2_score  # Needs to be consistent with Elecssl
+elecssl_log_transform_pseudo_targets: log10  # must be null instead of false if no transformation todo
