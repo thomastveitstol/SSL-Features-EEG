@@ -867,43 +867,30 @@ class PretrainHPO(HPOExperiment):
             )
 
             # ---------------
-            # (Maybe) compute SSL biomarkers for future use. If yes, compute only on the test data (because it should
-            # be the kept-out dataset which is the downstream relevant one in Elecssl)
+            # (Maybe) compute SSL biomarkers for future use
             # ---------------
-            if not (self._experiments_config["save_ssl_biomarkers"] and do_pretraining):
-                return score
+            if self._experiments_config["save_ssl_biomarkers"] and do_pretraining:
+                # Create and save dataframe with target and residuals
+                out_freq_band = pretext_specific_hpcs['out_freq_band']
+                residual_feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
+                pseudo_target = f"band_power_{out_freq_band}_{out_ocular_state}"  # OC fixed
+                if self._experiments_config["elecssl_log_transform_pseudo_targets"] is not None:
+                    pseudo_target = f"{self._experiments_config['Training']['log_transform_targets']}_{target_name}"
 
-            # todo: this is copied from SimpleElecsslHPO
+                df = _make_single_residuals_df(
+                    results_dir=results_dir / "Fold_0",
+                    pseudo_target=pseudo_target,
+                    downstream_target=self._experiments_config["elecssl_clinical_target"],
+                    feature_name=residual_feature_name,
+                    deviation_method=self._experiments_config["elecssl_deviation_method"],
+                    in_ocular_state=in_ocular_state,
+                    log_transform_downstream_target=self._experiments_config["elecssl_log_transform_clinical_target"],
+                    pretext_main_metric=self._experiments_config["elecssl_pretext_main_metric"],
+                    experiment_name="pretext"
+                )
+                df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
-            # Create
-
-
-
-            out_freq_band = pretext_specific_hpcs['out_freq_band']
-            subject_ids, deviations, clinical_targets = _get_delta_and_variable(
-                path=results_dir / "Fold_0",
-                target=f"band_power_{out_freq_band}_{out_ocular_state}",
-                variable=self._experiments_config["elecssl_clinical_target"],
-                deviation_method=self._experiments_config["elecssl_deviation_method"],
-                log_var=self._experiments_config["elecssl_log_transform_clinical_target"],
-                num_eeg_epochs=_get_num_eeg_epochs(ocular_state=in_ocular_state),
-                pretext_main_metric=self._experiments_config["elecssl_pretext_main_metric"],
-                experiment_name="pretext"
-            )
-
-            feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
-            biomarkers: Dict[str, List[Union[str, float]]] = {"dataset": [], "sub_id": [], "clinical_target": [],
-                                                              feature_name: []}
-            for subject, deviation, target in zip(subject_ids, deviations, clinical_targets):
-                # Add everything
-                biomarkers["dataset"].append(subject.dataset_name)
-                biomarkers["sub_id"].append(subject.subject_id)
-                biomarkers["clinical_target"].append(target)
-                biomarkers[feature_name].append(deviation)
-
-            # Make it a dataframe and save it
-            pandas.DataFrame(biomarkers).to_csv(results_dir / "ssl_biomarkers.csv", index=False)
-
+            # Return the score
             return score
 
         return _objective
@@ -1048,11 +1035,6 @@ class SimpleElecsslHPO(HPOExperiment):
             in_ocular_state = self._experiments_config["in_ocular_state"]
             out_ocular_state = self._experiments_config["out_ocular_state"]
 
-            # Get the number of EEG epochs per experiment
-            with open(preprocessing_config_path) as file:
-                preprocessing_config = yaml.safe_load(file)
-                num_eeg_epochs = preprocessing_config["Details"]["num_epochs"]
-
             # Add the target to config file
             experiment_config_file = self._experiments_config.copy()
             target_name = f"band_power_{out_freq_band}_{out_ocular_state}"  # OC fixed
@@ -1080,29 +1062,22 @@ class SimpleElecsslHPO(HPOExperiment):
             # ---------------
             # Extract expectation values and biomarkers
             # ---------------
-            subject_ids, deviations, clinical_targets = _get_delta_and_variable(
-                path=results_path / "Fold_0", target=f"band_power_{out_freq_band}_{out_ocular_state}",
-                variable=self._experiments_config["clinical_target"],
+            residual_feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
+            pseudo_target = f"band_power_{out_freq_band}_{out_ocular_state}"  # OC fixed
+            if experiment_config_file["Training"]["log_transform_targets"] is not None:
+                pseudo_target = f"{experiment_config_file['Training']['log_transform_targets']}_{target_name}"
+
+            df = _make_single_residuals_df(
+                results_dir=results_path / "Fold_0",
+                pseudo_target=pseudo_target,
+                downstream_target=self._experiments_config["clinical_target"],
+                feature_name=residual_feature_name,
                 deviation_method=self._experiments_config["deviation_method"],
-                log_var=self._experiments_config["log_transform_clinical_target"],
-                num_eeg_epochs=num_eeg_epochs,
+                in_ocular_state=in_ocular_state,
+                log_transform_downstream_target=self._experiments_config["log_transform_clinical_target"],
                 pretext_main_metric=self._experiments_config["pretext_main_metric"],
                 experiment_name=experiment_name
             )
-
-            # todo: this is quite copied from MultivariableElecssl
-            feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
-            biomarkers: Dict[str, List[Union[str, float]]] = {"dataset": [], "sub_id": [], "clinical_target": [],
-                                                              feature_name: []}
-            for subject, deviation, target in zip(subject_ids, deviations, clinical_targets):
-                # Add everything
-                biomarkers["dataset"].append(subject.dataset_name)
-                biomarkers["sub_id"].append(subject.subject_id)
-                biomarkers["clinical_target"].append(target)
-                biomarkers[feature_name].append(deviation)
-
-            # Make it a dataframe and save it
-            df = pandas.DataFrame(biomarkers)
             df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
             # ---------------
@@ -1147,6 +1122,7 @@ class SimpleElecsslHPO(HPOExperiment):
             df = pandas.read_csv(trial_path / "ssl_biomarkers.csv")
             df.to_csv(folder_path / "ssl_biomarkers.csv", index=False)  # nice to have here too
 
+            # Compute score
             score = _compute_biomarker_predictive_value(
                 df, subject_split_config=self._experiments_config["MLModelSubjectSplit"],
                 test_split_config=self._experiments_config["TestSplit"], ml_model_hp_config=self.ml_model_hp_config,
@@ -1631,6 +1607,32 @@ class DissimilarTestSetsError(Exception):
 # --------------
 # Functions
 # --------------
+def _make_single_residuals_df(*, results_dir, feature_name, pseudo_target, downstream_target, deviation_method,
+                              in_ocular_state, log_transform_downstream_target, pretext_main_metric, experiment_name):
+    subject_ids, deviations, clinical_targets = _get_delta_and_variable(
+        path=results_dir,
+        target=pseudo_target,
+        variable=downstream_target,
+        deviation_method=deviation_method,
+        log_var=log_transform_downstream_target,  # TODO: how about log of pseudo-target?
+        num_eeg_epochs=_get_num_eeg_epochs(ocular_state=in_ocular_state),
+        pretext_main_metric=pretext_main_metric,
+        experiment_name=experiment_name
+    )
+
+    biomarkers: Dict[str, List[Union[str, float]]] = {"dataset": [], "sub_id": [], "clinical_target": [],
+                                                      feature_name: []}
+    for subject, deviation, target in zip(subject_ids, deviations, clinical_targets):
+        # Add everything
+        biomarkers["dataset"].append(subject.dataset_name)
+        biomarkers["sub_id"].append(subject.subject_id)
+        biomarkers["clinical_target"].append(target)
+        biomarkers[feature_name].append(deviation)
+
+    # Make it a dataframe
+    return pandas.DataFrame(biomarkers)
+
+
 def _compute_biomarker_predictive_value(df, *, subject_split_config, test_split_config, ml_model_hp_config,
                                         ml_model_settings_config, save_test_predictions, results_dir, verbose):
     # Create the subject splitting
