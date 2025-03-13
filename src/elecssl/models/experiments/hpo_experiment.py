@@ -874,6 +874,11 @@ class PretrainHPO(HPOExperiment):
                 return score
 
             # todo: this is copied from SimpleElecsslHPO
+
+            # Create
+
+
+
             out_freq_band = pretext_specific_hpcs['out_freq_band']
             subject_ids, deviations, clinical_targets = _get_delta_and_variable(
                 path=results_dir / "Fold_0",
@@ -1730,6 +1735,65 @@ def _excluded_dataset_only(*, dataset_config, subject_split_config):
     return dataset == subject_split_config["kwargs"]["left_out_dataset"]
 
 
+def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var, num_eeg_epochs, pretext_main_metric,
+                            experiment_name):
+    # todo: make test
+    # ----------------
+    # Select epoch
+    # ----------------
+    # todo: not really 'fold' anymore...
+    epoch = _get_best_val_epoch(path=path, pretext_main_metric=pretext_main_metric, experiment_name=experiment_name)
+
+    # ----------------
+    # Get the biomarkers and the (clinical) variable
+    # ----------------
+    prefix_name = "" if experiment_name is None else f"{experiment_name}_"
+    test_predictions = pandas.read_csv(os.path.join(path, f"{prefix_name}test_history_predictions.csv"))
+    subject_ids = test_predictions["sub_id"]
+
+    # Check the number of datasets in the test set
+    datasets = set(test_predictions["dataset"])
+    if len(datasets) != 1:
+        raise NotImplementedError(f"This implementation only works when a single dataset in the test set predictions "
+                                  f"was used. This was not the case for {path}. Found {datasets}")
+    dataset_name = tuple(datasets)[0]
+
+    # Average the predictions per EEG epoch
+    i0 = num_eeg_epochs * epoch + 2
+    i1 = i0 + num_eeg_epochs
+    predictions = test_predictions.iloc[:, i0:i1].mean(axis=1)
+
+    # Get pseudo-targets
+    ground_truth = get_dataset(dataset_name).load_targets(target=target, subject_ids=subject_ids)
+
+    # Get the clinical variable
+    var = get_dataset(dataset_name).load_targets(target=variable, subject_ids=subject_ids)
+
+    # Remove nan values  todo: should not be necessary...
+    mask = ~numpy.isnan(var).copy()
+
+    ground_truth = ground_truth[mask]  # type: ignore
+    predictions = predictions[mask]
+    var = var[mask]  # type: ignore
+    subject_ids = subject_ids[mask]
+
+    # Get the deviation
+    if deviation_method in ("delta", "gap", "diff", "difference"):
+        delta = predictions - ground_truth
+    elif deviation_method == "ratio":
+        delta = predictions / ground_truth  # todo: should it be the inverse?
+    else:
+        raise ValueError(f"Unrecognised method: {deviation_method}")
+
+    # Return
+    subjects = tuple(Subject(subject_id=sub_id, dataset_name=dataset_name) for sub_id in subject_ids)
+    assert isinstance(log_var, bool), f"Expected 'log_var' to be boolean, but found type {type(log_var)}"
+    if log_var:
+        return subjects, delta, numpy.log10(var)
+    else:
+        return subjects, delta, var
+
+
 def _get_aggregated_val_score(*, trial_results_dir, aggregation_method, metric):
     """Get the validation score of a trial"""
     eval_method = max if higher_is_better(metric=metric) else min
@@ -1809,65 +1873,6 @@ def _get_best_val_epoch(path, experiment_name, *, pretext_main_metric):
         return numpy.argmax(val_df[pretext_main_metric])
     else:
         return numpy.argmin(val_df[pretext_main_metric])
-
-
-def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var, num_eeg_epochs, pretext_main_metric,
-                            experiment_name):
-    # todo: make test
-    # ----------------
-    # Select epoch
-    # ----------------
-    # todo: not really 'fold' anymore...
-    epoch = _get_best_val_epoch(path=path, pretext_main_metric=pretext_main_metric, experiment_name=experiment_name)
-
-    # ----------------
-    # Get the biomarkers and the (clinical) variable
-    # ----------------
-    prefix_name = "" if experiment_name is None else f"{experiment_name}_"
-    test_predictions = pandas.read_csv(os.path.join(path, f"{prefix_name}test_history_predictions.csv"))
-    subject_ids = test_predictions["sub_id"]
-
-    # Check the number of datasets in the test set
-    datasets = set(test_predictions["dataset"])
-    if len(datasets) != 1:
-        raise NotImplementedError(f"This implementation only works when a single dataset in the test set predictions "
-                                  f"was used. This was not the case for {path}. Found {datasets}")
-    dataset_name = tuple(datasets)[0]
-
-    # Average the predictions per EEG epoch
-    i0 = num_eeg_epochs * epoch + 2
-    i1 = i0 + num_eeg_epochs
-    predictions = test_predictions.iloc[:, i0:i1].mean(axis=1)
-
-    # Get pseudo-targets
-    ground_truth = get_dataset(dataset_name).load_targets(target=target, subject_ids=subject_ids)
-
-    # Get the clinical variable
-    var = get_dataset(dataset_name).load_targets(target=variable, subject_ids=subject_ids)
-
-    # Remove nan values  todo: should not be necessary...
-    mask = ~numpy.isnan(var).copy()
-
-    ground_truth = ground_truth[mask]  # type: ignore
-    predictions = predictions[mask]
-    var = var[mask]  # type: ignore
-    subject_ids = subject_ids[mask]
-
-    # Get the deviation
-    if deviation_method in ("delta", "gap", "diff", "difference"):
-        delta = predictions - ground_truth
-    elif deviation_method == "ratio":
-        delta = predictions / ground_truth  # todo: should it be the inverse?
-    else:
-        raise ValueError(f"Unrecognised method: {deviation_method}")
-
-    # Return
-    subjects = tuple(Subject(subject_id=sub_id, dataset_name=dataset_name) for sub_id in subject_ids)
-    assert isinstance(log_var, bool), f"Expected 'log_var' to be boolean, but found type {type(log_var)}"
-    if log_var:
-        return subjects, delta, numpy.log10(var)
-    else:
-        return subjects, delta, var
 
 
 def _get_warning(warning):
