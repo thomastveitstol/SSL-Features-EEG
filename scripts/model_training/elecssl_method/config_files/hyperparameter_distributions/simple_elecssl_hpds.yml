@@ -1,5 +1,5 @@
 out_freq_band: { choices: [ delta, theta, alpha, beta, gamma ] }
-in_freq_band: { choices: [ all, same ] }  # if 'same', it will use the same as out_freq_band
+in_freq_band: { choices: [ all ] }  # if 'same', it will use the same as out_freq_band
 
 # -----------------
 # The ML model operating on the biomarkers
