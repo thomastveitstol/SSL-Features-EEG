@@ -1,12 +1,15 @@
 # -----------------
 # Related to the pretext task
 # -----------------
+Reuse:
+  num_random_reuse: 30
+
 IOSpaces:  # In ocular state, out ocular state, in frequency band, out frequency band
-  # - [ [ ec, eo ], [ all, delta ] ]
-  # - [ [ ec, eo ], [ all, theta ] ]
+  - [ [ ec, eo ], [ all, delta ] ]
+  - [ [ ec, eo ], [ all, theta ] ]
   - [ [ ec, eo ], [ all, alpha ] ]
-  # - [ [ ec, eo ], [ all, beta ] ]
-  # - [ [ ec, eo ], [ all, gamma ] ]
+  - [ [ ec, eo ], [ all, beta ] ]
+  - [ [ ec, eo ], [ all, gamma ] ]
 
 deviation_method: diff
 pretext_main_metric: r2_score
