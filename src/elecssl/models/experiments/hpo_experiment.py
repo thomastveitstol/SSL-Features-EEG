@@ -1,16 +1,17 @@
 import abc
-import concurrent
 import os
+import random
 import traceback
 import warnings
-from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime
+from functools import reduce
 from pathlib import Path
 from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal, Set, Union, Optional, NamedTuple, Type
 
 import numpy
 import optuna
 import pandas
+import psutil
 import yaml  # type: ignore[import-untyped]
 from optuna.trial import FrozenTrial
 from progressbar import progressbar
@@ -949,12 +950,15 @@ class PretrainHPO(HPOExperiment):
                                                              preprocessed_config_path=preprocessing_config_path)
         return suggested_hps
 
+    # --------------
+    # Methods for assisting re-usage of runs
+    # --------------
     def get_trials_and_folders(self, pretrained_only, complete_only):
         # Load study
         study = self.load_study(sampler=None)
 
         # Get the trials and corresponding folder names
-        params_and_folder: List[Tuple[optuna.trial.FrozenTrial, Path]] = []
+        trials_and_folders: List[Tuple[optuna.trial.FrozenTrial, Path]] = []
         for trial in study.trials:
             # Folder name
             folder_name = self._get_hpo_folder_path(trial.number)
@@ -971,9 +975,9 @@ class PretrainHPO(HPOExperiment):
                 continue
 
             # Append
-            params_and_folder.append((trial, folder_name))
+            trials_and_folders.append((trial, folder_name))
 
-        return tuple(params_and_folder)
+        return tuple(trials_and_folders)
 
     # --------------
     # Properties
@@ -1114,11 +1118,10 @@ class SimpleElecsslHPO(HPOExperiment):
 
             # Compute score
             score = _compute_biomarker_predictive_value(
-                df, subject_split_config=self._experiments_config["MLModelSubjectSplit"],
+                df, subject_split_config=self._experiments_config["MLModelSubjectSplit"], results_dir=folder_path,
                 test_split_config=self._experiments_config["TestSplit"], ml_model_hp_config=self.ml_model_hp_config,
                 ml_model_settings_config=self.ml_model_settings_config, verbose=True,
-                save_test_predictions=self._experiments_config["save_test_predictions"],
-                results_dir=folder_path
+                save_test_predictions=self._experiments_config["save_test_predictions"]
             )
 
             # Add trial with info
@@ -1126,18 +1129,65 @@ class SimpleElecsslHPO(HPOExperiment):
                 raise RuntimeError(f"Expected pretrained trial to be complete, but received {trial.state} "
                                    f"({trial_path})")
             reused_trials.append(optuna.trial.create_trial(
-                state=trial.state,
+                state=trial.state, system_attrs=dict(), intermediate_values=dict(), value=score,
                 params={name: value for name, value in trial.params.items() if name.startswith("pretext")},
                 distributions={name: value for name, value in trial.distributions.items()
                                if name.startswith("pretext")},
-                user_attrs={"Re-used": trial.number},
-                system_attrs=dict(),
-                intermediate_values=dict(),
-                value=score
+                user_attrs={"Pretraining re-used": trial.number}
             ))
 
         # Add the trials
         study.add_trials(reused_trials)
+
+    # --------------
+    # Methods for assisting re-usage of runs
+    # --------------
+    def get_trials_and_folders(self, completed_only):
+        """
+        Method for getting the trials and folder paths of all HPO trials conducted. It also includes the re-used ones,
+        if any
+
+        Parameters
+        ----------
+        completed_only : bool
+        """
+        # Load study
+        study = self.load_study(sampler=None)
+
+        trials_and_folders: Dict[str, List[Tuple[FrozenTrial, Path]]] = dict()
+        for trial in study.trials:
+            # Get expected folder name
+            folder_name = self._get_hpo_folder_path(trial.number)
+
+            # Check if it exists
+            if not os.path.isdir(folder_name):
+                raise FileNotFoundError(f"For trial number {trial.number}, the corresponding folder {folder_name} was "
+                                        f"not found")
+
+            # (Maybe) skip
+            if verify_type(completed_only, bool) and trial.state != optuna.trial.TrialState.COMPLETE:
+                continue
+
+            # Get the feature name
+            feature_name = self._get_feature_name(path=folder_name)
+
+            # Add it
+            if feature_name not in trials_and_folders:
+                trials_and_folders[feature_name] = []
+            trials_and_folders[feature_name].append((trial, folder_name))
+
+        return {name: tuple(hpo_trials) for name, hpo_trials in trials_and_folders.items()}
+
+    @staticmethod
+    def _get_feature_name(path: Path):
+        # Get the expected feature name
+        feature_name = pandas.read_csv(path / "ssl_biomarkers.csv", nrows=0).drop(
+            labels=["dataset", "sub_id", "clinical_target"], axis="columns"
+        ).columns.tolist()
+
+        # Check that there is only one column left, as expected
+        assert len(feature_name) == 1, f"Expected 1 column, but got {len(feature_name)} columns: {feature_name}"
+        return feature_name[0]
 
     # --------------
     # Properties
@@ -1180,140 +1230,83 @@ class MultivariableElecsslHPO(HPOExperiment):
             os.mkdir(results_dir)
 
             # ---------------
-            # Using multiprocessing  # todo: should turn this off if using GPU?
+            # Train/extract all residuals
             # ---------------
-            with ProcessPoolExecutor(max_workers=self._experiments_config["MultiProcessing"]["max_workers"]) as ex:
-                print("Multiprocessing")
-                experiments = []
-                for (in_ocular_state, out_ocular_state), (in_freq_band, out_freq_band) in spaces:
-                    feature_extractor_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
+            biomarkers: Dict[Subject, Dict[str, float]] = dict()
+            for (in_ocular_state, out_ocular_state), (in_freq_band, out_freq_band) in spaces:
+                feature_extractor_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
 
-                    # ---------------
-                    # Just a bit of preparation...
-                    # ---------------
-                    # Get the number of EEG epochs per experiment  todo: a little hard-coded?
-                    preprocessing_config_path = _get_preprocessing_config_path(ocular_state=in_ocular_state)
-                    with open(preprocessing_config_path) as file:
-                        preprocessing_config = yaml.safe_load(file)
-                        num_epochs = preprocessing_config["Details"]["num_epochs"]
+                # ---------------
+                # Just a bit of preparation...
+                # ---------------
+                # Get the number of EEG epochs per experiment  todo: a little hard-coded?
+                preprocessing_config_path = _get_preprocessing_config_path(ocular_state=in_ocular_state)
+                with open(preprocessing_config_path) as file:
+                    preprocessing_config = yaml.safe_load(file)
+                    num_epochs = preprocessing_config["Details"]["num_epochs"]
 
-                    # Add the target to config file
-                    experiment_config_file = self._experiments_config.copy()
-                    target_name = f"band_power_{out_freq_band}_{out_ocular_state}"
-                    if experiment_config_file["Training"]["log_transform_targets"] is not None:
-                        target_name = f"{experiment_config_file['Training']['log_transform_targets']}_{target_name}"
-                    experiment_config_file["Training"]["target"] = target_name
+                # Add the target to config file
+                experiment_config_file = self._experiments_config.copy()
+                target_name = f"band_power_{out_freq_band}_{out_ocular_state}"
+                if experiment_config_file["Training"]["log_transform_targets"] is not None:
+                    target_name = f"{experiment_config_file['Training']['log_transform_targets']}_{target_name}"
+                experiment_config_file["Training"]["target"] = target_name
 
-                    # ---------------
-                    # Suggest / sample hyperparameters
-                    # ---------------
-                    suggested_hyperparameters = self.suggest_hyperparameters(
-                        name=feature_extractor_name, trial=trial, in_freq_band=in_freq_band,
-                        preprocessing_config_path=preprocessing_config_path
-                    )
+                # ---------------
+                # Suggest / sample hyperparameters
+                # ---------------
+                suggested_hyperparameters = self.suggest_hyperparameters(
+                    name=feature_extractor_name, trial=trial, in_freq_band=in_freq_band,
+                    preprocessing_config_path=preprocessing_config_path
+                )
 
-                    # ---------------
-                    # Initiate experiment
-                    # ---------------
-                    experiments.append(
-                        ex.submit(
-                            self._run_single_job, experiments_config=experiment_config_file, trial_number=trial.number,
-                            suggested_hyperparameters=suggested_hyperparameters, in_ocular_state=in_ocular_state,
-                            out_ocular_state=out_ocular_state, in_freq_band=in_freq_band, out_freq_band=out_freq_band,
-                            results_dir=results_dir, clinical_target=self._experiments_config["clinical_target"],
-                            deviation_method=self._experiments_config["deviation_method"],
-                            log_transform_clinical_target=self._experiments_config["log_transform_clinical_target"],
-                            num_eeg_epochs=num_epochs, feature_extractor_name=feature_extractor_name,
-                            pretext_main_metric=self._experiments_config["pretext_main_metric"]
-                        )
-                    )
+                # ---------------
+                # Initiate experiment
+                # ---------------
+                subjects, deviations, clinical_targets, feature_extractor_name = self._run_single_job(
+                    experiments_config=experiment_config_file, trial_number=trial.number,
+                    suggested_hyperparameters=suggested_hyperparameters, in_ocular_state=in_ocular_state,
+                    in_freq_band=in_freq_band, results_dir=results_dir,
+                    clinical_target=self._experiments_config["clinical_target"],
+                    deviation_method=self._experiments_config["deviation_method"],
+                    log_transform_clinical_target=self._experiments_config["log_transform_clinical_target"],
+                    num_eeg_epochs=num_epochs, feature_extractor_name=feature_extractor_name,
+                    pretext_main_metric=self._experiments_config["pretext_main_metric"]
+                )
 
                 # Collect the resulting 'biomarkers'
-                biomarkers: Dict[Subject, Dict[str, float]] = dict()
-                for process in concurrent.futures.as_completed(experiments):
-                    subjects, deviations, clinical_targets, feature_extractor_name = process.result()
-                    for subject, deviation, target in zip(subjects, deviations, clinical_targets):
-                        # Maybe add the target (not optimal code...)
-                        if subject not in biomarkers:
-                            biomarkers[subject] = {"clinical_target": target}
+                for subject, deviation, target in zip(subjects, deviations, clinical_targets):
+                    # Maybe add the target (not optimal code...)
+                    if subject not in biomarkers:
+                        biomarkers[subject] = {"clinical_target": target}
 
-                        # Add the deviation
-                        biomarkers[subject][feature_extractor_name] = deviation
+                    # Add the deviation
+                    biomarkers[subject][feature_extractor_name] = deviation
 
-                # Make it a dataframe and save it
-                df = pandas.DataFrame.from_dict(biomarkers, orient="index")
-                df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
+            # Make it a dataframe and save it
+            df = pandas.DataFrame.from_dict(biomarkers, orient="index")
+            df["dataset"] = [idx.dataset_name for idx in df.index]
+            df["sub_id"] = [idx.subject_id for idx in df.index]
+            df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
             # ---------------
             # Use the biomarkers
             # ---------------
-            # Create the subject splitting
-            non_test_subjects, test_subjects = simple_random_split(
-                subjects=biomarkers.keys(),
-                split_percent=self._experiments_config["TestSplit"]["split_percentage"],
-                seed=self._experiments_config["TestSplit"]["seed"], require_seeding=True, sort_first=True
+            score = _compute_biomarker_predictive_value(
+                df, subject_split_config=self._experiments_config["MLModelSubjectSplit"],
+                test_split_config=self._experiments_config["TestSplit"], ml_model_hp_config=self.ml_model_hp_config,
+                ml_model_settings_config=self.ml_model_settings_config, results_dir=results_dir,
+                save_test_predictions=self._experiments_config["save_test_predictions"], verbose=True
             )
-
-            split_kwargs = {"dataset_subjects": subjects_tuple_to_dict(non_test_subjects),
-                            **self._experiments_config["MLModelSubjectSplit"]["kwargs"]}
-            biomarker_evaluation_splits = get_data_split(
-                split=self._experiments_config["MLModelSubjectSplit"]["name"], **split_kwargs
-            ).splits
-
-            # Create ML model
-            ml_model = MLModel(
-                model=self.ml_model_hp_config["model"], model_kwargs=self.ml_model_hp_config["kwargs"],
-                splits=biomarker_evaluation_splits,
-                evaluation_metric=self.ml_model_settings_config["evaluation_metric"],
-                aggregation_method=self.ml_model_settings_config["aggregation_method"]
-            )
-
-            # Do evaluation (used as feedback to HPO algorithm)  todo: must implement splitting test
-            score = ml_model.evaluate_features(non_test_df=df.loc[list(non_test_subjects)])
-            print(f"Training done! Obtained {self.ml_model_settings_config['aggregation_method']} "
-                  f"{self.ml_model_settings_config['evaluation_metric']} = {score}")
-
-            # I will save the test results as well. Although it is conventional to not even open the test set before the
-            # HPO, keep in mind that as long the feedback to the HPO is not related to the test performance (and test
-            # set), then it will not bias the experiments. The model selection is also purely based on non-test set
-            # evaluated performance. Evaluating on the test set for every iteration may be interesting from an ML
-            # developers perspective, as one can e.g. find out if there are indications on the HPO leading to
-            # overfitting on the non-test set (although it would not be valid performance estimation to go back after
-            # checking the test set performance). Maybe I should call it "optimisation excluded set"?
-            if verify_type(self._experiments_config["save_test_predictions"], bool):
-                test_predictions, test_scores = ml_model.predict_and_score(
-                    df=df.loc[list(test_subjects)], metrics=self.ml_model_settings_config["metrics"],
-                    aggregation_method=self.ml_model_settings_config["test_prediction_aggregation"]
-                )
-
-                # Convert to more convenient format
-                test_predictions_dict: Dict[str, List[Union[str, float]]] = {"dataset": [], "sub_id": [], "pred": []}
-                for subject, prediction in zip(test_subjects, test_predictions):
-                    test_predictions_dict["dataset"].append(subject.dataset_name)
-                    test_predictions_dict["sub_id"].append(subject.subject_id)
-                    test_predictions_dict["pred"].append(prediction)
-
-                # Save predictions and scores on test set (the score provided to the HPO algorithm should be stored by
-                # optuna)
-                test_predictions_df = pandas.DataFrame(test_predictions_dict)
-                test_scores_df = pandas.DataFrame([test_scores])
-
-                test_predictions_df = test_predictions_df.round(
-                    decimals=self.ml_model_settings_config["test_predictions_decimals"]
-                )
-                test_scores_df = test_scores_df.round(decimals=self.ml_model_settings_config["test_scores_decimals"])
-
-                test_predictions_df.to_csv(results_dir / "test_predictions.csv", index=False)
-                test_scores_df.to_csv(results_dir / "test_scores.csv", index=False)
 
             return score
 
         return _objective
 
     @staticmethod
-    def _run_single_job(experiments_config, suggested_hyperparameters, trial_number, in_ocular_state, out_ocular_state,
-                        in_freq_band, out_freq_band, results_dir, clinical_target, deviation_method, num_eeg_epochs,
-                        log_transform_clinical_target, pretext_main_metric, feature_extractor_name):
+    def _run_single_job(experiments_config, suggested_hyperparameters, trial_number, in_ocular_state, in_freq_band,
+                        results_dir, clinical_target, deviation_method, num_eeg_epochs, log_transform_clinical_target,
+                        pretext_main_metric, feature_extractor_name):
         """Method for running a single SSL experiments"""
         experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
             experiments_config=experiments_config, in_freq_band=in_freq_band, in_ocular_state=in_ocular_state,
@@ -1334,15 +1327,88 @@ class MultivariableElecsslHPO(HPOExperiment):
         # ---------------
         # Extract expectation values and biomarkers
         # ---------------
-        # todo: a better solution could be to make the 'run_experiment' return the features...
-        # todo: slightly hard-coded target
         subject_ids, deviation, clinical_target = _get_delta_and_variable(
-            path=results_path / "Fold_0", target=f"band_power_{out_freq_band}_{out_ocular_state}",
+            path=results_path / "Fold_0", target=experiments_config["Training"]["target"],
             variable=clinical_target, deviation_method=deviation_method, log_var=log_transform_clinical_target,
             num_eeg_epochs=num_eeg_epochs, pretext_main_metric=pretext_main_metric, experiment_name=experiment_name
         )
 
         return subject_ids, deviation, clinical_target, feature_extractor_name
+
+    # --------------
+    # Methods for running HPO
+    # --------------
+    def reuse_simple_elecssl_runs(self, simple_elecssl_hpo: SimpleElecsslHPO):
+        # Load or create study
+        try:
+            study = self.load_study(sampler=None)
+        except KeyError:
+            study = self._create_study()
+
+        # -----------------
+        # Re-use trials
+        # -----------------
+        # Random sampling
+        self._random_simple_elecssl_reuse(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
+
+        # Best individual biomarkers  todo: keep it up, don't give up now!
+        # Mixed integer linear programming solution
+        # Score-based sampling
+
+    def _random_simple_elecssl_reuse(self, study: optuna.Study, simple_elecssl_hpo: SimpleElecsslHPO):
+        for _ in range(self._experiments_config["Reuse"]["num_random_reuse"]):
+            self._single_random_simple_elecssl_reuse(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
+
+    def _single_random_simple_elecssl_reuse(self, study: optuna.Study, simple_elecssl_hpo: SimpleElecsslHPO):
+        # --------------
+        # Make biomarkers dataframe
+        # --------------
+        biomarkers_dfs: List[pandas.DataFrame] = []
+        hyperparameters: Dict[str, Any] = dict()
+        hp_distributions: Dict[str, Any] = dict()
+        user_attrs: Dict[str, Any] = dict()
+        for feature_name, trials_and_folder_paths in simple_elecssl_hpo.get_trials_and_folders(
+                completed_only=True).items():
+            # Randomly select a trial and also get the corresponding path
+            trial, folder_path = random.choice(trials_and_folder_paths)
+
+            # Load the biomarker df
+            biomarkers_dfs.append(pandas.read_csv(folder_path / "ssl_biomarkers.csv"))
+
+            # Add the HPCs, HPDs, and which SimpleElecssl trial it was taken from
+            hyperparameters.update({f"{feature_name}_{hp_name}": hp_value for hp_name, hp_value in trial.params.items()
+                                    if hp_name.startswith("pretext")})
+            hp_distributions.update({f"{feature_name}_{hp_name}": hp_value
+                                     for hp_name, hp_value in trial.distributions.items()
+                                     if hp_name.startswith("pretext")})
+            user_attrs[feature_name] = {"Simple elecssl re-used": trial.number}
+
+        # Merge to single df
+        df = _merge_ssl_biomarkers_dataframes(biomarkers_dfs)
+
+        # --------------
+        # Use the biomarkers
+        # --------------
+        # Save it first because it is convenient
+        multielecssl_trial_number = len(study.trials)
+        multielecssl_folder_path = self._get_hpo_folder_path(trial_number=multielecssl_trial_number)
+        os.mkdir(multielecssl_folder_path)
+        df.to_csv(multielecssl_folder_path / "ssl_biomarkers.csv", index=False)
+
+        # Compute score
+        score = _compute_biomarker_predictive_value(
+            df, subject_split_config=self._experiments_config["MLModelSubjectSplit"],
+            test_split_config=self._experiments_config["TestSplit"], ml_model_hp_config=self.ml_model_hp_config,
+            ml_model_settings_config=self.ml_model_settings_config, verbose=True,
+            save_test_predictions=self._experiments_config["save_test_predictions"],
+            results_dir=multielecssl_folder_path
+        )
+
+        reused_trial = optuna.trial.create_trial(
+            state=optuna.trial.TrialState.COMPLETE, params=hyperparameters, distributions=hp_distributions,
+            user_attrs=user_attrs, system_attrs=dict(), intermediate_values=dict(), value=score
+        )
+        study.add_trial(reused_trial)
 
     # --------------
     # Methods for analysis
@@ -1492,9 +1558,10 @@ class AllHPOExperiments:
         pretrain_experiment = self.run_pretraining_hpo()
 
         # Simple Elecssl
-        self.run_simple_elecssl_hpo(pretrain_experiment)
+        simple_elecssl_experiment = self.run_simple_elecssl_hpo(pretrain_experiment)
 
         # Multivariable Elecssl
+        self.run_multivariable_elecssl_hpo(simple_elecssl_experiment)
 
         # --------------
         # Test set integrity tests
@@ -1544,7 +1611,7 @@ class AllHPOExperiments:
 
         # Model with pre-training
         # todo: If saving SSL biomarkers, don't we need to add some information from ElecsslHPO?
-        pretrain_experiment = PretrainHPO(
+        with PretrainHPO(
             hp_config_paths=(shared_hpd_path,),
             experiments_config_paths=(shared_experiments_path, pretraining_shared_experiments_path),
             results_dir=self._results_path, is_continuation=False,
@@ -1554,8 +1621,7 @@ class AllHPOExperiments:
             downstream_experiments_config_paths=(shared_experiments_path, pretraining_shared_experiments_path,
                                                  pretraining_downstream_experiments_path,),
             downstream_hp_config_paths=(shared_hpd_path, pretraining_downstream_hpd_path,)
-        )
-        with pretrain_experiment as experiment:
+        ) as experiment:
             experiment.run_hyperparameter_optimisation()
 
         return experiment
@@ -1574,8 +1640,30 @@ class AllHPOExperiments:
             results_dir=self._results_path, is_continuation=False
         )
         with elecssl_experiment as experiment:
+            # experiment.run_hyperparameter_optimisation()
             experiment.reuse_pretrained_runs(pretrain_experiment)
-            experiment.continue_hyperparameter_optimisation(num_trials=4)  # todo: don't hardcore
+            experiment.continue_hyperparameter_optimisation(num_trials=1)  # todo: don't hardcore
+
+        return experiment
+
+    def run_multivariable_elecssl_hpo(self, simple_elecssl_experiment):
+        # Create paths
+        shared_experiments_path = self._experiments_configs_path / "shared_conf.yml"
+        elecssl_experiments_path = self._experiments_configs_path / "multivariable_elecssl_conf.yml"
+        shared_hpd_path = self._hpd_configs_path / "shared_hpds.yml"
+        elecssl_hpd_path = self._hpd_configs_path / "multivariable_elecssl_hpds.yml"
+
+        # Elecssl with multiple independent variables/residuals
+        with MultivariableElecsslHPO(
+            hp_config_paths=(shared_hpd_path, elecssl_hpd_path),
+            experiments_config_paths=(shared_experiments_path, elecssl_experiments_path),
+            results_dir=self._results_path, is_continuation=False
+        ) as experiment:
+            # experiment.run_hyperparameter_optimisation()
+            experiment.reuse_simple_elecssl_runs(simple_elecssl_experiment)
+            experiment.continue_hyperparameter_optimisation(num_trials=2)  # todo: don't hardcore
+
+        return experiment
 
 
 # --------------
@@ -1597,6 +1685,69 @@ class DissimilarTestSetsError(Exception):
 # --------------
 # Functions
 # --------------
+def _merge_ssl_biomarkers_dataframes(dfs):
+    """
+    Merges a list of DataFrames on the 'dataset' and 'sub_id' columns,
+    and drops redundant 'clinical_target' columns if they exist. Assumes
+    that the 'clinical_target' column exists and has identical values in all DataFrames.
+
+    Parameters
+    ----------
+    dfs : list[pandas.DataFrame]
+        A list of DataFrames to be merged. Each DataFrame should contain the columns
+        'dataset', 'sub_id', and 'clinical_target'. The 'clinical_target' column
+        is expected to have identical values across all DataFrames.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame resulting from the merge of the input DataFrames on 'dataset'
+        and 'sub_id', with all redundant 'clinical_target' columns dropped, leaving only one.
+
+    Raises
+     ------
+     ValueError
+        If the 'dataset' and 'sub_id' identifiers do not match exactly across all DataFrames.
+
+    Examples
+    --------
+    >>> my_df1 = pandas.DataFrame({"dataset": ["A", "B", "C"], "sub_id": ["1", "2", "3"],
+    ...                            "clinical_target": [100, 200, 300], "col1": [10, 20, 30]})
+    >>> my_df2 = pandas.DataFrame({"dataset": ["C", "B", "A"], "sub_id": ["3", "2", "1"],
+    ...                            "clinical_target": [100, 200, 300], "col2": [100, 200, 300]})
+    >>> my_df3 = pandas.DataFrame({"dataset": ["B", "A", "C"],"sub_id": ["2", "1", "3"],
+    ...                            "clinical_target": [100, 200, 300], "col3": [5, 6, 7]})
+    >>> my_dfs = [my_df1, my_df2, my_df3]
+    >>> my_merged_df = _merge_ssl_biomarkers_dataframes(my_dfs)
+    >>> my_merged_df
+      dataset sub_id  clinical_target  col1  col2  col3
+    0       A      1              100    10   300     6
+    1       B      2              200    20   200     5
+    2       C      3              300    30   100     7
+    >>> my_df1 = pandas.DataFrame({"dataset": ["A", "B", "C", "D"], "sub_id": ["1", "2", "3", "4"],
+    ...                            "clinical_target": [100, 200, 300, 400], "col1": [10, 20, 30, 40]})
+    >>> my_df2 = pandas.DataFrame({"dataset": ["C", "B", "E"], "sub_id": ["3", "2", "5"],
+    ...                            "clinical_target": [300, 200, 500], "col2": [100, 200, 300]})
+    >>> _merge_ssl_biomarkers_dataframes([my_df1, my_df2])
+    Traceback (most recent call last):
+    ...
+    ValueError: Identifiers in the 'dataset' and 'sub_id' columns do not match exactly between DataFrames.
+    """
+    # Ensure all DataFrames have the same identifiers
+    base_identifiers = set(dfs[0][["dataset", "sub_id"]].apply(tuple, axis=1))
+    for df in dfs[1:]:
+        current_identifiers = set(df[["dataset", "sub_id"]].apply(tuple, axis=1))
+        if base_identifiers != current_identifiers:
+            raise ValueError("Identifiers in the 'dataset' and 'sub_id' columns do not match exactly between "
+                             "DataFrames.")
+
+    # Make copies of DataFrames and drop duplicate 'clinical_target' columns
+    dfs = [dfs[0]] + [df.drop(columns=["clinical_target"], errors="ignore", inplace=False) for df in dfs[1:]]
+
+    # Merge
+    return reduce(lambda left, right: pandas.merge(left, right, on=["dataset", "sub_id"], how="inner"), dfs)
+
+
 def _make_single_residuals_df(*, results_dir, feature_name, pseudo_target, downstream_target, deviation_method,
                               in_ocular_state, log_transform_downstream_target, pretext_main_metric, experiment_name):
     subject_ids, deviations, clinical_targets = _get_delta_and_variable(
