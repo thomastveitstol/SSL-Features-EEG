@@ -2,7 +2,7 @@
 # Related to the pretext task
 # -----------------
 Reuse:
-  num_random_reuse: 30
+  num_random_reuse: 200
 
 IOSpaces:  # In ocular state, out ocular state, in frequency band, out frequency band
   - [ [ ec, eo ], [ all, delta ] ]
