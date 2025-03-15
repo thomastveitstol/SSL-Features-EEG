@@ -4,20 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="coverage">
-      <change afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/hyperparameter_distributions/simple_elecssl_hpds.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/simple_elecssl_conf.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/run_experiments.py" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added re-usage for multivariable elecssl">
       <change beforePath="$PROJECT_DIR$/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/.coverage" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/elecssl_conf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/elecssl_conf.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/pretraining_shared_conf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/pretraining_shared_conf.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/shared_conf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/shared_conf.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/continue_elecssl_hpo.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/continue_elecssl_hpo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/elecssl_hpo.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/elecssl_hpo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/multiple_scripts.bash" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/multiple_scripts.bash" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/sandbox.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/sandbox.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/multivariable_elecssl_conf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/multivariable_elecssl_conf.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/models/ml_models/ml_model_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/models/ml_models/ml_model_base.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,182 +49,182 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python tests.Doctest BandPass._get_folder_name.executor": "Run",
-    "Python tests.Doctest BiMap.__init__.executor": "Run",
-    "Python tests.Doctest CrossCovariance.forward.executor": "Run",
-    "Python tests.Doctest CrossPW_PLV.forward.executor": "Run",
-    "Python tests.Doctest Deep4NetMTS.forward.executor": "Run",
-    "Python tests.Doctest FCModule.forward.executor": "Run",
-    "Python tests.Doctest GreenModel.classify_latent_features.executor": "Run",
-    "Python tests.Doctest GreenModel.forward.executor": "Run",
-    "Python tests.Doctest Histories._build_error_and_info_objects.executor": "Run",
-    "Python tests.Doctest Histories.mean.executor": "Run",
-    "Python tests.Doctest Histories.pairwise_mean_difference.executor": "Run",
-    "Python tests.Doctest OcularState.to_pascal_case.executor": "Run",
-    "Python tests.Doctest PW_PLV.forward.executor": "Run",
-    "Python tests.Doctest PolygonGraph.line_intersection.executor": "Run",
-    "Python tests.Doctest RealCovariance.forward.executor": "Run",
-    "Python tests.Doctest ShallowFBCSPNetMTS.forward.executor": "Run",
-    "Python tests.Doctest TDBRAIN.age.executor": "Run",
-    "Python tests.Doctest Wang._load_single_cleaned_mne_object.executor": "Run",
-    "Python tests.Doctest WaveletConv.forward.executor": "Run",
-    "Python tests.Doctest _aggregate_predictions.executor": "Run",
-    "Python tests.Doctest _compute_centroid.executor": "Run",
-    "Python tests.Doctest _compute_separating_angles.executor": "Run",
-    "Python tests.Doctest _excluded_dataset_only.executor": "Run",
-    "Python tests.Doctest _get_error.executor": "Run",
-    "Python tests.Doctest _get_pooling_layer.executor": "Run",
-    "Python tests.Doctest _sample_dilation.executor": "Run",
-    "Python tests.Doctest _select_dataset_and_index.executor": "Run",
-    "Python tests.Doctest _snake_case_to_pascal_case.executor": "Run",
-    "Python tests.Doctest get_domain_discriminator.executor": "Run",
-    "Python tests.Doctest get_montage_split.executor": "Run",
-    "Python tests.Doctest get_mts_module.executor": "Run",
-    "Python tests.Doctest get_pooling_layer.executor": "Run",
-    "Python tests.Doctest get_results_dir.executor": "Run",
-    "Python tests.Doctest higher_is_better.executor": "Run",
-    "Python tests.Doctest is_improved_model.executor": "Run",
-    "Python tests.Doctest make_trial_suggestion.executor": "Run",
-    "Python tests.Doctest project_to_2d.executor": "Run",
-    "Python tests.Doctest sample_hyperparameter.executor": "Run",
-    "Python tests.Doctest sex_to_int.executor": "Run",
-    "Python tests.Doctest simple_random_split.executor": "Run",
-    "Python tests.Doctest strip_tensors.executor": "Run",
-    "Python tests.Doctest subjects_tuple_to_dict.executor": "Run",
-    "Python tests.Doctest suggest_hyperparameters.executor": "Run",
-    "Python tests.Doctests in AIMind.executor": "Run",
-    "Python tests.Doctests in BandPass.executor": "Run",
-    "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
-    "Python tests.Doctests in Deep4NetMTS (1).executor": "Run",
-    "Python tests.Doctests in Deep4NetMTS (2).executor": "Run",
-    "Python tests.Doctests in Deep4NetMTS.executor": "Run",
-    "Python tests.Doctests in DortmundVital.executor": "Run",
-    "Python tests.Doctests in FCModule.executor": "Run",
-    "Python tests.Doctests in GreenModel.executor": "Run",
-    "Python tests.Doctests in Histories.executor": "Run",
-    "Python tests.Doctests in InterpolationDataGenerator.executor": "Run",
-    "Python tests.Doctests in KFoldDataSplit.executor": "Run",
-    "Python tests.Doctests in KeepDatasetOutRandomSplits.executor": "Run",
-    "Python tests.Doctests in LEMON.executor": "Run",
-    "Python tests.Doctests in LODOSplit (1).executor": "Run",
-    "Python tests.Doctests in LODOSplit (2).executor": "Run",
-    "Python tests.Doctests in LODOSplit (3).executor": "Run",
-    "Python tests.Doctests in LODOSplit (4).executor": "Run",
-    "Python tests.Doctests in LODOSplit (5).executor": "Run",
-    "Python tests.Doctests in LODOSplit.executor": "Run",
-    "Python tests.Doctests in MLModel (1).executor": "Run",
-    "Python tests.Doctests in MLModel (2).executor": "Run",
-    "Python tests.Doctests in MLModel (3).executor": "Run",
-    "Python tests.Doctests in MLModel (4).executor": "Run",
-    "Python tests.Doctests in MLModel.executor": "Run",
-    "Python tests.Doctests in MainFixedChannelsModel.executor": "Run",
-    "Python tests.Doctests in Miltiadous.executor": "Run",
-    "Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor": "Run",
-    "Python tests.Doctests in MultiMSMean.executor": "Run",
-    "Python tests.Doctests in MultiMontageSplitsRegionBasedPooling.executor": "Run",
-    "Python tests.Doctests in OcularState.executor": "Run",
-    "Python tests.Doctests in PW_PLV.executor": "Run",
-    "Python tests.Doctests in RandomSplitsTV.executor": "Run",
-    "Python tests.Doctests in SRM (1).executor": "Run",
-    "Python tests.Doctests in SRM.executor": "Run",
-    "Python tests.Doctests in ShallowFBCSPNetMTS.executor": "Run",
-    "Python tests.Doctests in Subject.executor": "Run",
-    "Python tests.Doctests in TDBRAIN.executor": "Run",
-    "Python tests.Doctests in _ChannelName (1).executor": "Run",
-    "Python tests.Doctests in _ChannelName.executor": "Run",
-    "Python tests.Doctests in ai_mind.executor": "Run",
-    "Python tests.Doctests in braindecode_models.executor": "Run",
-    "Python tests.Doctests in centroid_polygon.executor": "Run",
-    "Python tests.Doctests in cmmn.executor": "Run",
-    "Python tests.Doctests in data_generator.executor": "Run",
-    "Python tests.Doctests in dataset_base.executor": "Run",
-    "Python tests.Doctests in fc_modules.executor": "Run",
-    "Python tests.Doctests in getter.executor": "Run",
-    "Python tests.Doctests in green_model.executor": "Run",
-    "Python tests.Doctests in head_region.executor": "Run",
-    "Python tests.Doctests in hp_suggesting.executor": "Run",
-    "Python tests.Doctests in inception_network.executor": "Run",
-    "Python tests.Doctests in interpolate_datasets.executor": "Run",
-    "Python tests.Doctests in lemon.executor": "Run",
-    "Python tests.Doctests in losses.executor": "Run",
-    "Python tests.Doctests in main_fixed_channels_model.executor": "Run",
-    "Python tests.Doctests in main_rbp_model.executor": "Run",
-    "Python tests.Doctests in mean.executor": "Run",
-    "Python tests.Doctests in metrics.executor": "Run",
-    "Python tests.Doctests in miltiadous.executor": "Run",
-    "Python tests.Doctests in ml_model_base.executor": "Run",
-    "Python tests.Doctests in paths.executor": "Run",
-    "Python tests.Doctests in region_based_pooling.executor": "Run",
-    "Python tests.Doctests in sampling_distributions.executor": "Run",
-    "Python tests.Doctests in spd_layers.executor": "Run",
-    "Python tests.Doctests in srm.executor": "Run",
-    "Python tests.Doctests in subject_split.executor": "Run",
-    "Python tests.Doctests in td_brain.executor": "Run",
-    "Python tests.Doctests in univariate_rocket.executor": "Run",
-    "Python tests.Doctests in utils (1).executor": "Run",
-    "Python tests.Doctests in utils.executor": "Run",
-    "Python tests.Doctests in wang.executor": "Run",
-    "Python tests.Doctests in wavelet_layers.executor": "Run",
-    "Python tests.Python tests for test_green_model.test_forward.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_errors_regression_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_predictions_error_classification_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_predictions_error_multiclass_classification_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_predictions_error_regression_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_target_error_classification_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_target_error_multiclass_classification_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_target_error_regression_metrics.executor": "Run",
-    "Python tests.Python tests for test_paths.test_blabla.executor": "Run",
-    "Python tests.Python tests for test_paths.test_get_eeg_features_storage_path.executor": "Run",
-    "Python tests.Python tests for test_paths.test_get_numpy_data_storage_path.executor": "Run",
-    "Python tests.Python tests for test_paths.test_get_results_dir.executor": "Run",
-    "Python tests.Python tests for test_region_based_pooling.test_forward.executor": "Run",
-    "Python tests.Python tests for test_subject_split.test_non_bool_sort_error.executor": "Run",
-    "Python tests.Python tests for test_subject_split.test_order_invariance.executor": "Run",
-    "Python tests.Python tests for test_subject_split.test_order_non_invariance.executor": "Run",
-    "Python tests.Python tests for test_subject_split.test_subject_split_equality.executor": "Run",
-    "Python tests.Python tests in test_hpo_experiment.py.executor": "Run",
-    "Python tests.Python tests in test_metrics.py.executor": "Run",
-    "Python tests.Python tests in test_models.py.executor": "Run",
-    "Python tests.Python tests in test_paths.py.executor": "Run",
-    "Python tests.Python tests in test_region_based_pooling.py.executor": "Run",
-    "Python tests.Python tests in test_subject_split.py.executor": "Run",
-    "Python.band_pass.executor": "Run",
-    "Python.band_power.executor": "Run",
-    "Python.centroid_polygon.executor": "Run",
-    "Python.debugging_lemon.executor": "Run",
-    "Python.debugging_td_brain.executor": "Run",
-    "Python.dortmund_vital (1).executor": "Run",
-    "Python.dortmund_vital.executor": "Run",
-    "Python.elecssl_experiments.executor": "Run",
-    "Python.elecssl_hpo.executor": "Run",
-    "Python.group_differences.executor": "Run",
-    "Python.hpo_experiment.executor": "Run",
-    "Python.lemon.executor": "Run",
-    "Python.linear_regresison.executor": "Run",
-    "Python.metrics.executor": "Run",
-    "Python.ml_model_base.executor": "Run",
-    "Python.mts_module_base.executor": "Run",
-    "Python.pl_utils.executor": "Run",
-    "Python.plot_channel_positions.executor": "Run",
-    "Python.plot_eeg_data.executor": "Run",
-    "Python.plot_power.executor": "Run",
-    "Python.plot_power_distributions.executor": "Run",
-    "Python.regression_performance.executor": "Run",
-    "Python.run_experiments.executor": "Run",
-    "Python.sandbox.executor": "Run",
-    "Python.srm.executor": "Run",
-    "Python.test_paths.executor": "Run",
-    "Python.wang.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/model_training/elecssl_method/config_files/static_configurations",
-    "settings.editor.selected.configurable": "preferences.general"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python tests.Doctest BandPass._get_folder_name.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest BiMap.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest CrossCovariance.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest CrossPW_PLV.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Deep4NetMTS.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest FCModule.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest GreenModel.classify_latent_features.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest GreenModel.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Histories._build_error_and_info_objects.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Histories.mean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Histories.pairwise_mean_difference.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest OcularState.to_pascal_case.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest PW_PLV.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest PolygonGraph.line_intersection.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest RealCovariance.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest ShallowFBCSPNetMTS.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest TDBRAIN.age.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Wang._load_single_cleaned_mne_object.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest WaveletConv.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _aggregate_predictions.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _compute_centroid.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _compute_separating_angles.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _excluded_dataset_only.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _get_error.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _get_pooling_layer.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _sample_dilation.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _select_dataset_and_index.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _snake_case_to_pascal_case.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_domain_discriminator.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_montage_split.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_mts_module.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_pooling_layer.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_results_dir.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest higher_is_better.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest is_improved_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest make_trial_suggestion.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest project_to_2d.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest sample_hyperparameter.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest sex_to_int.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest simple_random_split.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest strip_tensors.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest subjects_tuple_to_dict.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest suggest_hyperparameters.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in AIMind.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in BandPass.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in CustomWeightedLoss.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Deep4NetMTS (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Deep4NetMTS (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Deep4NetMTS.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in DortmundVital.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in FCModule.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in GreenModel.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Histories.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in InterpolationDataGenerator.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in KFoldDataSplit.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in KeepDatasetOutRandomSplits.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LEMON.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit (3).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit (4).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit (5).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MLModel (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MLModel (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MLModel (3).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MLModel (4).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MLModel.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MainFixedChannelsModel.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Miltiadous.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MultiMSMean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MultiMontageSplitsRegionBasedPooling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in OcularState.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in PW_PLV.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in RandomSplitsTV.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in SRM (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in SRM.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in ShallowFBCSPNetMTS.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Subject.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in TDBRAIN.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in _ChannelName (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in _ChannelName.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in ai_mind.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in braindecode_models.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in centroid_polygon.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in cmmn.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in data_generator.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in dataset_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in fc_modules.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in getter.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in green_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in head_region.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in hp_suggesting.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in inception_network.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in interpolate_datasets.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in losses.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in main_fixed_channels_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in main_rbp_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in mean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in miltiadous.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in ml_model_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in paths.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in region_based_pooling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in sampling_distributions.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in spd_layers.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in srm.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in subject_split.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in td_brain.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in univariate_rocket.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in utils (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in wang.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in wavelet_layers.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_green_model.test_forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_errors_regression_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_predictions_error_classification_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_predictions_error_multiclass_classification_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_predictions_error_regression_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_target_error_classification_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_target_error_multiclass_classification_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_target_error_regression_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_paths.test_blabla.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_paths.test_get_eeg_features_storage_path.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_paths.test_get_numpy_data_storage_path.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_paths.test_get_results_dir.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_region_based_pooling.test_forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_subject_split.test_non_bool_sort_error.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_subject_split.test_order_invariance.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_subject_split.test_order_non_invariance.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_subject_split.test_subject_split_equality.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_hpo_experiment.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_metrics.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_models.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_paths.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_region_based_pooling.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_subject_split.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python.band_pass.executor&quot;: &quot;Run&quot;,
+    &quot;Python.band_power.executor&quot;: &quot;Run&quot;,
+    &quot;Python.centroid_polygon.executor&quot;: &quot;Run&quot;,
+    &quot;Python.debugging_lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python.debugging_td_brain.executor&quot;: &quot;Run&quot;,
+    &quot;Python.dortmund_vital (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.dortmund_vital.executor&quot;: &quot;Run&quot;,
+    &quot;Python.elecssl_experiments.executor&quot;: &quot;Run&quot;,
+    &quot;Python.elecssl_hpo.executor&quot;: &quot;Run&quot;,
+    &quot;Python.group_differences.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hpo_experiment.executor&quot;: &quot;Run&quot;,
+    &quot;Python.lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python.linear_regresison.executor&quot;: &quot;Run&quot;,
+    &quot;Python.metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ml_model_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mts_module_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pl_utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plot_channel_positions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plot_eeg_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plot_power.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plot_power_distributions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.regression_performance.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run_experiments.executor&quot;: &quot;Run&quot;,
+    &quot;Python.sandbox.executor&quot;: &quot;Run&quot;,
+    &quot;Python.srm.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_paths.executor&quot;: &quot;Run&quot;,
+    &quot;Python.wang.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/model_training/elecssl_method/config_files/static_configurations&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations" />
@@ -377,14 +368,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00408" summary="added methods for checking test set integrity after HPO">
-      <option name="closed" value="true" />
-      <created>1740746535132</created>
-      <option name="number" value="00408" />
-      <option name="presentableId" value="LOCAL-00408" />
-      <option name="project" value="LOCAL" />
-      <updated>1740746535132</updated>
     </task>
     <task id="LOCAL-00409" summary="improved docstring">
       <option name="closed" value="true" />
@@ -770,7 +753,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741110402942</updated>
     </task>
-    <option name="localTasksCounter" value="457" />
+    <task id="LOCAL-00457" summary="added re-usage for multivariable elecssl">
+      <option name="closed" value="true" />
+      <created>1742045595528</created>
+      <option name="number" value="00457" />
+      <option name="presentableId" value="LOCAL-00457" />
+      <option name="project" value="LOCAL" />
+      <updated>1742045595529</updated>
+    </task>
+    <option name="localTasksCounter" value="458" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -785,7 +776,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improved methods for test set integrity checks, and fixed issues with inconsistent test set for ElecsslHPO" />
     <MESSAGE value="fixed computing performance per dataset in pretraining pretext" />
     <MESSAGE value="fixed path" />
     <MESSAGE value="changed data split for pretraining HPO" />
@@ -810,6 +800,7 @@
     <MESSAGE value="config file" />
     <MESSAGE value="updated bash script" />
     <MESSAGE value="coverage" />
-    <option name="LAST_COMMIT_MESSAGE" value="coverage" />
+    <MESSAGE value="added re-usage for multivariable elecssl" />
+    <option name="LAST_COMMIT_MESSAGE" value="added re-usage for multivariable elecssl" />
   </component>
 </project>
