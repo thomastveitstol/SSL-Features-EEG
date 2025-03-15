@@ -11,7 +11,6 @@ from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal, Set, Uni
 import numpy
 import optuna
 import pandas
-import psutil
 import yaml  # type: ignore[import-untyped]
 from optuna.trial import FrozenTrial
 from progressbar import progressbar
