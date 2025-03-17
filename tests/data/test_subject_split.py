@@ -41,7 +41,8 @@ def test_seeding(splits_and_kwargs):
         splits_1 = subject_class(**kwargs).splits
         splits_2 = subject_class(**kwargs).splits
 
-        assert splits_1 == splits_2, "Seeding is not sufficient to make the splits reproducible"
+        assert splits_1 == splits_2, (f"Seeding is not sufficient to make the splits reproducible for class "
+                                      f"{subject_class}")
 
 
 def test_missing_seeding(splits_and_kwargs):
@@ -77,7 +78,7 @@ def test_order_invariance(splits_and_kwargs):
             splits.append(split_class(**new_kwargs).splits)
 
         # All splits should still be the same
-        assert all(split == splits[0] for split in splits)
+        assert all(split == splits[0] for split in splits), f"Split were not reproducible for class {split_class}"
 
 
 def test_order_non_invariance(splits_and_kwargs):
