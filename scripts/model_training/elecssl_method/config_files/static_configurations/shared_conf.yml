@@ -20,9 +20,9 @@ Device: cpu
 HPO:
   HPOStudy:
     sampler: TPESampler
-    sampler_kwargs: { n_startup_trials: 150 }
+    sampler_kwargs: { n_startup_trials: 2 }
     direction: maximize  # todo: this must depend on the selected target
-  num_trials: 200
+  num_trials: 3
 
 # -----------------
 # Configuration for subject splitting
@@ -40,7 +40,7 @@ Scalers:  # Remember that this is whatever the SingleExperiment is working on
     name: ZNormalisation
 Training:  # Remember that this is whatever the SingleExperiment is working on
   batch_size: 16
-  num_epochs: 20
+  num_epochs: 2
   verbose: true
   verbose_variables: false
   continuous_testing: true
