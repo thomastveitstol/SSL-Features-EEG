@@ -133,10 +133,10 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
     >>> my_val_subjects = tuple(my_split[1] for my_split in my_splits)  # type: ignore
     >>> for val_subjects in my_val_subjects:
     ...     val_subjects
-    (Subject(subject_id='Piastri', dataset_name='McLaren'), Subject(subject_id='Norris', dataset_name='McLaren'))
-    (Subject(subject_id='Magnussen', dataset_name='Haas'), Subject(subject_id='Wolff', dataset_name='Mercedes'))
-    (Subject(subject_id='Smooth Sainz', dataset_name='Ferrari'), Subject(subject_id='Hülkenberg', dataset_name='Haas'))
-    (Subject(subject_id='Magnussen', dataset_name='Haas'), Subject(subject_id='Piastri', dataset_name='McLaren'))
+    (Subject(subject_id='Verstappen', dataset_name='Red Bull'), Subject(subject_id='Norris', dataset_name='McLaren'))
+    (Subject(subject_id='Magnussen', dataset_name='Haas'), Subject(subject_id='Verstappen', dataset_name='Red Bull'))
+    (Subject(subject_id='Leclerc', dataset_name='Ferrari'), Subject(subject_id='Magnussen', dataset_name='Haas'))
+    (Subject(subject_id='Smooth Sainz', dataset_name='Ferrari'), Subject(subject_id='Magnussen', dataset_name='Haas'))
     """
 
     __slots__ = ("_splits",)
@@ -154,8 +154,7 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
         seed : int, optional
         """
         # Maybe make data split reproducible
-        if seed is not None:
-            random.seed(seed)
+        rng = random.Random(seed)
 
         # ------------
         # Generate random splits for training/validation
@@ -176,15 +175,12 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
         splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
 
         # Extract test set (shuffling happens in '_split_randomly')
-        non_test_subjects, test_subjects = _split_randomly(subjects=subjects, split_percent=test_split)
+        non_test_subjects, test_subjects = _split_randomly(subjects=subjects, split_percent=test_split, rng=rng)
         for i in range(num_random_splits):
             non_test_subjects = non_test_subjects.copy()
 
-            # Randomly shuffle the non-test subjects
-            random.shuffle(non_test_subjects)
-
             # Split into training/validation and test
-            train_subjects, val_subjects = _split_randomly(subjects=non_test_subjects, split_percent=val_split)
+            train_subjects, val_subjects = _split_randomly(subjects=non_test_subjects, split_percent=val_split, rng=rng)
 
             # Add to splits. The test set will be empty instead of non-existent for consistency reasons
             splits.append((tuple(train_subjects), tuple(val_subjects), tuple(test_subjects)))
@@ -253,8 +249,7 @@ class RandomSplitsTV(DataSplitBase):
         sort_first : bool
         """
         # Maybe make data split reproducible
-        if seed is not None:
-            random.seed(seed)
+        rng = random.Random(seed)
 
         # ------------
         # Generate random splits for training/validation
@@ -274,10 +269,10 @@ class RandomSplitsTV(DataSplitBase):
         splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
         for i in range(num_random_splits):
             # Randomly shuffle the non-test subjects
-            random.shuffle(subjects)
+            rng.shuffle(subjects)
 
             # Split into training and validation
-            train_subjects, val_subjects = _split_randomly(subjects=subjects, split_percent=val_split)
+            train_subjects, val_subjects = _split_randomly(subjects=subjects, split_percent=val_split, rng=rng)
 
             # Add to splits. The test set will be empty instead of non-existent for consistency reasons
             splits.append((tuple(train_subjects), tuple(val_subjects), ()))
@@ -350,15 +345,14 @@ class KFoldDataSplit(DataSplitBase):
                 subjects.append(Subject(subject_id=sub_id, dataset_name=dataset_name))
 
         # Maybe make data split reproducible
-        if seed is not None:
-            random.seed(seed)
+        rng = random.Random(seed)
 
         # Maybe sort it to make order it invariant
         if verify_type(sort_first, bool):
             subjects.sort()
 
         # Shuffle
-        random.shuffle(subjects)
+        rng.shuffle(subjects)
 
         # Perform split
         split = numpy.array_split(subjects, num_folds)  # type: ignore[arg-type, var-annotated]
@@ -368,7 +362,7 @@ class KFoldDataSplit(DataSplitBase):
         for i, fold in enumerate(split):
             test = tuple(fold)
             non_test_subjects = _leave_1_fold_out(i, split)
-            train, val = _split_randomly(subjects=non_test_subjects, split_percent=val_split)
+            train, val = _split_randomly(subjects=non_test_subjects, split_percent=val_split, rng=rng)
             folds.append((tuple(train), tuple(val), test))
 
         # Make the k folds
@@ -442,11 +436,12 @@ class LODOCV(DataSplitBase):
         sort_first : bool
         """
         # Maybe make data split reproducible
-        if seed is not None:
-            random.seed(seed)
+        rng = random.Random(seed)
 
         # Loop though the datasets
         folds = []
+        if verify_type(sort_first, bool):
+            dataset_subjects = dict(sorted(dataset_subjects.items()))
         for dataset_name, subject_ids in dataset_subjects.items():
             # Fix type
             sub_ids = [Subject(dataset_name=dataset_name, subject_id=subject_id) for subject_id in subject_ids]
@@ -456,22 +451,20 @@ class LODOCV(DataSplitBase):
                 sub_ids.sort()
 
             # Shuffle
-            random.shuffle(sub_ids)
+            rng.shuffle(sub_ids)
 
             # Add it as a tuple to the folds
             folds.append(tuple(sub_ids))
 
-        # Shuffle the folds (likely not necessary, but why not)
-        if verify_type(sort_first, bool):
-            folds.sort()
-        random.shuffle(folds)
+        # Shuffle the folds
+        rng.shuffle(folds)
 
         # Now that each element contains all subjects from a single dataset, create the folds
         splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
         for i, fold in enumerate(folds):
             test_subjects = fold
             non_test_subjects = _leave_1_fold_out(i, folds)
-            train, val = _split_randomly(subjects=non_test_subjects, split_percent=val_split)
+            train, val = _split_randomly(subjects=non_test_subjects, split_percent=val_split, rng=rng)
             splits.append((tuple(train), tuple(val), test_subjects))
 
         # Set attribute
@@ -542,8 +535,7 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
         sort_first : bool
         """
         # Maybe make data split reproducible
-        if seed is not None:
-            random.seed(seed)
+        rng = random.Random(seed)
 
         # Just fix the test set
         test_subjects = tuple(Subject(dataset_name=left_out_dataset, subject_id=subject_id)
@@ -575,10 +567,10 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
         splits: List[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]] = []
         for i in range(num_random_splits):
             # Randomly shuffle the non-test subjects
-            random.shuffle(non_test_subjects)
+            rng.shuffle(non_test_subjects)
 
             # Split into training and validation
-            train_subjects, val_subjects = _split_randomly(subjects=non_test_subjects, split_percent=val_split)
+            train_subjects, val_subjects = _split_randomly(subjects=non_test_subjects, split_percent=val_split, rng=rng)
 
             # Add to splits
             splits.append((tuple(train_subjects), tuple(val_subjects), test_subjects))
@@ -739,11 +731,10 @@ def simple_random_split(subjects, split_percent, seed, require_seeding, sort_fir
             raise TypeError(f"Expected 'require_seeding' argument to be boolean, but found {type(require_seeding)}")
         if require_seeding:
             raise RuntimeError("Seeding for reproducibility was required, but not given")
-    else:
-        random.seed(seed)
+    rng = random.Random(seed)
 
     # Generate splits
-    set_1, set_2 = _split_randomly(subjects=subjects, split_percent=split_percent)
+    set_1, set_2 = _split_randomly(subjects=subjects, split_percent=split_percent, rng=rng)
     return tuple(set_1), tuple(set_2)
 
 
@@ -785,7 +776,7 @@ def _leave_1_fold_out(i, folds) -> Tuple[Subject, ...]:
     return tuple(itertools.chain(*tuple(fold for j, fold in enumerate(folds) if j != i)))
 
 
-def _split_randomly(subjects, split_percent):
+def _split_randomly(subjects, split_percent, rng: random.Random):
     # Input checks
     assert all(isinstance(subject, (Subject, str)) for subject in subjects)
     assert isinstance(split_percent, float)
@@ -795,7 +786,7 @@ def _split_randomly(subjects, split_percent):
     subjects = list(subjects)
 
     # Shuffle randomly
-    random.shuffle(subjects)
+    rng.shuffle(subjects)
 
     # Split by the percentage
     num_subjects = len(subjects)
