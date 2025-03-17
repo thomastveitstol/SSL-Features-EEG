@@ -417,6 +417,9 @@ class HPOExperiment(abc.ABC):
         # Check if any of the test subjects were in training or validation
         cls._verify_test_set_exclusivity(path=path, test_subjects=test_subjects)
 
+    def integrity_check_test_set(self):
+        self.verify_test_set_integrity(path=self.results_path)
+
     @classmethod
     def _verify_test_set_consistency(cls, path):
         """
@@ -734,10 +737,19 @@ class PretrainHPO(HPOExperiment):
     _optimisation_predictions_file_name = ("train_history_predictions", "val_history_predictions",
                                            "pretext_train_history_predictions", "pretext_val_history_predictions")
 
-    def __init__(self, hp_config_paths: Tuple[Path, ...], experiments_config_paths: Tuple[Path, ...],
-                 downstream_hp_config_paths: Tuple[Path, ...], downstream_experiments_config_paths: Tuple[Path, ...],
-                 pretext_hp_config_paths: Tuple[Path, ...], pretext_experiments_config_paths: Tuple[Path, ...],
-                 results_dir: Path, is_continuation: bool):
+    @classmethod
+    def load_previous(cls, path):
+        return cls(hp_config_paths=None, experiments_config_paths=None, results_dir=path, is_continuation=True,
+                   downstream_hp_config_paths=None, downstream_experiments_config_paths=None,
+                   pretext_hp_config_paths=None, pretext_experiments_config_paths=None)
+
+    def __init__(self, hp_config_paths: Optional[Tuple[Path, ...]],
+                 experiments_config_paths: Optional[Tuple[Path, ...]],
+                 downstream_hp_config_paths: Optional[Tuple[Path, ...]],
+                 downstream_experiments_config_paths: Optional[Tuple[Path, ...]],
+                 pretext_hp_config_paths: Optional[Tuple[Path, ...]],
+                 pretext_experiments_config_paths: Optional[Tuple[Path, ...]], results_dir: Path,
+                 is_continuation: bool):
         """The 'hp_config_paths' and 'experiments_config_paths' are shared configurations for the pretext and downstream
         task, such as if using no datasets for pre-training should lead to a pruning of the trial"""
         # ---------------
@@ -746,12 +758,39 @@ class PretrainHPO(HPOExperiment):
         super().__init__(hp_config_paths=hp_config_paths, experiments_config_paths=experiments_config_paths,
                          results_dir=results_dir, is_continuation=is_continuation)
 
+        if is_continuation:
+            # Load the configurations files
+            with open(results_dir / "downstream_experiments_config.yml") as file:
+                downstream_experiments_config = yaml.safe_load(file)
+            with open(results_dir / "downstream_hpd_config.yml") as file:
+                downstream_sampling_config = yaml.safe_load(file)
+            with open(results_dir / "pretext_experiments_config.yml") as file:
+                pretext_experiments_config = yaml.safe_load(file)
+            with open(results_dir / "pretext_hpd_config.yml") as file:
+                pretext_sampling_config = yaml.safe_load(file)
+
+            self._downstream_experiments_config = downstream_experiments_config
+            self._downstream_sampling_config = downstream_sampling_config
+
+            self._pretext_experiments_config = pretext_experiments_config
+            self._pretext_sampling_config = pretext_sampling_config
+            return
+
         # ---------------
         # Create the pretext-specific configurations
         # ---------------
+        # Some quick checks
+        if downstream_experiments_config_paths is None:
+            raise ValueError("Expected a downstream experiments configuration file, but found 'None'")
+        if downstream_hp_config_paths is None:
+            raise ValueError("Expected a downstream HP distribution configuration file, but found 'None'")
+        if pretext_experiments_config_paths is None:
+            raise ValueError("Expected a pretext experiments configuration file, but found 'None'")
+        if pretext_hp_config_paths is None:
+            raise ValueError("Expected a pretext HP distribution configuration file, but found 'None'")
+
         self._downstream_experiments_config = _merge_config_files_from_paths(downstream_experiments_config_paths)
         self._downstream_sampling_config = _merge_config_files_from_paths(downstream_hp_config_paths)
-
         self._pretext_experiments_config = _merge_config_files_from_paths(pretext_experiments_config_paths)
         self._pretext_sampling_config = _merge_config_files_from_paths(pretext_hp_config_paths)
 
@@ -1189,6 +1228,83 @@ class SimpleElecsslHPO(HPOExperiment):
         return feature_name[0]
 
     # --------------
+    # Methods for checking if results were as expected
+    # --------------
+    @classmethod
+    def _verify_test_set_consistency(cls, path):
+        """This class stores test predictions differently, so need to override it"""
+        # todo: copied from MultivariateElecsslHPO
+        expected_subjects: Set[Subject] = set()
+
+        # Loop through all trials
+        trial_folders = tuple(file_name for file_name in os.listdir(path)
+                              if file_name.startswith("hpo_") and os.path.isdir(path / file_name))
+        for trial_folder in progressbar(trial_folders, redirect_stdout=True, prefix="Trial test set "):
+            trial_path = path / trial_folder
+
+            # Load the subjects from the test predictions, but also accept that some trials may have been pruned
+            try:
+                test_subjects_df = pandas.read_csv((trial_path / cls._test_predictions_file_name).with_suffix(".csv"),
+                                                   usecols=("dataset", "sub_id"))
+            except FileNotFoundError:
+                continue
+
+            # Convert to set of 'Subject'
+            subjects = set(Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                           for row in test_subjects_df.itertuples(index=False))
+
+            # Check with expected subjects (or make it expected subjects, if it is the first)
+            if expected_subjects:
+                if subjects != expected_subjects:
+                    raise InconsistentTestSetError
+            else:
+                expected_subjects = subjects
+
+        return expected_subjects
+
+    @classmethod
+    def _verify_test_set_exclusivity(cls, path, test_subjects):
+        """As this class does not store the model train and validation predictions, we will rather check the pretext
+        tasks."""  # todo: copied from MultivariateElecsslHPO
+        # Loop through all trials
+        trial_folders = tuple(file_name for file_name in os.listdir(path)
+                              if file_name.startswith("hpo_") and os.path.isdir(path / file_name))
+        for trial_folder in progressbar(trial_folders, redirect_stdout=True, prefix="Trial non-test set "):
+            trial_path = path / trial_folder
+
+            # Loop through all pretext tasks within the trial
+            pretext_folders = (name for name in os.listdir(trial_path)
+                               if name.startswith("hpo_") and os.path.isdir(trial_path / name))
+            for pretext_folder in pretext_folders:
+                pretext_path = trial_path / pretext_folder
+
+                # Loop through all folds (should be one, but better to just live with this code now)
+                fold_folders = (name for name in os.listdir(trial_path)
+                                if name.lower().startswith("fold_") and os.path.isdir(pretext_path / name))
+                for fold_folder in fold_folders:
+                    fold_path = pretext_path / fold_folder
+                    # Load the subjects from the predictions that were used for optimisation
+                    for predictions in cls._optimisation_predictions_file_name:
+                        try:
+                            subjects_df = pandas.read_csv((fold_path / predictions).with_suffix(".csv"),
+                                                          usecols=("dataset", "sub_id"))
+                        except FileNotFoundError:
+                            continue
+
+                        # Convert to set of 'Subject'
+                        subjects = set(
+                            Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                            for row in subjects_df.itertuples(index=False))
+
+                        # Check if there is overlap
+                        if not subjects.isdisjoint(test_subjects):
+                            overlap = subjects & test_subjects
+                            raise NonExclusiveTestSetError(
+                                f"Test subjects were found in the optimisation set {predictions} for trial "
+                                f"{trial_folder}, fold {fold_folder}. These subjects are (N={len(overlap)})): {overlap}"
+                            )
+
+    # --------------
     # Properties
     # --------------
     @property
@@ -1551,20 +1667,21 @@ class AllHPOExperiments:
         # HPO experiments
         # --------------
         # Prediction models
-        # self.run_prediction_models_hpo()
+        prediction_models = self.run_prediction_models_hpo()
 
         # Pretraining
-        pretrain_experiment = self.run_pretraining_hpo()
+        pretrain = self.run_pretraining_hpo()
 
         # Simple Elecssl
-        simple_elecssl_experiment = self.run_simple_elecssl_hpo(pretrain_experiment)
+        simple_elecssl = self.run_simple_elecssl_hpo(pretrain)
 
         # Multivariable Elecssl
-        self.run_multivariable_elecssl_hpo(simple_elecssl_experiment)
+        multivariable_elecssl = self.run_multivariable_elecssl_hpo(simple_elecssl)
 
         # --------------
         # Test set integrity tests
         # --------------
+        self.verify_test_set_integrity((prediction_models, pretrain, simple_elecssl, multivariable_elecssl))
 
         # --------------
         # Dataframe creation
@@ -1589,13 +1706,13 @@ class AllHPOExperiments:
         prediction_models_hpd_path = self._hpd_configs_path / "prediction_models_hpds.yml"
 
         # Run experiment
-        prediction_models_experiment = PredictionModelsHPO(
+        with PredictionModelsHPO(
             hp_config_paths=(shared_hpd_path, prediction_models_hpd_path),
             experiments_config_paths=(shared_experiments_path, prediction_models_experiments_path),
             results_dir=self._results_path, is_continuation=False
-        )
-        with prediction_models_experiment as experiment:
+        ) as experiment:
             experiment.run_hyperparameter_optimisation()
+        return experiment
 
     def run_pretraining_hpo(self):
         # Create paths
@@ -1660,9 +1777,21 @@ class AllHPOExperiments:
         ) as experiment:
             # experiment.run_hyperparameter_optimisation()
             experiment.reuse_simple_elecssl_runs(simple_elecssl_experiment)
-            experiment.continue_hyperparameter_optimisation(num_trials=2)  # todo: don't hardcore
+            experiment.continue_hyperparameter_optimisation(num_trials=1)  # todo: don't hardcore
 
         return experiment
+
+    # --------------
+    # Test set integrity
+    # --------------
+    @staticmethod
+    def verify_test_set_integrity(experiments: Tuple[HPOExperiment, ...]):
+        # Individual checks
+        for experiment in experiments:
+            experiment.integrity_check_test_set()
+
+        # Check across the experiments
+        check_equal_test_sets(experiments)
 
 
 # --------------
@@ -1684,6 +1813,27 @@ class DissimilarTestSetsError(Exception):
 # --------------
 # Functions
 # --------------
+def verify_equal_test_sets(hpo_runs: Tuple[HPORun, ...]):
+    # Get all test sets
+    test_sets: List[Set[Subject]] = []
+    for run in hpo_runs:
+        test_set = run.experiment.get_test_subjects(path=run.path)
+        assert isinstance(test_set, set), f"Expected test set to be a set, but found {type(test_set)}"
+        assert all(isinstance(subject, Subject) for subject in test_set), \
+            f"Expected subjects om test set to be of type 'Subject', but found {set(type(s) for s in test_set)}"
+        test_sets.append(test_set)
+
+    # Check if they are all equal
+    if not all(test_set == test_sets[0] for test_set in test_sets):
+        raise DissimilarTestSetsError
+
+
+def check_equal_test_sets(hpo_experiments):
+    hpo_runs = tuple(HPORun(experiment=experiment.__class__, path=experiment.results_path)
+                     for experiment in hpo_experiments)
+    verify_equal_test_sets(hpo_runs)
+
+
 def _merge_ssl_biomarkers_dataframes(dfs):
     """
     Merges a list of DataFrames on the 'dataset' and 'sub_id' columns,
