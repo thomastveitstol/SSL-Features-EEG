@@ -4,15 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="fixes for loading PretrainHPO and implementations/fixes for test set integrity checks">
-      <change afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/debugging.py" afterDir="false" />
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="changes to unimportant script">
       <change beforePath="$PROJECT_DIR$/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/.coverage" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/multivariable_elecssl_conf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/multivariable_elecssl_conf.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/shared_conf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations/shared_conf.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/elecssl/data/subject_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/subject_split.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/data/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/tests/data/.coverage" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/data/test_subject_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/data/test_subject_split.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/elecssl_method/run_experiments.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/elecssl_method/run_experiments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/models/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/models/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,6 +88,7 @@
     "Python tests.Doctest is_improved_model.executor": "Run",
     "Python tests.Doctest make_trial_suggestion.executor": "Run",
     "Python tests.Doctest project_to_2d.executor": "Run",
+    "Python tests.Doctest remove_prefix.executor": "Run",
     "Python tests.Doctest sample_hyperparameter.executor": "Run",
     "Python tests.Doctest sex_to_int.executor": "Run",
     "Python tests.Doctest simple_random_split.executor": "Run",
@@ -231,17 +228,17 @@
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/model_training/elecssl_method/config_files/static_configurations",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/model_training/elecssl_method/config_files",
     "settings.editor.selected.configurable": "preferences.general"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files" />
       <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/static_configurations" />
       <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files/hyperparameter_distributions" />
       <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method" />
       <recent name="$PROJECT_DIR$/scripts/dataset_downloads" />
-      <recent name="$PROJECT_DIR$/scripts/compute_pseudo_targets" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/tests/models" />
@@ -251,7 +248,7 @@
       <recent name="$PROJECT_DIR$/scripts/debugging" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.debugging">
+  <component name="RunManager" selected="Python tests.Doctest remove_prefix">
     <configuration name="debugging" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -274,21 +271,43 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in LODOCV" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="linear_regresison" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/model_training/linreg_band_power" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/model_training/linreg_band_power/linear_regresison.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctest remove_prefix" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/subject_split.py" />
-      <option name="CLASS_NAME" value="LODOCV" />
-      <option name="METHOD_NAME" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/utils.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="remove_prefix" />
       <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="TEST_TYPE" value="TEST_FUNCTION" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
@@ -312,21 +331,6 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_subject_split.test_order_invariance" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_subject_split.test_order_invariance&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
     <configuration name="Python tests in test_subject_split.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -344,11 +348,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Doctest remove_prefix" />
+        <item itemvalue="Python.linear_regresison" />
         <item itemvalue="Python.debugging" />
         <item itemvalue="Python tests.Doctests in subject_split" />
         <item itemvalue="Python tests.Python tests in test_subject_split.py" />
-        <item itemvalue="Python tests.Python tests for test_subject_split.test_order_invariance" />
-        <item itemvalue="Python tests.Doctests in LODOCV" />
       </list>
     </recent_temporary>
   </component>
@@ -367,70 +371,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00413" summary="fix to verification of test set integrity">
-      <option name="closed" value="true" />
-      <created>1740747610737</created>
-      <option name="number" value="00413" />
-      <option name="presentableId" value="LOCAL-00413" />
-      <option name="project" value="LOCAL" />
-      <updated>1740747610737</updated>
-    </task>
-    <task id="LOCAL-00414" summary="fix to verification of test set integrity">
-      <option name="closed" value="true" />
-      <created>1740747794110</created>
-      <option name="number" value="00414" />
-      <option name="presentableId" value="LOCAL-00414" />
-      <option name="project" value="LOCAL" />
-      <updated>1740747794110</updated>
-    </task>
-    <task id="LOCAL-00415" summary="improvements to prediction saving in ElecsslHPO">
-      <option name="closed" value="true" />
-      <created>1740751702495</created>
-      <option name="number" value="00415" />
-      <option name="presentableId" value="LOCAL-00415" />
-      <option name="project" value="LOCAL" />
-      <updated>1740751702495</updated>
-    </task>
-    <task id="LOCAL-00416" summary="added test set check to ElecsslHPO and improved trial folder name">
-      <option name="closed" value="true" />
-      <created>1740754205686</created>
-      <option name="number" value="00416" />
-      <option name="presentableId" value="LOCAL-00416" />
-      <option name="project" value="LOCAL" />
-      <updated>1740754205686</updated>
-    </task>
-    <task id="LOCAL-00417" summary="changes to config file">
-      <option name="closed" value="true" />
-      <created>1740754235766</created>
-      <option name="number" value="00417" />
-      <option name="presentableId" value="LOCAL-00417" />
-      <option name="project" value="LOCAL" />
-      <updated>1740754235767</updated>
-    </task>
-    <task id="LOCAL-00418" summary="irrelevant changes">
-      <option name="closed" value="true" />
-      <created>1740754303825</created>
-      <option name="number" value="00418" />
-      <option name="presentableId" value="LOCAL-00418" />
-      <option name="project" value="LOCAL" />
-      <updated>1740754303825</updated>
-    </task>
-    <task id="LOCAL-00419" summary="mypy fix">
-      <option name="closed" value="true" />
-      <created>1740754478963</created>
-      <option name="number" value="00419" />
-      <option name="presentableId" value="LOCAL-00419" />
-      <option name="project" value="LOCAL" />
-      <updated>1740754478963</updated>
-    </task>
-    <task id="LOCAL-00420" summary="ran tox">
-      <option name="closed" value="true" />
-      <created>1740754624318</created>
-      <option name="number" value="00420" />
-      <option name="presentableId" value="LOCAL-00420" />
-      <option name="project" value="LOCAL" />
-      <updated>1740754624318</updated>
     </task>
     <task id="LOCAL-00421" summary="fixed not sorting dict before saving to yaml">
       <option name="closed" value="true" />
@@ -760,7 +700,71 @@
       <option name="project" value="LOCAL" />
       <updated>1742217591613</updated>
     </task>
-    <option name="localTasksCounter" value="462" />
+    <task id="LOCAL-00462" summary="fixed seeded function which globally changed the random state">
+      <option name="closed" value="true" />
+      <created>1742217650724</created>
+      <option name="number" value="00462" />
+      <option name="presentableId" value="LOCAL-00462" />
+      <option name="project" value="LOCAL" />
+      <updated>1742217650724</updated>
+    </task>
+    <task id="LOCAL-00463" summary="improved error messages">
+      <option name="closed" value="true" />
+      <created>1742217671166</created>
+      <option name="number" value="00463" />
+      <option name="presentableId" value="LOCAL-00463" />
+      <option name="project" value="LOCAL" />
+      <updated>1742217671166</updated>
+    </task>
+    <task id="LOCAL-00464" summary="coverage and auto-updates">
+      <option name="closed" value="true" />
+      <created>1742217683520</created>
+      <option name="number" value="00464" />
+      <option name="presentableId" value="LOCAL-00464" />
+      <option name="project" value="LOCAL" />
+      <updated>1742217683520</updated>
+    </task>
+    <task id="LOCAL-00465" summary="unimportant commit">
+      <option name="closed" value="true" />
+      <created>1742217701380</created>
+      <option name="number" value="00465" />
+      <option name="presentableId" value="LOCAL-00465" />
+      <option name="project" value="LOCAL" />
+      <updated>1742217701381</updated>
+    </task>
+    <task id="LOCAL-00466" summary="removed unused scripts">
+      <option name="closed" value="true" />
+      <created>1742217801229</created>
+      <option name="number" value="00466" />
+      <option name="presentableId" value="LOCAL-00466" />
+      <option name="project" value="LOCAL" />
+      <updated>1742217801230</updated>
+    </task>
+    <task id="LOCAL-00467" summary="refactoring of config files">
+      <option name="closed" value="true" />
+      <created>1742321192356</created>
+      <option name="number" value="00467" />
+      <option name="presentableId" value="LOCAL-00467" />
+      <option name="project" value="LOCAL" />
+      <updated>1742321192356</updated>
+    </task>
+    <task id="LOCAL-00468" summary="old changes to outdated config files">
+      <option name="closed" value="true" />
+      <created>1742321237809</created>
+      <option name="number" value="00468" />
+      <option name="presentableId" value="LOCAL-00468" />
+      <option name="project" value="LOCAL" />
+      <updated>1742321237809</updated>
+    </task>
+    <task id="LOCAL-00469" summary="changes to unimportant script">
+      <option name="closed" value="true" />
+      <created>1742321272279</created>
+      <option name="number" value="00469" />
+      <option name="presentableId" value="LOCAL-00469" />
+      <option name="project" value="LOCAL" />
+      <updated>1742321272279</updated>
+    </task>
+    <option name="localTasksCounter" value="470" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -775,14 +779,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed muting warning and config changes" />
-    <MESSAGE value="made it possible to make the subject splitting invariant to input order" />
-    <MESSAGE value="added subject splitting tests" />
-    <MESSAGE value="homogenised test set, provided similar inputs" />
-    <MESSAGE value="added test" />
-    <MESSAGE value="improved script" />
-    <MESSAGE value="added convenient NamedTuple, added check and Exception for similar test sets across HPO experiments, and updates for getting similar test sets" />
-    <MESSAGE value="fixed/updated doctest" />
     <MESSAGE value="set sort_first to true in config files" />
     <MESSAGE value="flake8 fixes" />
     <MESSAGE value="fixed bug and added sanity checks at runtime" />
@@ -800,6 +796,14 @@
     <MESSAGE value="changes to config files" />
     <MESSAGE value="automatic updates" />
     <MESSAGE value="fixes for loading PretrainHPO and implementations/fixes for test set integrity checks" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixes for loading PretrainHPO and implementations/fixes for test set integrity checks" />
+    <MESSAGE value="fixed seeded function which globally changed the random state" />
+    <MESSAGE value="improved error messages" />
+    <MESSAGE value="coverage and auto-updates" />
+    <MESSAGE value="unimportant commit" />
+    <MESSAGE value="removed unused scripts" />
+    <MESSAGE value="refactoring of config files" />
+    <MESSAGE value="old changes to outdated config files" />
+    <MESSAGE value="changes to unimportant script" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes to unimportant script" />
   </component>
 </project>
