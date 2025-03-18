@@ -2,6 +2,8 @@
 A linear regression baseline
 """
 import itertools
+import os.path
+from pathlib import Path
 from typing import Literal, Tuple
 
 import numpy
@@ -10,7 +12,7 @@ from sklearn.linear_model import LinearRegression
 
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.subject_split import get_data_split, Subject, subjects_tuple_to_dict
-from elecssl.models.ml_models.ml_model_base import MLModel
+from elecssl.models.experiments.hpo_experiment import _compute_biomarker_predictive_value
 
 
 def _build_features_matrix(sample_sizes, features, target_variable, return_subjects):
@@ -103,11 +105,37 @@ def _compute_deviation_from_expectation(df, difference):
     return data_matrix
 
 
+MLModelSubjectSplit = {
+    "name": "RandomSplitsTV",
+    "kwargs": {"val_split": 0.3,
+               "num_random_splits": 50,
+               "seed": 42,
+               "sort_first": True}
+}
+TestSplit = {
+    "split_percentage": 0.3,
+    "seed": 42
+}
+MLModel = {
+    "model": "LinearRegression",
+    "kwargs": {}
+}
+MLModelSettings = {
+    "aggregation_method": "median",
+    "evaluation_metric": "r2_score",
+    "metrics": "regression",
+    "split_percentage": 0.3,
+    "test_prediction_aggregation": "mean",
+    "test_predictions_decimals": 4,
+    "test_scores_decimals": 4,
+}
+
+
 def main():
     # --------------
     # Choices
     # --------------
-    sample_sizes = {"LEMON": "all", "DortmundVital": "all"}
+    sample_sizes = {"LEMON": "all"}  # {"LEMON": "all", "DortmundVital": "all"}
     ocular_states = ("eo", "ec")
     freq_bands = ("delta", "theta", "alpha", "beta", "gamma")
     target = "age"
@@ -116,7 +144,7 @@ def main():
     val_split = 0.2
     num_random_splits = 50
     seed = 42
-    in_out: Literal[None, "eoec", "eceo", "both"] = "eceo"
+    in_out: Literal[None, "eoec", "eceo", "both"] = None
 
     # Prepare the feature names
     features = tuple(f"log10_band_power_{freq_band}_{ocular_state}" for freq_band, ocular_state
@@ -128,10 +156,18 @@ def main():
     # Build feature matrix
     df, subjects = _build_features_matrix(sample_sizes=sample_sizes, features=features, target_variable=target,
                                           return_subjects=True)
-    tot_num_subject = df.shape[0]
+    df["sub_id"] = [sub.subject_id for sub in df.index]
+    df["dataset"] = [sub.dataset_name for sub in df.index]
     df.dropna(inplace=True)
-    subjects = [subject for subject in subjects if subject in df.index]
+    print(df)
 
+    score = _compute_biomarker_predictive_value(
+        df, subject_split_config=MLModelSubjectSplit, test_split_config=TestSplit, verbose=True,
+        save_test_predictions=True, ml_model_settings_config=MLModelSettings, ml_model_hp_config=MLModel,
+        results_dir=Path(os.path.dirname(__file__))
+    )
+    print(score)
+    """
     # Maybe use the deviation from expectation
     if in_out is not None:
         df = _compute_deviation_from_expectation(df, difference=in_out)
@@ -155,7 +191,7 @@ def main():
     # Evaluate performance
     score = ml_model.evaluate_features(non_test_df=df)
 
-    print(f"\nObtained {aggregation_method} {evaluation_metric}: {score:.4f}")
+    print(f"\nObtained {aggregation_method} {evaluation_metric}: {score:.4f}")"""
 
 
 if __name__ == "__main__":
