@@ -1,0 +1,22 @@
+PredictionModelsHPO: { }
+PretrainHPO:
+  force_pretraining: false  # If no datasets, are used for pre-training, prune the trial (true) or not (false)
+  in_ocular_state: ec  # It is possible to make these HPs, but we would lose the connection to reactivity I think
+  out_ocular_state: eo
+  in_freq_band: all
+  save_ssl_biomarkers: true
+SimpleElecsslHPO:
+  deviation_method: &deviation_method diff
+  num_additional_trials: 1
+  in_ocular_state: ec
+  out_ocular_state: eo
+MultivariableElecsslHPO:
+  IOSpaces: # In ocular state, out ocular state, in frequency band, out frequency band
+    - [ [ ec, eo ], [ all, delta ] ]
+    - [ [ ec, eo ], [ all, theta ] ]
+    - [ [ ec, eo ], [ all, alpha ] ]
+    - [ [ ec, eo ], [ all, beta ] ]
+    - [ [ ec, eo ], [ all, gamma ] ]
+  deviation_method: *deviation_method
+  num_random_reuse: 23
+  num_additional_trials: 1

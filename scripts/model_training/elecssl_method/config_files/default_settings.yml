@@ -1,0 +1,46 @@
+# These settings will by default by passed to all HPO experiments
+debugging: false
+save_test_predictions: true
+raise_upon_nan_predictions: TrialPruned
+
+# todo: have to come back to this
+log_transform_clinical_target: false  # todo: this should be removed now, as one can just do log_{target} instead
+enable_domain_discriminator: false
+enable_cmmn: false
+
+Device: cpu
+
+Warnings:
+  ignore: [ NearConstantInputWarning, ConstantInputWarning, FutureWarning ]
+
+# -----------------
+# What to save and what not to save
+# -----------------
+Saving:
+  save_subgroups_plots: false
+  save_discriminator_plots: false
+  save_error_association_plots: false
+  save_metrics_per_fold_plots: false
+  save_final_test_histories_plots: false
+  save_model: false  # PretrainHPO will set this to True in pretext task
+
+# -----------------
+# HP optimisation
+# -----------------
+HPO:
+  HPOStudy:
+    sampler: TPESampler
+    sampler_kwargs: { n_startup_trials: 2 }
+    direction: UNAVAILABLE  # this will be added at runtime. Inferred from the selected downstream main metric
+  num_trials: 3
+
+# -----------------
+# Configurations for associating prediction errors with
+# other variables  todo: should remove this, as it's old code and not actually part of the pipeline
+# -----------------
+PredictionErrorAssociations:
+  LEMON: [ ]
+  Wang: [ ]
+  DortmundVital: [ ]
+
+VariablesMetrics: null

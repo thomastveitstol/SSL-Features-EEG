@@ -1,0 +1,20 @@
+# Mostly hyperparameter distributions which are specific to the HPO experiments, but some may be fixed too. Should be
+# read together with the .suggest_hyperparameters() methods
+_freq_bands_optuna_kwargs: &freq_bands_optuna_kwargs { choices: [ delta, theta, alpha, beta, gamma ] }
+
+PredictionModelsHPO:
+  OcularStates: { choices: [ eo, ec ] }
+PretrainHPO:
+  pretext:
+    out_freq_band: *freq_bands_optuna_kwargs
+  downstream: { }
+SimpleElecsslHPO:
+  out_freq_band: *freq_bands_optuna_kwargs
+  in_freq_band: { choices: [ all ] }  # if 'same', it will use the same as out_freq_band
+  MLModel:
+    model: LinearRegression
+    kwargs: { }
+MultivariableElecsslHPO:
+  MLModel:
+    model: LinearRegression
+    kwargs: { }

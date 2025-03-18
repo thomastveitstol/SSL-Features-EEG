@@ -1,0 +1,111 @@
+# All keys which do start with 'Pretext' or 'Downstream' will not be used in AllHPOExperiments. Current version is
+# case-insensitive
+
+_main_metric: &main_metric r2_score
+# -----------------
+# Datasets
+# -----------------
+_LEMON: &LEMON
+  num_subjects: 203
+  num_time_steps: null
+  time_series_start: null
+_Wang: &Wang
+  num_subjects: 60
+  num_time_steps: null
+  time_series_start: null
+_DortmundVital: &DortmundVital
+  num_subjects: 100
+  num_time_steps: null
+  time_series_start: null
+
+DownstreamDatasets: &DownstreamDatasets
+  LEMON: *LEMON
+PretextDatasets: &PretextDatasets
+  LEMON: *LEMON
+  Wang: *Wang
+  DortmundVital: *DortmundVital
+
+# -----------------
+# Configuration for subject splitting
+# -----------------
+_split_seed: &split_seed 42
+_test_set_percentage: &test_set_percentage 0.3
+
+DownstreamSubjectSplit:
+  name: RandomSplitsTVTestHoldout
+  kwargs:
+    val_split: 0.2
+    test_split: *test_set_percentage
+    num_random_splits: &num_random_splits 1
+    seed: *split_seed
+    sort_first: true
+DOWNSTREAMval_scores_aggregation: median  # To use median or average of folds performance as signal to HPO algorithm.
+# However, as we are using one fold only, mean and median are the same
+
+PretextTestSplit:  # This is misleading as it is used for separating test set when using ML models on residuals
+  split_percentage: *test_set_percentage  # How much should be in the test set of the test data
+  seed: *split_seed  # Seed for reproducibility
+PretextMLModelSubjectSplit: # This is for the downstream task AFTER separating a test set
+  name: RandomSplitsTV
+  kwargs:
+    val_split: 0.3
+    num_random_splits: 50
+    seed: *split_seed
+    sort_first: true
+PretextMLModelSettings:  # todo: this is Elecssl only, not pretraining. Better to make a separate one I think
+  aggregation_method: median
+  evaluation_metric: *main_metric
+  metrics: regression
+  test_prediction_aggregation: mean
+  test_predictions_decimals: 4
+  test_scores_decimals: 4
+PretextSubjectSplit:  # This is for the actual pretext tasks
+  name: KeepDatasetOutRandomSplits
+  kwargs:
+    left_out_dataset: LEMON
+    val_split: 0.3
+    num_random_splits: *num_random_splits
+    seed: *split_seed
+    sort_first: true
+
+# -----------------
+# Target scaling
+# -----------------
+_Scalers: &Scaler
+  target:
+    kwargs: { }
+    name: ZNormalisation
+
+DownstreamScalers: *Scaler
+PretextScalers: *Scaler
+
+# -----------------
+# Training configurations
+# -----------------
+_Training: &Training
+  batch_size: 16
+  num_epochs: 2
+  verbose: true
+  verbose_variables: false
+  continuous_testing: true
+  metrics: regression
+  prediction_activation_function: null
+  main_metric: *main_metric
+DownstreamTraining:
+  target: age
+  <<: *Training
+PretextTraining:  # The pseudo-target is added at run time
+  log_transform_targets: log10
+  <<: *Training
+
+# -----------------
+# Configurations for computing metrics
+# -----------------
+DownstreamSubGroups:
+  sub_groups:
+    dataset_name: !GetKeys { <<: *DownstreamDatasets }
+  verbose: false
+PretextSubGroups:
+  sub_groups:
+    dataset_name: !GetKeys { <<: *PretextDatasets }
+  verbose: false

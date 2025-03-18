@@ -1,4 +1,5 @@
 import abc
+import copy
 import os
 import random
 import traceback
@@ -22,13 +23,13 @@ from elecssl.data.results_analysis.hyperparameters import to_hyperparameter
 from elecssl.data.results_analysis.utils import load_hpo_study
 from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split, simple_random_split
 from elecssl.models.experiments.single_experiment import SingleExperiment
-from elecssl.models.hp_suggesting import make_trial_suggestion, \
-    suggest_spatial_dimension_mismatch, suggest_loss, suggest_dl_architecture, get_optuna_sampler
+from elecssl.models.hp_suggesting import make_trial_suggestion, suggest_spatial_dimension_mismatch, suggest_loss, \
+    suggest_dl_architecture, get_optuna_sampler
 from elecssl.models.metrics import PlotNotSavedWarning, higher_is_better
 from elecssl.models.ml_models.ml_model_base import MLModel
 from elecssl.models.sampling_distributions import get_yaml_loader
-from elecssl.models.utils import add_yaml_constructors, verify_type, merge_dicts, \
-    verified_performance_score, merge_dicts_strict
+from elecssl.models.utils import add_yaml_constructors, verify_type, merge_dicts, verified_performance_score, \
+    merge_dicts_strict, remove_prefix
 
 
 # --------------
@@ -75,57 +76,35 @@ class HPOExperiment(abc.ABC):
                                           f"{datetime.now().strftime('%H%M%S')}").with_suffix(".txt")
         with open(file_name, "w") as file:
             file.write("Traceback (most recent call last):\n")
-            traceback.print_tb(exc_tb, file=file)
+            traceback.print_tb(exc_tb, file=file)  # type: ignore[arg-type]
             file.write(f"{exc_type.__name__}: {exc_val}")
 
-    def __init__(self, hp_config_paths: Optional[Tuple[Path, ...]],
-                 experiments_config_paths: Optional[Tuple[Path, ...]], results_dir: Path, is_continuation: bool):
+    def __init__(self, hp_config, experiments_config, results_dir, is_continuation):
         # ---------------
-        # If this is a continuation of a previous experiment, just load everything from it
+        # Set attributes
         # ---------------
         if is_continuation:
-            # Make check
-            if not os.path.isdir(results_dir):
-                raise FileNotFoundError(f"The results path {results_dir} of the attempted continued study does not "
-                                        f"exist. This is likely due to (1) the path was incorrect, or (2) the HPO "
-                                        f"experiment should not have been initialised as a continuation")
+            # Input check
+            self.verify_results_dir_exists(results_dir)
 
             # Load the configurations files
             with open(results_dir / "experiments_config.yml") as file:
                 experiments_config = yaml.safe_load(file)
             with open(results_dir / "hpd_config.yml") as file:
                 sampling_config = yaml.safe_load(file)
+
             self._experiments_config: Dict[str, Any] = experiments_config
             self._sampling_config: Dict[str, Any] = sampling_config
             self._results_path = results_dir
             return
 
-        # ---------------
-        # Load HP distributions files
-        # ---------------
-        # Some quick checks
-        if hp_config_paths is None:
-            raise ValueError("Expected a HP distribution configuration file, but found 'None'")
-        if experiments_config_paths is None:
-            raise ValueError("Expected an experiments configuration file, but found 'None'")
-
-        # Merge all HP distribution files. Typically (most likely always) a shared HPD yml file and a specific one
-        hp_config = _merge_config_files_from_paths(hp_config_paths)
-
-        # ---------------
-        # Load the other configurations
-        # ---------------
-        # Merge all configuration setting files.
-        experiments_config = _merge_config_files_from_paths(experiments_config_paths)
-
-        # ---------------
-        # Set attributes
-        # ---------------
         self._experiments_config = experiments_config
         self._sampling_config = hp_config
-        _debug_mode = "debug_" if verify_type(self._experiments_config["debugging"], bool) else ""
-        self._results_path = results_dir / f"{_debug_mode}{self._name}"
+        self._results_path = results_dir / self._name
 
+        # ---------------
+        # Save files
+        # ---------------
         # Make directory
         os.mkdir(self._results_path)
 
@@ -138,7 +117,7 @@ class HPOExperiment(abc.ABC):
     @classmethod
     def load_previous(cls, path):
         """Method for loading a previous study"""
-        return cls(hp_config_paths=None, experiments_config_paths=None, results_dir=path, is_continuation=True)
+        return cls(hp_config=None, experiments_config=None, results_dir=path, is_continuation=True)
 
     # --------------
     # Methods for running HPO
@@ -647,6 +626,17 @@ class HPOExperiment(abc.ABC):
         return study_name, f"sqlite:///{path}"
 
     # --------------
+    # Input checks
+    # --------------
+    @classmethod
+    def verify_results_dir_exists(cls, results_dir):
+        """This should be used to verify if a results dir exists. Should only be used when it is supposed to exist"""
+        if not os.path.isdir(results_dir):
+            raise FileNotFoundError(f"The results path {results_dir} of the attempted continued study does not "
+                                    f"exist. This is likely due to (1) the path was incorrect, or (2) the HPO "
+                                    f"experiment ({cls}) should not have been initialised as a continuation")
+
+    # --------------
     # Properties
     # --------------
     @property
@@ -661,6 +651,89 @@ class HPOExperiment(abc.ABC):
 # --------------
 # Single HPO experiments
 # --------------
+class MLFeatureExtraction:
+    """
+    Class for 'normal' machine learning using normal feature extraction. It does not really use HPO
+    """
+
+    def __init__(self, *, experiments_config, results_dir):
+        self._experiments_config = experiments_config
+        self._results_path = results_dir
+
+    def _build_features_matrix(self):
+        """
+        Function for building a data matrix
+
+        Returns
+        -------
+        pandas.DataFrame
+        """
+        features = tuple(self._experiments_config["features"])
+
+        # Initialise data matrix
+        data_matrix: Dict[str, Any] = {"subject": [], "clinical_target": [], **{feature: [] for feature in features}}
+        all_subjects = []
+
+        # Loop though all datasets to use
+        for dataset_name, sample_size in self._experiments_config["Datasets"].items():
+            # Get the dataset
+            dataset = get_dataset(dataset_name=dataset_name)
+
+            # Get the subject IDs
+            if sample_size == "all":
+                subjects = dataset.get_subject_ids()
+            else:
+                subjects = dataset.get_subject_ids()[:sample_size]
+
+            # Update data matrix
+            dataset_subjects = [Subject(subject_id=subject, dataset_name=dataset_name) for subject in subjects]
+            all_subjects.extend(dataset_subjects)
+            for feature in features:
+                feature_array = dataset.load_targets(target=feature)
+                data_matrix[feature].extend(feature_array)
+            target_array = dataset.load_targets(target=self._experiments_config["downstream_target"])
+            data_matrix["clinical_target"].extend(target_array)
+
+        # Make dataframe, fix index, and return
+        data_matrix["subject"] = all_subjects
+        df = pandas.DataFrame(data_matrix)
+        df.set_index("subject", inplace=True)
+
+        df["sub_id"] = [sub.subject_id for sub in df.index]
+        df["dataset"] = [sub.dataset_name for sub in df.index]
+        df.dropna(inplace=True)
+
+        return df
+
+    def evaluate(self):
+        # -------------
+        # Get features
+        # -------------
+        df = self._build_features_matrix()
+
+        # Save it
+        df.to_csv(self.results_path / "dataframe.csv", index=False)
+
+        # -------------
+        # Compute predictive value
+        # -------------
+        _compute_biomarker_predictive_value(
+            df=df, test_split_config=self._experiments_config["TestSplit"],
+            subject_split_config=self._experiments_config["MLModelSubjectSplit"],
+            ml_model_hp_config=self._experiments_config["MLModel"],
+            ml_model_settings_config=self._experiments_config["MLModelSettings"],
+            save_test_predictions=self._experiments_config["save_test_predictions"], results_dir=self.results_path,
+            verbose=True
+        )
+
+    # --------------
+    # Properties
+    # --------------
+    @property
+    def results_path(self):
+        return self._results_path
+
+
 class PredictionModelsHPO(HPOExperiment):
     """
     Class for the prediction models
@@ -739,60 +812,53 @@ class PretrainHPO(HPOExperiment):
 
     @classmethod
     def load_previous(cls, path):
-        return cls(hp_config_paths=None, experiments_config_paths=None, results_dir=path, is_continuation=True,
-                   downstream_hp_config_paths=None, downstream_experiments_config_paths=None,
-                   pretext_hp_config_paths=None, pretext_experiments_config_paths=None)
+        return cls(results_dir=path, is_continuation=True, downstream_hp_config=None,
+                   downstream_experiments_config=None, pretext_hp_config=None, pretext_experiments_config=None,
+                   experiments_config=None, hp_config=None)
 
-    def __init__(self, hp_config_paths: Optional[Tuple[Path, ...]],
-                 experiments_config_paths: Optional[Tuple[Path, ...]],
-                 downstream_hp_config_paths: Optional[Tuple[Path, ...]],
-                 downstream_experiments_config_paths: Optional[Tuple[Path, ...]],
-                 pretext_hp_config_paths: Optional[Tuple[Path, ...]],
-                 pretext_experiments_config_paths: Optional[Tuple[Path, ...]], results_dir: Path,
-                 is_continuation: bool):
-        """The 'hp_config_paths' and 'experiments_config_paths' are shared configurations for the pretext and downstream
-        task, such as if using no datasets for pre-training should lead to a pruning of the trial"""
-        # ---------------
-        # Initialise and create everything for the shared stuff
-        # ---------------
-        super().__init__(hp_config_paths=hp_config_paths, experiments_config_paths=experiments_config_paths,
-                         results_dir=results_dir, is_continuation=is_continuation)
+    def __init__(self, *, experiments_config, hp_config, downstream_hp_config: Optional[Dict[str, Any]],
+                 downstream_experiments_config: Optional[Dict[str, Any]],
+                 pretext_hp_config: Optional[Dict[str, Any]],
+                 pretext_experiments_config: Optional[Dict[str, Any]],
+                 results_dir: Path, is_continuation: bool):
 
+        super().__init__(experiments_config=experiments_config, hp_config=hp_config, results_dir=results_dir,
+                         is_continuation=is_continuation)
+
+        # ---------------
+        # Set attributes
+        # ---------------
         if is_continuation:
+            # Input check
+            self.verify_results_dir_exists(results_dir)
+
             # Load the configurations files
             with open(results_dir / "downstream_experiments_config.yml") as file:
-                downstream_experiments_config = yaml.safe_load(file)
+                loaded_downstream_experiments_config = yaml.safe_load(file)
             with open(results_dir / "downstream_hpd_config.yml") as file:
-                downstream_sampling_config = yaml.safe_load(file)
+                loaded_downstream_sampling_config = yaml.safe_load(file)
             with open(results_dir / "pretext_experiments_config.yml") as file:
-                pretext_experiments_config = yaml.safe_load(file)
+                loaded_pretext_experiments_config = yaml.safe_load(file)
             with open(results_dir / "pretext_hpd_config.yml") as file:
-                pretext_sampling_config = yaml.safe_load(file)
+                loaded_pretext_sampling_config = yaml.safe_load(file)
 
-            self._downstream_experiments_config = downstream_experiments_config
-            self._downstream_sampling_config = downstream_sampling_config
-
-            self._pretext_experiments_config = pretext_experiments_config
-            self._pretext_sampling_config = pretext_sampling_config
+            self._downstream_experiments_config: Dict[str, Any] = loaded_downstream_experiments_config
+            self._downstream_sampling_config: Dict[str, Any] = loaded_downstream_sampling_config
+            self._pretext_experiments_config: Dict[str, Any] = loaded_pretext_experiments_config
+            self._pretext_sampling_config: Dict[str, Any] = loaded_pretext_sampling_config
+            self._results_path = results_dir
             return
 
-        # ---------------
-        # Create the pretext-specific configurations
-        # ---------------
-        # Some quick checks
-        if downstream_experiments_config_paths is None:
-            raise ValueError("Expected a downstream experiments configuration file, but found 'None'")
-        if downstream_hp_config_paths is None:
-            raise ValueError("Expected a downstream HP distribution configuration file, but found 'None'")
-        if pretext_experiments_config_paths is None:
-            raise ValueError("Expected a pretext experiments configuration file, but found 'None'")
-        if pretext_hp_config_paths is None:
-            raise ValueError("Expected a pretext HP distribution configuration file, but found 'None'")
+        # Type checks (and to make mypy stop complaining)
+        assert downstream_experiments_config is not None
+        assert downstream_hp_config is not None
+        assert pretext_experiments_config is not None
+        assert pretext_hp_config is not None
 
-        self._downstream_experiments_config = _merge_config_files_from_paths(downstream_experiments_config_paths)
-        self._downstream_sampling_config = _merge_config_files_from_paths(downstream_hp_config_paths)
-        self._pretext_experiments_config = _merge_config_files_from_paths(pretext_experiments_config_paths)
-        self._pretext_sampling_config = _merge_config_files_from_paths(pretext_hp_config_paths)
+        self._downstream_experiments_config = downstream_experiments_config
+        self._downstream_sampling_config = downstream_hp_config
+        self._pretext_experiments_config = pretext_experiments_config
+        self._pretext_sampling_config = pretext_hp_config
 
         # ---------------
         # Save the config files
@@ -844,10 +910,12 @@ class PretrainHPO(HPOExperiment):
             # Some additions to the experiment configs
             # ---------------
             # For the pretext task
-            incomplete_pretext_experiments_config = self._pretext_experiments_config.copy()
+            incomplete_pretext_experiments_config = merge_dicts_strict(
+                self._experiments_config, self._pretext_experiments_config
+            )
 
-            # Add the selected datasets to pretext task (including subgroups for performance tracking)
-            assert "Datasets" not in incomplete_pretext_experiments_config
+            # Add the selected datasets to pretext task (including subgroups for performance tracking). The ones in the
+            # experiments config file are only the available ones, not the ones we will always use
             incomplete_pretext_experiments_config["Datasets"] = dict()
             for dataset_name, dataset_info in datasets_to_use.items():
                 incomplete_pretext_experiments_config["Datasets"][dataset_name] = dataset_info
@@ -871,8 +939,8 @@ class PretrainHPO(HPOExperiment):
 
             # Downstream task
             downstream_experiments_config, _ = _get_prepared_experiments_config(
-                experiments_config=self._downstream_experiments_config.copy(), in_freq_band=in_freq_band,
-                in_ocular_state=in_ocular_state, suggested_hyperparameters=downstream_hpcs
+                experiments_config=merge_dicts_strict(self._experiments_config, self._downstream_experiments_config),
+                in_freq_band=in_freq_band, in_ocular_state=in_ocular_state, suggested_hyperparameters=downstream_hpcs
             )
 
             # ---------------
@@ -918,11 +986,11 @@ class PretrainHPO(HPOExperiment):
 
                 df = _make_single_residuals_df(
                     results_dir=results_dir / "Fold_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
-                    downstream_target=self._experiments_config["elecssl_clinical_target"],
+                    downstream_target=self._downstream_experiments_config["Training"]["target"],
                     deviation_method=self._experiments_config["elecssl_deviation_method"],
                     in_ocular_state=in_ocular_state, experiment_name="pretext",
-                    log_transform_downstream_target=self._experiments_config["elecssl_log_transform_clinical_target"],
-                    pretext_main_metric=self._experiments_config["elecssl_pretext_main_metric"]
+                    log_transform_downstream_target=False,  # todo: I'm quite confident that it's integrated in the arg
+                    pretext_main_metric=self._pretext_experiments_config["Training"]["main_metric"]
                 )
                 df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
@@ -938,13 +1006,10 @@ class PretrainHPO(HPOExperiment):
         suggested_hps["out_freq_band"] = trial.suggest_categorical(
             name=f"{name}_out_freq_band", **self._pretext_sampling_config["out_freq_band"]
         )
-        suggested_hps["pretext_main_metric"] = trial.suggest_categorical(
-            name=f"{name}_selection_metric", **self._pretext_sampling_config["selection_metric"]
-        )
 
         # Pick the datasets to be used for pre-training
         datasets_to_use = dict()
-        for dataset_name, dataset_info in self._pretext_sampling_config["Datasets"].items():
+        for dataset_name, dataset_info in self._pretext_experiments_config["Datasets"].items():
             if ("left_out_dataset" in self._pretext_experiments_config["SubjectSplit"]["kwargs"]
                     and self._pretext_experiments_config["SubjectSplit"]["kwargs"]["left_out_dataset"] == dataset_name):
                 to_use = True
@@ -959,11 +1024,11 @@ class PretrainHPO(HPOExperiment):
             raise optuna.TrialPruned
 
         # Training
-        suggested_hps["Training"] = self._suggest_training_hpcs(trial=trial, name=name,
-                                                                hpd_config=self._pretext_sampling_config)
+        hpd_config = merge_dicts_strict(self._sampling_config, self._pretext_sampling_config)
+        suggested_hps["Training"] = self._suggest_training_hpcs(trial=trial, name=name, hpd_config=hpd_config)
 
         # Loss
-        suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=self._pretext_sampling_config["Loss"])
+        suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=hpd_config["Loss"])
 
         # Domain discriminator
         if self._experiments_config["enable_domain_discriminator"]:
@@ -1107,8 +1172,8 @@ class SimpleElecsslHPO(HPOExperiment):
                 results_dir=results_path / "Fold_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
                 downstream_target=self._experiments_config["clinical_target"], in_ocular_state=in_ocular_state,
                 deviation_method=self._experiments_config["deviation_method"], experiment_name=experiment_name,
-                log_transform_downstream_target=self._experiments_config["log_transform_clinical_target"],
-                pretext_main_metric=self._experiments_config["pretext_main_metric"]
+                log_transform_downstream_target=False,  # todo: I'm quite confident that it's integrated in the arg
+                pretext_main_metric=self._experiments_config["Training"]["main_metric"]
             )
             df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
@@ -1386,7 +1451,7 @@ class MultivariableElecsslHPO(HPOExperiment):
                     deviation_method=self._experiments_config["deviation_method"],
                     log_transform_clinical_target=self._experiments_config["log_transform_clinical_target"],
                     num_eeg_epochs=num_epochs, feature_extractor_name=feature_extractor_name,
-                    pretext_main_metric=self._experiments_config["pretext_main_metric"]
+                    pretext_main_metric=self._experiments_config["Training"]["main_metric"]
                 )
 
                 # Collect the resulting 'biomarkers'
@@ -1471,7 +1536,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         # Score-based sampling
 
     def _random_simple_elecssl_reuse(self, study: optuna.Study, simple_elecssl_hpo: SimpleElecsslHPO):
-        for _ in range(self._experiments_config["Reuse"]["num_random_reuse"]):
+        for _ in range(self._experiments_config["num_random_reuse"]):
             self._single_random_simple_elecssl_reuse(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
 
     def _single_random_simple_elecssl_reuse(self, study: optuna.Study, simple_elecssl_hpo: SimpleElecsslHPO):
@@ -1629,7 +1694,9 @@ class AllHPOExperiments:
     Class which combines all the HPO experiments
     """
 
-    __slots__ = ("_hpd_configs_path", "_experiments_configs_path", "_results_path")
+    # __slots__ = ("_hpd_configs_path", "_experiments_configs_path", "_results_path")
+    __slots__ = ("_defaults_config", "_downstream_experiments_config", "_pretext_experiments_config",
+                 "_shared_hpds", "_specific_hpds", "_results_path", "_specific_experiments_config")
 
     # -------------
     # Dunder methods for context manager (using the 'with' statement). See this video from mCoding for more information
@@ -1650,13 +1717,54 @@ class AllHPOExperiments:
                                           f"{datetime.now().strftime('%H%M%S')}").with_suffix(".txt")
         with open(file_name, "w") as file:
             file.write("Traceback (most recent call last):\n")
-            traceback.print_tb(exc_tb, file=file)
+            traceback.print_tb(exc_tb, file=file)  # type: ignore[arg-type]
             file.write(f"{exc_type.__name__}: {exc_val}")
 
-    def __init__(self, *, results_dir: Path, hpd_configs_path: Path, experiments_configs_path: Path):
+    def __init__(self, *, results_dir: Path, config_path: Path):
+        # ---------------
+        # Load configuration files
+        # ---------------
+        # Get loader
+        loader = yaml.SafeLoader
+        loader = add_yaml_constructors(loader)
+        with open(config_path / "default_settings.yml") as file:
+            defaults_config = yaml.load(file, Loader=loader)
+        with open(config_path / "specific_settings.yml") as file:
+            specific_experiments_config = yaml.load(file, Loader=loader)
+        with open(config_path / "experiments_config.yml") as file:
+            experiments_config = yaml.load(file, Loader=loader)
+        with open(config_path / "shared_hyperparameters.yml") as file:
+            shared_hpds = yaml.load(file, Loader=loader)
+        with open(config_path / "specific_hyperparameters.yml") as file:
+            specific_hpds = yaml.load(file, Loader=loader)
+
+        # Add some details
+        downstream_main_metric = experiments_config["DownstreamTraining"]["main_metric"]
+        study_direction = "maximize" if higher_is_better(downstream_main_metric) else "minimize"
+        defaults_config["HPO"]["HPOStudy"]["direction"] = study_direction
+
+        # ---------------
         # Set attributes
-        self._hpd_configs_path = hpd_configs_path
-        self._experiments_configs_path = experiments_configs_path
+        # ---------------
+        # Experiments config
+        downstream_prefix = "downstream"
+        pretext_prefix = "pretext"
+        self._downstream_experiments_config = {
+            remove_prefix(key, prefix=downstream_prefix, case_sensitive=False): value
+            for key, value in experiments_config.items() if key.lower().startswith(downstream_prefix)}
+        self._pretext_experiments_config = {
+            remove_prefix(key, prefix=pretext_prefix, case_sensitive=False): value
+            for key, value in experiments_config.items()if key.lower().startswith(pretext_prefix)}
+        self._specific_experiments_config = specific_experiments_config
+
+        # Hyperparameter distributions
+        self._shared_hpds = shared_hpds
+        self._specific_hpds = specific_hpds
+
+        # Defaults
+        self._defaults_config = defaults_config
+
+        # Path where the results will be stored
         self._results_path = results_dir / f"experiments_{date.today()}_{datetime.now().strftime('%H%M%S')}"
 
         # Make directory
@@ -1667,7 +1775,7 @@ class AllHPOExperiments:
         # HPO experiments
         # --------------
         # Prediction models
-        prediction_models = self.run_prediction_models_hpo()
+        # prediction_models = self.run_prediction_models_hpo()
 
         # Pretraining
         pretrain = self.run_pretraining_hpo()
@@ -1681,7 +1789,7 @@ class AllHPOExperiments:
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((prediction_models, pretrain, simple_elecssl, multivariable_elecssl))
+        self.verify_test_set_integrity((pretrain, simple_elecssl, multivariable_elecssl))
 
         # --------------
         # Dataframe creation
@@ -1698,86 +1806,64 @@ class AllHPOExperiments:
     # Single HPO experiments
     # --------------
     def run_prediction_models_hpo(self):
-        # Create paths
-        shared_experiments_path = self._experiments_configs_path / "shared_conf.yml"
-        shared_hpd_path = self._hpd_configs_path / "shared_hpds.yml"
+        # Create merged config files
+        hp_config = merge_dicts_strict(self.shared_hpds, self.specific_hpds["PredictionModelsHPO"])
+        experiments_config = merge_dicts_strict(self.defaults_config, self.downstream_experiments_config,
+                                                self.specific_experiments_config["PredictionModelsHPO"])
 
-        prediction_models_experiments_path = self._experiments_configs_path / "prediction_models_conf.yml"
-        prediction_models_hpd_path = self._hpd_configs_path / "prediction_models_hpds.yml"
-
-        # Run experiment
-        with PredictionModelsHPO(
-            hp_config_paths=(shared_hpd_path, prediction_models_hpd_path),
-            experiments_config_paths=(shared_experiments_path, prediction_models_experiments_path),
-            results_dir=self._results_path, is_continuation=False
-        ) as experiment:
+        # Run experiments
+        with PredictionModelsHPO(experiments_config=experiments_config, hp_config=hp_config,
+                                 results_dir=self._results_path, is_continuation=False) as experiment:
             experiment.run_hyperparameter_optimisation()
+
         return experiment
 
     def run_pretraining_hpo(self):
-        # Create paths
-        shared_experiments_path = self._experiments_configs_path / "shared_conf.yml"
-        shared_hpd_path = self._hpd_configs_path / "shared_hpds.yml"
+        # Create merged config files
+        experiments_config = merge_dicts_strict(self.defaults_config, self.specific_experiments_config["PretrainHPO"])
 
-        pretraining_shared_experiments_path = self._experiments_configs_path / "pretraining_shared_conf.yml"
-        pretraining_downstream_experiments_path = self._experiments_configs_path / "pretraining_downstream_conf.yml"
-        pretraining_pretext_experiments_path = self._experiments_configs_path / "pretraining_pretext_conf.yml"
-        pretraining_downstream_hpd_path = self._hpd_configs_path / "pretraining_downstream_hpds.yml"
-        pretraining_pretext_hpd_path = self._hpd_configs_path / "pretraining_pretext_hpds.yml"
+        # Add some elecssl details
+        deviation_method = self.specific_experiments_config["SimpleElecsslHPO"]["deviation_method"]
+        experiments_config["elecssl_deviation_method"] = deviation_method
 
         # Model with pre-training
-        # todo: If saving SSL biomarkers, don't we need to add some information from ElecsslHPO?
-        with PretrainHPO(
-            hp_config_paths=(shared_hpd_path,),
-            experiments_config_paths=(shared_experiments_path, pretraining_shared_experiments_path),
-            results_dir=self._results_path, is_continuation=False,
-            pretext_hp_config_paths=(shared_hpd_path, pretraining_pretext_hpd_path,),
-            pretext_experiments_config_paths=(shared_experiments_path, pretraining_shared_experiments_path,
-                                              pretraining_pretext_experiments_path,),
-            downstream_experiments_config_paths=(shared_experiments_path, pretraining_shared_experiments_path,
-                                                 pretraining_downstream_experiments_path,),
-            downstream_hp_config_paths=(shared_hpd_path, pretraining_downstream_hpd_path,)
-        ) as experiment:
+        with PretrainHPO(experiments_config=experiments_config, hp_config=self.shared_hpds,
+                         downstream_experiments_config=self.downstream_experiments_config,
+                         pretext_experiments_config=self.pretext_experiments_config,
+                         pretext_hp_config=self.specific_hpds["PretrainHPO"]["pretext"],
+                         downstream_hp_config=self.specific_hpds["PretrainHPO"]["downstream"],
+                         results_dir=self._results_path, is_continuation=False) as experiment:
             experiment.run_hyperparameter_optimisation()
 
         return experiment
 
     def run_simple_elecssl_hpo(self, pretrain_experiment):
-        # Create paths
-        shared_experiments_path = self._experiments_configs_path / "shared_conf.yml"
-        elecssl_experiments_path = self._experiments_configs_path / "simple_elecssl_conf.yml"
-        shared_hpd_path = self._hpd_configs_path / "shared_hpds.yml"
-        elecssl_hpd_path = self._hpd_configs_path / "simple_elecssl_hpds.yml"
+        # Create merged config files
+        hp_config = merge_dicts_strict(self.shared_hpds, self.specific_hpds["SimpleElecsslHPO"])
+        experiments_config = merge_dicts_strict(self.defaults_config, self.pretext_experiments_config,
+                                                self.specific_experiments_config["SimpleElecsslHPO"])
+        experiments_config["clinical_target"] = self.downstream_experiments_config["Training"]["target"]
 
         # Elecssl with one independent variable/residual
-        elecssl_experiment = SimpleElecsslHPO(
-            hp_config_paths=(shared_hpd_path, elecssl_hpd_path),
-            experiments_config_paths=(shared_experiments_path, elecssl_experiments_path),
-            results_dir=self._results_path, is_continuation=False
-        )
-        with elecssl_experiment as experiment:
-            # experiment.run_hyperparameter_optimisation()
+        with SimpleElecsslHPO(hp_config=hp_config, experiments_config=experiments_config,
+                              results_dir=self._results_path, is_continuation=False) as experiment:
             experiment.reuse_pretrained_runs(pretrain_experiment)
-            experiment.continue_hyperparameter_optimisation(num_trials=1)  # todo: don't hardcore
+            experiment.continue_hyperparameter_optimisation(num_trials=experiments_config["num_additional_trials"])
 
         return experiment
 
     def run_multivariable_elecssl_hpo(self, simple_elecssl_experiment):
-        # Create paths
-        shared_experiments_path = self._experiments_configs_path / "shared_conf.yml"
-        elecssl_experiments_path = self._experiments_configs_path / "multivariable_elecssl_conf.yml"
-        shared_hpd_path = self._hpd_configs_path / "shared_hpds.yml"
-        elecssl_hpd_path = self._hpd_configs_path / "multivariable_elecssl_hpds.yml"
+        # Create merged config files
+        hp_config = merge_dicts_strict(self.shared_hpds, self.specific_hpds["MultivariableElecsslHPO"])
+        experiments_config = merge_dicts_strict(self.defaults_config, self.pretext_experiments_config,
+                                                self.specific_experiments_config["MultivariableElecsslHPO"])
+        experiments_config["clinical_target"] = self.downstream_experiments_config["Training"]["target"]
 
         # Elecssl with multiple independent variables/residuals
-        with MultivariableElecsslHPO(
-            hp_config_paths=(shared_hpd_path, elecssl_hpd_path),
-            experiments_config_paths=(shared_experiments_path, elecssl_experiments_path),
-            results_dir=self._results_path, is_continuation=False
-        ) as experiment:
-            # experiment.run_hyperparameter_optimisation()
+        with MultivariableElecsslHPO(hp_config=hp_config, experiments_config=experiments_config,
+                                     results_dir=self._results_path, is_continuation=False) as experiment:
             experiment.reuse_simple_elecssl_runs(simple_elecssl_experiment)
-            experiment.continue_hyperparameter_optimisation(num_trials=1)  # todo: don't hardcore
+            experiment.continue_hyperparameter_optimisation(experiments_config["num_additional_trials"])
 
         return experiment
 
@@ -1792,6 +1878,33 @@ class AllHPOExperiments:
 
         # Check across the experiments
         check_equal_test_sets(experiments)
+
+    # --------------
+    # Properties
+    # --------------
+    @property
+    def defaults_config(self):
+        return copy.deepcopy(self._defaults_config)
+
+    @property
+    def specific_experiments_config(self):
+        return copy.deepcopy(self._specific_experiments_config)
+
+    @property
+    def downstream_experiments_config(self):
+        return copy.deepcopy(self._downstream_experiments_config)
+
+    @property
+    def pretext_experiments_config(self):
+        return copy.deepcopy(self._pretext_experiments_config)
+
+    @property
+    def shared_hpds(self):
+        return copy.deepcopy(self._shared_hpds)
+
+    @property
+    def specific_hpds(self):
+        return copy.deepcopy(self._specific_hpds)
 
 
 # --------------
