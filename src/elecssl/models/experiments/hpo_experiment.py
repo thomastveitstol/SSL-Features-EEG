@@ -1775,7 +1775,7 @@ class AllHPOExperiments:
         # HPO experiments
         # --------------
         # Prediction models
-        # prediction_models = self.run_prediction_models_hpo()
+        prediction_models = self.run_prediction_models_hpo()
 
         # Pretraining
         pretrain = self.run_pretraining_hpo()
@@ -1789,7 +1789,7 @@ class AllHPOExperiments:
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((pretrain, simple_elecssl, multivariable_elecssl))
+        self.verify_test_set_integrity((prediction_models, pretrain, simple_elecssl, multivariable_elecssl))
 
         # --------------
         # Dataframe creation
