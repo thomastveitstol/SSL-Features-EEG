@@ -318,6 +318,58 @@ def get_random_distribution(distribution, **kwargs):
 # ------------
 # Convenient functions
 # ------------
+def remove_prefix(s, *, prefix, case_sensitive):
+    """
+    Remove a prefix from a string.
+
+    This function removes the specified prefix from the beginning of the string.
+    If the string does not start with the prefix, a ValueError is raised.
+
+    Parameters
+    ----------
+    s : str
+        The input string.
+    prefix : str
+        The prefix to remove.
+    case_sensitive : bool
+        If True (default), the prefix comparison is case-sensitive. If False, the prefix is matched case-insensitively.
+
+    Returns
+    -------
+    str
+        The string with the prefix removed.
+
+    Raises
+    ------
+    ValueError
+        If the string does not start with the given prefix.
+
+    Examples
+    --------
+    >>> remove_prefix("HelloWorld", prefix="Hello", case_sensitive=True)
+    'World'
+    >>> remove_prefix("Python3.8", prefix="Python", case_sensitive=False)
+    '3.8'
+    >>> remove_prefix("HelloWorld", prefix="hello", case_sensitive=True)
+    Traceback (most recent call last):
+    ...
+    ValueError: String does not start with prefix: 'hello'
+    >>> remove_prefix("HelloWorld", prefix="hello", case_sensitive=False)
+    'World'
+    >>> remove_prefix("HelloWorld", prefix="Bye", case_sensitive=False)
+    Traceback (most recent call last):
+    ...
+    ValueError: String does not start with prefix: 'Bye'
+    """
+    if case_sensitive:
+        if not s.startswith(prefix):
+            raise ValueError(f"String does not start with prefix: {prefix!r}")
+    else:
+        if not s.lower().startswith(prefix.lower()):
+            raise ValueError(f"String does not start with prefix: {prefix!r}")
+    return s[len(prefix):]
+
+
 def verify_type(data, types):
     """Function which checks the type of the object. Returns the object if the type is as expected, otherwise raises a
     TypeError"""
