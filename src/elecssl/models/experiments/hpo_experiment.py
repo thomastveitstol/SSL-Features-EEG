@@ -647,15 +647,50 @@ class HPOExperiment(abc.ABC):
 # --------------
 # Single HPO experiments
 # --------------
-class MLFeatureExtraction:
+class MLFeatureExtraction(HPOExperiment):
     """
     Class for 'normal' machine learning using normal feature extraction. It does not really use HPO
     """
 
-    def __init__(self, *, experiments_config, results_dir):
-        self._experiments_config = experiments_config
-        self._results_path = results_dir
+    _name = "ml_features"
 
+    def __init__(self, *, experiments_config, hp_config, results_dir):
+        super().__init__(experiments_config=experiments_config, hp_config=hp_config, is_continuation=False,
+                         results_dir=results_dir)
+
+    # -------------
+    # This class does not share all functionality, so just removing them
+    # todo: maybe just not inherit from the same class as the others...
+    # -------------
+    @classmethod
+    def load_previous(cls, path):
+        raise NotImplementedError
+
+    def continue_hyperparameter_optimisation(self, num_trials: Optional[int]):
+        raise NotImplementedError
+
+    def run_hyperparameter_optimisation(self):
+        raise NotImplementedError
+
+    def _create_study(self):
+        raise NotImplementedError
+
+    def load_study(self, sampler):
+        raise NotImplementedError
+
+    def _create_objective(self) -> Callable[[optuna.Trial], float]:
+        raise NotImplementedError
+
+    def _suggest_common_hyperparameters(self, trial, name, in_freq_band, preprocessed_config_path):
+        raise NotImplementedError
+
+    @staticmethod
+    def _suggest_training_hpcs(trial, name, hpd_config):
+        raise NotImplementedError
+
+    # -------------
+    # Methods for using ML on extracted features
+    # -------------
     def _build_features_matrix(self):
         """
         Function for building a data matrix
@@ -671,11 +706,12 @@ class MLFeatureExtraction:
         all_subjects = []
 
         # Loop though all datasets to use
-        for dataset_name, sample_size in self._experiments_config["Datasets"].items():
+        for dataset_name, dataset_kwargs in self._experiments_config["Datasets"].items():
             # Get the dataset
             dataset = get_dataset(dataset_name=dataset_name)
 
             # Get the subject IDs
+            sample_size = dataset_kwargs["num_subjects"]
             if sample_size == "all":
                 subjects = dataset.get_subject_ids()
             else:
@@ -713,10 +749,11 @@ class MLFeatureExtraction:
         # -------------
         # Compute predictive value
         # -------------
+        # todo: I should store the validation score too...
         _compute_biomarker_predictive_value(
             df=df, test_split_config=self._experiments_config["TestSplit"],
             subject_split_config=self._experiments_config["MLModelSubjectSplit"],
-            ml_model_hp_config=self._experiments_config["MLModel"],
+            ml_model_hp_config=self._sampling_config["MLModel"],
             ml_model_settings_config=self._experiments_config["MLModelSettings"],
             save_test_predictions=self._experiments_config["save_test_predictions"], results_dir=self.results_path,
             verbose=True
@@ -1801,6 +1838,20 @@ class AllHPOExperiments:
     # --------------
     # Single HPO experiments
     # --------------
+    def run_ml_features(self):
+        # Create the config file
+        keys = ("TestSplit", "MLModelSubjectSplit", "MLModelSettings")
+        _config = {key: self.pretext_experiments_config[key] for key in keys}
+        _config["save_test_predictions"] = self.defaults_config["save_test_predictions"]
+        _config["Datasets"] = self.downstream_experiments_config["Datasets"]
+        _config["downstream_target"] = self.downstream_experiments_config["Training"]["target"]
+        config = merge_dicts_strict(_config, self.specific_experiments_config["MLFeatureExtraction"])
+
+        # Run the experiment
+        with MLFeatureExtraction(experiments_config=config, hp_config=self.specific_hpds["MLFeatureExtraction"],
+                                 results_dir=self._results_path) as experiment:
+            experiment.evaluate()
+
     def run_prediction_models_hpo(self):
         # Create merged config files
         hp_config = merge_dicts_strict(self.shared_hpds, self.specific_hpds["PredictionModelsHPO"])

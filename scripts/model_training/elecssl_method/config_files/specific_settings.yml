@@ -1,3 +1,6 @@
+MLFeatureExtraction:
+  features: [ log10_band_power_delta_eo, log10_band_power_theta_eo, log10_band_power_alpha_eo, log10_band_power_beta_eo,
+              log10_band_power_gamma_eo ]
 PredictionModelsHPO: { }
 PretrainHPO:
   force_pretraining: false  # If no datasets, are used for pre-training, prune the trial (true) or not (false)

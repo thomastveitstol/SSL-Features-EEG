@@ -2,6 +2,10 @@
 # read together with the .suggest_hyperparameters() methods
 _freq_bands_optuna_kwargs: &freq_bands_optuna_kwargs { choices: [ delta, theta, alpha, beta, gamma ] }
 
+MLFeatureExtraction:
+  MLModel:
+    model: LinearRegression
+    kwargs: { }
 PredictionModelsHPO:
   OcularStates: { choices: [ eo, ec ] }
 PretrainHPO:
