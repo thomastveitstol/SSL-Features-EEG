@@ -322,11 +322,7 @@ class HPOExperiment(abc.ABC):
                 scores[f"test_{metric}"].append(agg_folds_method(test_scores))  # type: ignore[arg-type]
 
             # Add the rest of the info
-            _indicator = "hpo_"
-            start_idx = hpo_iteration.find(_indicator) + len(_indicator)
-            end_idx = hpo_iteration.find('_', start_idx)
-
-            scores["trial_number"].append(int(hpo_iteration[start_idx:end_idx]))
+            scores["trial_number"].append(int(hpo_iteration.split("_")[-1]))
             scores["run"].append(hpo_iteration)
 
         # Convert to dataframe
