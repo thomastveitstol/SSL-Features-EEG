@@ -41,43 +41,15 @@ class HPORun(NamedTuple):
 
 
 # --------------
-# HPO baseclass
+# HPO baseclasses
 # --------------
-class HPOExperiment(abc.ABC):
+class MainExperiment(abc.ABC):
     """
-    Base class for running hyperparameter optimisation
+    Base class for experiments to be run
     """
 
     __slots__ = ("_experiments_config", "_sampling_config", "_results_path")
     _name: str
-    _test_predictions_file_name: str  # The name of the csv file which contains the test predictions
-    _optimisation_predictions_file_name: Tuple[str, ...]  # In these csv files, test subjects should NOT be present
-    # (will be used for checking test set integrity)
-
-    # -------------
-    # Dunder methods for context manager (using the 'with' statement). See this video from mCoding for more information
-    # on context managers https://www.youtube.com/watch?v=LBJlGwJ899Y&t=640s
-    # -------------
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """This will execute when exiting the with statement. It will NOT execute if the run was killed by the operating
-        system, which can happen if too much data is loaded into memory"""
-        # If everything was as it should, create an open file that indicates no errors
-        if exc_val is None:
-            with open(self._results_path / f"finished_successfully_{date.today()}_"
-                                           f"{datetime.now().strftime('%H%M%S')}.txt", "w"):
-                pass
-            return
-
-        # Otherwise, document the error received in a text file
-        file_name = (self._results_path / f"{exc_type.__name__}_{date.today()}_"
-                                          f"{datetime.now().strftime('%H%M%S')}").with_suffix(".txt")
-        with open(file_name, "w") as file:
-            file.write("Traceback (most recent call last):\n")
-            traceback.print_tb(exc_tb, file=file)  # type: ignore[arg-type]
-            file.write(f"{exc_type.__name__}: {exc_val}")
 
     def __init__(self, hp_config, experiments_config, results_dir, is_continuation):
         # ---------------
@@ -113,6 +85,84 @@ class HPOExperiment(abc.ABC):
             yaml.safe_dump(experiments_config, file, sort_keys=False)
         with open(self._results_path / "hpd_config.yml", "w") as file:
             yaml.safe_dump(hp_config, file, sort_keys=False)
+
+    # -------------
+    # Dunder methods for context manager (using the 'with' statement). See this video from mCoding for more information
+    # on context managers https://www.youtube.com/watch?v=LBJlGwJ899Y&t=640s
+    # -------------
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """This will execute when exiting the with statement. It will NOT execute if the run was killed by the operating
+        system, which can happen if too much data is loaded into memory"""
+        # If everything was as it should, create an open file that indicates no errors
+        if exc_val is None:
+            with open(self._results_path / f"finished_successfully_{date.today()}_"
+                                           f"{datetime.now().strftime('%H%M%S')}.txt", "w"):
+                pass
+            return
+
+        # Otherwise, document the error received in a text file
+        file_name = (self._results_path / f"{exc_type.__name__}_{date.today()}_"
+                                          f"{datetime.now().strftime('%H%M%S')}").with_suffix(".txt")
+        with open(file_name, "w") as file:
+            file.write("Traceback (most recent call last):\n")
+            traceback.print_tb(exc_tb, file=file)  # type: ignore[arg-type]
+            file.write(f"{exc_type.__name__}: {exc_val}")
+
+    # --------------
+    # Methods for analysis
+    # --------------
+    @abc.abstractmethod
+    def generate_test_scores_df(self, *args, **kwargs) -> pandas.DataFrame:
+        """Method for generating a dataframe which summarises the performance scores such that it can be analysed"""
+
+    # --------------
+    # Methods for checking if results were as expected.
+    # Mostly using methods with @classmethod so that post-hoc checks can be done as well with only the path provided
+    # --------------
+    @classmethod
+    @abc.abstractmethod
+    def get_test_subjects(cls, path) -> Set[Subject]:
+        """Get the test subjects"""
+
+    @staticmethod
+    def verify_equal_test_sets(hpo_runs: Tuple[HPORun, ...]):
+        # Get all test sets
+        test_sets: List[Set[Subject]] = []
+        for run in hpo_runs:
+            test_set = run.experiment.get_test_subjects(path=run.path)
+            assert isinstance(test_set, set), f"Expected test set to be a set, but found {type(test_set)}"
+            assert all(isinstance(subject, Subject) for subject in test_set), \
+                f"Expected subjects om test set to be of type 'Subject', but found {set(type(s) for s in test_set)}"
+            test_sets.append(test_set)
+
+        # Check if they are all equal
+        if not all(test_set == test_sets[0] for test_set in test_sets):
+            raise DissimilarTestSetsError
+
+    # --------------
+    # Input checks
+    # --------------
+    @classmethod
+    def verify_results_dir_exists(cls, results_dir):
+        """This should be used to verify if a results dir exists. Should only be used when it is supposed to exist"""
+        if not os.path.isdir(results_dir):
+            raise FileNotFoundError(f"The results path {results_dir} of the attempted continued study does not "
+                                    f"exist. This is likely due to (1) the path was incorrect, or (2) the HPO "
+                                    f"experiment ({cls}) should not have been initialised as a continuation")
+
+
+class HPOExperiment(MainExperiment):
+    """
+    Base class for running hyperparameter optimisation
+    """
+
+    __slots__ = ()
+    _test_predictions_file_name: str  # The name of the csv file which contains the test predictions
+    _optimisation_predictions_file_name: Tuple[str, ...]  # In these csv files, test subjects should NOT be present
+    # (will be used for checking test set integrity)
 
     @classmethod
     def load_previous(cls, path):
@@ -498,21 +548,6 @@ class HPOExperiment(abc.ABC):
         """Get the test subjects, while also checking consistency"""
         return cls._verify_test_set_consistency(path=path)
 
-    @staticmethod
-    def verify_equal_test_sets(hpo_runs: Tuple[HPORun, ...]):
-        # Get all test sets
-        test_sets: List[Set[Subject]] = []
-        for run in hpo_runs:
-            test_set = run.experiment.get_test_subjects(path=run.path)
-            assert isinstance(test_set, set), f"Expected test set to be a set, but found {type(test_set)}"
-            assert all(isinstance(subject, Subject) for subject in test_set), \
-                f"Expected subjects om test set to be of type 'Subject', but found {set(type(s) for s in test_set)}"
-            test_sets.append(test_set)
-
-        # Check if they are all equal
-        if not all(test_set == test_sets[0] for test_set in test_sets):
-            raise DissimilarTestSetsError
-
     # --------------
     # Methods for HP analysis
     # --------------
@@ -620,17 +655,6 @@ class HPOExperiment(abc.ABC):
         study_name = f"{cls._name}-study"
         path = (results_path / study_name).with_suffix(".db")
         return study_name, f"sqlite:///{path}"
-
-    # --------------
-    # Input checks
-    # --------------
-    @classmethod
-    def verify_results_dir_exists(cls, results_dir):
-        """This should be used to verify if a results dir exists. Should only be used when it is supposed to exist"""
-        if not os.path.isdir(results_dir):
-            raise FileNotFoundError(f"The results path {results_dir} of the attempted continued study does not "
-                                    f"exist. This is likely due to (1) the path was incorrect, or (2) the HPO "
-                                    f"experiment ({cls}) should not have been initialised as a continuation")
 
     # --------------
     # Properties
