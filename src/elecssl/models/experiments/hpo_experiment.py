@@ -1,5 +1,6 @@
 import abc
 import copy
+import itertools
 import os
 import random
 import traceback
@@ -1059,7 +1060,8 @@ class PretrainHPO(HPOExperiment):
                     deviation_method=self._experiments_config["elecssl_deviation_method"],
                     in_ocular_state=in_ocular_state, experiment_name="pretext",
                     log_transform_downstream_target=False,  # todo: I'm quite confident that it's integrated in the arg
-                    pretext_main_metric=self._pretext_experiments_config["Training"]["main_metric"]
+                    pretext_main_metric=self._pretext_experiments_config["Training"]["main_metric"],
+                    include_pseudo_targets=self._experiments_config["elecssl_include_pseudo_targets"]
                 )
                 df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
@@ -1242,7 +1244,8 @@ class SimpleElecsslHPO(HPOExperiment):
                 downstream_target=self._experiments_config["clinical_target"], in_ocular_state=in_ocular_state,
                 deviation_method=self._experiments_config["deviation_method"], experiment_name=experiment_name,
                 log_transform_downstream_target=False,  # todo: I'm quite confident that it's integrated in the arg
-                pretext_main_metric=self._experiments_config["Training"]["main_metric"]
+                pretext_main_metric=self._experiments_config["Training"]["main_metric"],
+                include_pseudo_targets=self._experiments_config["include_pseudo_targets"]
             )
             df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
@@ -1352,14 +1355,25 @@ class SimpleElecsslHPO(HPOExperiment):
 
     @staticmethod
     def _get_feature_name(path: Path):
-        # Get the expected feature name
-        feature_name = pandas.read_csv(path / "ssl_biomarkers.csv", nrows=0).drop(
+        """ Get the expected feature name"""
+        # Load the biomarkers csv file column names and remove some of the expected unrelated ones
+        feature_names = pandas.read_csv(path / "ssl_biomarkers.csv", nrows=0).drop(
             labels=["dataset", "sub_id", "clinical_target"], axis="columns"
         ).columns.tolist()
 
-        # Check that there is only one column left, as expected
-        assert len(feature_name) == 1, f"Expected 1 column, but got {len(feature_name)} columns: {feature_name}"
-        return feature_name[0]
+        # Check that there is only one or two columns left, as expected
+        assert len(feature_names) in (1, 2), (f"Expected 1 or 2 columns, but got {len(feature_names)} columns: "
+                                              f"{feature_names}")
+
+        # If there are two columns, identify the actual feature by removing the pseudo-target
+        if len(feature_names) == 2:
+            feature_names = [name for name in feature_names if not name.startswith("pt_")]
+
+        # Return the remaining feature name
+        assert len(feature_names) == 1, (f"After removing pseudo-targets, expected exactly 1 remaining feature column, "
+                                         f"but got {len(feature_names)}: {feature_names}")
+
+        return feature_names[0]
 
     # --------------
     # Methods for checking if results were as expected
@@ -1512,25 +1526,38 @@ class MultivariableElecsslHPO(HPOExperiment):
                 # ---------------
                 # Initiate experiment
                 # ---------------
-                subjects, deviations, clinical_targets, feature_extractor_name = self._run_single_job(
+                include_pseudo_targets = self._experiments_config["include_pseudo_targets"]
+                feature_extractor_name, *outputs = self._run_single_job(
                     experiments_config=experiment_config_file, trial_number=trial.number,
                     suggested_hyperparameters=suggested_hyperparameters, in_ocular_state=in_ocular_state,
                     in_freq_band=in_freq_band, results_dir=results_dir,
-                    clinical_target=self._experiments_config["clinical_target"],
+                    downstream_target=self._experiments_config["clinical_target"],
                     deviation_method=self._experiments_config["deviation_method"],
                     log_transform_clinical_target=self._experiments_config["log_transform_clinical_target"],
                     num_eeg_epochs=num_epochs, feature_extractor_name=feature_extractor_name,
-                    pretext_main_metric=self._experiments_config["Training"]["main_metric"]
+                    pretext_main_metric=self._experiments_config["Training"]["main_metric"],
+                    include_pseudo_targets=self._experiments_config["include_pseudo_targets"]
                 )
 
+                if include_pseudo_targets:
+                    subjects, deviations, clinical_targets, pseudo_targets = outputs
+                else:
+                    subjects, deviations, clinical_targets = outputs
+                    pseudo_targets = itertools.cycle((None,))
+
                 # Collect the resulting 'biomarkers'
-                for subject, deviation, target in zip(subjects, deviations, clinical_targets):
+                for subject, deviation, target, pseudo_target in zip(subjects, deviations, clinical_targets,
+                                                                     pseudo_targets):
                     # Maybe add the target (not optimal code...)
                     if subject not in biomarkers:
                         biomarkers[subject] = {"clinical_target": target}
 
                     # Add the deviation
                     biomarkers[subject][feature_extractor_name] = deviation
+
+                    # Maybe add pseudo target
+                    if include_pseudo_targets:
+                        biomarkers[subject][f"pt_{target_name}"] = pseudo_target
 
             # Make it a dataframe and save it
             df = pandas.DataFrame.from_dict(biomarkers, orient="index")
@@ -1554,8 +1581,8 @@ class MultivariableElecsslHPO(HPOExperiment):
 
     @staticmethod
     def _run_single_job(experiments_config, suggested_hyperparameters, trial_number, in_ocular_state, in_freq_band,
-                        results_dir, clinical_target, deviation_method, num_eeg_epochs, log_transform_clinical_target,
-                        pretext_main_metric, feature_extractor_name):
+                        results_dir, downstream_target, deviation_method, num_eeg_epochs, log_transform_clinical_target,
+                        pretext_main_metric, feature_extractor_name, include_pseudo_targets) -> Tuple[Any, ...]:
         """Method for running a single SSL experiments"""
         experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
             experiments_config=experiments_config, in_freq_band=in_freq_band, in_ocular_state=in_ocular_state,
@@ -1576,13 +1603,15 @@ class MultivariableElecsslHPO(HPOExperiment):
         # ---------------
         # Extract expectation values and biomarkers
         # ---------------
-        subject_ids, deviation, clinical_target = _get_delta_and_variable(
+        outputs = _get_delta_and_variable(
             path=results_path / "Fold_0", target=experiments_config["Training"]["target"],
-            variable=clinical_target, deviation_method=deviation_method, log_var=log_transform_clinical_target,
-            num_eeg_epochs=num_eeg_epochs, pretext_main_metric=pretext_main_metric, experiment_name=experiment_name
+            downstream_target=downstream_target, deviation_method=deviation_method,
+            log_var=log_transform_clinical_target, num_eeg_epochs=num_eeg_epochs,
+            pretext_main_metric=pretext_main_metric, experiment_name=experiment_name,
+            include_pseudo_targets=include_pseudo_targets
         )
 
-        return subject_ids, deviation, clinical_target, feature_extractor_name
+        return feature_extractor_name, *outputs
 
     # --------------
     # Methods for running HPO
@@ -1913,7 +1942,10 @@ class AllHPOExperiments:
 
         # Add some elecssl details
         deviation_method = self.specific_experiments_config["SimpleElecsslHPO"]["deviation_method"]
+        include_pseudo_targets = self.specific_experiments_config["SimpleElecsslHPO"]["include_pseudo_targets"]
+
         experiments_config["elecssl_deviation_method"] = deviation_method
+        experiments_config["elecssl_include_pseudo_targets"] = include_pseudo_targets
 
         # Model with pre-training
         with PretrainHPO(experiments_config=experiments_config, hp_config=self.shared_hpds,
@@ -2100,26 +2132,33 @@ def _merge_ssl_biomarkers_dataframes(dfs):
 
 
 def _make_single_residuals_df(*, results_dir, feature_name, pseudo_target, downstream_target, deviation_method,
-                              in_ocular_state, log_transform_downstream_target, pretext_main_metric, experiment_name):
-    subject_ids, deviations, clinical_targets = _get_delta_and_variable(
-        path=results_dir,
-        target=pseudo_target,
-        variable=downstream_target,
-        deviation_method=deviation_method,
+                              in_ocular_state, log_transform_downstream_target, pretext_main_metric, experiment_name,
+                              include_pseudo_targets):
+    outputs = _get_delta_and_variable(
+        path=results_dir, target=pseudo_target, downstream_target=downstream_target, deviation_method=deviation_method,
         log_var=log_transform_downstream_target,  # TODO: how about log of pseudo-target?
-        num_eeg_epochs=_get_num_eeg_epochs(ocular_state=in_ocular_state),
-        pretext_main_metric=pretext_main_metric,
-        experiment_name=experiment_name
+        num_eeg_epochs=_get_num_eeg_epochs(ocular_state=in_ocular_state), pretext_main_metric=pretext_main_metric,
+        experiment_name=experiment_name, include_pseudo_targets=verify_type(include_pseudo_targets, bool)
     )
 
     biomarkers: Dict[str, List[Union[str, float]]] = {"dataset": [], "sub_id": [], "clinical_target": [],
                                                       feature_name: []}
-    for subject, deviation, target in zip(subject_ids, deviations, clinical_targets):
+    if include_pseudo_targets:
+        subject_ids, deviations, clinical_targets, pseudo_targets = outputs
+        biomarkers[f"pt_{pseudo_target}"] = []
+    else:
+        subject_ids, deviations, clinical_targets = outputs
+        pseudo_targets = itertools.cycle((None,))
+
+    for subject, deviation, target, pseudo_target_value in zip(subject_ids, deviations, clinical_targets,
+                                                               pseudo_targets):
         # Add everything
         biomarkers["dataset"].append(subject.dataset_name)
         biomarkers["sub_id"].append(subject.subject_id)
         biomarkers["clinical_target"].append(target)
         biomarkers[feature_name].append(deviation)
+        if include_pseudo_targets:
+            biomarkers[f"pt_{pseudo_target}"].append(pseudo_target_value)
 
     # Make it a dataframe
     return pandas.DataFrame(biomarkers)
@@ -2229,8 +2268,8 @@ def _excluded_dataset_only(*, dataset_config, subject_split_config):
     return dataset == subject_split_config["kwargs"]["left_out_dataset"]
 
 
-def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var, num_eeg_epochs, pretext_main_metric,
-                            experiment_name):
+def _get_delta_and_variable(path, *, target, downstream_target, deviation_method, log_var, num_eeg_epochs,
+                            pretext_main_metric, experiment_name, include_pseudo_targets):
     # todo: make test
     # ----------------
     # Select epoch
@@ -2258,34 +2297,34 @@ def _get_delta_and_variable(path, *, target, variable, deviation_method, log_var
     predictions = test_predictions.iloc[:, i0:i1].mean(axis=1)
 
     # Get pseudo-targets
-    ground_truth = get_dataset(dataset_name).load_targets(target=target, subject_ids=subject_ids)
+    pseudo_targets = get_dataset(dataset_name).load_targets(target=target, subject_ids=subject_ids)
 
     # Get the clinical variable
-    var = get_dataset(dataset_name).load_targets(target=variable, subject_ids=subject_ids)
+    var = get_dataset(dataset_name).load_targets(target=downstream_target, subject_ids=subject_ids)
 
     # Remove nan values  todo: should not be necessary...
     mask = ~numpy.isnan(var).copy()
 
-    ground_truth = ground_truth[mask]  # type: ignore
+    pseudo_targets = pseudo_targets[mask]  # type: ignore
     predictions = predictions[mask]
     var = var[mask]  # type: ignore
     subject_ids = subject_ids[mask]
 
     # Get the deviation
     if deviation_method in ("delta", "gap", "diff", "difference"):
-        delta = predictions - ground_truth
+        delta = predictions - pseudo_targets
     elif deviation_method == "ratio":
-        delta = predictions / ground_truth  # todo: should it be the inverse?
+        delta = predictions / pseudo_targets  # todo: should it be the inverse?
     else:
         raise ValueError(f"Unrecognised method: {deviation_method}")
 
-    # Return
     subjects = tuple(Subject(subject_id=sub_id, dataset_name=dataset_name) for sub_id in subject_ids)
-    assert isinstance(log_var, bool), f"Expected 'log_var' to be boolean, but found type {type(log_var)}"
-    if log_var:
-        return subjects, delta, numpy.log10(var)
-    else:
-        return subjects, delta, var
+
+    # Return
+    if verify_type(include_pseudo_targets, bool):
+        return subjects, delta, var, pseudo_targets
+
+    return subjects, delta, var
 
 
 def _get_aggregated_val_score(*, trial_results_dir, aggregation_method, metric):
