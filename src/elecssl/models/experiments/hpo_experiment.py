@@ -127,6 +127,25 @@ class MainExperiment(abc.ABC):
     def get_test_subjects(cls, path) -> Set[Subject]:
         """Get the test subjects"""
 
+    @classmethod
+    @abc.abstractmethod
+    def verify_test_set_integrity(cls, path):
+        """
+        Method for checking the test set integrity after HPO has been run
+
+        Parameters
+        ----------
+        path : pathlib.Path
+            The path to where all results of the HPO are
+
+        Returns
+        -------
+        None
+        """
+
+    def integrity_check_test_set(self):
+        self.verify_test_set_integrity(path=self.results_path)
+
     @staticmethod
     def verify_equal_test_sets(hpo_runs: Tuple[HPORun, ...]):
         # Get all test sets
@@ -152,6 +171,13 @@ class MainExperiment(abc.ABC):
             raise FileNotFoundError(f"The results path {results_dir} of the attempted continued study does not "
                                     f"exist. This is likely due to (1) the path was incorrect, or (2) the HPO "
                                     f"experiment ({cls}) should not have been initialised as a continuation")
+
+    # --------------
+    # Properties
+    # --------------
+    @property
+    def results_path(self):
+        return self._results_path
 
 
 class HPOExperiment(MainExperiment):
@@ -424,18 +450,6 @@ class HPOExperiment(MainExperiment):
     # --------------
     @classmethod
     def verify_test_set_integrity(cls, path):
-        """
-        Method for checking the test set integrity after HPO has been run
-
-        Parameters
-        ----------
-        path : pathlib.Path
-            The path to where all results of the HPO are
-
-        Returns
-        -------
-        None
-        """
         # Check if the test set always contain the same set of subject
         test_subjects = cls._verify_test_set_consistency(path=path)
 
@@ -660,10 +674,6 @@ class HPOExperiment(MainExperiment):
     # Properties
     # --------------
     @property
-    def results_path(self):
-        return self._results_path
-
-    @property
     def hpo_study_config(self):
         return self._experiments_config["HPO"]
 
@@ -671,7 +681,7 @@ class HPOExperiment(MainExperiment):
 # --------------
 # Single HPO experiments
 # --------------
-class MLFeatureExtraction(HPOExperiment):
+class MLFeatureExtraction(MainExperiment):
     """
     Class for 'normal' machine learning using normal feature extraction. It does not really use HPO
     """
@@ -682,35 +692,37 @@ class MLFeatureExtraction(HPOExperiment):
         super().__init__(experiments_config=experiments_config, hp_config=hp_config, is_continuation=False,
                          results_dir=results_dir)
 
-    # -------------
-    # This class does not share all functionality, so just removing them
-    # todo: maybe just not inherit from the same class as the others...
-    # -------------
+    # --------------
+    # Overriding abstract methods
+    # --------------
+    def generate_test_scores_df(self, *args, **kwargs) -> pandas.DataFrame:
+        raise NotImplementedError
+
     @classmethod
-    def load_previous(cls, path):
-        raise NotImplementedError
+    def get_test_subjects(cls, path) -> Set[Subject]:
+        # Verify test set integrity and return the resulting set of subjects
+        return cls._verify_test_set_integrity(path=path)
 
-    def continue_hyperparameter_optimisation(self, num_trials: Optional[int]):
-        raise NotImplementedError
+    @classmethod
+    def _verify_test_set_integrity(cls, path) -> Set[Subject]:
+        # Load test predictions
+        test_predictions_df = pandas.read_csv(path / "test_predictions.csv", usecols=("dataset", "sub_id"))
 
-    def run_hyperparameter_optimisation(self):
-        raise NotImplementedError
+        # Convert to correct class, make a sanity check, and return
+        subjects = tuple(Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                         for row in test_predictions_df.itertuples(index=False))
 
-    def _create_study(self):
-        raise NotImplementedError
+        # Subjects should not be duplicated
+        subject_set = set(subjects)
+        assert len(subject_set) == len(subjects), (f"Duplicates were found in prediction history. Number of "
+                                                   f"predictions: {len(subjects)}. Number of unique subjects: "
+                                                   f"{len(subject_set)}")
+        return subject_set
 
-    def load_study(self, sampler):
-        raise NotImplementedError
-
-    def _create_objective(self) -> Callable[[optuna.Trial], float]:
-        raise NotImplementedError
-
-    def _suggest_common_hyperparameters(self, trial, name, in_freq_band, preprocessed_config_path):
-        raise NotImplementedError
-
-    @staticmethod
-    def _suggest_training_hpcs(trial, name, hpd_config):
-        raise NotImplementedError
+    @classmethod
+    def verify_test_set_integrity(cls, path):
+        # Verify without returning anything
+        cls._verify_test_set_integrity(path=path)
 
     # -------------
     # Methods for using ML on extracted features
@@ -1831,6 +1843,9 @@ class AllHPOExperiments:
         # --------------
         # HPO experiments
         # --------------
+        # Feature extraction + ML
+        ml_features = self.run_ml_features()
+
         # Prediction models
         prediction_models = self.run_prediction_models_hpo()
 
@@ -1846,7 +1861,8 @@ class AllHPOExperiments:
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((prediction_models, pretrain, simple_elecssl, multivariable_elecssl))
+        self.verify_test_set_integrity((ml_features, prediction_models, pretrain, simple_elecssl,
+                                        multivariable_elecssl))
 
         # --------------
         # Dataframe creation
@@ -1875,6 +1891,8 @@ class AllHPOExperiments:
         with MLFeatureExtraction(experiments_config=config, hp_config=self.specific_hpds["MLFeatureExtraction"],
                                  results_dir=self._results_path) as experiment:
             experiment.evaluate()
+
+        return experiment
 
     def run_prediction_models_hpo(self):
         # Create merged config files
@@ -1942,7 +1960,7 @@ class AllHPOExperiments:
     # Test set integrity
     # --------------
     @staticmethod
-    def verify_test_set_integrity(experiments: Tuple[HPOExperiment, ...]):
+    def verify_test_set_integrity(experiments: Tuple[MainExperiment, ...]):
         # Individual checks
         for experiment in experiments:
             experiment.integrity_check_test_set()
