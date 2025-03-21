@@ -84,7 +84,7 @@ PretextScalers: *Scaler
 # -----------------
 _Training: &Training
   batch_size: 16
-  num_epochs: 2
+  num_epochs: 20
   verbose: true
   verbose_variables: false
   continuous_testing: true
