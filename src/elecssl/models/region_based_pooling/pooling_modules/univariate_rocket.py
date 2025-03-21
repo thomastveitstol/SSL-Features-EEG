@@ -327,15 +327,17 @@ class RocketConv1d(nn.Module):
         for i, kernel in enumerate(self._kernels):
             # Perform convolution
             if x.dim() == 3:
-                convoluted = nn.functional.conv1d(input=x, weight=kernel.weight.data.repeat(num_channels, 1, 1),
-                                                  bias=kernel.bias.data.repeat(num_channels), stride=1, padding="same",
-                                                  dilation=kernel.dilation, groups=num_channels)
+                convoluted = nn.functional.conv1d(
+                    input=x, weight=kernel.weight.data.repeat(num_channels, 1, 1).to(x.device),
+                    bias=kernel.bias.data.repeat(num_channels).to(x.device), stride=1, padding="same",
+                    dilation=kernel.dilation, groups=num_channels)
             elif x.dim() == 4:
                 convoluted = torch.transpose(
-                    nn.functional.conv2d(input=torch.transpose(x, dim0=1, dim1=2),
-                                         weight=kernel.weight.data.repeat(num_channels, 1, 1, 1),
-                                         bias=kernel.bias.data.repeat(num_channels), stride=1, padding="same",
-                                         dilation=kernel.dilation, groups=num_channels),
+                    nn.functional.conv2d(
+                        input=torch.transpose(x, dim0=1, dim1=2),
+                        weight=kernel.weight.data.repeat(num_channels, 1, 1, 1).to(x.device),
+                        bias=kernel.bias.data.repeat(num_channels).to(x.device), stride=1, padding="same",
+                        dilation=kernel.dilation, groups=num_channels),
                     dim0=1, dim1=2
                 )
             else:

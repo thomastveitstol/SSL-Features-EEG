@@ -144,9 +144,9 @@ class SingleExperiment:
 
     def _load_pretrained_model(self, path):
         if self.spatial_dimension_handling_config["name"] == "RegionBasedPooling":
-            return MainRBPModel.load_model(name=f"{self._fine_tuning}_model", path=path)
+            return MainRBPModel.load_model(name=f"{self._fine_tuning}_model", path=path).to(self._device)
         elif self.spatial_dimension_handling_config["name"] == "Interpolation":
-            return MainFixedChannelsModel.load_model(name=f"{self._fine_tuning}_model", path=path)
+            return MainFixedChannelsModel.load_model(name=f"{self._fine_tuning}_model", path=path).to(self._device)
         raise ValueError(f"Unexpected method for handling a varied number of channels: "
                          f"{self.spatial_dimension_handling_config['name']}")
 
