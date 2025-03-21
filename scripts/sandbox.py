@@ -56,19 +56,19 @@ def make_boxplots():
     y = "experiment_name"
 
     # Other stuff
-    results_dir = get_results_dir()
+    results_dir = get_results_dir() / "experiments_2025-03-18_192406"
 
     # ---------------
     # Analysis
     # ---------------
     # Generate dataframe
     prediction_models_df = PredictionModelsHPO.generate_test_scores_df(
-        path=results_dir / "prediction_models" / "prediction_models_hpo_experiment_2025-03-04_185301",
-        selection_metric=selection_metric, target_metrics=target_metrics, method=method, include_experiment_name=True
+        path=results_dir / "prediction_models", selection_metric=selection_metric, target_metrics=target_metrics,
+        method=method, include_experiment_name=True
     )
     pretraining_df = PretrainHPO.generate_test_scores_df(
-        path=results_dir / "pretraining" / "pretraining_hpo_experiment_2025-03-06_202750",
-        selection_metric=selection_metric, target_metrics=target_metrics, method=method, include_experiment_name=True
+        path=results_dir / "pretraining", selection_metric=selection_metric, target_metrics=target_metrics,
+        method=method, include_experiment_name=True
     )
     df = pandas.concat((prediction_models_df, pretraining_df), axis="rows")
     df.reset_index(inplace=True)
@@ -180,7 +180,6 @@ def save_green():
 
 
 def main():
-    check_test_set_integrity()
     make_boxplots()
 
 
