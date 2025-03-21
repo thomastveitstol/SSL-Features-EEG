@@ -13,6 +13,7 @@ SimpleElecsslHPO:
   num_additional_trials: 1
   in_ocular_state: ec
   out_ocular_state: eo
+  include_pseudo_targets: true
 MultivariableElecsslHPO:
   IOSpaces: # In ocular state, out ocular state, in frequency band, out frequency band
     - [ [ ec, eo ], [ all, delta ] ]
@@ -23,3 +24,4 @@ MultivariableElecsslHPO:
   deviation_method: *deviation_method
   num_random_reuse: 23
   num_additional_trials: 1
+  include_pseudo_targets: true
