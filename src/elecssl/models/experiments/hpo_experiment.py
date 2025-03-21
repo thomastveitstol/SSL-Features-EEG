@@ -1059,7 +1059,6 @@ class PretrainHPO(HPOExperiment):
                     downstream_target=self._downstream_experiments_config["Training"]["target"],
                     deviation_method=self._experiments_config["elecssl_deviation_method"],
                     in_ocular_state=in_ocular_state, experiment_name="pretext",
-                    log_transform_downstream_target=False,  # todo: I'm quite confident that it's integrated in the arg
                     pretext_main_metric=self._pretext_experiments_config["Training"]["main_metric"],
                     include_pseudo_targets=self._experiments_config["elecssl_include_pseudo_targets"]
                 )
@@ -1243,7 +1242,6 @@ class SimpleElecsslHPO(HPOExperiment):
                 results_dir=results_path / "Fold_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
                 downstream_target=self._experiments_config["clinical_target"], in_ocular_state=in_ocular_state,
                 deviation_method=self._experiments_config["deviation_method"], experiment_name=experiment_name,
-                log_transform_downstream_target=False,  # todo: I'm quite confident that it's integrated in the arg
                 pretext_main_metric=self._experiments_config["Training"]["main_metric"],
                 include_pseudo_targets=self._experiments_config["include_pseudo_targets"]
             )
@@ -1533,7 +1531,6 @@ class MultivariableElecsslHPO(HPOExperiment):
                     in_freq_band=in_freq_band, results_dir=results_dir,
                     downstream_target=self._experiments_config["clinical_target"],
                     deviation_method=self._experiments_config["deviation_method"],
-                    log_transform_clinical_target=self._experiments_config["log_transform_clinical_target"],
                     num_eeg_epochs=num_epochs, feature_extractor_name=feature_extractor_name,
                     pretext_main_metric=self._experiments_config["Training"]["main_metric"],
                     include_pseudo_targets=self._experiments_config["include_pseudo_targets"]
@@ -1581,8 +1578,8 @@ class MultivariableElecsslHPO(HPOExperiment):
 
     @staticmethod
     def _run_single_job(experiments_config, suggested_hyperparameters, trial_number, in_ocular_state, in_freq_band,
-                        results_dir, downstream_target, deviation_method, num_eeg_epochs, log_transform_clinical_target,
-                        pretext_main_metric, feature_extractor_name, include_pseudo_targets) -> Tuple[Any, ...]:
+                        results_dir, downstream_target, deviation_method, num_eeg_epochs, pretext_main_metric,
+                        feature_extractor_name, include_pseudo_targets) -> Tuple[Any, ...]:
         """Method for running a single SSL experiments"""
         experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
             experiments_config=experiments_config, in_freq_band=in_freq_band, in_ocular_state=in_ocular_state,
@@ -1605,8 +1602,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         # ---------------
         outputs = _get_delta_and_variable(
             path=results_path / "Fold_0", target=experiments_config["Training"]["target"],
-            downstream_target=downstream_target, deviation_method=deviation_method,
-            log_var=log_transform_clinical_target, num_eeg_epochs=num_eeg_epochs,
+            downstream_target=downstream_target, deviation_method=deviation_method, num_eeg_epochs=num_eeg_epochs,
             pretext_main_metric=pretext_main_metric, experiment_name=experiment_name,
             include_pseudo_targets=include_pseudo_targets
         )
@@ -2132,11 +2128,9 @@ def _merge_ssl_biomarkers_dataframes(dfs):
 
 
 def _make_single_residuals_df(*, results_dir, feature_name, pseudo_target, downstream_target, deviation_method,
-                              in_ocular_state, log_transform_downstream_target, pretext_main_metric, experiment_name,
-                              include_pseudo_targets):
+                              in_ocular_state, pretext_main_metric, experiment_name, include_pseudo_targets):
     outputs = _get_delta_and_variable(
         path=results_dir, target=pseudo_target, downstream_target=downstream_target, deviation_method=deviation_method,
-        log_var=log_transform_downstream_target,  # TODO: how about log of pseudo-target?
         num_eeg_epochs=_get_num_eeg_epochs(ocular_state=in_ocular_state), pretext_main_metric=pretext_main_metric,
         experiment_name=experiment_name, include_pseudo_targets=verify_type(include_pseudo_targets, bool)
     )
@@ -2268,8 +2262,8 @@ def _excluded_dataset_only(*, dataset_config, subject_split_config):
     return dataset == subject_split_config["kwargs"]["left_out_dataset"]
 
 
-def _get_delta_and_variable(path, *, target, downstream_target, deviation_method, log_var, num_eeg_epochs,
-                            pretext_main_metric, experiment_name, include_pseudo_targets):
+def _get_delta_and_variable(path, *, target, downstream_target, deviation_method, num_eeg_epochs, pretext_main_metric,
+                            experiment_name, include_pseudo_targets):
     # todo: make test
     # ----------------
     # Select epoch
