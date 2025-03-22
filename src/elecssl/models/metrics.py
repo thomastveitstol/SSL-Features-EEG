@@ -74,8 +74,10 @@ class Histories:
     """
     Class for keeping track of all metrics during training. Works for both classification and regression
 
-    Keep in mind that it is strange to store outputs and targets, and compute metrics at the end of the epoch for
-    correlation metrics in particular, as the outputs are computed with different weights.
+    Keep in mind that for scores computed on the training dataset, it is strange to store outputs and targets, and
+    compute metrics at the end of the epoch for correlation metrics in particular, as the outputs are computed with
+    different weights. However, training curves are not sufficiently interesting to justify the time it would take to
+    repeat the forward pass on the entire training set after each epoch
 
     Examples
     --------
