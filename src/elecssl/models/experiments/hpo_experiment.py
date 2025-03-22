@@ -253,11 +253,12 @@ class HPOExperiment(MainExperiment):
     # --------------
     def _suggest_common_hyperparameters(self, trial, name, in_freq_band, preprocessed_config_path):
         suggested_hps: Dict[str, Any] = {"Preprocessing": {}}
+        name_prefix = "" if name is None else f"{name}_"
 
         # Preprocessing
         for param_name, (distribution, distribution_kwargs) in self._sampling_config["Preprocessing"].items():
             suggested_hps["Preprocessing"][param_name] = make_trial_suggestion(
-                trial=trial, name=f"{name}_{param_name}", method=distribution, kwargs=distribution_kwargs
+                trial=trial, name=f"{name_prefix}{param_name}", method=distribution, kwargs=distribution_kwargs
             )
 
         # Training
@@ -265,7 +266,8 @@ class HPOExperiment(MainExperiment):
                                                                 hpd_config=self._sampling_config)
 
         # Normalisation
-        normalisation = trial.suggest_categorical(f"{name}_normalisation", **self._sampling_config["normalisation"])
+        normalisation = trial.suggest_categorical(f"{name_prefix}normalisation",
+                                                  **self._sampling_config["normalisation"])
 
         # Convolutional monge mapping normalisation
         if self._experiments_config["enable_cmmn"]:
@@ -306,11 +308,13 @@ class HPOExperiment(MainExperiment):
 
     @staticmethod
     def _suggest_training_hpcs(trial, name, hpd_config):
+        name_prefix = "" if name is None else f"{name}_"
+
         # Training
         suggested_train_hpcs = dict()
         for param_name, (distribution, distribution_kwargs) in hpd_config["Training"].items():
             suggested_train_hpcs[param_name] = make_trial_suggestion(
-                trial=trial, name=f"{name}_{param_name}", method=distribution, kwargs=distribution_kwargs
+                trial=trial, name=f"{name_prefix}{param_name}", method=distribution, kwargs=distribution_kwargs
             )
         return suggested_train_hpcs
 
@@ -821,7 +825,7 @@ class PredictionModelsHPO(HPOExperiment):
             in_freq_band = "all"  # todo: hard coded :(
 
             suggested_hyperparameters = self.suggest_hyperparameters(
-                name=self._name, trial=trial, in_freq_band=in_freq_band
+                name=None, trial=trial, in_freq_band=in_freq_band
             )
 
             # ---------------
@@ -852,7 +856,9 @@ class PredictionModelsHPO(HPOExperiment):
         return _objective
 
     def suggest_hyperparameters(self, trial, name, in_freq_band):
-        in_ocular_state = trial.suggest_categorical(f"{name}_ocular_state", **self._sampling_config["OcularStates"])
+        name_prefix = "" if name is None else f"{name}_"
+        in_ocular_state = trial.suggest_categorical(f"{name_prefix}ocular_state",
+                                                    **self._sampling_config["OcularStates"])
         preprocessing_config_path = _get_preprocessing_config_path(ocular_state=in_ocular_state)
         suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
                                                              preprocessed_config_path=preprocessing_config_path)
@@ -956,7 +962,7 @@ class PretrainHPO(HPOExperiment):
             # ---------------
             # These HPCs are shared between pretext task and downstream task. Such as the DL architecture
             suggested_shared_hyperparameters = self._suggest_shared_hyperparameters(
-                name=self._name, trial=trial, in_freq_band=in_freq_band
+                name=None, trial=trial, in_freq_band=in_freq_band
             )
 
             # These HPCs are specific to the pretext task
@@ -1070,10 +1076,11 @@ class PretrainHPO(HPOExperiment):
 
     def _suggest_pretext_specific_hyperparameters(self, trial, name):
         suggested_hps = dict()
+        name_prefix = "" if name is None else f"{name}_"
 
         # Suggest e.g. alpha or beta band power
         suggested_hps["out_freq_band"] = trial.suggest_categorical(
-            name=f"{name}_out_freq_band", **self._pretext_sampling_config["out_freq_band"]
+            name=f"{name_prefix}out_freq_band", **self._pretext_sampling_config["out_freq_band"]
         )
 
         # Pick the datasets to be used for pre-training
@@ -1083,7 +1090,7 @@ class PretrainHPO(HPOExperiment):
                     and self._pretext_experiments_config["SubjectSplit"]["kwargs"]["left_out_dataset"] == dataset_name):
                 to_use = True
             else:
-                to_use = trial.suggest_categorical(name=f"{name}_{dataset_name}", choices={True, False})
+                to_use = trial.suggest_categorical(name=f"{name_prefix}{dataset_name}", choices={True, False})
 
             if to_use:
                 datasets_to_use[dataset_name] = dataset_info
@@ -1171,9 +1178,12 @@ class SimpleElecsslHPO(HPOExperiment):
     _optimisation_predictions_file_name = ("pretext_train_history_predictions", "pretext_val_history_predictions")
 
     def suggest_hyperparameters(self, trial, name):
+        name_prefix = "" if name is None else f"{name}_"
+
         # Sample frequency bands
-        out_freq_band = trial.suggest_categorical(f"{name}_out_freq_band", **self._sampling_config["out_freq_band"])
-        _in_freq_band = trial.suggest_categorical(f"{name}_in_freq_band", **self._sampling_config["in_freq_band"])
+        out_freq_band = trial.suggest_categorical(f"{name_prefix}out_freq_band",
+                                                  **self._sampling_config["out_freq_band"])
+        _in_freq_band = trial.suggest_categorical(f"{name_prefix}in_freq_band", **self._sampling_config["in_freq_band"])
         in_freq_band = out_freq_band if _in_freq_band == "same" else _in_freq_band
 
         # Input ocular state should be fixed
@@ -1225,8 +1235,7 @@ class SimpleElecsslHPO(HPOExperiment):
             feature_extractor_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
 
             # Convenient to make folder structure the same as MultivariableElecssl
-            results_path = results_dir / (f"hpo_{trial.number}_{feature_extractor_name}_"
-                                          f"{date.today()}_{datetime.now().strftime('%H%M%S')}")
+            results_path = results_dir / f"hpo_{trial.number}_{feature_extractor_name}"
             with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
                                   pre_processing_config=preprocessing_config_file, results_path=results_path,
                                   fine_tuning=None, experiment_name=experiment_name) as experiment:
@@ -1300,7 +1309,7 @@ class SimpleElecsslHPO(HPOExperiment):
             if trial.state != optuna.trial.TrialState.COMPLETE:
                 raise RuntimeError(f"Expected pretrained trial to be complete, but received {trial.state} "
                                    f"({trial_path})")
-            reused_trials.append(optuna.trial.create_trial(
+            reused_trials.append(optuna.trial.create_trial(  # todo: checking 'pretext' is insufficient atm
                 state=trial.state, system_attrs=dict(), intermediate_values=dict(), value=score,
                 params={name: value for name, value in trial.params.items() if name.startswith("pretext")},
                 distributions={name: value for name, value in trial.distributions.items()
@@ -1589,8 +1598,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         # Learn on the pretext regression task
         # ---------------
         experiment_name = "pretext"
-        results_path = results_dir / (f"hpo_{trial_number}_{feature_extractor_name}_{date.today()}_"
-                                      f"{datetime.now().strftime('%H%M%S')}")
+        results_path = results_dir / f"hpo_{trial_number}_{feature_extractor_name}"
         with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
                               pre_processing_config=preprocessing_config_file, results_path=results_path,
                               fine_tuning=None, experiment_name=experiment_name) as experiment:

@@ -19,8 +19,10 @@ def _get_num_time_steps(preprocessed_config_path, freq_band, suggested_preproces
 
 
 def suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps, preprocessed_config_path, freq_band):
+    name_prefix = "" if name is None else f"{name}_"
+
     # Architecture
-    model = trial.suggest_categorical(f"{name}_architecture", choices=config.keys())
+    model = trial.suggest_categorical(f"{name_prefix}architecture", choices=config.keys())
 
     # May also need the number of time steps
     model_config = config[model].copy()
@@ -32,16 +34,20 @@ def suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps, 
         model_config["num_time_steps"] = num_time_steps
 
     # Suggest hyperparameters of the DL model
-    kwargs = get_mts_module_type(model).suggest_hyperparameters(name, trial, model_config)
+    dl_name = f"{name}_{model}" if name is None else model  # This ensures that, e.g., number of filters is not 'shared'
+    # across the architectures
+    kwargs = get_mts_module_type(model).suggest_hyperparameters(name, dl_name, model_config)
 
     return {"model": model, "kwargs": kwargs}
 
 
 def suggest_loss(name, trial, config):
-    loss = trial.suggest_categorical(f"{name}_loss", **config["loss"])
+    name_prefix = "" if name is None else f"{name}_"
+
+    loss = trial.suggest_categorical(f"{name_prefix}loss", **config["loss"])
 
     # Sample re-weighting
-    weighter = trial.suggest_categorical(f"{name}_weighter", **config["weighter"])
+    weighter = trial.suggest_categorical(f"{name_prefix}weighter", **config["weighter"])
 
     if weighter is None:
         return {"loss": loss, "loss_kwargs": {"reduction": "mean"}, "weighter": weighter, "weighter_kwargs": {}}
@@ -49,7 +55,7 @@ def suggest_loss(name, trial, config):
         weighter_kwargs = {}
         for param_name, (distribution, distribution_kwargs) in config["weighter_kwargs"].items():
             weighter_kwargs[param_name] = make_trial_suggestion(
-                trial=trial, method=distribution, kwargs=distribution_kwargs, name=f"{name}_{param_name}"
+                trial=trial, method=distribution, kwargs=distribution_kwargs, name=f"{name_prefix}{param_name}"
             )
 
         return {"loss": loss, "loss_kwargs": {"reduction": "none"}, "weighter": weighter,
@@ -125,12 +131,15 @@ def _suggest_interpolation(name, trial, config):
 
 
 def suggest_spatial_dimension_mismatch(name, trial, config, normalisation, cmmn):
-    method = trial.suggest_categorical(f"{name}_spatial_dimension_handling", **config["SpatialDimensionMismatch"])
+    name_prefix = "" if name is None else f"{name}_"
+    method = trial.suggest_categorical(f"{name_prefix}spatial_dimension_handling", **config["SpatialDimensionMismatch"])
     if method == "RegionBasedPooling":
-        return _suggest_rbp(name=name, trial=trial, config=config["RegionBasedPooling"], normalisation=normalisation,
-                            cmmn=cmmn)
+        rbp_name = "rbp" if name is None else f"{name}_rbp"
+        return _suggest_rbp(name=rbp_name, trial=trial, config=config["RegionBasedPooling"],
+                            normalisation=normalisation, cmmn=cmmn)
     elif method == "Interpolation":
-        return _suggest_interpolation(name=name, trial=trial, config=config["Interpolation"])
+        interpolate_name = "interpolate" if name is None else f"{name}_interpolate"
+        return _suggest_interpolation(name=interpolate_name, trial=trial, config=config["Interpolation"])
     else:
         raise ValueError(f"Unrecognised method for handling varied numbers of channels: {method}")
 
