@@ -34,7 +34,7 @@ def suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps, 
         model_config["num_time_steps"] = num_time_steps
 
     # Suggest hyperparameters of the DL model
-    dl_name = f"{name}_{model}" if name is None else model  # This ensures that, e.g., number of filters is not 'shared'
+    dl_name = model if name is None else f"{name}_{model}"  # This ensures that, e.g., number of filters is not 'shared'
     # across the architectures
     kwargs = get_mts_module_type(model).suggest_hyperparameters(dl_name, trial, model_config)
 
