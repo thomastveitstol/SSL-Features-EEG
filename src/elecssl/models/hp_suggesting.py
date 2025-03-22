@@ -36,7 +36,7 @@ def suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps, 
     # Suggest hyperparameters of the DL model
     dl_name = f"{name}_{model}" if name is None else model  # This ensures that, e.g., number of filters is not 'shared'
     # across the architectures
-    kwargs = get_mts_module_type(model).suggest_hyperparameters(name, dl_name, model_config)
+    kwargs = get_mts_module_type(model).suggest_hyperparameters(dl_name, trial, model_config)
 
     return {"model": model, "kwargs": kwargs}
 
