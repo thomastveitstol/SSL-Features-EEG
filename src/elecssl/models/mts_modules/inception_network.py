@@ -422,7 +422,7 @@ class InceptionNetwork(MTSModuleBase):
         cnn_units = trial.suggest_int(f"{name}_cnn_units", **config["cnn_units"])
 
         # Sample depth
-        depth = 3 * int(trial.suggest_float(f"{name}_depth", **config["depth"]))
+        depth = 3 * trial.suggest_int(f"{name}_depth", **config["depth"])
 
         return {"cnn_units": cnn_units, "depth": depth, "num_classes": config["num_classes"]}
 
