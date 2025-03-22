@@ -290,8 +290,6 @@ class Histories:
 
     def _print_newest_metrics(self) -> None:
         """Method for printing the newest metrics"""
-        # todo: printing?
-
         for i, (metric_name, metric_values) in enumerate(self.history.items()):
             if i == len(self.history) - 1:
                 if self._name is None:
@@ -774,7 +772,8 @@ class Histories:
         # Save csv file
         df.to_csv(os.path.join(path, f"{history_name}_predictions.csv"), index=False)
 
-    def save_subgroup_metrics(self, history_name, path, *, save_plots, decimals):
+    def save_subgroup_metrics(self, history_name, path, *, save_plots, decimals, fig_size=(12, 6), font_size=15,
+                              title_fontsize=20):
         # If there are no subgroups registered, raise a warning and do nothing
         if self._subgroup_histories is None:
             warnings.warn(message="Tried to save plot of metrics computed per sub-group, but there were no subgroups",
@@ -822,10 +821,9 @@ class Histories:
 
                 # Plotting
                 if save_plots:
-                    pyplot.figure(figsize=(12, 6))  # todo: don't hardcode
-                    font_size = 15
+                    pyplot.figure(figsize=fig_size)
 
-                    pyplot.title(f"Performance (level={level})", fontsize=font_size+5)
+                    pyplot.title(f"Performance (level={level})", fontsize=title_fontsize)
                     pyplot.xlabel("Epoch", fontsize=font_size)
                     pyplot.ylabel(metric_to_plot.capitalize(), fontsize=font_size)
                     pyplot.tick_params(labelsize=font_size)
@@ -889,7 +887,8 @@ class Histories:
             save_plots=save_plots
         )
 
-    def _save_variables_history(self, history, history_name, path, decimals, save_plots):
+    def _save_variables_history(self, history, history_name, path, decimals, save_plots, *, fig_size=(12, 6),
+                                font_size=15, title_fontsize=20):
         for var_name, var_history in history.items():
             # I'll have a new folder for every variable (e.g., age, ravlt_tot, etc.)
             var_path = path / var_name
@@ -916,16 +915,14 @@ class Histories:
             # Loop through our newly created dictionary to make plots and save DataFrames
             for metric, dataset_histories in metrics_dict.items():
                 if save_plots:
-                    pyplot.figure(figsize=(12, 6))  # todo: as above, not an elegant solution...
+                    pyplot.figure(figsize=fig_size)
 
                     for dataset_name, history_list in dataset_histories.items():
                         # Plot
                         pyplot.plot(range(1, len(history_list) + 1), history_list, label=dataset_name)
 
                         # Plot cosmetics
-                        font_size = 15
-
-                        pyplot.title(f"Associations with prediction error: {var_name}", fontsize=font_size + 5)
+                        pyplot.title(f"Associations with prediction error: {var_name}", fontsize=title_fontsize)
                         pyplot.xlabel("Epoch", fontsize=font_size)
                         pyplot.ylabel(metric.capitalize(), fontsize=font_size)
                         pyplot.tick_params(labelsize=font_size)
@@ -1085,6 +1082,32 @@ class Histories:
 
     @staticmethod
     @regression_metric
+    def conc_cc(y_pred: torch.Tensor, y_true: torch.Tensor):
+        """Concordance correlation coefficient (https://en.wikipedia.org/wiki/Concordance_correlation_coefficient)"""
+        with torch.no_grad():
+            # Removing redundant dimension may be necessary
+            if y_true.dim() == 2:
+                y_true = torch.squeeze(y_true, dim=1)
+            if y_pred.dim() == 2:
+                y_pred = torch.squeeze(y_pred, dim=1)
+
+            # Make some computations
+            mean_true = torch.mean(y_true)
+            mean_pred = torch.mean(y_pred)
+
+            var_true = torch.var(y_true, unbiased=False)  # Using population variance
+            var_pred = torch.var(y_pred, unbiased=False)
+
+            cov = torch.mean((y_true - mean_true) * (y_pred - mean_pred))  # Covariance
+
+            numerator = 2 * cov
+            denominator = var_true + var_pred + (mean_true - mean_pred) ** 2
+            score = numerator / denominator
+
+        return score.item()
+
+    @staticmethod
+    @regression_metric
     def r2_score(y_pred: torch.Tensor, y_true: torch.Tensor):
         return r2_score(y_true=y_true.cpu(), y_pred=y_pred.cpu())
 
@@ -1136,19 +1159,34 @@ class Histories:
     @staticmethod
     @multiclass_classification_metric
     def auc_ovo(y_pred: torch.Tensor, y_true: torch.Tensor):
-        with torch.no_grad():
-            return roc_auc_score(y_true=y_true.cpu(), y_score=torch.softmax(y_pred, dim=-1).cpu(), multi_class="ovo")
+        try:
+            with torch.no_grad():
+                return roc_auc_score(y_true=y_true.cpu(), y_score=torch.softmax(y_pred, dim=-1).cpu(),
+                                     multi_class="ovo")
+        except ValueError as e:
+            if "number of classes" in str(e).lower():
+                # Raise if number of classes in y_true not equal to the number of columns in 'y_score'
+                raise MismatchClassCountError
+            raise e
 
     @staticmethod
     @multiclass_classification_metric
     def auc_ovr(y_pred: torch.Tensor, y_true: torch.Tensor):
-        with torch.no_grad():
-            return roc_auc_score(y_true=y_true.cpu(), y_score=torch.softmax(y_pred, dim=-1).cpu(), multi_class="ovr")
+        try:
+            with torch.no_grad():
+                return roc_auc_score(y_true=y_true.cpu(), y_score=torch.softmax(y_pred, dim=-1).cpu(),
+                                     multi_class="ovr")
+        except ValueError as e:
+            if "number of classes" in str(e).lower():
+                # Raise if number of classes in y_true not equal to the number of columns in 'y_score'
+                raise MismatchClassCountError
+            raise e
 
     @staticmethod
     @multiclass_classification_metric
     def ce_loss(y_pred: torch.Tensor, y_true: torch.Tensor):
         with torch.no_grad():
+            # y_true must have dtype = long or int64
             performance = nn.CrossEntropyLoss(reduction='mean')(y_pred, y_true).cpu()
         return float(performance)
 
@@ -1283,6 +1321,10 @@ class PlotNotSavedWarning(UserWarning):
 class NaNValueError(Exception):
     """Should be raised when the predictions of a model contain NaN values."""
 
+
+class MismatchClassCountError(Exception):
+    """Should be raised instead of ValueError, as is done in sklearn, for multiclass classification metrics when number
+    of classes in y_pred and y_true does not match"""
 
 # ----------------
 # Functions
