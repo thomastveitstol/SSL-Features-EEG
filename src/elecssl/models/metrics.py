@@ -29,19 +29,28 @@ from elecssl.data.subject_split import Subject
 # ----------------
 # Convenient decorators
 # ----------------
-def regression_metric(func):
-    setattr(func, "_is_regression_metric", True)
-    return func
+def regression_metric(is_higher_better):
+    def decorator(func):
+        setattr(func, "_is_regression_metric", True)
+        setattr(func, "_higher_is_better", is_higher_better)
+        return func
+    return decorator
 
 
-def classification_metric(func):
-    setattr(func, "_is_classification_metric", True)
-    return func
+def classification_metric(is_higher_better):
+    def decorator(func):
+        setattr(func, "_is_classification_metric", True)
+        setattr(func, "_higher_is_better", is_higher_better)
+        return func
+    return decorator
 
 
-def multiclass_classification_metric(func):
-    setattr(func, "_is_multiclass_classification_metric", True)
-    return func
+def multiclass_classification_metric(is_higher_better):
+    def decorator(func):
+        setattr(func, "_is_multiclass_classification_metric", True)
+        setattr(func, "_higher_is_better", is_higher_better)
+        return func
+    return decorator
 
 
 def groups_metric(func):
@@ -1030,32 +1039,32 @@ class Histories:
     # Regression metrics
     # -----------------
     @staticmethod
-    @regression_metric
+    @regression_metric(is_higher_better=False)
     def mse(y_pred: torch.Tensor, y_true: torch.Tensor):
         return mean_squared_error(y_true=y_true.cpu(), y_pred=y_pred.cpu())
 
     @staticmethod
-    @regression_metric
+    @regression_metric(is_higher_better=False)
     def mae(y_pred: torch.Tensor, y_true: torch.Tensor):
         return mean_absolute_error(y_true=y_true.cpu(), y_pred=y_pred.cpu())
 
     @staticmethod
-    @regression_metric
+    @regression_metric(is_higher_better=False)
     def med_ae(y_pred: torch.Tensor, y_true: torch.Tensor):
         return median_absolute_error(y_true=y_true.cpu(), y_pred=y_pred.cpu())
 
     @staticmethod
-    @regression_metric
+    @regression_metric(is_higher_better=False)
     def max_error(y_pred: torch.Tensor, y_true: torch.Tensor):
         return max_error(y_true=y_true.cpu(), y_pred=y_pred.cpu())
 
     @staticmethod
-    @regression_metric
+    @regression_metric(is_higher_better=False)
     def mape(y_pred: torch.Tensor, y_true: torch.Tensor):
         return mean_absolute_percentage_error(y_true=y_true.cpu(), y_pred=y_pred.cpu())
 
     @staticmethod
-    @regression_metric
+    @regression_metric(is_higher_better=True)
     def pearson_r(y_pred: torch.Tensor, y_true: torch.Tensor):
         # Removing redundant dimension may be necessary
         if y_true.dim() == 2:
@@ -1067,7 +1076,7 @@ class Histories:
         return pearsonr(x=y_true.cpu(), y=y_pred.cpu())[0]
 
     @staticmethod
-    @regression_metric
+    @regression_metric(is_higher_better=True)
     def spearman_rho(y_pred: torch.Tensor, y_true: torch.Tensor):
         # Removing redundant dimension may be necessary
         if y_true.dim() == 2:
@@ -1080,7 +1089,7 @@ class Histories:
         return spearmanr(a=y_true.cpu(), b=y_pred.cpu())[0]
 
     @staticmethod
-    @regression_metric
+    @regression_metric(is_higher_better=True)
     def conc_cc(y_pred: torch.Tensor, y_true: torch.Tensor):
         """Concordance correlation coefficient (https://en.wikipedia.org/wiki/Concordance_correlation_coefficient)"""
         with torch.no_grad():
@@ -1106,12 +1115,12 @@ class Histories:
         return score.item()
 
     @staticmethod
-    @regression_metric
+    @regression_metric(is_higher_better=True)
     def r2_score(y_pred: torch.Tensor, y_true: torch.Tensor):
         return r2_score(y_true=y_true.cpu(), y_pred=y_pred.cpu())
 
     @staticmethod
-    @regression_metric
+    @regression_metric(is_higher_better=True)
     def explained_variance(y_pred: torch.Tensor, y_true: torch.Tensor):
         """Similar to r2_score, but does not account for systematic offset in the prediction (see sklearn
         documentation)"""
@@ -1121,7 +1130,7 @@ class Histories:
     # Classification metrics
     # -----------------
     @staticmethod
-    @classification_metric
+    @classification_metric(is_higher_better=True)
     def auc(y_pred: torch.Tensor, y_true: torch.Tensor):
         # todo: a value error is raised if only one class is present in y_true
         try:
@@ -1136,27 +1145,27 @@ class Histories:
     # Note that we assume the logits, not the actual probabilities from softmax
     # -----------------
     @staticmethod
-    @multiclass_classification_metric
+    @multiclass_classification_metric(is_higher_better=True)
     def acc(y_pred: torch.Tensor, y_true: torch.Tensor):
         return accuracy_score(y_pred=y_pred.cpu().argmax(dim=-1), y_true=y_true.cpu())
 
     @staticmethod
-    @multiclass_classification_metric
+    @multiclass_classification_metric(is_higher_better=True)
     def balanced_acc(y_pred: torch.Tensor, y_true: torch.Tensor):
         return balanced_accuracy_score(y_pred=y_pred.cpu().argmax(dim=-1), y_true=y_true.cpu())
 
     @staticmethod
-    @multiclass_classification_metric
+    @multiclass_classification_metric(is_higher_better=True)
     def mcc(y_pred: torch.Tensor, y_true: torch.Tensor):
         return matthews_corrcoef(y_pred=y_pred.cpu().argmax(dim=-1), y_true=y_true.cpu())
 
     @staticmethod
-    @multiclass_classification_metric
+    @multiclass_classification_metric(is_higher_better=True)
     def kappa(y_pred: torch.Tensor, y_true: torch.Tensor):
         return cohen_kappa_score(y1=y_pred.cpu().argmax(dim=-1), y2=y_true.cpu())
 
     @staticmethod
-    @multiclass_classification_metric
+    @multiclass_classification_metric(is_higher_better=True)
     def auc_ovo(y_pred: torch.Tensor, y_true: torch.Tensor):
         try:
             with torch.no_grad():
@@ -1169,7 +1178,7 @@ class Histories:
             raise e
 
     @staticmethod
-    @multiclass_classification_metric
+    @multiclass_classification_metric(is_higher_better=True)
     def auc_ovr(y_pred: torch.Tensor, y_true: torch.Tensor):
         try:
             with torch.no_grad():
@@ -1182,7 +1191,7 @@ class Histories:
             raise e
 
     @staticmethod
-    @multiclass_classification_metric
+    @multiclass_classification_metric(is_higher_better=False)
     def ce_loss(y_pred: torch.Tensor, y_true: torch.Tensor):
         with torch.no_grad():
             # y_true must have dtype = long or int64
@@ -1357,18 +1366,18 @@ def higher_is_better(metric):
     >>> higher_is_better("conc_cc")
     True
     """
-    # Define which metrics are higher the better, and which are lower the better
-    high = ("conc_cc", "pearson_r", "spearman_rho", "r2_score", "explained_variance", "auc", "acc", "balanced_acc",
-            "mcc", "auc_ovo", "auc_ovr", "kappa")
-    low = ("mae", "mse", "mape", "med_ae", "max_error", "ce_loss")
+    # Try to get the metric function using the name
+    metric_func = getattr(Histories, metric, None)
 
-    # Check metric
-    if metric in high:
-        return True
-    elif metric in low:
-        return False
+    # Check if the function exists and has the '_is_higher_better' attribute
+    if metric_func is None:
+        raise ValueError(f"Expected the metric to be in {Histories.get_available_metrics()}, but found '{metric}'")
+
+    if hasattr(metric_func, "_higher_is_better"):
+        return getattr(metric_func, "_higher_is_better")
     else:
-        raise ValueError(f"Expected the metric to be in {high + low}, but found '{metric}'")
+        raise ValueError(f"Metric {metric!r} has not been properly decorated, as we can't infer its interpretation "
+                         f"(higher or lower is better).")
 
 
 def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true):
