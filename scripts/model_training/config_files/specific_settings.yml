@@ -10,7 +10,7 @@ PretrainHPO:
   save_ssl_biomarkers: true
 SimpleElecsslHPO:
   deviation_method: &deviation_method diff
-  num_additional_trials: 1
+  num_additional_trials: 50
   in_ocular_state: ec
   out_ocular_state: eo
   include_pseudo_targets: true
@@ -22,6 +22,6 @@ MultivariableElecsslHPO:
     - [ [ ec, eo ], [ all, beta ] ]
     - [ [ ec, eo ], [ all, gamma ] ]
   deviation_method: *deviation_method
-  num_random_reuse: 23
-  num_additional_trials: 1
+  num_random_reuse: 1000
+  num_additional_trials: 50
   include_pseudo_targets: true
