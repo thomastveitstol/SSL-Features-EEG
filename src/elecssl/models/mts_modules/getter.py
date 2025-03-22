@@ -31,7 +31,7 @@ def get_mts_module(mts_module_name, **kwargs):
 
     Examples
     --------
-    >>> _ = get_mts_module("InceptionNetwork", in_channels=5, num_classes=3)
+    >>> _ = get_mts_module("InceptionNetwork", in_channels=5, num_classes=3, cnn_units=32, depth=6)
     >>> get_mts_module("NotAnMTSModule")  # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
     Traceback (most recent call last):
     ...

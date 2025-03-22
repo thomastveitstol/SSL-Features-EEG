@@ -31,7 +31,7 @@ class MainFixedChannelsModel(MainModuleBase):
 
     Examples
     --------
-    >>> my_mts_kwargs = {"in_channels": 19, "num_classes": 7, "depth": 3}
+    >>> my_mts_kwargs = {"in_channels": 19, "num_classes": 7, "depth": 3, "cnn_units": 32}
     >>> my_dd_kwargs = {"hidden_units": (8, 4), "num_classes": 3, "activation_function": "relu"}
     >>> my_cmmn_kwargs = {"kernel_size": 128}
     >>> MainFixedChannelsModel("InceptionNetwork", mts_module_kwargs=my_mts_kwargs, domain_discriminator="FCModule",
@@ -169,7 +169,7 @@ class MainFixedChannelsModel(MainModuleBase):
 
         Examples
         --------
-        >>> my_mts_kwargs = {"in_channels": 23, "num_classes": 11, "depth": 3}
+        >>> my_mts_kwargs = {"in_channels": 23, "num_classes": 11, "depth": 3, "cnn_units": 29}
         >>> my_dd_kwargs = {"hidden_units": (8, 4), "num_classes": 3, "activation_function": "relu"}
         >>> my_cmmn_kwargs = {"kernel_size": 64}
         >>> my_model = MainFixedChannelsModel("InceptionNetwork", mts_module_kwargs=my_mts_kwargs,

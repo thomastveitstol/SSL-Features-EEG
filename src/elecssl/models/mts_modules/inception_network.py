@@ -201,16 +201,17 @@ class InceptionNetwork(MTSModuleBase):
 
     Examples
     --------
-    >>> _ = InceptionNetwork(64, 5)
+    >>> _ = InceptionNetwork(64, 5, cnn_units=32, depth=6)
 
     Latent feature dimension does not depend on number of input channels
-
-    >>> InceptionNetwork.get_latent_features_dim(64, 15) == InceptionNetwork.get_latent_features_dim(3, 3)
+    >>> features_1 = InceptionNetwork.get_latent_features_dim(64, 15, cnn_units=32, depth=6)
+    >>> features_2 = InceptionNetwork.get_latent_features_dim(3, 3, cnn_units=32, depth=6)
+    >>> features_1 == features_2
     True
 
     How it looks like (but note that the ordering does not reflect the forward pass, as this is not a Sequential model)
 
-    >>> InceptionNetwork(64, 5)
+    >>> InceptionNetwork(64, 5, cnn_units=32, depth=6)
     InceptionNetwork(
       (_inception_modules): ModuleList(
         (0): _InceptionModule(
@@ -346,7 +347,7 @@ class InceptionNetwork(MTSModuleBase):
 
         Examples
         --------
-        >>> my_model = InceptionNetwork(in_channels=43, num_classes=3, cnn_units=23)
+        >>> my_model = InceptionNetwork(in_channels=43, num_classes=3, cnn_units=23, depth=9)
         >>> my_model.classify_latent_features(torch.rand(size=(10, 92))).size()
         torch.Size([10, 3])
         """
@@ -372,7 +373,7 @@ class InceptionNetwork(MTSModuleBase):
 
         Examples
         --------
-        >>> my_model = InceptionNetwork(in_channels=43, num_classes=3)
+        >>> my_model = InceptionNetwork(in_channels=43, num_classes=3, cnn_units=28, depth=9)
         >>> my_model(torch.rand(size=(10, 43, 500))).size()
         torch.Size([10, 3])
         >>> my_model(torch.rand(size=(13, 43, 1000))).size()  # The model is compatible with different num time steps
@@ -381,7 +382,7 @@ class InceptionNetwork(MTSModuleBase):
         Verify that it runs with other arguments specified
 
         >>> my_model = InceptionNetwork(in_channels=533, num_classes=2, cnn_units=43, depth=7, use_residual=False,
-        ...                      use_bottleneck=False, activation=nn.functional.elu, max_kernel_size=8)
+        ...                             use_bottleneck=False, activation=nn.functional.elu, max_kernel_size=8)
         >>> my_model(torch.rand(size=(11, 533, 400))).size()
         torch.Size([11, 2])
         >>> my_model(torch.rand(size=(11, 533, 400)), return_features=True).size()  # cnn_units * 4
