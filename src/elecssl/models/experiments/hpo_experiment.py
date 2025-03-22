@@ -8,7 +8,7 @@ import warnings
 from datetime import date, datetime
 from functools import reduce
 from pathlib import Path
-from typing import Dict, Any, Callable, Tuple, List, Iterable, Literal, Set, Union, Optional, NamedTuple, Type
+from typing import Dict, Any, Callable, Tuple, List, Literal, Set, Union, Optional, NamedTuple, Type
 
 import numpy
 import optuna
@@ -28,8 +28,7 @@ from elecssl.models.hp_suggesting import make_trial_suggestion, suggest_spatial_
     suggest_dl_architecture, get_optuna_sampler
 from elecssl.models.metrics import PlotNotSavedWarning, higher_is_better
 from elecssl.models.ml_models.ml_model_base import MLModel
-from elecssl.models.sampling_distributions import get_yaml_loader
-from elecssl.models.utils import add_yaml_constructors, verify_type, merge_dicts, verified_performance_score, \
+from elecssl.models.utils import add_yaml_constructors, verify_type, verified_performance_score, \
     merge_dicts_strict, remove_prefix
 
 
@@ -233,10 +232,11 @@ class HPOExperiment(MainExperiment):
         sampler = get_optuna_sampler(self.hpo_study_config["HPOStudy"]["sampler"],
                                      **self.hpo_study_config["HPOStudy"]["sampler_kwargs"])
 
-        # Create study  todo: raise error if it already exist
+        # Create study
         study_name, storage_path = self._get_study_name_and_storage_path(results_path=self._results_path)
         return optuna.create_study(study_name=study_name, storage=storage_path, sampler=sampler,
-                                   direction=self.hpo_study_config["HPOStudy"]["direction"])
+                                   direction=self.hpo_study_config["HPOStudy"]["direction"],
+                                   load_if_exists=False)
 
     def load_study(self, sampler):
         """Returns the study object"""
@@ -358,7 +358,6 @@ class HPOExperiment(MainExperiment):
             **{f"test_{metric}": [] for metric in target_metrics}
         }
 
-        # todo: the 'debug_' prefix should be removed
         hpo_iterations = tuple(folder for folder in os.listdir(path) if os.path.isdir(path / folder)
                                and (folder.startswith("hpo_")))
         for hpo_iteration in progressbar(hpo_iterations, redirect_stdout=True, prefix="Trial "):
@@ -2342,29 +2341,6 @@ def _get_aggregated_val_score(*, trial_results_dir, aggregation_method, metric):
         return numpy.median(scores)
     raise ValueError(f"Method for aggregating the validation scores across folds was not recognised: "
                      f"{aggregation_method}")
-
-
-def _merge_config_files_from_paths(paths: Iterable[Path]):
-    # Get loader for the sampling distributions
-    loader = get_yaml_loader()
-
-    # Add additional formatting
-    loader = add_yaml_constructors(loader)
-
-    # Load the config files
-    configs: List[Dict[str, Any]] = []
-    for config_path in paths:
-        if config_path.suffix not in (".yml", "yaml"):
-            raise ValueError(f"Tried to open as a .yml file, but the suffix was not recognised: "
-                             f"{config_path.suffix}")
-        with open(config_path) as file:
-            config_file = yaml.load(file, Loader=loader)
-
-            # If the config file is empty, we interpret this as if the dict should be empty
-            configs.append(dict() if config_file is None else config_file)
-
-    # Merge and return
-    return merge_dicts(*configs)
 
 
 def _get_preprocessing_config_path(ocular_state):
