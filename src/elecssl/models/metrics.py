@@ -1354,10 +1354,12 @@ def higher_is_better(metric):
     True
     >>> higher_is_better("auc_ovr")
     True
+    >>> higher_is_better("conc_cc")
+    True
     """
     # Define which metrics are higher the better, and which are lower the better
-    high = ("pearson_r", "spearman_rho", "r2_score", "explained_variance", "auc", "acc", "balanced_acc", "mcc",
-            "auc_ovo", "auc_ovr", "kappa")
+    high = ("conc_cc", "pearson_r", "spearman_rho", "r2_score", "explained_variance", "auc", "acc", "balanced_acc",
+            "mcc", "auc_ovo", "auc_ovr", "kappa")
     low = ("mae", "mse", "mape", "med_ae", "max_error", "ce_loss")
 
     # Check metric
