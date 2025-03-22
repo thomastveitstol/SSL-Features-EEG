@@ -5,7 +5,6 @@ import random
 from typing import List
 
 import numpy
-import yaml  # type: ignore[import-untyped]
 
 
 # ------------------
@@ -155,31 +154,3 @@ def sample_hyperparameter(distribution, *args, **kwargs):
     typing.Any
     """
     return _SampleDistribution.sample(distribution, *args, **kwargs)
-
-
-def get_yaml_loader():
-    """Method for creating a loader which can interpret all distributions. Note that this only works when arguments are
-    passed as positional"""
-    yaml_loader = yaml.SafeLoader
-
-    for sampling_dist in _SampleDistribution.get_available_distributions():
-        # Create the constructor
-        def make_constructor(dist):
-            def constructor(loader, node):
-                return sample_hyperparameter(dist, *loader.construct_sequence(node, deep=True))
-
-            return constructor
-
-        def make_type_constructor(dist):
-            def type_constructor(loader, node):
-                # todo: is this smelly lambda in for-loop?
-                return lambda: sample_hyperparameter(dist, *loader.construct_sequence(node, deep=True))
-
-            return type_constructor
-
-        # Add the constructor
-        _name = _snake_case_to_pascal_case(sampling_dist)
-        yaml_loader.add_constructor(f"!{_name}", make_constructor(sampling_dist))
-        yaml_loader.add_constructor(f"!Type{_name}", make_type_constructor(sampling_dist))
-
-    return yaml_loader
