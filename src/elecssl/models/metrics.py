@@ -679,8 +679,8 @@ class Histories:
 
     @property
     def history(self):
-        # todo: consider returning values as tuples
-        return self._history
+        # Returning values as tuples to make immutability
+        return {metric_name: tuple(performance_scores) for metric_name, performance_scores in self._history.items()}
 
     @property
     def newest_metrics(self):
