@@ -72,13 +72,14 @@ class Histories:
     --------
     >>> Histories.get_available_classification_metrics()
     ('auc',)
-    >>> Histories.get_available_regression_metrics()
-    ('explained_variance', 'mae', 'mape', 'max_error', 'med_ae', 'mse', 'pearson_r', 'r2_score', 'spearman_rho')
+    >>> Histories.get_available_regression_metrics()  # doctest: +NORMALIZE_WHITESPACE
+    ('conc_cc', 'explained_variance', 'mae', 'mape', 'max_error', 'med_ae', 'mse', 'pearson_r', 'r2_score',
+     'spearman_rho')
     >>> Histories.get_available_multiclass_classification_metrics()
     ('acc', 'auc_ovo', 'auc_ovr', 'balanced_acc', 'ce_loss', 'kappa', 'mcc')
     >>> Histories.get_available_metrics()  # doctest: +NORMALIZE_WHITESPACE
-    ('auc', 'acc', 'auc_ovo', 'auc_ovr', 'balanced_acc', 'ce_loss', 'kappa', 'mcc', 'explained_variance', 'mae', 'mape',
-     'max_error', 'med_ae', 'mse', 'pearson_r', 'r2_score', 'spearman_rho')
+    ('auc', 'acc', 'auc_ovo', 'auc_ovr', 'balanced_acc', 'ce_loss', 'kappa', 'mcc', 'conc_cc', 'explained_variance',
+     'mae', 'mape', 'max_error', 'med_ae', 'mse', 'pearson_r', 'r2_score', 'spearman_rho')
     """
 
     __slots__ = ("_history", "_prediction_history", "_subgroup_histories", "_epoch_y_pred", "_epoch_y_true",
@@ -1325,6 +1326,7 @@ class NaNValueError(Exception):
 class MismatchClassCountError(Exception):
     """Should be raised instead of ValueError, as is done in sklearn, for multiclass classification metrics when number
     of classes in y_pred and y_true does not match"""
+
 
 # ----------------
 # Functions
