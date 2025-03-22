@@ -1028,8 +1028,6 @@ class Histories:
 
     # -----------------
     # Regression metrics
-    # todo: make tests and add more metrics
-    # todo: add Concordance Correlation Coefficient
     # -----------------
     @staticmethod
     @regression_metric
