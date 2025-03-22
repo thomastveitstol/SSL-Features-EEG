@@ -2307,7 +2307,7 @@ def _get_delta_and_variable(path, *, target, downstream_target, deviation_method
     if deviation_method in ("delta", "gap", "diff", "difference"):
         delta = predictions - pseudo_targets
     elif deviation_method == "ratio":
-        delta = predictions / pseudo_targets  # todo: should it be the inverse?
+        delta = predictions / pseudo_targets
     else:
         raise ValueError(f"Unrecognised method: {deviation_method}")
 
