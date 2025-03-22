@@ -4,12 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="fixes for running on cuda">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="added interpretation of concordance cc">
+      <change beforePath="$PROJECT_DIR$/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/.coverage" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/sandbox.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/sandbox.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/models/metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/models/metrics.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,189 +50,193 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python tests.Doctest BandPass._get_folder_name.executor": "Run",
-    "Python tests.Doctest BiMap.__init__.executor": "Run",
-    "Python tests.Doctest CrossCovariance.forward.executor": "Run",
-    "Python tests.Doctest CrossPW_PLV.forward.executor": "Run",
-    "Python tests.Doctest Deep4NetMTS.forward.executor": "Run",
-    "Python tests.Doctest FCModule.forward.executor": "Run",
-    "Python tests.Doctest GreenModel.classify_latent_features.executor": "Run",
-    "Python tests.Doctest GreenModel.forward.executor": "Run",
-    "Python tests.Doctest Histories._build_error_and_info_objects.executor": "Run",
-    "Python tests.Doctest Histories.mean.executor": "Run",
-    "Python tests.Doctest Histories.pairwise_mean_difference.executor": "Run",
-    "Python tests.Doctest OcularState.to_pascal_case.executor": "Run",
-    "Python tests.Doctest PW_PLV.forward.executor": "Run",
-    "Python tests.Doctest PolygonGraph.line_intersection.executor": "Run",
-    "Python tests.Doctest RealCovariance.forward.executor": "Run",
-    "Python tests.Doctest ShallowFBCSPNetMTS.forward.executor": "Run",
-    "Python tests.Doctest TDBRAIN.age.executor": "Run",
-    "Python tests.Doctest Wang._load_single_cleaned_mne_object.executor": "Run",
-    "Python tests.Doctest WaveletConv.forward.executor": "Run",
-    "Python tests.Doctest _aggregate_predictions.executor": "Run",
-    "Python tests.Doctest _compute_centroid.executor": "Run",
-    "Python tests.Doctest _compute_separating_angles.executor": "Run",
-    "Python tests.Doctest _excluded_dataset_only.executor": "Run",
-    "Python tests.Doctest _get_error.executor": "Run",
-    "Python tests.Doctest _get_pooling_layer.executor": "Run",
-    "Python tests.Doctest _sample_dilation.executor": "Run",
-    "Python tests.Doctest _select_dataset_and_index.executor": "Run",
-    "Python tests.Doctest _snake_case_to_pascal_case.executor": "Run",
-    "Python tests.Doctest get_domain_discriminator.executor": "Run",
-    "Python tests.Doctest get_montage_split.executor": "Run",
-    "Python tests.Doctest get_mts_module.executor": "Run",
-    "Python tests.Doctest get_pooling_layer.executor": "Run",
-    "Python tests.Doctest get_results_dir.executor": "Run",
-    "Python tests.Doctest higher_is_better.executor": "Run",
-    "Python tests.Doctest is_improved_model.executor": "Run",
-    "Python tests.Doctest make_trial_suggestion.executor": "Run",
-    "Python tests.Doctest project_to_2d.executor": "Run",
-    "Python tests.Doctest remove_prefix.executor": "Run",
-    "Python tests.Doctest sample_hyperparameter.executor": "Run",
-    "Python tests.Doctest sex_to_int.executor": "Run",
-    "Python tests.Doctest simple_random_split.executor": "Run",
-    "Python tests.Doctest strip_tensors.executor": "Run",
-    "Python tests.Doctest subjects_tuple_to_dict.executor": "Run",
-    "Python tests.Doctest suggest_hyperparameters.executor": "Run",
-    "Python tests.Doctests in AIMind.executor": "Run",
-    "Python tests.Doctests in BandPass.executor": "Run",
-    "Python tests.Doctests in CustomWeightedLoss.executor": "Run",
-    "Python tests.Doctests in Deep4NetMTS (1).executor": "Run",
-    "Python tests.Doctests in Deep4NetMTS (2).executor": "Run",
-    "Python tests.Doctests in Deep4NetMTS.executor": "Run",
-    "Python tests.Doctests in DortmundVital.executor": "Run",
-    "Python tests.Doctests in FCModule.executor": "Run",
-    "Python tests.Doctests in GreenModel.executor": "Run",
-    "Python tests.Doctests in Histories.executor": "Run",
-    "Python tests.Doctests in InterpolationDataGenerator.executor": "Run",
-    "Python tests.Doctests in KFoldDataSplit.executor": "Run",
-    "Python tests.Doctests in KeepDatasetOutRandomSplits.executor": "Run",
-    "Python tests.Doctests in LEMON.executor": "Run",
-    "Python tests.Doctests in LODOCV (1).executor": "Run",
-    "Python tests.Doctests in LODOCV (2).executor": "Run",
-    "Python tests.Doctests in LODOCV.executor": "Run",
-    "Python tests.Doctests in LODOSplit (1).executor": "Run",
-    "Python tests.Doctests in LODOSplit (2).executor": "Run",
-    "Python tests.Doctests in LODOSplit (3).executor": "Run",
-    "Python tests.Doctests in LODOSplit (4).executor": "Run",
-    "Python tests.Doctests in LODOSplit (5).executor": "Run",
-    "Python tests.Doctests in LODOSplit.executor": "Run",
-    "Python tests.Doctests in MLModel (1).executor": "Run",
-    "Python tests.Doctests in MLModel (2).executor": "Run",
-    "Python tests.Doctests in MLModel (3).executor": "Run",
-    "Python tests.Doctests in MLModel (4).executor": "Run",
-    "Python tests.Doctests in MLModel.executor": "Run",
-    "Python tests.Doctests in MainFixedChannelsModel.executor": "Run",
-    "Python tests.Doctests in Miltiadous.executor": "Run",
-    "Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor": "Run",
-    "Python tests.Doctests in MultiMSMean.executor": "Run",
-    "Python tests.Doctests in MultiMontageSplitsRegionBasedPooling.executor": "Run",
-    "Python tests.Doctests in OcularState.executor": "Run",
-    "Python tests.Doctests in PW_PLV.executor": "Run",
-    "Python tests.Doctests in RandomSplitsTV.executor": "Run",
-    "Python tests.Doctests in RandomSplitsTVTestHoldout.executor": "Run",
-    "Python tests.Doctests in SRM (1).executor": "Run",
-    "Python tests.Doctests in SRM.executor": "Run",
-    "Python tests.Doctests in ShallowFBCSPNetMTS.executor": "Run",
-    "Python tests.Doctests in Subject.executor": "Run",
-    "Python tests.Doctests in TDBRAIN.executor": "Run",
-    "Python tests.Doctests in _ChannelName (1).executor": "Run",
-    "Python tests.Doctests in _ChannelName.executor": "Run",
-    "Python tests.Doctests in ai_mind.executor": "Run",
-    "Python tests.Doctests in braindecode_models.executor": "Run",
-    "Python tests.Doctests in centroid_polygon.executor": "Run",
-    "Python tests.Doctests in cmmn.executor": "Run",
-    "Python tests.Doctests in data_generator.executor": "Run",
-    "Python tests.Doctests in dataset_base.executor": "Run",
-    "Python tests.Doctests in fc_modules.executor": "Run",
-    "Python tests.Doctests in getter.executor": "Run",
-    "Python tests.Doctests in green_model.executor": "Run",
-    "Python tests.Doctests in head_region.executor": "Run",
-    "Python tests.Doctests in hp_suggesting.executor": "Run",
-    "Python tests.Doctests in inception_network.executor": "Run",
-    "Python tests.Doctests in interpolate_datasets.executor": "Run",
-    "Python tests.Doctests in lemon.executor": "Run",
-    "Python tests.Doctests in losses.executor": "Run",
-    "Python tests.Doctests in main_fixed_channels_model.executor": "Run",
-    "Python tests.Doctests in main_rbp_model.executor": "Run",
-    "Python tests.Doctests in mean.executor": "Run",
-    "Python tests.Doctests in metrics.executor": "Run",
-    "Python tests.Doctests in miltiadous.executor": "Run",
-    "Python tests.Doctests in ml_model_base.executor": "Run",
-    "Python tests.Doctests in paths.executor": "Run",
-    "Python tests.Doctests in region_based_pooling.executor": "Run",
-    "Python tests.Doctests in sampling_distributions.executor": "Run",
-    "Python tests.Doctests in spd_layers.executor": "Run",
-    "Python tests.Doctests in srm.executor": "Run",
-    "Python tests.Doctests in subject_split.executor": "Run",
-    "Python tests.Doctests in td_brain.executor": "Run",
-    "Python tests.Doctests in univariate_rocket.executor": "Run",
-    "Python tests.Doctests in utils (1).executor": "Run",
-    "Python tests.Doctests in utils.executor": "Run",
-    "Python tests.Doctests in wang.executor": "Run",
-    "Python tests.Doctests in wavelet_layers.executor": "Run",
-    "Python tests.Python tests for test_green_model.test_forward.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_errors_regression_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_predictions_error_classification_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_predictions_error_multiclass_classification_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_predictions_error_regression_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_target_error_classification_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_target_error_multiclass_classification_metrics.executor": "Run",
-    "Python tests.Python tests for test_metrics.test_nan_target_error_regression_metrics.executor": "Run",
-    "Python tests.Python tests for test_paths.test_blabla.executor": "Run",
-    "Python tests.Python tests for test_paths.test_get_eeg_features_storage_path.executor": "Run",
-    "Python tests.Python tests for test_paths.test_get_numpy_data_storage_path.executor": "Run",
-    "Python tests.Python tests for test_paths.test_get_results_dir.executor": "Run",
-    "Python tests.Python tests for test_region_based_pooling.test_forward.executor": "Run",
-    "Python tests.Python tests for test_subject_split.test_non_bool_sort_error.executor": "Run",
-    "Python tests.Python tests for test_subject_split.test_order_invariance.executor": "Run",
-    "Python tests.Python tests for test_subject_split.test_order_non_invariance.executor": "Run",
-    "Python tests.Python tests for test_subject_split.test_seeding.executor": "Run",
-    "Python tests.Python tests for test_subject_split.test_subject_split_equality.executor": "Run",
-    "Python tests.Python tests in test_hpo_experiment.py.executor": "Run",
-    "Python tests.Python tests in test_metrics.py.executor": "Run",
-    "Python tests.Python tests in test_models.py.executor": "Run",
-    "Python tests.Python tests in test_paths.py.executor": "Run",
-    "Python tests.Python tests in test_region_based_pooling.py.executor": "Run",
-    "Python tests.Python tests in test_subject_split.py.executor": "Run",
-    "Python.band_pass.executor": "Run",
-    "Python.band_power.executor": "Run",
-    "Python.centroid_polygon.executor": "Run",
-    "Python.debugging.executor": "Run",
-    "Python.debugging_lemon.executor": "Run",
-    "Python.debugging_td_brain.executor": "Run",
-    "Python.dortmund_vital (1).executor": "Run",
-    "Python.dortmund_vital.executor": "Run",
-    "Python.elecssl_experiments.executor": "Run",
-    "Python.elecssl_hpo.executor": "Run",
-    "Python.group_differences.executor": "Run",
-    "Python.hpo_experiment.executor": "Run",
-    "Python.lemon.executor": "Run",
-    "Python.linear_regresison.executor": "Run",
-    "Python.metrics.executor": "Run",
-    "Python.ml_model_base.executor": "Run",
-    "Python.mts_module_base.executor": "Run",
-    "Python.pl_utils.executor": "Run",
-    "Python.plot_channel_positions.executor": "Run",
-    "Python.plot_eeg_data.executor": "Run",
-    "Python.plot_power.executor": "Run",
-    "Python.plot_power_distributions.executor": "Run",
-    "Python.regression_performance.executor": "Run",
-    "Python.run_experiments.executor": "Run",
-    "Python.sandbox.executor": "Run",
-    "Python.srm.executor": "Run",
-    "Python.test_paths.executor": "Run",
-    "Python.wang.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/model_training",
-    "settings.editor.selected.configurable": "preferences.general"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python tests.Doctest BandPass._get_folder_name.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest BiMap.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest CrossCovariance.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest CrossPW_PLV.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Deep4NetMTS.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest FCModule.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest GreenModel.classify_latent_features.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest GreenModel.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Histories._build_error_and_info_objects.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Histories.mean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Histories.pairwise_mean_difference.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest OcularState.to_pascal_case.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest PW_PLV.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest PolygonGraph.line_intersection.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest RealCovariance.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest ShallowFBCSPNetMTS.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest TDBRAIN.age.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest Wang._load_single_cleaned_mne_object.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest WaveletConv.forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _aggregate_predictions.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _compute_centroid.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _compute_separating_angles.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _excluded_dataset_only.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _get_error.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _get_pooling_layer.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _sample_dilation.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _select_dataset_and_index.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest _snake_case_to_pascal_case.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_domain_discriminator.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_montage_split.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_mts_module.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_pooling_layer.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest get_results_dir.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest higher_is_better.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest is_improved_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest make_trial_suggestion.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest project_to_2d.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest remove_prefix.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest sample_hyperparameter.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest sex_to_int.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest simple_random_split.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest strip_tensors.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest subjects_tuple_to_dict.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctest suggest_hyperparameters.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in AIMind.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in BandPass.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in CustomWeightedLoss.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Deep4NetMTS (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Deep4NetMTS (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Deep4NetMTS.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in DortmundVital.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in FCModule.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in GreenModel.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Histories.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in InterpolationDataGenerator.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in KFoldDataSplit.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in KeepDatasetOutRandomSplits.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LEMON.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOCV (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOCV (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOCV.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit (3).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit (4).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit (5).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in LODOSplit.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MLModel (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MLModel (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MLModel (3).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MLModel (4).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MLModel.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MainFixedChannelsModel.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Miltiadous.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MultiChannelSplitsRegionBasedPooling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MultiMSMean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in MultiMontageSplitsRegionBasedPooling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in OcularState.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in PW_PLV.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in RandomSplitsTV.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in RandomSplitsTVTestHoldout.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in SRM (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in SRM.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in ShallowFBCSPNetMTS.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in Subject.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in TDBRAIN.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in _ChannelName (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in _ChannelName.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in ai_mind.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in braindecode_models.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in centroid_polygon.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in cmmn.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in data_generator.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in dataset_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in fc_modules.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in getter.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in green_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in head_region.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in hp_suggesting.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in inception_network.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in interpolate_datasets.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in losses.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in main_fixed_channels_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in main_rbp_model.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in mean.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in miltiadous.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in ml_model_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in paths.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in region_based_pooling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in sampling_distributions.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in spd_layers.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in srm.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in subject_split.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in td_brain.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in univariate_rocket.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in utils (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in wang.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Doctests in wavelet_layers.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_green_model.test_forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_constant_predictions_multiclass_classification_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_constant_predictions_regression_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_constant_targets_multiclass_classification_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_constant_targets_regression_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_errors_regression_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_predictions_error_classification_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_predictions_error_multiclass_classification_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_predictions_error_regression_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_target_error_classification_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_target_error_multiclass_classification_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_metrics.test_nan_target_error_regression_metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_paths.test_blabla.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_paths.test_get_eeg_features_storage_path.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_paths.test_get_numpy_data_storage_path.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_paths.test_get_results_dir.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_region_based_pooling.test_forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_subject_split.test_non_bool_sort_error.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_subject_split.test_order_invariance.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_subject_split.test_order_non_invariance.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_subject_split.test_seeding.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_subject_split.test_subject_split_equality.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_hpo_experiment.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_metrics.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_models.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_paths.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_region_based_pooling.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_subject_split.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python.band_pass.executor&quot;: &quot;Run&quot;,
+    &quot;Python.band_power.executor&quot;: &quot;Run&quot;,
+    &quot;Python.centroid_polygon.executor&quot;: &quot;Run&quot;,
+    &quot;Python.debugging.executor&quot;: &quot;Run&quot;,
+    &quot;Python.debugging_lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python.debugging_td_brain.executor&quot;: &quot;Run&quot;,
+    &quot;Python.dortmund_vital (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.dortmund_vital.executor&quot;: &quot;Run&quot;,
+    &quot;Python.elecssl_experiments.executor&quot;: &quot;Run&quot;,
+    &quot;Python.elecssl_hpo.executor&quot;: &quot;Run&quot;,
+    &quot;Python.group_differences.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hpo_experiment.executor&quot;: &quot;Run&quot;,
+    &quot;Python.lemon.executor&quot;: &quot;Run&quot;,
+    &quot;Python.linear_regresison.executor&quot;: &quot;Run&quot;,
+    &quot;Python.metrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ml_model_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mts_module_base.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pl_utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plot_channel_positions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plot_eeg_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plot_power.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plot_power_distributions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.regression_performance.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run_experiments.executor&quot;: &quot;Run&quot;,
+    &quot;Python.sandbox.executor&quot;: &quot;Run&quot;,
+    &quot;Python.srm.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_paths.executor&quot;: &quot;Run&quot;,
+    &quot;Python.wang.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/model_training&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method/config_files" />
@@ -249,96 +253,8 @@
       <recent name="$PROJECT_DIR$/scripts/visualise_data/power" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.debugging">
-    <configuration name="debugging" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/model_training" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/model_training/debugging.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="linear_regresison" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/model_training/linreg_band_power" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/model_training/linreg_band_power/linear_regresison.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="run_experiments" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/model_training" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/model_training/run_experiments.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="sandbox" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/sandbox.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Doctest remove_prefix" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.Doctests in metrics">
+    <configuration name="Doctest higher_is_better" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -348,29 +264,105 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/utils.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/metrics.py" />
       <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="remove_prefix" />
+      <option name="METHOD_NAME" value="higher_is_better" />
       <option name="FOLDER_NAME" value="" />
       <option name="TEST_TYPE" value="TEST_FUNCTION" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="Doctests in Histories" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/metrics.py" />
+      <option name="CLASS_NAME" value="Histories" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctests in getter" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/mts_modules" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/mts_modules/getter.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctests in main_fixed_channels_model" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/main_models" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/main_models/main_fixed_channels_model.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctests in metrics" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/metrics.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
     <list>
-      <item itemvalue="Python.debugging" />
-      <item itemvalue="Python.linear_regresison" />
-      <item itemvalue="Python.run_experiments" />
-      <item itemvalue="Python.sandbox" />
-      <item itemvalue="Python tests.Doctest remove_prefix" />
+      <item itemvalue="Python tests.Doctest higher_is_better" />
+      <item itemvalue="Python tests.Doctests in Histories" />
+      <item itemvalue="Python tests.Doctests in getter" />
+      <item itemvalue="Python tests.Doctests in main_fixed_channels_model" />
+      <item itemvalue="Python tests.Doctests in metrics" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.debugging" />
-        <item itemvalue="Python.run_experiments" />
-        <item itemvalue="Python.sandbox" />
-        <item itemvalue="Python tests.Doctest remove_prefix" />
-        <item itemvalue="Python.linear_regresison" />
+        <item itemvalue="Python tests.Doctests in metrics" />
+        <item itemvalue="Python tests.Doctest higher_is_better" />
+        <item itemvalue="Python tests.Doctests in Histories" />
+        <item itemvalue="Python tests.Doctests in getter" />
+        <item itemvalue="Python tests.Doctests in main_fixed_channels_model" />
       </list>
     </recent_temporary>
   </component>
@@ -389,158 +381,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00438" summary="improved script">
-      <option name="closed" value="true" />
-      <created>1741102951691</created>
-      <option name="number" value="00438" />
-      <option name="presentableId" value="LOCAL-00438" />
-      <option name="project" value="LOCAL" />
-      <updated>1741102951691</updated>
-    </task>
-    <task id="LOCAL-00439" summary="added convenient NamedTuple, added check and Exception for similar test sets across HPO experiments, and updates for getting similar test sets">
-      <option name="closed" value="true" />
-      <created>1741103065705</created>
-      <option name="number" value="00439" />
-      <option name="presentableId" value="LOCAL-00439" />
-      <option name="project" value="LOCAL" />
-      <updated>1741103065705</updated>
-    </task>
-    <task id="LOCAL-00440" summary="fixed/updated doctest">
-      <option name="closed" value="true" />
-      <created>1741103301860</created>
-      <option name="number" value="00440" />
-      <option name="presentableId" value="LOCAL-00440" />
-      <option name="project" value="LOCAL" />
-      <updated>1741103301860</updated>
-    </task>
-    <task id="LOCAL-00441" summary="set sort_first to true in config files">
-      <option name="closed" value="true" />
-      <created>1741103759334</created>
-      <option name="number" value="00441" />
-      <option name="presentableId" value="LOCAL-00441" />
-      <option name="project" value="LOCAL" />
-      <updated>1741103759334</updated>
-    </task>
-    <task id="LOCAL-00442" summary="flake8 fixes">
-      <option name="closed" value="true" />
-      <created>1741103774034</created>
-      <option name="number" value="00442" />
-      <option name="presentableId" value="LOCAL-00442" />
-      <option name="project" value="LOCAL" />
-      <updated>1741103774034</updated>
-    </task>
-    <task id="LOCAL-00443" summary="coverage">
-      <option name="closed" value="true" />
-      <created>1741103781978</created>
-      <option name="number" value="00443" />
-      <option name="presentableId" value="LOCAL-00443" />
-      <option name="project" value="LOCAL" />
-      <updated>1741103781978</updated>
-    </task>
-    <task id="LOCAL-00444" summary="fixed bug and added sanity checks at runtime">
-      <option name="closed" value="true" />
-      <created>1741105947764</created>
-      <option name="number" value="00444" />
-      <option name="presentableId" value="LOCAL-00444" />
-      <option name="project" value="LOCAL" />
-      <updated>1741105947764</updated>
-    </task>
-    <task id="LOCAL-00445" summary="minor changes to script">
-      <option name="closed" value="true" />
-      <created>1741106239493</created>
-      <option name="number" value="00445" />
-      <option name="presentableId" value="LOCAL-00445" />
-      <option name="project" value="LOCAL" />
-      <updated>1741106239493</updated>
-    </task>
-    <task id="LOCAL-00446" summary="coverage">
-      <option name="closed" value="true" />
-      <created>1741106243219</created>
-      <option name="number" value="00446" />
-      <option name="presentableId" value="LOCAL-00446" />
-      <option name="project" value="LOCAL" />
-      <updated>1741106243219</updated>
-    </task>
-    <task id="LOCAL-00447" summary="prevented pretraining when the only dataset is the hold-out dataset">
-      <option name="closed" value="true" />
-      <created>1741108075133</created>
-      <option name="number" value="00447" />
-      <option name="presentableId" value="LOCAL-00447" />
-      <option name="project" value="LOCAL" />
-      <updated>1741108075133</updated>
-    </task>
-    <task id="LOCAL-00448" summary="flake8 fix">
-      <option name="closed" value="true" />
-      <created>1741108338294</created>
-      <option name="number" value="00448" />
-      <option name="presentableId" value="LOCAL-00448" />
-      <option name="project" value="LOCAL" />
-      <updated>1741108338294</updated>
-    </task>
-    <task id="LOCAL-00449" summary="fix when pretraining was not used">
-      <option name="closed" value="true" />
-      <created>1741108877242</created>
-      <option name="number" value="00449" />
-      <option name="presentableId" value="LOCAL-00449" />
-      <option name="project" value="LOCAL" />
-      <updated>1741108877242</updated>
-    </task>
-    <task id="LOCAL-00450" summary="fix">
-      <option name="closed" value="true" />
-      <created>1741109337150</created>
-      <option name="number" value="00450" />
-      <option name="presentableId" value="LOCAL-00450" />
-      <option name="project" value="LOCAL" />
-      <updated>1741109337151</updated>
-    </task>
-    <task id="LOCAL-00451" summary="fix">
-      <option name="closed" value="true" />
-      <created>1741109435416</created>
-      <option name="number" value="00451" />
-      <option name="presentableId" value="LOCAL-00451" />
-      <option name="project" value="LOCAL" />
-      <updated>1741109435416</updated>
-    </task>
-    <task id="LOCAL-00452" summary="update to script">
-      <option name="closed" value="true" />
-      <created>1741110042573</created>
-      <option name="number" value="00452" />
-      <option name="presentableId" value="LOCAL-00452" />
-      <option name="project" value="LOCAL" />
-      <updated>1741110042573</updated>
-    </task>
-    <task id="LOCAL-00453" summary="update to HPD">
-      <option name="closed" value="true" />
-      <created>1741110175306</created>
-      <option name="number" value="00453" />
-      <option name="presentableId" value="LOCAL-00453" />
-      <option name="project" value="LOCAL" />
-      <updated>1741110175306</updated>
-    </task>
-    <task id="LOCAL-00454" summary="config file">
-      <option name="closed" value="true" />
-      <created>1741110261595</created>
-      <option name="number" value="00454" />
-      <option name="presentableId" value="LOCAL-00454" />
-      <option name="project" value="LOCAL" />
-      <updated>1741110261595</updated>
-    </task>
-    <task id="LOCAL-00455" summary="updated bash script">
-      <option name="closed" value="true" />
-      <created>1741110269512</created>
-      <option name="number" value="00455" />
-      <option name="presentableId" value="LOCAL-00455" />
-      <option name="project" value="LOCAL" />
-      <updated>1741110269512</updated>
-    </task>
-    <task id="LOCAL-00456" summary="coverage">
-      <option name="closed" value="true" />
-      <created>1741110402942</created>
-      <option name="number" value="00456" />
-      <option name="presentableId" value="LOCAL-00456" />
-      <option name="project" value="LOCAL" />
-      <updated>1741110402942</updated>
     </task>
     <task id="LOCAL-00457" summary="added re-usage for multivariable elecssl">
       <option name="closed" value="true" />
@@ -782,7 +622,159 @@
       <option name="project" value="LOCAL" />
       <updated>1742571285004</updated>
     </task>
-    <option name="localTasksCounter" value="487" />
+    <task id="LOCAL-00487" summary="config files">
+      <option name="closed" value="true" />
+      <created>1742575681021</created>
+      <option name="number" value="00487" />
+      <option name="presentableId" value="LOCAL-00487" />
+      <option name="project" value="LOCAL" />
+      <updated>1742575681021</updated>
+    </task>
+    <task id="LOCAL-00488" summary="unimportant changes">
+      <option name="closed" value="true" />
+      <created>1742575690775</created>
+      <option name="number" value="00488" />
+      <option name="presentableId" value="LOCAL-00488" />
+      <option name="project" value="LOCAL" />
+      <updated>1742575690776</updated>
+    </task>
+    <task id="LOCAL-00489" summary="script change">
+      <option name="closed" value="true" />
+      <created>1742575700750</created>
+      <option name="number" value="00489" />
+      <option name="presentableId" value="LOCAL-00489" />
+      <option name="project" value="LOCAL" />
+      <updated>1742575700750</updated>
+    </task>
+    <task id="LOCAL-00490" summary="script change">
+      <option name="closed" value="true" />
+      <created>1742644764514</created>
+      <option name="number" value="00490" />
+      <option name="presentableId" value="LOCAL-00490" />
+      <option name="project" value="LOCAL" />
+      <updated>1742644764514</updated>
+    </task>
+    <task id="LOCAL-00491" summary="fixed HP distribution and removed default arguments">
+      <option name="closed" value="true" />
+      <created>1742644817273</created>
+      <option name="number" value="00491" />
+      <option name="presentableId" value="LOCAL-00491" />
+      <option name="project" value="LOCAL" />
+      <updated>1742644817273</updated>
+    </task>
+    <task id="LOCAL-00492" summary="removed todo">
+      <option name="closed" value="true" />
+      <created>1742644853034</created>
+      <option name="number" value="00492" />
+      <option name="presentableId" value="LOCAL-00492" />
+      <option name="project" value="LOCAL" />
+      <updated>1742644853034</updated>
+    </task>
+    <task id="LOCAL-00493" summary="removed unused code">
+      <option name="closed" value="true" />
+      <created>1742645138094</created>
+      <option name="number" value="00493" />
+      <option name="presentableId" value="LOCAL-00493" />
+      <option name="project" value="LOCAL" />
+      <updated>1742645138094</updated>
+    </task>
+    <task id="LOCAL-00494" summary="removed todo, avoided hard-coding, added concordance correlation, and added tests for constant predictions and ground truths">
+      <option name="closed" value="true" />
+      <created>1742650628361</created>
+      <option name="number" value="00494" />
+      <option name="presentableId" value="LOCAL-00494" />
+      <option name="project" value="LOCAL" />
+      <updated>1742650628361</updated>
+    </task>
+    <task id="LOCAL-00495" summary="fixed doctests">
+      <option name="closed" value="true" />
+      <created>1742651416787</created>
+      <option name="number" value="00495" />
+      <option name="presentableId" value="LOCAL-00495" />
+      <option name="project" value="LOCAL" />
+      <updated>1742651416787</updated>
+    </task>
+    <task id="LOCAL-00496" summary="fixed doctests">
+      <option name="closed" value="true" />
+      <created>1742651449420</created>
+      <option name="number" value="00496" />
+      <option name="presentableId" value="LOCAL-00496" />
+      <option name="project" value="LOCAL" />
+      <updated>1742651449420</updated>
+    </task>
+    <task id="LOCAL-00497" summary="removed todos">
+      <option name="closed" value="true" />
+      <created>1742651618424</created>
+      <option name="number" value="00497" />
+      <option name="presentableId" value="LOCAL-00497" />
+      <option name="project" value="LOCAL" />
+      <updated>1742651618424</updated>
+    </task>
+    <task id="LOCAL-00498" summary="improved property">
+      <option name="closed" value="true" />
+      <created>1742651805024</created>
+      <option name="number" value="00498" />
+      <option name="presentableId" value="LOCAL-00498" />
+      <option name="project" value="LOCAL" />
+      <updated>1742651805024</updated>
+    </task>
+    <task id="LOCAL-00499" summary="removed todos">
+      <option name="closed" value="true" />
+      <created>1742652193672</created>
+      <option name="number" value="00499" />
+      <option name="presentableId" value="LOCAL-00499" />
+      <option name="project" value="LOCAL" />
+      <updated>1742652193672</updated>
+    </task>
+    <task id="LOCAL-00500" summary="removed obsolete configuration files">
+      <option name="closed" value="true" />
+      <created>1742653604074</created>
+      <option name="number" value="00500" />
+      <option name="presentableId" value="LOCAL-00500" />
+      <option name="project" value="LOCAL" />
+      <updated>1742653604074</updated>
+    </task>
+    <task id="LOCAL-00501" summary="removed todo">
+      <option name="closed" value="true" />
+      <created>1742654380341</created>
+      <option name="number" value="00501" />
+      <option name="presentableId" value="LOCAL-00501" />
+      <option name="project" value="LOCAL" />
+      <updated>1742654380341</updated>
+    </task>
+    <task id="LOCAL-00502" summary="improvements for homogenising HP names across studies">
+      <option name="closed" value="true" />
+      <created>1742656764918</created>
+      <option name="number" value="00502" />
+      <option name="presentableId" value="LOCAL-00502" />
+      <option name="project" value="LOCAL" />
+      <updated>1742656764918</updated>
+    </task>
+    <task id="LOCAL-00503" summary="fix">
+      <option name="closed" value="true" />
+      <created>1742657123499</created>
+      <option name="number" value="00503" />
+      <option name="presentableId" value="LOCAL-00503" />
+      <option name="project" value="LOCAL" />
+      <updated>1742657123499</updated>
+    </task>
+    <task id="LOCAL-00504" summary="fix">
+      <option name="closed" value="true" />
+      <created>1742657234191</created>
+      <option name="number" value="00504" />
+      <option name="presentableId" value="LOCAL-00504" />
+      <option name="project" value="LOCAL" />
+      <updated>1742657234191</updated>
+    </task>
+    <task id="LOCAL-00505" summary="added interpretation of concordance cc">
+      <option name="closed" value="true" />
+      <created>1742657516563</created>
+      <option name="number" value="00505" />
+      <option name="presentableId" value="LOCAL-00505" />
+      <option name="project" value="LOCAL" />
+      <updated>1742657516563</updated>
+    </task>
+    <option name="localTasksCounter" value="506" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -797,20 +789,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed seeded function which globally changed the random state" />
-    <MESSAGE value="improved error messages" />
-    <MESSAGE value="coverage and auto-updates" />
-    <MESSAGE value="unimportant commit" />
-    <MESSAGE value="removed unused scripts" />
-    <MESSAGE value="refactoring of config files" />
-    <MESSAGE value="old changes to outdated config files" />
-    <MESSAGE value="changes to unimportant script" />
-    <MESSAGE value="added function for removing prefix compatible with python3.8" />
-    <MESSAGE value="updates after refactoring" />
-    <MESSAGE value="config files" />
-    <MESSAGE value="automatic changes" />
-    <MESSAGE value="added prediction models back" />
-    <MESSAGE value="changes to HPDs" />
     <MESSAGE value="fix to df generation" />
     <MESSAGE value="added feature extraction + ML" />
     <MESSAGE value="minor refactoring" />
@@ -822,6 +800,31 @@
     <MESSAGE value="removed unused argument" />
     <MESSAGE value="updates for yml file" />
     <MESSAGE value="fixes for running on cuda" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixes for running on cuda" />
+    <MESSAGE value="config files" />
+    <MESSAGE value="unimportant changes" />
+    <MESSAGE value="script change" />
+    <MESSAGE value="fixed HP distribution and removed default arguments" />
+    <MESSAGE value="removed unused code" />
+    <MESSAGE value="removed todo, avoided hard-coding, added concordance correlation, and added tests for constant predictions and ground truths" />
+    <MESSAGE value="fixed doctests" />
+    <MESSAGE value="improved property" />
+    <MESSAGE value="removed todos" />
+    <MESSAGE value="removed obsolete configuration files" />
+    <MESSAGE value="removed todo" />
+    <MESSAGE value="improvements for homogenising HP names across studies" />
+    <MESSAGE value="fix" />
+    <MESSAGE value="added interpretation of concordance cc" />
+    <option name="LAST_COMMIT_MESSAGE" value="added interpretation of concordance cc" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/tests/models/test_metrics.py</url>
+          <line>142</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
