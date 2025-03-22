@@ -250,7 +250,7 @@ class InceptionNetwork(MTSModuleBase):
     )
     """
 
-    def __init__(self, in_channels, num_classes, *, cnn_units=32, depth=6, use_bottleneck=True, activation=None,
+    def __init__(self, in_channels, num_classes, *, cnn_units, depth, use_bottleneck=True, activation=None,
                  max_kernel_size=40, use_residual=True):
         """
         Initialise
