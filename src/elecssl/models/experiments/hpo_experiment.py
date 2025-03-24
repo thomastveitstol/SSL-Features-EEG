@@ -1100,7 +1100,8 @@ class PretrainHPO(HPOExperiment):
         datasets_for_pretraining = tuple(dataset for dataset in self._pretext_experiments_config["Datasets"]
                                          if dataset != pretrain_excluded)
         possible_pretrain_combinations = _generate_dataset_combinations(datasets_for_pretraining)
-        pretrain_combinations = trial.suggest_categorical("datasets", choices=possible_pretrain_combinations)
+        pretrain_combinations = trial.suggest_categorical(f"{name_prefix}datasets",
+                                                          choices=possible_pretrain_combinations)
 
         for dataset_name in _datasets_str_to_tuple(pretrain_combinations):
             datasets_to_use[dataset_name] = self._pretext_experiments_config["Datasets"][dataset_name]
@@ -1125,7 +1126,8 @@ class PretrainHPO(HPOExperiment):
 
     def _suggest_downstream_specific_hyperparameters(self, name, trial):
         suggested_hps = {"Loss": suggest_loss(name=name, trial=trial, config=self._sampling_config["Loss"]),
-                         "Training": self._suggest_training_hpcs(trial=trial, name=name, hpd_config=self._sampling_config)}
+                         "Training": self._suggest_training_hpcs(trial=trial, name=name,
+                                                                 hpd_config=self._sampling_config)}
 
         # Domain discriminator
         if self._experiments_config["enable_domain_discriminator"]:
@@ -1226,7 +1228,8 @@ class SimpleElecsslHPO(HPOExperiment):
         datasets_for_pretraining = tuple(dataset for dataset in self._experiments_config["Datasets"]
                                          if dataset != pretrain_excluded)
         possible_pretrain_combinations = _generate_dataset_combinations(datasets_for_pretraining)
-        pretrain_combinations = trial.suggest_categorical("datasets", choices=possible_pretrain_combinations)
+        pretrain_combinations = trial.suggest_categorical(f"{name_prefix}datasets",
+                                                          choices=possible_pretrain_combinations)
 
         for dataset_name in _datasets_str_to_tuple(pretrain_combinations):
             datasets_to_use[dataset_name] = self._experiments_config["Datasets"][dataset_name]
@@ -1283,10 +1286,10 @@ class SimpleElecsslHPO(HPOExperiment):
                 experiments_config=experiment_config_file, in_freq_band=in_freq_band,
                 in_ocular_state=in_ocular_state, suggested_hyperparameters=suggested_hyperparameters
             )
-            feature_extractor_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
+            residual_feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
 
             # Convenient to make folder structure the same as MultivariableElecssl
-            results_path = results_dir / f"hpo_{trial.number}_{feature_extractor_name}"
+            results_path = results_dir / f"hpo_{trial.number}_{residual_feature_name}"
             with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
                                   pre_processing_config=preprocessing_config_file, results_path=results_path,
                                   fine_tuning=None, experiment_name=experiment_name) as experiment:
@@ -1295,8 +1298,6 @@ class SimpleElecsslHPO(HPOExperiment):
             # ---------------
             # Extract expectation values and biomarkers
             # ---------------
-            residual_feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
-
             df = _make_single_residuals_df(
                 results_dir=results_path / "Fold_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
                 downstream_target=self._experiments_config["clinical_target"], in_ocular_state=in_ocular_state,
@@ -1558,7 +1559,31 @@ class MultivariableElecsslHPO(HPOExperiment):
                                                              preprocessed_config_path=preprocessing_config_path,
                                                              skip_training=False, skip_loss=False)
         suggested_hps["MLModel"] = self._sampling_config["MLModel"]
-        return suggested_hps
+
+        # -------------
+        # Pick the datasets to be used for pre-training
+        # -------------
+        name_prefix = "" if name is None else f"{name}_"
+
+        # The pre-training excluded
+        datasets_to_use = dict()
+        if "left_out_dataset" in self._experiments_config["SubjectSplit"]["kwargs"]:
+            pretrain_excluded = self._experiments_config["SubjectSplit"]["kwargs"]["left_out_dataset"]
+            datasets_to_use[pretrain_excluded] = self._experiments_config["Datasets"][pretrain_excluded]
+        else:
+            pretrain_excluded = "NO_DATASET"  # convenient that the variable still exists
+
+        # The datasets for pretraining
+        datasets_for_pretraining = tuple(dataset for dataset in self._experiments_config["Datasets"]
+                                         if dataset != pretrain_excluded)
+        possible_pretrain_combinations = _generate_dataset_combinations(datasets_for_pretraining)
+        pretrain_combinations = trial.suggest_categorical(f"{name_prefix}datasets",
+                                                          choices=possible_pretrain_combinations)
+
+        for dataset_name in _datasets_str_to_tuple(pretrain_combinations):
+            datasets_to_use[dataset_name] = self._experiments_config["Datasets"][dataset_name]
+
+        return suggested_hps, datasets_to_use
 
     def _create_objective(self):
 
@@ -1598,10 +1623,18 @@ class MultivariableElecsslHPO(HPOExperiment):
                 # ---------------
                 # Suggest / sample hyperparameters
                 # ---------------
-                suggested_hyperparameters = self.suggest_hyperparameters(
+                suggested_hyperparameters, datasets_to_use = self.suggest_hyperparameters(
                     name=feature_extractor_name, trial=trial, in_freq_band=in_freq_band,
                     preprocessing_config_path=preprocessing_config_path
                 )
+
+                # Add the selected datasets to pretext task (including subgroups for performance tracking). The ones in
+                # the experiments config file are only the available ones, not the ones we will always use
+                experiment_config_file["Datasets"] = dict()
+                for dataset_name, dataset_info in datasets_to_use.items():
+                    experiment_config_file["Datasets"][dataset_name] = dataset_info
+                experiment_config_file["SubGroups"]["sub_groups"]["dataset_name"] = tuple(
+                    dataset_name for dataset_name in datasets_to_use)
 
                 # ---------------
                 # Initiate experiment
