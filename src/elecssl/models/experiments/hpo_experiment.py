@@ -1067,7 +1067,8 @@ class PretrainHPO(HPOExperiment):
                     deviation_method=self._experiments_config["elecssl_deviation_method"],
                     in_ocular_state=in_ocular_state, experiment_name="pretext",
                     pretext_main_metric=self._pretext_experiments_config["Training"]["main_metric"],
-                    include_pseudo_targets=self._experiments_config["elecssl_include_pseudo_targets"]
+                    include_pseudo_targets=self._experiments_config["elecssl_include_pseudo_targets"],
+                    continuous_testing=self._pretext_experiments_config["Training"]["continuous_testing"]
                 )
                 df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
@@ -1303,7 +1304,8 @@ class SimpleElecsslHPO(HPOExperiment):
                 downstream_target=self._experiments_config["clinical_target"], in_ocular_state=in_ocular_state,
                 deviation_method=self._experiments_config["deviation_method"], experiment_name=experiment_name,
                 pretext_main_metric=self._experiments_config["Training"]["main_metric"],
-                include_pseudo_targets=self._experiments_config["include_pseudo_targets"]
+                include_pseudo_targets=self._experiments_config["include_pseudo_targets"],
+                continuous_testing=self._experiments_config["Training"]["continuous_testing"]
             )
             df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
 
@@ -1648,7 +1650,8 @@ class MultivariableElecsslHPO(HPOExperiment):
                     deviation_method=self._experiments_config["deviation_method"],
                     num_eeg_epochs=num_epochs, feature_extractor_name=feature_extractor_name,
                     pretext_main_metric=self._experiments_config["Training"]["main_metric"],
-                    include_pseudo_targets=self._experiments_config["include_pseudo_targets"]
+                    include_pseudo_targets=self._experiments_config["include_pseudo_targets"],
+                    continuous_testing=self._experiments_config["Training"]["continuous_testing"]
                 )
 
                 if include_pseudo_targets:
@@ -1694,7 +1697,7 @@ class MultivariableElecsslHPO(HPOExperiment):
     @staticmethod
     def _run_single_job(experiments_config, suggested_hyperparameters, trial_number, in_ocular_state, in_freq_band,
                         results_dir, downstream_target, deviation_method, num_eeg_epochs, pretext_main_metric,
-                        feature_extractor_name, include_pseudo_targets) -> Tuple[Any, ...]:
+                        feature_extractor_name, include_pseudo_targets, continuous_testing) -> Tuple[Any, ...]:
         """Method for running a single SSL experiments"""
         experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
             experiments_config=experiments_config, in_freq_band=in_freq_band, in_ocular_state=in_ocular_state,
@@ -1718,7 +1721,7 @@ class MultivariableElecsslHPO(HPOExperiment):
             path=results_path / "Fold_0", target=experiments_config["Training"]["target"],
             downstream_target=downstream_target, deviation_method=deviation_method, num_eeg_epochs=num_eeg_epochs,
             pretext_main_metric=pretext_main_metric, experiment_name=experiment_name,
-            include_pseudo_targets=include_pseudo_targets
+            include_pseudo_targets=include_pseudo_targets, continuous_testing=continuous_testing
         )
 
         return feature_extractor_name, *outputs
@@ -1994,7 +1997,7 @@ class AllHPOExperiments:
         ml_features = self.run_ml_features()
 
         # Prediction models
-        # prediction_models = self.run_prediction_models_hpo()
+        prediction_models = self.run_prediction_models_hpo()
 
         # Pretraining
         pretrain = self.run_pretraining_hpo()
@@ -2008,7 +2011,7 @@ class AllHPOExperiments:
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((ml_features, pretrain, simple_elecssl,
+        self.verify_test_set_integrity((ml_features, prediction_models, pretrain, simple_elecssl,
                                         multivariable_elecssl))
 
         # --------------
@@ -2312,11 +2315,13 @@ def _merge_ssl_biomarkers_dataframes(dfs):
 
 
 def _make_single_residuals_df(*, results_dir, feature_name, pseudo_target, downstream_target, deviation_method,
-                              in_ocular_state, pretext_main_metric, experiment_name, include_pseudo_targets):
+                              in_ocular_state, pretext_main_metric, experiment_name, include_pseudo_targets,
+                              continuous_testing):
     outputs = _get_delta_and_variable(
         path=results_dir, target=pseudo_target, downstream_target=downstream_target, deviation_method=deviation_method,
         num_eeg_epochs=_get_num_eeg_epochs(ocular_state=in_ocular_state), pretext_main_metric=pretext_main_metric,
-        experiment_name=experiment_name, include_pseudo_targets=verify_type(include_pseudo_targets, bool)
+        experiment_name=experiment_name, include_pseudo_targets=verify_type(include_pseudo_targets, bool),
+        continuous_testing=continuous_testing
     )
 
     biomarkers: Dict[str, List[Union[str, float]]] = {"dataset": [], "sub_id": [], "clinical_target": [],
@@ -2447,17 +2452,21 @@ def _excluded_dataset_only(*, dataset_config, subject_split_config):
 
 
 def _get_delta_and_variable(path, *, target, downstream_target, deviation_method, num_eeg_epochs, pretext_main_metric,
-                            experiment_name, include_pseudo_targets):
+                            experiment_name, include_pseudo_targets, continuous_testing):
     # todo: make test
     # ----------------
     # Select epoch
     # ----------------
     # todo: not really 'fold' anymore...
-    epoch = _get_best_val_epoch(path=path, pretext_main_metric=pretext_main_metric, experiment_name=experiment_name)
+    if verify_type(continuous_testing, bool):
+        epoch = _get_best_val_epoch(path=path, pretext_main_metric=pretext_main_metric, experiment_name=experiment_name)
+    else:
+        epoch = 0  # The selection has already been made
 
     # ----------------
     # Get the biomarkers and the (clinical) variable
     # ----------------
+    # todo: no need to read the entire csv file...
     prefix_name = "" if experiment_name is None else f"{experiment_name}_"
     test_predictions = pandas.read_csv(os.path.join(path, f"{prefix_name}test_history_predictions.csv"))
     subject_ids = test_predictions["sub_id"]
