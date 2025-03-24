@@ -20,8 +20,6 @@ Saving:
   save_subgroups_plots: false
   save_discriminator_plots: false
   save_error_association_plots: false
-  save_metrics_per_fold_plots: false
-  save_final_test_histories_plots: false
   save_model: false  # PretrainHPO will set this to True in pretext task
 
 # -----------------
@@ -30,9 +28,9 @@ Saving:
 HPO:
   HPOStudy:
     sampler: TPESampler
-    sampler_kwargs: { n_startup_trials: 750 }
+    sampler_kwargs: { n_startup_trials: 100 }
     direction: UNAVAILABLE  # this will be added at runtime. Inferred from the selected downstream main metric
-  num_trials: 1000
+  num_trials: 125
 
 # -----------------
 # Configurations for associating prediction errors with
