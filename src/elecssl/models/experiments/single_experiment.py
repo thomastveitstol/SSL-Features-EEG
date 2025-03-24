@@ -454,15 +454,16 @@ class SingleExperiment:
     # -------------
     # Methods for saving results
     # -------------
-    def _save_results(self, *, histories, test_estimate, results_path):
+    def _save_results(self, *, histories: Dict[str, Histories], results_path):
         decimals = 3  # todo: cmon...
 
         prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
 
         # Save prediction histories
+        train_history = histories["train"]
+        val_history = histories["val"]
+        test_history = histories["test"] if "test" in histories else None
         if self.domain_discriminator_config is None:
-            train_history, val_history, test_history = histories
-
             train_history.save_main_history(history_name=f"{prefix_name}train_history", path=results_path,
                                             decimals=decimals)
             val_history.save_main_history(history_name=f"{prefix_name}val_history", path=results_path,
@@ -474,7 +475,8 @@ class SingleExperiment:
             domain_discriminator_path = os.path.join(results_path, f"{prefix_name}domain_discriminator")
             os.mkdir(domain_discriminator_path)
 
-            train_history, val_history, test_history, dd_train_history, dd_val_history = histories
+            dd_train_history = histories["dd_train"]
+            dd_val_history = histories["dd_val"]
 
             train_history.save_main_history(history_name=f"{prefix_name}train_history", path=results_path,
                                             decimals=decimals)
@@ -521,11 +523,6 @@ class SingleExperiment:
                 test_history.save_variables_histories(history_name="test", path=variables_history_path,
                                                       decimals=decimals,
                                                       save_plots=self.saving_config["save_error_association_plots"])
-
-        # Save plots
-        if self.saving_config["save_metrics_per_fold_plots"]:
-            save_histories_plots(path=results_path, train_history=train_history, val_history=val_history,
-                                 test_estimate=test_estimate, test_history=test_history)
 
     # -------------
     # Method for running experiments
@@ -603,34 +600,32 @@ class SingleExperiment:
         # -----------------
         # Test model (but only if continuous testing was not used)
         # -----------------
-        test_estimate: Optional[Histories]
         if not self.train_config["continuous_testing"]:
             print(f"\n{' Testing ':-^20}")
+            if "test" in histories:
+                raise RuntimeError("Expected 'test' history not to be present with continuous test set to 'False', "
+                                   "but that was not the case")
 
             # Get test loader
             test_loader = self._load_test_data_loader(model=model, test_subjects=test_subjects,
                                                       combined_dataset=combined_dataset, target_scaler=target_scaler)
 
-            # Also, maybe fit the CMMN monge filters
-            if model.any_rbp_cmmn_layers:
-                self._fit_cmmn_layers_test_data(model=model, test_data=combined_dataset.get_data(test_subjects),
-                                                channel_systems=channel_systems)
-
             # Test model on test data
-            test_estimate = model.test_model(
+            histories["test"] = model.test_model(
                 data_loader=test_loader, metrics=self.train_config["metrics"], verbose=self.train_config["verbose"],
-                channel_name_to_index=channel_name_to_index, device=self._device, target_scaler=target_scaler,
+                **channel_name_to_index_kwarg, device=self._device, target_scaler=target_scaler,
                 sub_group_splits=self.sub_groups_config["sub_groups"],
-                sub_groups_verbose=self.sub_groups_config["verbose"]
+                prediction_activation_function=get_activation_function(self.train_config["prediction_activation_"
+                                                                                         "function"]),
+                sub_groups_verbose=self.sub_groups_config["verbose"],
+                verbose_variables = self.train_config["verbose_variables"], variable_metrics = self.variables_metrics
             )
-        else:
-            test_estimate = None
 
         # -----------------
         # Save results
         # -----------------
         # Performance scores
-        self._save_results(histories=histories, test_estimate=test_estimate, results_path=results_path)
+        self._save_results(histories=histories, results_path=results_path)
 
         # (Maybe) the model itself
         if self.saving_config["save_model"]:
@@ -638,11 +633,7 @@ class SingleExperiment:
             prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
             model.save_model(name=f"{prefix_name}model", path=results_path)
 
-        return histories
-
     def _run(self, *, splits, channel_systems, channel_name_to_index, combined_dataset):
-        test_histories: Dict[str, Histories] = dict()
-
         # Loop through all folds
         for i, (train_subjects, val_subjects, test_subjects) in enumerate(splits):
             print(f"\nFold {i + 1}/{len(splits)}")
@@ -657,36 +648,11 @@ class SingleExperiment:
             # -----------------
             # Run the current fold
             # -----------------
-            histories = self._run_single_fold(
+            self._run_single_fold(
                 train_subjects=train_subjects, val_subjects=val_subjects, test_subjects=test_subjects,
                 results_path=fold_path, channel_systems=channel_systems, channel_name_to_index=channel_name_to_index,
                 combined_dataset=combined_dataset
             )
-
-            # -----------------
-            # Save test history
-            # -----------------
-            # Extract the test history (should only be one)
-            _test_histories = tuple(history for history in histories if history.name[:4] == "test")
-
-            if not _test_histories:
-                continue
-            if len(_test_histories) != 1:
-                raise RuntimeError(f"Expected only one test history per fold, but found {len(_test_histories)}")
-
-            test_history = tuple(_test_histories)[0]
-
-            # If there is only one dataset in the test fold, name it as the dataset name, otherwise just use fold number
-            test_datasets = set(subject.dataset_name for subject in test_subjects)
-            test_name = tuple(test_datasets)[0] if len(test_datasets) == 1 else f"Fold {i}"
-
-            # Add histories object to dict
-            if test_name in test_histories and self.subject_split_config["name"] == "SplitOnDataset":
-                raise RuntimeError  # todo: add message
-            test_histories[test_name] = test_history
-
-        if self.saving_config["save_final_test_histories_plots"]:
-            save_test_histories_plots(path=self._results_path, histories=test_histories)
 
     # -------------
     # Main method for running the cross validation experiment
