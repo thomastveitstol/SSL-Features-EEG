@@ -18,8 +18,7 @@ from elecssl.models.losses import CustomWeightedLoss, get_activation_function
 from elecssl.models.main_models.main_base_class import MainModuleBase
 from elecssl.models.main_models.main_fixed_channels_model import MainFixedChannelsModel
 from elecssl.models.main_models.main_rbp_model import MainRBPModel
-from elecssl.models.metrics import Histories, save_discriminator_histories_plots, save_histories_plots, \
-    save_test_histories_plots, NaNValueError
+from elecssl.models.metrics import Histories, save_discriminator_histories_plots, NaNValueError
 from elecssl.models.utils import tensor_dict_to_device
 
 
@@ -618,7 +617,7 @@ class SingleExperiment:
                 prediction_activation_function=get_activation_function(self.train_config["prediction_activation_"
                                                                                          "function"]),
                 sub_groups_verbose=self.sub_groups_config["verbose"],
-                verbose_variables = self.train_config["verbose_variables"], variable_metrics = self.variables_metrics
+                verbose_variables=self.train_config["verbose_variables"], variable_metrics=self.variables_metrics
             )
 
         # -----------------

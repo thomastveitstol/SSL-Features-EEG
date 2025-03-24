@@ -31,7 +31,7 @@ class MainRBPModel(MainModuleBase):
         ----------
         mts_module : str
         mts_module_kwargs : dict[str, typing.Any]
-        rbp_designs : tuple[cdl_eeg.models.region_based_pooling.region_based_pooling.RBPDesign, ...]
+        rbp_designs : tuple[elecssl.models.region_based_pooling.region_based_pooling.RBPDesign, ...]
         normalise_region_representations : bool
         """
         super().__init__()
@@ -472,13 +472,13 @@ class MainRBPModel(MainModuleBase):
         main_metric : str
             Main metric for model selection
         num_epochs : int
-        criterion : cdl_eeg.models.losses.CustomWeightedLoss
+        criterion : elecssl.models.losses.CustomWeightedLoss
         optimiser : torch.optim.Optimizer
         device : torch.device
         channel_name_to_index : dict[str, dict[str, int]]
         prediction_activation_function : typing.Callable | None
         verbose : bool
-        target_scaler : cdl_eeg.data.scalers.target_scalers.TargetScalerBase, optional
+        target_scaler : elecssl.data.scalers.target_scalers.TargetScalerBase, optional
 
         Returns
         -------
