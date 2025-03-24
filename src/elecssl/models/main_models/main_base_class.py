@@ -1,6 +1,6 @@
 import abc
 from pathlib import Path
-from typing import Tuple
+from typing import Dict
 
 import torch
 import torch.nn as nn
@@ -17,7 +17,7 @@ class MainModuleBase(nn.Module, abc.ABC):
     # Abstract methods
     # ------------
     @abc.abstractmethod
-    def train_model(self, *args, **kwargs) -> Tuple[Histories, ...]:
+    def train_model(self, *args, **kwargs) -> Dict[str, Histories]:
         """Method for training the model"""
 
     @abc.abstractmethod

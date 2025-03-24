@@ -462,7 +462,10 @@ class MainFixedChannelsModel(MainModuleBase):
         self.load_state_dict({k: v.to(device) for k, v in best_model_state.items()})  # type: ignore[arg-type]
 
         # Return the histories
-        return train_history, val_history, test_history
+        histories = {"train": train_history, "val": val_history}
+        if test_history is not None:
+            histories["test"] = test_history
+        return histories
 
     @train_method
     def domain_discriminator_training(
@@ -647,7 +650,10 @@ class MainFixedChannelsModel(MainModuleBase):
         self.load_state_dict({k: v.to(device) for k, v in best_model_state.items()})  # type: ignore[arg-type]
 
         # Return the histories
-        return train_history, val_history, test_history, dd_train_history, dd_val_history
+        histories = {"train": train_history, "val": val_history, "train_dd": dd_train_history, "val_dd": dd_val_history}
+        if test_history is not None:
+            histories["test"] = test_history
+        return histories
 
     def test_model(self, *, data_loader, metrics, device, prediction_activation_function, verbose=True,
                    target_scaler, sub_group_splits, sub_groups_verbose, verbose_variables, variable_metrics):
