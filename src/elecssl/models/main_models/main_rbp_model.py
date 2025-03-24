@@ -661,7 +661,7 @@ class MainRBPModel(MainModuleBase):
         # Return the histories
         return train_history, val_history, test_history
 
-    def test_model(self, *, data_loader, metrics, device, channel_name_to_index, prediction_activation_function=None,
+    def test_model(self, *, data_loader, metrics, device, channel_name_to_index, prediction_activation_function,
                    verbose=True, target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables,
                    variable_metrics):
         # Defining histories objects
