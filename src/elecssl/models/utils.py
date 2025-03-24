@@ -370,6 +370,63 @@ def remove_prefix(s, *, prefix, case_sensitive):
     return s[len(prefix):]
 
 
+def remove_prefix_from_keys(d, prefix):
+    """
+    Remove a given prefix from all keys in the dictionary.
+
+    If a key does not start with the prefix, it remains unchanged.
+    If removing the prefix results in a duplicate key, a `ValueError` is raised.
+
+    Parameters
+    ----------
+    d : dict[str, Any]
+        The input dictionary with string keys.
+    prefix : str
+        The prefix to remove from keys.
+
+    Returns
+    -------
+    dict[str, Any]
+        A new dictionary with the prefix removed where applicable.
+
+    Raises
+    ------
+    ValueError
+        If removing the prefix results in duplicate keys.
+
+    Examples
+    --------
+    >>> remove_prefix_from_keys({"pre_a": 1, "pre_b": 2, "c": 3}, "pre_")
+    {'a': 1, 'b': 2, 'c': 3}
+
+    Keys that do not start with the prefix remain unchanged
+
+    >>> remove_prefix_from_keys({"x_a": 1, "x_b": 2, "c": 3}, "pre_")
+    {'x_a': 1, 'x_b': 2, 'c': 3}
+
+    If removing the prefix causes a duplicate key, a `ValueError` is raised
+
+    >>> remove_prefix_from_keys({"pre_x": 1, "pre_x_y": 2, "x": 3}, "pre_")
+    Traceback (most recent call last):
+    ...
+    ValueError: Key collision detected: 'x' already exists.
+    """
+    new_dict = {}
+    prefix_len = len(prefix)
+    d = copy.deepcopy(d)
+
+    for key, value in d.items():
+        if key.startswith(prefix):
+            new_key = key[prefix_len:]
+            if new_key in d:
+                raise ValueError(f"Key collision detected: '{new_key}' already exists.")
+            new_dict[new_key] = value
+        else:
+            new_dict[key] = value  # Keep the original key if no prefix
+
+    return new_dict
+
+
 def verify_type(data, types):
     """Function which checks the type of the object. Returns the object if the type is as expected, otherwise raises a
     TypeError"""

@@ -29,7 +29,7 @@ from elecssl.models.hp_suggesting import make_trial_suggestion, suggest_spatial_
 from elecssl.models.metrics import PlotNotSavedWarning, higher_is_better
 from elecssl.models.ml_models.ml_model_base import MLModel
 from elecssl.models.utils import add_yaml_constructors, verify_type, verified_performance_score, \
-    merge_dicts_strict, remove_prefix
+    merge_dicts_strict, remove_prefix, remove_prefix_from_keys
 
 
 # --------------
@@ -251,7 +251,8 @@ class HPOExperiment(MainExperiment):
     # --------------
     # Methods for HPO sampling
     # --------------
-    def _suggest_common_hyperparameters(self, trial, name, in_freq_band, preprocessed_config_path):
+    def _suggest_common_hyperparameters(self, trial, name, in_freq_band, preprocessed_config_path, skip_training,
+                                        skip_loss):
         suggested_hps: Dict[str, Any] = {"Preprocessing": {}}
         name_prefix = "" if name is None else f"{name}_"
 
@@ -262,8 +263,9 @@ class HPOExperiment(MainExperiment):
             )
 
         # Training
-        suggested_hps["Training"] = self._suggest_training_hpcs(trial=trial, name=name,
-                                                                hpd_config=self._sampling_config)
+        if not skip_training:
+            suggested_hps["Training"] = self._suggest_training_hpcs(trial=trial, name=name,
+                                                                    hpd_config=self._sampling_config)
 
         # Normalisation
         normalisation = trial.suggest_categorical(f"{name_prefix}normalisation",
@@ -283,7 +285,8 @@ class HPOExperiment(MainExperiment):
             )
 
         # Loss
-        suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=self._sampling_config["Loss"])
+        if not skip_loss:
+            suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=self._sampling_config["Loss"])
 
         # Handling varied numbers of electrodes
         suggested_hps["SpatialDimensionMismatch"] = suggest_spatial_dimension_mismatch(
@@ -301,7 +304,8 @@ class HPOExperiment(MainExperiment):
                 "Hyperparameter sampling with domain discriminator has not been implemented yet...")
         else:
             # todo: not a fan of having to specify training method, especially now that the name is somewhat misleading
-            suggested_hps["Training"]["method"] = "downstream_training"
+            if not skip_training:
+                suggested_hps["Training"]["method"] = "downstream_training"
             suggested_hps["DomainDiscriminator"] = None
 
         return suggested_hps
@@ -861,7 +865,8 @@ class PredictionModelsHPO(HPOExperiment):
                                                     **self._sampling_config["OcularStates"])
         preprocessing_config_path = _get_preprocessing_config_path(ocular_state=in_ocular_state)
         suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
-                                                             preprocessed_config_path=preprocessing_config_path)
+                                                             preprocessed_config_path=preprocessing_config_path,
+                                                             skip_loss=False, skip_training=False)
         suggested_hps["ocular_state"] = in_ocular_state
         return suggested_hps
 
@@ -975,10 +980,7 @@ class PretrainHPO(HPOExperiment):
             # Combine the shared and specific HPCs
             downstream_hpcs = {**suggested_shared_hyperparameters, **downstream_specific_hpcs}
 
-            suggested_shared_hyperparameters = suggested_shared_hyperparameters.copy()  # Remove train and loss HPCs
-            del suggested_shared_hyperparameters["Training"]
-            del suggested_shared_hyperparameters["Loss"]
-            del suggested_shared_hyperparameters["DomainDiscriminator"]
+            suggested_shared_hyperparameters = suggested_shared_hyperparameters.copy()
             pretext_hpcs = {**suggested_shared_hyperparameters.copy(), **pretext_specific_hpcs}
 
             # ---------------
@@ -1083,21 +1085,25 @@ class PretrainHPO(HPOExperiment):
             name=f"{name_prefix}out_freq_band", **self._pretext_sampling_config["out_freq_band"]
         )
 
+        # -------------
         # Pick the datasets to be used for pre-training
+        # -------------
+        # The pre-training excluded
         datasets_to_use = dict()
-        for dataset_name, dataset_info in self._pretext_experiments_config["Datasets"].items():
-            if ("left_out_dataset" in self._pretext_experiments_config["SubjectSplit"]["kwargs"]
-                    and self._pretext_experiments_config["SubjectSplit"]["kwargs"]["left_out_dataset"] == dataset_name):
-                to_use = True
-            else:
-                to_use = trial.suggest_categorical(name=f"{name_prefix}{dataset_name}", choices={True, False})
+        if "left_out_dataset" in self._pretext_experiments_config["SubjectSplit"]["kwargs"]:
+            pretrain_excluded = self._pretext_experiments_config["SubjectSplit"]["kwargs"]["left_out_dataset"]
+            datasets_to_use[pretrain_excluded] = self._pretext_experiments_config["Datasets"][pretrain_excluded]
+        else:
+            pretrain_excluded = "NO_DATASET"  # convenient that the variable still exists
 
-            if to_use:
-                datasets_to_use[dataset_name] = dataset_info
+        # The datasets for pretraining
+        datasets_for_pretraining = tuple(dataset for dataset in self._pretext_experiments_config["Datasets"]
+                                         if dataset != pretrain_excluded)
+        possible_pretrain_combinations = _generate_dataset_combinations(datasets_for_pretraining)
+        pretrain_combinations = trial.suggest_categorical("datasets", choices=possible_pretrain_combinations)
 
-        # (Maybe) prune the trial
-        if not datasets_to_use and self._experiments_config["force_pretraining"]:
-            raise optuna.TrialPruned
+        for dataset_name in _datasets_str_to_tuple(pretrain_combinations):
+            datasets_to_use[dataset_name] = self._pretext_experiments_config["Datasets"][dataset_name]
 
         # Training
         hpd_config = merge_dicts_strict(self._sampling_config, self._pretext_sampling_config)
@@ -1117,16 +1123,31 @@ class PretrainHPO(HPOExperiment):
 
         return suggested_hps, datasets_to_use
 
-    @staticmethod
-    def _suggest_downstream_specific_hyperparameters(name, trial):
-        return dict()  # todo: should sample Adam HPCs as it makes no sense to use the same as in the pretext task
+    def _suggest_downstream_specific_hyperparameters(self, name, trial):
+        suggested_hps = {"Loss": suggest_loss(name=name, trial=trial, config=self._sampling_config["Loss"]),
+                         "Training": self._suggest_training_hpcs(trial=trial, name=name, hpd_config=self._sampling_config)}
+
+        # Domain discriminator
+        if self._experiments_config["enable_domain_discriminator"]:
+            raise NotImplementedError(
+                "Hyperparameter sampling with domain discriminator has not been implemented yet...")
+        else:
+            # todo: not a fan of having to specify training method, especially now that the name is somewhat misleading
+            suggested_hps["Training"]["method"] = "downstream_training"
+            suggested_hps["DomainDiscriminator"] = None
+
+        return suggested_hps
 
     def _suggest_shared_hyperparameters(self, trial, name, in_freq_band):
         preprocessing_config_path = _get_preprocessing_config_path(
             ocular_state=self._experiments_config["in_ocular_state"]
         )
         suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
-                                                             preprocessed_config_path=preprocessing_config_path)
+                                                             preprocessed_config_path=preprocessing_config_path,
+                                                             skip_loss=True, skip_training=True)
+
+        # Need to remove some HPCs because they are not shared
+        del suggested_hps["DomainDiscriminator"]
         return suggested_hps
 
     # --------------
@@ -1190,12 +1211,33 @@ class SimpleElecsslHPO(HPOExperiment):
         in_ocular_state = self._experiments_config["in_ocular_state"]
         preprocessing_config_path = _get_preprocessing_config_path(ocular_state=in_ocular_state)
 
+        # -------------
+        # Pick the datasets to be used for pre-training
+        # -------------
+        # The pre-training excluded
+        datasets_to_use = dict()
+        if "left_out_dataset" in self._experiments_config["SubjectSplit"]["kwargs"]:
+            pretrain_excluded = self._experiments_config["SubjectSplit"]["kwargs"]["left_out_dataset"]
+            datasets_to_use[pretrain_excluded] = self._experiments_config["Datasets"][pretrain_excluded]
+        else:
+            pretrain_excluded = "NO_DATASET"  # convenient that the variable still exists
+
+        # The datasets for pretraining
+        datasets_for_pretraining = tuple(dataset for dataset in self._experiments_config["Datasets"]
+                                         if dataset != pretrain_excluded)
+        possible_pretrain_combinations = _generate_dataset_combinations(datasets_for_pretraining)
+        pretrain_combinations = trial.suggest_categorical("datasets", choices=possible_pretrain_combinations)
+
+        for dataset_name in _datasets_str_to_tuple(pretrain_combinations):
+            datasets_to_use[dataset_name] = self._experiments_config["Datasets"][dataset_name]
+
         # All other HPs
         suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
-                                                             preprocessed_config_path=preprocessing_config_path)
+                                                             preprocessed_config_path=preprocessing_config_path,
+                                                             skip_training=False, skip_loss=False)
         suggested_hps["MLModel"] = self._sampling_config["MLModel"]
 
-        return in_freq_band, out_freq_band, preprocessing_config_path, suggested_hps
+        return in_freq_band, out_freq_band, preprocessing_config_path, suggested_hps, datasets_to_use
 
     def _create_objective(self) -> Callable[[optuna.Trial], float]:
 
@@ -1207,9 +1249,10 @@ class SimpleElecsslHPO(HPOExperiment):
             # ---------------
             # Suggest / sample hyperparameters
             # ---------------
-            experiment_name = "pretext"
+            experiment_name = None
             (in_freq_band, out_freq_band, preprocessing_config_path,
-             suggested_hyperparameters) = self.suggest_hyperparameters(name=experiment_name, trial=trial)
+             suggested_hyperparameters, datasets_to_use) = self.suggest_hyperparameters(name=experiment_name,
+                                                                                        trial=trial)
 
             # ---------------
             # Just a bit of preparation...
@@ -1224,6 +1267,14 @@ class SimpleElecsslHPO(HPOExperiment):
             if experiment_config_file["Training"]["log_transform_targets"] is not None:
                 pseudo_target = f"{experiment_config_file['Training']['log_transform_targets']}_{pseudo_target}"
             experiment_config_file["Training"]["target"] = pseudo_target
+
+            # Add the selected datasets to pretext task (including subgroups for performance tracking). The ones in the
+            # experiments config file are only the available ones, not the ones we will always use
+            experiment_config_file["Datasets"] = dict()
+            for dataset_name, dataset_info in datasets_to_use.items():
+                experiment_config_file["Datasets"][dataset_name] = dataset_info
+            experiment_config_file["SubGroups"]["sub_groups"]["dataset_name"] = tuple(
+                dataset_name for dataset_name in datasets_to_use)
 
             # ---------------
             # Run pretext task
@@ -1309,16 +1360,38 @@ class SimpleElecsslHPO(HPOExperiment):
             if trial.state != optuna.trial.TrialState.COMPLETE:
                 raise RuntimeError(f"Expected pretrained trial to be complete, but received {trial.state} "
                                    f"({trial_path})")
-            reused_trials.append(optuna.trial.create_trial(  # todo: checking 'pretext' is insufficient atm
+            hpcs, distributions = self._get_pretrain_hpcs_and_distributions(pretrain_trial=trial)
+            reused_trials.append(optuna.trial.create_trial(
                 state=trial.state, system_attrs=dict(), intermediate_values=dict(), value=score,
-                params={name: value for name, value in trial.params.items() if name.startswith("pretext")},
-                distributions={name: value for name, value in trial.distributions.items()
-                               if name.startswith("pretext")},
-                user_attrs={"Pretraining re-used": trial.number}
+                params=hpcs, distributions=distributions, user_attrs={"Pretraining re-used": trial.number}
             ))
 
         # Add the trials
         study.add_trials(reused_trials)
+
+    @staticmethod
+    def _get_pretrain_hpcs_and_distributions(pretrain_trial):
+        """Method for extracting the HPCs and HPDs of a trial run in PretrainHPO, such that the trial can be re-used for
+        SimpleElecssl"""
+        # -------------
+        # HPCs
+        # -------------
+        # Get the non-downstream HPCs. Also, remove 'pretext_' prefix
+        hpcs = remove_prefix_from_keys(
+            {name: value for name, value in pretrain_trial.params.items() if not name.startswith("downstream")},
+            prefix="pretext_"
+        )
+
+        # -------------
+        # HPDs
+        # -------------
+        # Get the non-downstream HPDs. Also, remove 'pretext_' prefix
+        distributions = remove_prefix_from_keys(
+            {name: value for name, value in pretrain_trial.distributions.items() if not name.startswith("downstream")},
+            prefix="pretext_"
+        )
+
+        return hpcs, distributions
 
     # --------------
     # Methods for assisting re-usage of runs
@@ -1482,7 +1555,8 @@ class MultivariableElecsslHPO(HPOExperiment):
 
     def suggest_hyperparameters(self, trial, name, in_freq_band, preprocessing_config_path):
         suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
-                                                             preprocessed_config_path=preprocessing_config_path)
+                                                             preprocessed_config_path=preprocessing_config_path,
+                                                             skip_training=False, skip_loss=False)
         suggested_hps["MLModel"] = self._sampling_config["MLModel"]
         return suggested_hps
 
@@ -1657,12 +1731,12 @@ class MultivariableElecsslHPO(HPOExperiment):
             biomarkers_dfs.append(pandas.read_csv(folder_path / "ssl_biomarkers.csv"))
 
             # Add the HPCs, HPDs, and which SimpleElecssl trial it was taken from
-            hyperparameters.update({f"{feature_name}_{hp_name}": hp_value for hp_name, hp_value in trial.params.items()
-                                    if hp_name.startswith("pretext")})
-            hp_distributions.update({f"{feature_name}_{hp_name}": hp_value
-                                     for hp_name, hp_value in trial.distributions.items()
-                                     if hp_name.startswith("pretext")})
-            user_attrs[feature_name] = {"Simple elecssl re-used": trial.number}
+            hpcs, distributions = self._get_simple_elecssl_hpcs_and_distributions(trial)
+
+            hyperparameters.update({f"{feature_name}_{hp_name}": hp_value for hp_name, hp_value in hpcs.items()})
+            hp_distributions.update({f"{feature_name}_{hp_name}": hp_dist
+                                     for hp_name, hp_dist in distributions.items()})
+            user_attrs[f"Simple elecssl re-used ({feature_name})"] = trial.number
 
         # Merge to single df
         df = _merge_ssl_biomarkers_dataframes(biomarkers_dfs)
@@ -1690,6 +1764,14 @@ class MultivariableElecsslHPO(HPOExperiment):
             user_attrs=user_attrs, system_attrs=dict(), intermediate_values=dict(), value=score
         )
         study.add_trial(reused_trial)
+
+    @staticmethod
+    def _get_simple_elecssl_hpcs_and_distributions(simple_elecssl_trial):
+        """Method for extracting the HPCs and HPDs of a trial run in SimpleElecssl, such that the trial can be re-used
+        for MultivariableElecssl"""
+        hpcs = {name: value for name, value in simple_elecssl_trial.params.items()}
+        distributions = {name: value for name, value in simple_elecssl_trial.distributions.items()}
+        return hpcs, distributions
 
     # --------------
     # Methods for analysis
@@ -1879,7 +1961,7 @@ class AllHPOExperiments:
         ml_features = self.run_ml_features()
 
         # Prediction models
-        prediction_models = self.run_prediction_models_hpo()
+        # prediction_models = self.run_prediction_models_hpo()
 
         # Pretraining
         pretrain = self.run_pretraining_hpo()
@@ -1893,7 +1975,7 @@ class AllHPOExperiments:
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((ml_features, prediction_models, pretrain, simple_elecssl,
+        self.verify_test_set_integrity((ml_features, pretrain, simple_elecssl,
                                         multivariable_elecssl))
 
         # --------------
@@ -2050,6 +2132,68 @@ class DissimilarTestSetsError(Exception):
 # --------------
 # Functions
 # --------------
+def _generate_dataset_combinations(datasets):
+    """
+    Generate all possible combinations of datasets as tuples of strings.
+
+    Parameters
+    ----------
+    datasets : tuple of str
+        A tuple of dataset names (e.g., ('D1', 'D2', 'D3')).
+
+    Returns
+    -------
+    list of tuple of str
+        A list of tuples, where each tuple contains a combination of datasets as strings
+        (e.g., ('D1',), ('D1', 'D2'), ('D1+D2',)).
+
+    Examples
+    --------
+    >>> _generate_dataset_combinations(('D1', 'D2'))
+    ('D1', 'D2', 'D1+D2')
+    >>> _generate_dataset_combinations(('D1', 'D2', 'D3'))
+    ('D1', 'D2', 'D3', 'D1+D2', 'D1+D3', 'D2+D3', 'D1+D2+D3')
+    """
+    combinations = []
+
+    # Generate combinations for each non-empty subset of datasets
+    for r in range(1, len(datasets) + 1):
+        for combo in itertools.combinations(datasets, r):
+            # Join dataset names together to form combinations like ('D1+D2')
+            combo_str = '+'.join(combo)
+            combinations.append(combo_str)
+
+    return tuple(combinations)
+
+
+def _datasets_str_to_tuple(datasets) -> Tuple[str, ...]:
+    """
+    Convert from dataset names which are merged by '+' to a tuple of strings
+
+    Parameters
+    ----------
+    datasets : str
+
+    Returns
+    -------
+    tuple[str, ...]
+
+    Examples
+    --------
+    >>> _datasets_str_to_tuple("D1")
+    ('D1',)
+    >>> _datasets_str_to_tuple("D1+D3")
+    ('D1', 'D3')
+    >>> _datasets_str_to_tuple("D1+D4+D8+D10")
+    ('D1', 'D4', 'D8', 'D10')
+    >>> _datasets_str_to_tuple("D2")
+    ('D2',)
+    >>> _datasets_str_to_tuple("D3+D3+D3")
+    ('D3', 'D3', 'D3')
+    """
+    return tuple(datasets.split("+"))
+
+
 def verify_equal_test_sets(hpo_runs: Tuple[HPORun, ...]):
     # Get all test sets
     test_sets: List[Set[Subject]] = []
