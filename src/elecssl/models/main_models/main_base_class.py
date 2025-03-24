@@ -20,6 +20,10 @@ class MainModuleBase(nn.Module, abc.ABC):
     def train_model(self, *args, **kwargs) -> Tuple[Histories, ...]:
         """Method for training the model"""
 
+    @abc.abstractmethod
+    def test_model(self, **kwargs) -> Histories:
+        """Method for testing the model"""
+
     # ------------
     # Model saving and loading
     # ------------
