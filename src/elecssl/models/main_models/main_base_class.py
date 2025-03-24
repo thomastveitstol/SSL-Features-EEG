@@ -21,7 +21,7 @@ class MainModuleBase(nn.Module, abc.ABC):
         """Method for training the model"""
 
     @abc.abstractmethod
-    def test_model(self, **kwargs) -> Histories:
+    def test_model(self, *args, **kwargs) -> Histories:
         """Method for testing the model"""
 
     # ------------
