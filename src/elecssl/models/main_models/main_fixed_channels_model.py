@@ -650,7 +650,7 @@ class MainFixedChannelsModel(MainModuleBase):
         return train_history, val_history, test_history, dd_train_history, dd_val_history
 
     def test_model(self, *, data_loader, metrics, device, prediction_activation_function, verbose=True,
-                   target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables, variable_metrics):
+                   target_scaler, sub_group_splits, sub_groups_verbose, verbose_variables, variable_metrics):
         # Defining histories objects
         history = Histories(metrics=metrics, name="test", splits=sub_group_splits, variable_metrics=variable_metrics,
                             expected_variables=data_loader.dataset.expected_variables)
