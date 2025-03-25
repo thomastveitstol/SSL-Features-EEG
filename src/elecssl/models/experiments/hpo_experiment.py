@@ -1984,6 +1984,11 @@ class AllHPOExperiments:
         # ---------------
         # Load configuration files
         # ---------------
+        # Input check
+        if config_path is None:
+            raise TypeError("Expected a path to config files, but received None. It can only be None if the object is "
+                            "initialised with 'is_continuation=True', but that was not case.")
+
         # Get loader
         loader = yaml.SafeLoader
         loader = add_yaml_constructors(loader)
