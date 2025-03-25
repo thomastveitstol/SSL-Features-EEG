@@ -1980,7 +1980,6 @@ class AllHPOExperiments:
                 results_path=self._results_path, config_file_name="defaults_config.yml")
             return
 
-
         # ---------------
         # Load configuration files
         # ---------------

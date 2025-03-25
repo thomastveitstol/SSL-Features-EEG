@@ -35,7 +35,7 @@ def _modify_eigenvalues(X: Tensor, function, raise_upon_error=optuna.TrialPruned
     except _LinAlgError:
         if isinstance(raise_upon_error, Exception):
             raise raise_upon_error
-        raise raise_upon_error(f"_LinAlgError was raised when computing eigenvalues")
+        raise raise_upon_error("_LinAlgError was raised when computing eigenvalues")
 
     D_out = function(D)
     X_out = Q @ torch.diag_embed(D_out) @ torch.transpose(Q, -2, -1)
