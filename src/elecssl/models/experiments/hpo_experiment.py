@@ -2077,7 +2077,7 @@ class AllHPOExperiments:
         ml_features = self.run_ml_features()
 
         # Prediction models
-        prediction_models = self.run_prediction_models_hpo()
+        # prediction_models = self.run_prediction_models_hpo()
 
         # Pretraining
         pretrain = self.run_pretraining_hpo()
@@ -2091,7 +2091,7 @@ class AllHPOExperiments:
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((ml_features, prediction_models, pretrain, simple_elecssl,
+        self.verify_test_set_integrity((ml_features, pretrain, simple_elecssl,
                                         multivariable_elecssl))
 
         # --------------
