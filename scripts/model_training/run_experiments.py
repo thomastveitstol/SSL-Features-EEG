@@ -14,7 +14,7 @@ def main():
     config_path = Path(os.path.dirname(__file__)) / "config_files"
 
     # Run experiments
-    with AllHPOExperiments(results_dir=results_dir, config_path=config_path) as experiments:
+    with AllHPOExperiments(results_dir=results_dir, config_path=config_path, is_continuation=False) as experiments:
         experiments.run_experiments()
 
 

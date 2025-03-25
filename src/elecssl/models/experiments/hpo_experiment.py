@@ -1956,6 +1956,7 @@ class AllHPOExperiments:
             if not os.path.isdir(results_dir):
                 raise ExperimentNotFoundError(f"The provided results path {results_dir} does not exist. Can therefore "
                                               f"not load the experiment object")
+            self._results_path = results_dir
 
             # When continuing studies, the preferred way is to use configurations that are already in the HPO
             # experiment  subfolders. However, we will still load it in case a new study needs to be initiated (say,
@@ -1977,9 +1978,6 @@ class AllHPOExperiments:
             # Defaults
             self._defaults_config = self._load_yaml_file(
                 results_path=self._results_path, config_file_name="defaults_config.yml")
-
-            # Set path
-            self._results_path = results_dir
             return
 
 
@@ -2091,6 +2089,8 @@ class AllHPOExperiments:
 
         # Pretraining
         pretrain = self.run_pretraining_hpo()
+
+        assert False
 
         # Simple Elecssl
         simple_elecssl = self.run_simple_elecssl_hpo(pretrain)
