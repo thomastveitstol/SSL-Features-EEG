@@ -82,10 +82,10 @@ class MainExperiment(abc.ABC):
         os.mkdir(self._results_path)
 
         # Save the config files
-        with open(self._results_path / "experiments_config.yml", "w") as file:
-            yaml.safe_dump(experiments_config, file, sort_keys=False)
-        with open(self._results_path / "hpd_config.yml", "w") as file:
-            yaml.safe_dump(hp_config, file, sort_keys=False)
+        _save_yaml_file(results_path=self._results_path, config_file_name="experiments_config.yml",
+                        config=self._experiments_config, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="hpd_config.yml",
+                        config=self._sampling_config, make_read_only=True)
 
     # -------------
     # Dunder methods for context manager (using the 'with' statement). See this video from mCoding for more information
@@ -955,16 +955,16 @@ class PretrainHPO(HPOExperiment):
         # Save the config files
         # ---------------
         # Downstream config files
-        with open(self._results_path / "downstream_experiments_config.yml", "w") as file:
-            yaml.safe_dump(self._downstream_experiments_config, file, sort_keys=False)
-        with open(self._results_path / "downstream_hpd_config.yml", "w") as file:
-            yaml.safe_dump(self._downstream_sampling_config, file, sort_keys=False)
+        _save_yaml_file(results_path=self._results_path, config_file_name="downstream_experiments_config.yml",
+                        config=self._downstream_experiments_config, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="downstream_hpd_config.yml",
+                        config=self._downstream_sampling_config, make_read_only=True)
 
         # Pretext config files
-        with open(self._results_path / "pretext_experiments_config.yml", "w") as file:
-            yaml.safe_dump(self._pretext_experiments_config, file, sort_keys=False)
-        with open(self._results_path / "pretext_hpd_config.yml", "w") as file:
-            yaml.safe_dump(self._pretext_sampling_config, file, sort_keys=False)
+        _save_yaml_file(results_path=self._results_path, config_file_name="pretext_experiments_config.yml",
+                        config=self._pretext_experiments_config, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="pretext_hpd_config.yml",
+                        config=self._pretext_sampling_config, make_read_only=True)
 
     def _create_objective(self):
         def _objective(trial: optuna.Trial):
@@ -2035,38 +2035,26 @@ class AllHPOExperiments:
         # (and scientific reproducibility :))
         # ---------------
         # Experiments config files
-        self._save_yaml_file(results_path=self._results_path, config_file_name="downstream_experiments_config.yml",
-                             config=self._downstream_experiments_config, make_read_only=True)
-        self._save_yaml_file(results_path=self._results_path, config_file_name="pretext_experiments_config.yml",
-                             config=self._pretext_experiments_config, make_read_only=True)
-        self._save_yaml_file(results_path=self._results_path, config_file_name="specific_experiments_config.yml",
-                             config=self._specific_experiments_config, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="downstream_experiments_config.yml",
+                        config=self._downstream_experiments_config, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="pretext_experiments_config.yml",
+                        config=self._pretext_experiments_config, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="specific_experiments_config.yml",
+                        config=self._specific_experiments_config, make_read_only=True)
 
         # HP distributions
-        self._save_yaml_file(results_path=self._results_path, config_file_name="shared_hpds.yml",
-                             config=self._shared_hpds, make_read_only=True)
-        self._save_yaml_file(results_path=self._results_path, config_file_name="specific_hpds.yml",
-                             config=self._specific_hpds, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="shared_hpds.yml",
+                        config=self._shared_hpds, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="specific_hpds.yml",
+                        config=self._specific_hpds, make_read_only=True)
 
         # Defaults
-        self._save_yaml_file(results_path=self._results_path, config_file_name="defaults_config.yml",
-                             config=self._defaults_config, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="defaults_config.yml",
+                        config=self._defaults_config, make_read_only=True)
 
     # --------------
-    # Saving and loading of study .yml files
+    # Loading of study .yml files
     # --------------
-    @staticmethod
-    def _save_yaml_file(*, results_path: Path, config_file_name: str, config: Dict[str, Any], make_read_only: bool):
-        """Method for saving a config file"""
-        # Save the config file
-        file_path = (results_path / config_file_name).with_suffix(".yml")
-        with open(file_path, "w") as file:
-            yaml.safe_dump(config, file, sort_keys=False)
-
-        # (Maybe) make it read only
-        if make_read_only:
-            os.chmod(file_path, 0o444)
-
     @staticmethod
     def _load_yaml_file(*, results_path: Path, config_file_name: str):
         """Method for loading a config file"""
@@ -2089,8 +2077,6 @@ class AllHPOExperiments:
 
         # Pretraining
         pretrain = self.run_pretraining_hpo()
-
-        assert False
 
         # Simple Elecssl
         simple_elecssl = self.run_simple_elecssl_hpo(pretrain)
@@ -2305,6 +2291,18 @@ class ExperimentNotFoundError(Exception):
 # --------------
 # Functions
 # --------------
+def _save_yaml_file(*, results_path: Path, config_file_name: str, config: Dict[str, Any], make_read_only: bool):
+    """Method for saving a config file"""
+    # Save the config file
+    file_path = (results_path / config_file_name).with_suffix(".yml")
+    with open(file_path, "w") as file:
+        yaml.safe_dump(config, file, sort_keys=False)
+
+    # (Maybe) make it read only
+    if make_read_only:
+        os.chmod(file_path, 0o444)
+
+
 def _generate_dataset_combinations(datasets):
     """
     Generate all possible combinations of datasets as tuples of strings.
