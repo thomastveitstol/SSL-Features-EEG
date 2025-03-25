@@ -21,7 +21,7 @@ def _modify_eigenvalues(X: Tensor, function, raise_upon_error=optuna.TrialPruned
         Covariances matrices considered. Shape N x F x C x C
     function : _type_
         Function to apply to the eigenvalues
-    raise_upon_error : Exception
+    raise_upon_error : Exception | Type[Exception]
         Which error to raise if getting _LinAlgError when computing eigenvalues. Added by TT
 
     Returns
@@ -33,7 +33,9 @@ def _modify_eigenvalues(X: Tensor, function, raise_upon_error=optuna.TrialPruned
         # Added by TT
         D, Q = torch.linalg.eigh(X)
     except _LinAlgError:
-        raise raise_upon_error
+        if isinstance(raise_upon_error, Exception):
+            raise raise_upon_error
+        raise raise_upon_error(f"_LinAlgError was raised when computing eigenvalues")
 
     D_out = function(D)
     X_out = Q @ torch.diag_embed(D_out) @ torch.transpose(Q, -2, -1)
