@@ -56,18 +56,19 @@ class MainExperiment(abc.ABC):
         # Set attributes
         # ---------------
         if is_continuation:
+            self._results_path = results_dir / self._name
+
             # Input check
-            self.verify_results_dir_exists(results_dir)
+            self.verify_results_dir_exists(self._results_path)
 
             # Load the configurations files
-            with open(results_dir / "experiments_config.yml") as file:
+            with open(self._results_path / "experiments_config.yml") as file:
                 experiments_config = yaml.safe_load(file)
-            with open(results_dir / "hpd_config.yml") as file:
+            with open(self._results_path / "hpd_config.yml") as file:
                 sampling_config = yaml.safe_load(file)
 
             self._experiments_config: Dict[str, Any] = experiments_config
             self._sampling_config: Dict[str, Any] = sampling_config
-            self._results_path = results_dir
             return
 
         self._experiments_config = experiments_config
@@ -168,13 +169,27 @@ class MainExperiment(abc.ABC):
     def verify_results_dir_exists(cls, results_dir):
         """This should be used to verify if a results dir exists. Should only be used when it is supposed to exist"""
         if not os.path.isdir(results_dir):
-            raise FileNotFoundError(f"The results path {results_dir} of the attempted continued study does not "
-                                    f"exist. This is likely due to (1) the path was incorrect, or (2) the HPO "
-                                    f"experiment ({cls}) should not have been initialised as a continuation")
+            raise ExperimentNotFoundError(f"The results path {results_dir} of the attempted continued study does not "
+                                          f"exist. This is likely due to (1) the path was incorrect, or (2) the HPO "
+                                          f"experiment ({cls}) should not have been initialised as a continuation")
+
+    @classmethod
+    def is_existing_dir(cls, results_dir):
+        """Check if the experiment directory exists is the provided directory"""
+        try:
+            cls.verify_results_dir_exists(results_dir / cls.get_name())
+            return True
+        except ExperimentNotFoundError:
+            return False
 
     # --------------
     # Properties
     # --------------
+    # Not a property, but pretty close (chaining classmethod and property was removed in Python3.13)
+    @classmethod
+    def get_name(cls):
+        return cls._name
+
     @property
     def results_path(self):
         return self._results_path
@@ -909,24 +924,20 @@ class PretrainHPO(HPOExperiment):
         # Set attributes
         # ---------------
         if is_continuation:
-            # Input check
-            self.verify_results_dir_exists(results_dir)
-
             # Load the configurations files
-            with open(results_dir / "downstream_experiments_config.yml") as file:
+            with open(self._results_path / "downstream_experiments_config.yml") as file:
                 loaded_downstream_experiments_config = yaml.safe_load(file)
-            with open(results_dir / "downstream_hpd_config.yml") as file:
+            with open(self._results_path / "downstream_hpd_config.yml") as file:
                 loaded_downstream_sampling_config = yaml.safe_load(file)
-            with open(results_dir / "pretext_experiments_config.yml") as file:
+            with open(self._results_path / "pretext_experiments_config.yml") as file:
                 loaded_pretext_experiments_config = yaml.safe_load(file)
-            with open(results_dir / "pretext_hpd_config.yml") as file:
+            with open(self._results_path / "pretext_hpd_config.yml") as file:
                 loaded_pretext_sampling_config = yaml.safe_load(file)
 
             self._downstream_experiments_config: Dict[str, Any] = loaded_downstream_experiments_config
             self._downstream_sampling_config: Dict[str, Any] = loaded_downstream_sampling_config
             self._pretext_experiments_config: Dict[str, Any] = loaded_pretext_experiments_config
             self._pretext_sampling_config: Dict[str, Any] = loaded_pretext_sampling_config
-            self._results_path = results_dir
             return
 
         # Type checks (and to make mypy stop complaining)
@@ -1939,7 +1950,39 @@ class AllHPOExperiments:
             traceback.print_tb(exc_tb, file=file)  # type: ignore[arg-type]
             file.write(f"{exc_type.__name__}: {exc_val}")
 
-    def __init__(self, *, results_dir: Path, config_path: Path):
+    def __init__(self, *, results_dir: Path, config_path: Optional[Path], is_continuation):
+        if is_continuation:
+            # Input check
+            if not os.path.isdir(results_dir):
+                raise ExperimentNotFoundError(f"The provided results path {results_dir} does not exist. Can therefore "
+                                              f"not load the experiment object")
+
+            # When continuing studies, the preferred way is to use configurations that are already in the HPO
+            # experiment  subfolders. However, we will still load it in case a new study needs to be initiated (say,
+            # e.g., that we ran out of time on TSD before an HPO run was even initiated)
+            # Experiments config files
+            self._downstream_experiments_config = self._load_yaml_file(
+                results_path=self._results_path, config_file_name="downstream_experiments_config.yml")
+            self._pretext_experiments_config = self._load_yaml_file(
+                results_path=self._results_path, config_file_name="pretext_experiments_config.yml")
+            self._specific_experiments_config = self._load_yaml_file(
+                results_path=self._results_path, config_file_name="specific_experiments_config.yml")
+
+            # HP distributions
+            self._shared_hpds = self._load_yaml_file(
+                results_path=self._results_path, config_file_name="shared_hpds.yml")
+            self._specific_hpds = self._load_yaml_file(
+                results_path=self._results_path, config_file_name="specific_hpds.yml")
+
+            # Defaults
+            self._defaults_config = self._load_yaml_file(
+                results_path=self._results_path, config_file_name="defaults_config.yml")
+
+            # Set path
+            self._results_path = results_dir
+            return
+
+
         # ---------------
         # Load configuration files
         # ---------------
@@ -1989,6 +2032,53 @@ class AllHPOExperiments:
         # Make directory
         os.mkdir(self._results_path)
 
+        # ---------------
+        # Store config files such that everything can be loaded later
+        # (and scientific reproducibility :))
+        # ---------------
+        # Experiments config files
+        self._save_yaml_file(results_path=self._results_path, config_file_name="downstream_experiments_config.yml",
+                             config=self._downstream_experiments_config, make_read_only=True)
+        self._save_yaml_file(results_path=self._results_path, config_file_name="pretext_experiments_config.yml",
+                             config=self._pretext_experiments_config, make_read_only=True)
+        self._save_yaml_file(results_path=self._results_path, config_file_name="specific_experiments_config.yml",
+                             config=self._specific_experiments_config, make_read_only=True)
+
+        # HP distributions
+        self._save_yaml_file(results_path=self._results_path, config_file_name="shared_hpds.yml",
+                             config=self._shared_hpds, make_read_only=True)
+        self._save_yaml_file(results_path=self._results_path, config_file_name="specific_hpds.yml",
+                             config=self._specific_hpds, make_read_only=True)
+
+        # Defaults
+        self._save_yaml_file(results_path=self._results_path, config_file_name="defaults_config.yml",
+                             config=self._defaults_config, make_read_only=True)
+
+    # --------------
+    # Saving and loading of study .yml files
+    # --------------
+    @staticmethod
+    def _save_yaml_file(*, results_path: Path, config_file_name: str, config: Dict[str, Any], make_read_only: bool):
+        """Method for saving a config file"""
+        # Save the config file
+        file_path = (results_path / config_file_name).with_suffix(".yml")
+        with open(file_path, "w") as file:
+            yaml.safe_dump(config, file, sort_keys=False)
+
+        # (Maybe) make it read only
+        if make_read_only:
+            os.chmod(file_path, 0o444)
+
+    @staticmethod
+    def _load_yaml_file(*, results_path: Path, config_file_name: str):
+        """Method for loading a config file"""
+        with open((results_path / config_file_name).with_suffix(".yml")) as file:
+            config = yaml.safe_load(file)
+        return config
+
+    # --------------
+    # Main HPO experiments
+    # --------------
     def run_experiments(self):
         # --------------
         # HPO experiments
@@ -2110,6 +2200,49 @@ class AllHPOExperiments:
         return experiment
 
     # --------------
+    # Methods for continuing studies
+    # (Particularly) convenient is something goes wrong on TSD
+    # --------------
+    @classmethod
+    def load_previous(cls, path: Path):
+        """Method for loading a previous study"""
+        return cls(results_dir=path, config_path=None, is_continuation=True)
+
+    def continue_prediction_models_hpo(self, num_trials: Optional[int]):
+        experiment_class = PredictionModelsHPO
+        if experiment_class.is_existing_dir(self._results_path):
+            with experiment_class.load_previous(self._results_path) as experiment:
+                experiment.continue_hyperparameter_optimisation(num_trials)
+        else:
+            self.run_prediction_models_hpo()
+
+    def continue_pretraining_hpo(self, num_trials: Optional[int]):
+        experiment_class = PretrainHPO
+        if experiment_class.is_existing_dir(self._results_path):
+            with experiment_class.load_previous(self._results_path) as experiment:
+                experiment.continue_hyperparameter_optimisation(num_trials)
+        else:
+            self.run_pretraining_hpo()
+
+    def continue_simple_elecssl_hpo(self, num_trials: Optional[int]):
+        experiment_class = SimpleElecsslHPO
+        if experiment_class.is_existing_dir(self._results_path):
+            with experiment_class.load_previous(self._results_path) as experiment:
+                experiment.continue_hyperparameter_optimisation(num_trials)
+        else:
+            # We restrict this method to only allowing SimpleElecsslHPO to be used AFTER a PretrainHPO has been executed
+            self.run_simple_elecssl_hpo(pretrain_experiment=PretrainHPO.load_previous(path=self._results_path))
+
+    def continue_multivariable_elecssl_hpo(self, num_trials: Optional[int]):
+        if MultivariableElecsslHPO.is_existing_dir(self._results_path):
+            with MultivariableElecsslHPO.load_previous(self._results_path) as experiment:
+                experiment.continue_hyperparameter_optimisation(num_trials)
+        else:
+            # We restrict this method to only allowing SimpleElecsslHPO to be used AFTER a PretrainHPO has been executed
+            self.run_multivariable_elecssl_hpo(
+                simple_elecssl_experiment=SimpleElecsslHPO.load_previous(path=self._results_path))
+
+    # --------------
     # Test set integrity
     # --------------
     @staticmethod
@@ -2163,6 +2296,10 @@ class NonExclusiveTestSetError(Exception):
 
 class DissimilarTestSetsError(Exception):
     """This error should be raised if the test set across different experiments are not the same"""
+
+
+class ExperimentNotFoundError(Exception):
+    """This error should be raised if an experiment was attempted loaded, but it wasn't found at the expected path"""
 
 
 # --------------
