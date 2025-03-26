@@ -7,7 +7,7 @@ import pandas
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, ChannelSystem
 from elecssl.data.datasets.getter import get_dataset, get_channel_system
 from elecssl.data.interpolate_datasets import interpolate_datasets
-from elecssl.data.subject_split import Subject, subjects_tuple_to_dict
+from elecssl.data.subject_split import Subject
 
 
 # -----------------
