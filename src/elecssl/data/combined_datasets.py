@@ -16,10 +16,10 @@ from elecssl.data.subject_split import Subject
 @dataclasses.dataclass(frozen=True)
 class LoadDetails:
     subject_ids: Tuple[str, ...]
-    time_series_start: Optional[int] = None
-    num_time_steps: Optional[int] = None
-    channels: Optional[Tuple[str, ...]] = None
-    pre_processed_version: Optional[str] = None
+    time_series_start: Optional[int]
+    num_time_steps: Optional[int]
+    channels: Optional[Tuple[str, ...]]
+    pre_processed_version: Optional[str]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -70,8 +70,8 @@ class CombinedDatasets:
                     subject_ids=self._subject_ids[details.dataset.name],
                     pre_processed_version=details.details.pre_processed_version,
                     time_series_start=details.details.time_series_start, num_time_steps=details.details.num_time_steps,
-                    channels=details.details.channels,required_target=required_target)
-                          for details in datasets_details
+                    channels=details.details.channels, required_target=required_target)
+                for details in datasets_details
             }
         else:
             # Load non-interpolated data
@@ -166,7 +166,8 @@ class CombinedDatasets:
             load_details = LoadDetails(
                 subject_ids=dataset_subjects, time_series_start=dataset_kwargs["time_series_start"],
                 num_time_steps=dataset_kwargs["num_time_steps"],
-                pre_processed_version=dataset_kwargs["pre_processed_version"]
+                pre_processed_version=dataset_kwargs["pre_processed_version"],
+                channels=dataset_kwargs["channels"]
             )
             datasets_details.append(DatasetDetails(dataset=dataset, details=load_details))
 
@@ -364,8 +365,12 @@ def _extract_subject_ids(datasets_details: Tuple[DatasetDetails, ...]):
     --------
     >>> from elecssl.data.datasets.dortmund_vital import DortmundVital
     >>> from elecssl.data.datasets.lemon import LEMON
-    >>> d1 = DatasetDetails(dataset=LEMON(), details=LoadDetails(subject_ids=("sub-1", "sub-2", "sub-3")))
-    >>> d2 = DatasetDetails(dataset=DortmundVital(), details=LoadDetails(subject_ids=("sub-512", "sub-56", "sub-1")))
+    >>> ld_1 = LoadDetails(subject_ids=("sub-1", "sub-2", "sub-3"), time_series_start=None, num_time_steps=None,
+    ...                    channels=None, pre_processed_version=None)
+    >>> ld_2 = LoadDetails(subject_ids=("sub-512", "sub-56", "sub-1"), time_series_start=None, num_time_steps=None,
+    ...                    channels=None, pre_processed_version=None)
+    >>> d1 = DatasetDetails(dataset=LEMON(), details=ld_1)
+    >>> d2 = DatasetDetails(dataset=DortmundVital(), details=ld_2)
     >>> _extract_subject_ids(datasets_details=(d1, d2))  # doctest: +NORMALIZE_WHITESPACE
     {'LEMON': {'sub-1': 0, 'sub-2': 1, 'sub-3': 2},
      'DortmundVital': {'sub-512': 0, 'sub-56': 1, 'sub-1': 2}}
