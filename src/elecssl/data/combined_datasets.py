@@ -1,13 +1,13 @@
 import dataclasses
-import itertools
 from typing import Dict, List, Optional, Tuple, Union, Any
 
 import numpy
+import pandas
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, ChannelSystem
 from elecssl.data.datasets.getter import get_dataset, get_channel_system
 from elecssl.data.interpolate_datasets import interpolate_datasets
-from elecssl.data.subject_split import Subject
+from elecssl.data.subject_split import Subject, subjects_tuple_to_dict
 
 
 # -----------------
@@ -23,7 +23,7 @@ class LoadDetails:
 
 
 @dataclasses.dataclass(frozen=True)
-class DatasetDetails(frozen=True):
+class DatasetDetails:
     dataset: EEGDatasetBase
     details: LoadDetails
 
@@ -39,17 +39,14 @@ class CombinedDatasets:
 
     __slots__ = "_subject_ids", "_data", "_targets", "_datasets", "_subjects_info", "_variable_availability"
 
-    def __init__(self, datasets, variables, load_details, target, interpolation_method,
+    def __init__(self, datasets_details: Tuple[DatasetDetails, ...], variables, target, interpolation_method,
                  main_channel_system, sampling_freq, required_target):
         """
         Initialise
 
-        todo: add tests
-
         Parameters
         ----------
-        datasets : tuple[EEGDatasetBase, ...]
-        load_details : tuple[LoadDetails, ...], optional
+        datasets_details : tuple[DatasetDetails, ...]
         target: str, optional
             Targets to load. If None, no targets are loaded
         interpolation_method : str, optional
@@ -59,66 +56,36 @@ class CombinedDatasets:
             Sampling frequency which is needed for interpolation. Ignored if interpolation_method is None
         required_target : str, optional
         """
-        # If no loading details are provided, use default
-        load_details = tuple(LoadDetails(dataset.get_subject_ids()) for dataset in datasets) \
-            if load_details is None else load_details
-
-        # --------------
-        # Input check
-        # --------------
-        if len(datasets) != len(load_details):
-            raise ValueError(f"Expected number of datasets to be the same as the number of loading details, but found "
-                             f"{len(datasets)} and {len(load_details)}")
-        # --------------
-        # Store attributes
-        # --------------
         # Store subject IDs. Organised as {dataset_name: {subject_name: row-number in data matrix}}
-        subject_ids: Dict[str, Dict[str, int]] = dict()
-        new_details: List[LoadDetails] = []
-        for dataset, details in zip(datasets, load_details):
-            _accepted_subject_ids: List[str] = []
-            _subjects = details.subject_ids
-            if required_target is None:
-                _targets = itertools.cycle((1,))  # This avoids not accepting a subject
-            else:
-                _targets = dataset.load_targets(target=required_target, subject_ids=_subjects)
-            for sub_id, _target in zip(_subjects, _targets):
-                if not numpy.isnan(_target):
-                    _accepted_subject_ids.append(sub_id)
-                else:
-                    print(f"Excluded {sub_id}")
-            subject_ids[dataset.name] = {sub_id: i for i, sub_id in enumerate(_accepted_subject_ids)}
+        self._subject_ids = _extract_subject_ids(datasets_details=datasets_details)
 
-            new_details.append(LoadDetails(subject_ids=tuple(_accepted_subject_ids),
-                                           time_series_start=details.time_series_start,
-                                           num_time_steps=details.num_time_steps,
-                                           channels=details.channels,
-                                           pre_processed_version=details.pre_processed_version))
-
-        load_details = tuple(new_details)
-        self._subject_ids = subject_ids
-
-        # Load and store data  todo: can this be made faster be asyncio?
+        # --------------
+        # Load data
+        # --------------
+        # Load and store input data
         if interpolation_method is None:
-            self._data = {dataset.name: dataset.load_numpy_arrays(subject_ids=details.subject_ids,
-                                                                  pre_processed_version=details.pre_processed_version,
-                                                                  time_series_start=details.time_series_start,
-                                                                  num_time_steps=details.num_time_steps,
-                                                                  channels=details.channels,
-                                                                  required_target=required_target)
-                          for dataset, details in zip(datasets, load_details)}
+            self._data = {
+                details.dataset.name: details.dataset.load_numpy_arrays(
+                    subject_ids=self._subject_ids[details.dataset.name],
+                    pre_processed_version=details.details.pre_processed_version,
+                    time_series_start=details.details.time_series_start, num_time_steps=details.details.num_time_steps,
+                    channels=details.details.channels,required_target=required_target)
+                          for details in datasets_details
+            }
         else:
+            # Load non-interpolated data
             non_interpolated: Dict[str, Dict[str, Union[numpy.ndarray, ChannelSystem]]] = (  # type: ignore[type-arg]
                 dict())
-
-            for dataset, details in zip(datasets, load_details):
-                non_interpolated[dataset.name] = {
-                    "data": dataset.load_numpy_arrays(
-                        subject_ids=details.subject_ids, pre_processed_version=details.pre_processed_version,
-                        time_series_start=details.time_series_start, num_time_steps=details.num_time_steps,
-                        channels=details.channels, required_target=required_target
+            for details in datasets_details:
+                non_interpolated[details.dataset.name] = {
+                    "data": details.dataset.load_numpy_arrays(
+                        subject_ids=details.details.subject_ids,
+                        pre_processed_version=details.details.pre_processed_version,
+                        time_series_start=details.details.time_series_start,
+                        num_time_steps=details.details.num_time_steps,
+                        channels=details.details.channels, required_target=required_target
                     ),
-                    "channel_system": dataset.channel_system
+                    "channel_system": details.dataset.channel_system
                 }
 
             # Interpolate
@@ -131,30 +98,33 @@ class CombinedDatasets:
                 main_channel_system=target_channel_system
             )
 
+        # Load targets
         self._targets = None if target is None \
-            else {dataset.name: dataset.load_targets(subject_ids=details.subject_ids, target=target)
-                  for dataset, details in zip(datasets, load_details)}
+            else {details.dataset.name: details.dataset.load_targets(subject_ids=details.details.subject_ids,
+                                                                     target=target)
+                  for details in datasets_details}
 
         # Convenient for e.g. extracting channel systems
-        self._datasets: Tuple[EEGDatasetBase, ...] = datasets
+        self._datasets: Tuple[EEGDatasetBase, ...] = tuple(details.dataset for details in datasets_details)
 
         # --------------
         # Extract subject info to be used for e.g. correlations after pretext training
+        # This is currently unused, but I won't prioritise removing it
         # --------------
         subject_info: Dict[Subject, Dict[str, Any]] = {}
-        for dataset, details in zip(datasets, load_details):
-            dataset_subjects = details.subject_ids
+        for details in datasets_details:
+            dataset_subjects = details.details.subject_ids
 
             # Make empty subjects info. Convenient for consistency if no variables are passed
             for _subject_id in dataset_subjects:
-                subject_info[Subject(subject_id=_subject_id, dataset_name=dataset.name)] = {}
+                subject_info[Subject(subject_id=_subject_id, dataset_name=details.dataset.name)] = {}
 
             # Loop through the variables (if any)
-            for variable in variables[dataset.name]:
-                info_targets = dataset.load_targets(subject_ids=dataset_subjects, target=variable)
+            for variable in variables[details.dataset.name]:
+                info_targets = details.dataset.load_targets(subject_ids=dataset_subjects, target=variable)
 
-                for info_target, subject_id in zip(info_targets, dataset_subjects):
-                    subject = Subject(subject_id=subject_id, dataset_name=dataset.name)
+                for info_target, subject_id in zip(info_targets, dataset_subjects):  # type: ignore[type-arg]
+                    subject = Subject(subject_id=subject_id, dataset_name=details.dataset.name)
 
                     # i-th loaded target corresponds to the i-th subject
                     subject_info[subject][variable] = info_target
@@ -163,7 +133,8 @@ class CombinedDatasets:
         self._variable_availability = variables
 
     @classmethod
-    def from_config(cls, config, interpolation_config, variables, target, sampling_freq, required_target):
+    def from_config(cls, config, interpolation_config, variables, target, sampling_freq, required_target,
+                    all_subjects):
         """
         Method for initialising directly from a config file
 
@@ -175,53 +146,51 @@ class CombinedDatasets:
         target : str, optional
         sampling_freq : float
         required_target : str, optional
+        all_subjects : pandas.DataFrame
+            Must have the columns 'dataset' and 'sub_id'. All subjects are expected to be loaded without problems
 
         Returns
         -------
         """
         # Initialise lists and dictionaries
-        load_details: List[LoadDetails] = []
-        datasets: List[EEGDatasetBase] = []
-        subjects: Dict[str, Tuple[str, ...]] = dict()
-        channel_name_to_index: Dict[str, Dict[str, int]] = dict()
+        datasets_details: List[DatasetDetails] = []
 
         # Loop through all datasets and loading details to be used
-        for dataset_name, dataset_details in config.items():
+        for dataset_name, dataset_kwargs in config.items():
             # Get dataset
             dataset = get_dataset(dataset_name)
-            datasets.append(dataset)
-            dataset_subjects = dataset.get_subject_ids(
-                preprocessed_version=dataset_details["pre_processed_version"]
-            )[:dataset_details["num_subjects"]]  # TODO:if preprocessing discarded subjects this may not be reproducible
-            subjects[dataset_name] = dataset_subjects
-            channel_name_to_index[dataset_name] = dataset.channel_name_to_index()  # todo: why include this?
+            dataset_subjects = tuple(all_subjects[all_subjects["dataset"] == dataset_name]["sub_id"])
 
-            # Construct loading details
-            load_details.append(
-                LoadDetails(subject_ids=dataset_subjects, time_series_start=dataset_details["time_series_start"],
-                            num_time_steps=dataset_details["num_time_steps"],
-                            pre_processed_version=dataset_details["pre_processed_version"])
+            # Construct dataset details
+            load_details = LoadDetails(
+                subject_ids=dataset_subjects, time_series_start=dataset_kwargs["time_series_start"],
+                num_time_steps=dataset_kwargs["num_time_steps"],
+                pre_processed_version=dataset_kwargs["pre_processed_version"]
             )
+            datasets_details.append(DatasetDetails(dataset=dataset, details=load_details))
 
         # Extract details for interpolation
         interpolation_method = None if interpolation_config is None else interpolation_config["method"]
         main_channel_system = None if interpolation_method is None else interpolation_config["main_channel_system"]
 
         # Load all data and return object
-        return cls(datasets=tuple(datasets), load_details=tuple(load_details), target=target,
-                   interpolation_method=interpolation_method, main_channel_system=main_channel_system,
-                   sampling_freq=sampling_freq, required_target=required_target,
-                   variables=variables)
+        return cls(datasets_details=tuple(datasets_details), target=target, interpolation_method=interpolation_method,
+                   main_channel_system=main_channel_system, sampling_freq=sampling_freq,
+                   required_target=required_target, variables=variables)
 
-    def get_data(self, subjects):
+    # --------------
+    # Methods for getting data
+    # --------------
+    def get_data(self, subjects: Tuple[Subject, ...]):
         """
-        Method for getting data
+        Method for getting data. If modifying data after calling this method, the attribute 'self._data' will not be
+        changed
 
-        todo: add tests
+        (unittests in test folder)
 
         Parameters
         ----------
-        subjects : tuple[cdl_eeg.data.data_split.Subject, ...]
+        subjects : tuple[elecssl.data.subject_split.Subject, ...]
             Subjects to extract
 
         Returns
@@ -247,11 +216,12 @@ class CombinedDatasets:
         return {dataset_name: numpy.concatenate(numpy.expand_dims(data_matrix, axis=0), axis=0)
                 for dataset_name, data_matrix in data.items()}
 
-    def get_targets(self, subjects):
+    def get_targets(self, subjects: Tuple[Subject, ...]):
         """
-        Method for getting targets
+        Method for getting targets. If modifying data after calling this method, the attribute 'self._data' will not be
+        changed
 
-        todo: add tests
+        (unittests in test folder)
 
         Parameters
         ----------
@@ -273,7 +243,7 @@ class CombinedDatasets:
 
             # Get the target
             idx = self._subject_ids[dataset_name][subject.subject_id]
-            subject_data = self._targets[dataset_name][idx]
+            subject_data = self._targets[dataset_name][idx]  # type: ignore[index]
 
             # Add the subject data
             if dataset_name in data:
@@ -285,6 +255,9 @@ class CombinedDatasets:
         return {dataset_name: numpy.concatenate(numpy.expand_dims(data_matrix, axis=0), axis=0)
                 for dataset_name, data_matrix in data.items()}
 
+    # --------------
+    # Methods related to subject info (currently unused in the main HPO experiments)
+    # --------------
     def get_subjects_info(self, subjects):
         """
         Method for getting the subject information for investigations
@@ -316,10 +289,13 @@ class CombinedDatasets:
         # Convert from list to tuple and return
         return {var_name: tuple(dataset_list) for var_name, dataset_list in expected_variables.items()}
 
+    # --------------
+    # Convenient methods
+    # --------------
     @staticmethod
-    def get_subjects_dict(subjects):
+    def get_subjects_dict(subjects: Tuple[Subject, ...]) -> Dict[str, Tuple[str, ...]]:
         """
-        Method for the subjects as a dictionary
+        Method for getting a tuple of subjects as a dictionary
 
         Parameters
         ----------
@@ -362,4 +338,36 @@ class CombinedDatasets:
 
     @property
     def channel_name_to_index(self):
+        """Get 'channel_name_to_index' per dataset. Note that this may be misleading if interpolation has been applied,
+        as it just goes to the class implementation"""
         return {dataset.name: dataset.channel_name_to_index() for dataset in self._datasets}
+
+
+# ----------------
+# Functions
+# ----------------
+def _extract_subject_ids(datasets_details: Tuple[DatasetDetails, ...]):
+    """
+    Function for getting a dictionary containing information of the integer position of a subject in the data matrix
+
+    Parameters
+    ----------
+    datasets_details
+
+    Returns
+    -------
+    dict[str, dict[str, int]]
+        Organised as {dataset_name: {subject_id: row in data matrix}}
+
+    Examples
+    --------
+    >>> from elecssl.data.datasets.dortmund_vital import DortmundVital
+    >>> from elecssl.data.datasets.lemon import LEMON
+    >>> d1 = DatasetDetails(dataset=LEMON(), details=LoadDetails(subject_ids=("sub-1", "sub-2", "sub-3")))
+    >>> d2 = DatasetDetails(dataset=DortmundVital(), details=LoadDetails(subject_ids=("sub-512", "sub-56", "sub-1")))
+    >>> _extract_subject_ids(datasets_details=(d1, d2))  # doctest: +NORMALIZE_WHITESPACE
+    {'LEMON': {'sub-1': 0, 'sub-2': 1, 'sub-3': 2},
+     'DortmundVital': {'sub-512': 0, 'sub-56': 1, 'sub-1': 2}}
+    """
+    return {details.dataset.name: {sub_id: i for i, sub_id in enumerate(details.details.subject_ids)}
+            for details in datasets_details}
