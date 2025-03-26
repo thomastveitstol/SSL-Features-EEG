@@ -42,7 +42,8 @@ class CombinedDatasets:
     def __init__(self, datasets_details: Tuple[DatasetDetails, ...], variables, target, interpolation_method,
                  main_channel_system, sampling_freq, required_target):
         """
-        Initialise
+        Initialise. Note that, if interpolation is used, it is preferred to specify this as part of the preprocessed
+        version. This is because interpolation during runtime can be slow.
 
         Parameters
         ----------
