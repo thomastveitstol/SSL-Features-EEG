@@ -109,9 +109,10 @@ class TransformationBase(abc.ABC):
         print("Processing data...")
 
         # Loop through all datasets
-        loading_fails = {"dataset": [], "sub_id": []}
-        insufficient_data = {"dataset": [], "sub_id": []}
-        rejected_epochs = {input_length: dict() for input_length in config["Details"]["input_length"]}
+        loading_fails: Dict[str, List[str]] = {"dataset": [], "sub_id": []}
+        insufficient_data: Dict[str, List[str]] = {"dataset": [], "sub_id": []}
+        rejected_epochs: Dict[int, Dict[str, Tuple[int, ...]]] = {  # {5 seconds: {"LEMON|sub-003": (3, 4, 9)}}
+            input_length: dict() for input_length in config["Details"]["input_length"]}
         for i, info in enumerate(datasets):
             print(f"\t({i + 1}/{num_datasets}) {type(info.dataset).__name__}")
 
@@ -126,7 +127,7 @@ class TransformationBase(abc.ABC):
                     continue
 
                 # Save the data
-                try: #
+                try:
                     rejects = self._apply_and_save_single_data(
                         eeg, subject=Subject(subject_id=subject, dataset_name=type(info.dataset).__name__),
                         config=config, plot_data=plot_data, save_data=save_data, save_to=save_to,
@@ -134,6 +135,7 @@ class TransformationBase(abc.ABC):
                         return_rejected_epochs=True
                     )
 
+                    assert rejects and isinstance(rejects, dict), rejects
                     for epoch_duration, in_length_rejected in rejects.items():
                         rejected_epochs[epoch_duration][f"{info.dataset.name}|{subject}"] = in_length_rejected
 
