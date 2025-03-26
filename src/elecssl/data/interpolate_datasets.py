@@ -79,21 +79,12 @@ def _interpolate_single_dataset(dataset, to_channel_system, method, sampling_fre
     # --------------
     # Create target montage
     # --------------
-    # Create info
-    target_ch_names = get_channel_name_order(to_channel_system.channel_name_to_index)
-    target_info = mne.create_info(ch_names=target_ch_names, sfreq=sampling_freq, ch_types="eeg")
-
-    # Set the montage
-    target_info.set_montage(mne.channels.make_standard_montage(kind=to_channel_system.montage_name), verbose=False)
-    target_montage = target_info.get_montage()
+    target_montage = create_target_montage(to_channel_system=to_channel_system, sampling_freq=sampling_freq)
 
     # --------------
     # Create source info
     # --------------
-    source_ch_names = get_channel_name_order(source_channel_system.channel_name_to_index)
-    source_montage = mne.channels.make_standard_montage(kind=source_channel_system.montage_name)
-    source_info = mne.create_info(ch_names=source_ch_names, sfreq=sampling_freq, ch_types="eeg")
-    source_info.set_montage(source_montage)
+    source_info = create_source_info(source_channel_system=source_channel_system, sampling_freq=sampling_freq)
 
     # --------------
     # Map all EEGs to target montage/channel system
@@ -112,6 +103,37 @@ def _interpolate_single_dataset(dataset, to_channel_system, method, sampling_fre
 
     # Concatenate to a single ndarray and return
     return numpy.concatenate(interpolated_data, axis=0)
+
+
+def create_source_info(source_channel_system, sampling_freq):
+    source_ch_names = get_channel_name_order(source_channel_system.channel_name_to_index)
+    source_montage = mne.channels.make_standard_montage(kind=source_channel_system.montage_name)
+    source_info = mne.create_info(ch_names=source_ch_names, sfreq=sampling_freq, ch_types="eeg")
+    source_info.set_montage(source_montage)
+    return source_info
+
+
+def create_target_montage(to_channel_system, sampling_freq):
+    # Create info
+    target_ch_names = get_channel_name_order(to_channel_system.channel_name_to_index)
+    target_info = mne.create_info(ch_names=target_ch_names, sfreq=sampling_freq, ch_types="eeg")
+
+    # Set the montage
+    target_info.set_montage(mne.channels.make_standard_montage(kind=to_channel_system.montage_name), verbose=False)
+    return target_info.get_montage()
+
+
+def interpolate_single_epochs(source_epochs, to_channel_system, sampling_freq, method):
+    # Create info
+    target_ch_names = get_channel_name_order(to_channel_system.channel_name_to_index)
+    target_info = mne.create_info(ch_names=target_ch_names, sfreq=sampling_freq, ch_types="eeg")
+
+    # Set the montage
+    target_info.set_montage(mne.channels.make_standard_montage(kind=to_channel_system.montage_name), verbose=False)
+    target_montage = target_info.get_montage()
+
+    # Perform mapping
+    return _mne_map_montage(source_data=source_epochs, target_montage=target_montage, method=method)
 
 
 # ---------------
@@ -163,6 +185,8 @@ def _mne_map_montage(source_data, target_montage, method):
     ...                                        method="MNE")
     >>> my_transformed_data.get_data().shape == (5, len(my_target_channels), 2000)
     True
+    >>> type(my_transformed_data)
+    <class 'mne.epochs.EpochsArray'>
     >>> my_transformed_data.ch_names == my_target_channels
     True
     """

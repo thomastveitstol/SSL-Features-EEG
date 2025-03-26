@@ -2,6 +2,7 @@ import itertools
 import os
 from datetime import date, datetime
 from pathlib import Path
+from typing import Dict, Tuple
 
 import mne
 import numpy
@@ -9,6 +10,8 @@ import yaml  # type: ignore[import-untyped]
 from matplotlib import pyplot
 
 from elecssl.data.data_preparation.data_prep_base import TransformationBase, InsufficientNumEpochsError, run_autoreject
+from elecssl.data.datasets.getter import get_channel_system
+from elecssl.data.interpolate_datasets import interpolate_single_epochs
 
 
 class BandPass(TransformationBase):
@@ -19,48 +22,48 @@ class BandPass(TransformationBase):
     # Methods related to folders
     # ---------------
     @staticmethod
-    def _get_folder_name(*, freq_band, input_length, is_autorejected, resample_multiple):
+    def _get_folder_name(*, freq_band, input_length, is_autorejected, resample_multiple, channel_system):
         """
         Get name of the folder
 
         Examples
         --------
         >>> my_path = BandPass._get_folder_name(freq_band="delta", is_autorejected=True, resample_multiple=5.5,
-        ...                                     input_length=4)
+        ...                                     input_length=4, channel_system="AChannelSystem")
         >>> str(my_path)
-        'data--band_pass-delta--input_length-4s--autoreject-True--sfreq-5.5fmax'
+        'data--band_pass-delta--input_length-4s--autoreject-True--sfreq-5.5fmax--ch_system-AChannelSystem'
         """
         return Path(f"data--band_pass-{freq_band}--input_length-{input_length}s--autoreject-{is_autorejected}--"
-                    f"sfreq-{resample_multiple}fmax")
+                    f"sfreq-{resample_multiple}fmax--ch_system-{channel_system}")
 
-    def _create_folders(self, config):
+    def _create_folders(self, config, save_to):
         # --------------
         # Create main folder
         # --------------
-        root_path = self._get_path(ocular_state=config["OcularState"])
         try:
-            os.mkdir(root_path)
+            os.mkdir(save_to)
         except FileExistsError as e:
             if not config["IgnoreExistingFolder"]:
                 raise e
 
         # Save the config file
-        with open(root_path / f"config_{date.today()}_{datetime.now().strftime('%H%M%S')}.yml", "w") as file:
+        with open(save_to / f"config_{date.today()}_{datetime.now().strftime('%H%M%S')}.yml", "w") as file:
             yaml.safe_dump(config, file)
 
         # --------------
         # Create sub folders
         # --------------
-        _autoreject_options = ((False,) if config["Autoreject"] is None else (True, False))
+        _autoreject_options = ((config["Autoreject"] is not None),)
         _configurations = itertools.product(
             config["FrequencyBands"], _autoreject_options, config["Details"]["resample_multiples"],
-            config["Details"]["input_length"]
+            config["Details"]["input_length"], config["Details"]["interpolation_channel_systems"]
         )
-        for freq_band, is_autorejected, resample_multiple, input_length in _configurations:
+        for freq_band, is_autorejected, resample_multiple, input_length, channel_system in _configurations:
             # Create folder for a specific version
             folder_name = self._get_folder_name(freq_band=freq_band, input_length=input_length,
-                                                is_autorejected=is_autorejected, resample_multiple=resample_multiple)
-            folder_path = root_path / folder_name
+                                                is_autorejected=is_autorejected, resample_multiple=resample_multiple,
+                                                channel_system=channel_system)
+            folder_path = save_to / folder_name
             try:
                 os.mkdir(folder_path)
             except FileExistsError as e:
@@ -97,7 +100,8 @@ class BandPass(TransformationBase):
 
         return raw
 
-    def _apply_and_save_single_data(self, raw, subject, config, preprocessing, plot_data, save_data):
+    def _apply_and_save_single_data(self, raw, subject, config, preprocessing, plot_data, save_data, save_to,
+                                    return_rejected_epochs):
         # ---------------
         # Input checks
         # ---------------
@@ -112,13 +116,19 @@ class BandPass(TransformationBase):
         # ---------------
         # Preparing and saving data
         # ---------------
+        rejected_epochs: Dict[int, Tuple[int, ...]] = dict()
         for epoch_duration in config["Details"]["input_length"]:
-            self._apply_and_save_single_epochs(
-                raw.copy(), config=config, subject=subject, epoch_duration=epoch_duration, plot_data=plot_data,
-                save_data=save_data
+            rejected = self._apply_and_save_single_epochs(
+                    raw.copy(), config=config, subject=subject, epoch_duration=epoch_duration, plot_data=plot_data,
+                    save_data=save_data, save_to=save_to, return_rejected_epochs=return_rejected_epochs
             )
+            if return_rejected_epochs:
+                rejected_epochs[epoch_duration] = rejected
+        if return_rejected_epochs:
+            return rejected_epochs
 
-    def _apply_and_save_single_epochs(self, raw, *, config, subject, epoch_duration, plot_data, save_data):
+    def _apply_and_save_single_epochs(self, raw, *, config, subject, epoch_duration, plot_data, save_data, save_to,
+                                      return_rejected_epochs):
         # Epoch the data
         epochs: mne.Epochs = mne.make_fixed_length_epochs(
             raw, duration=epoch_duration, preload=True, overlap=config["Details"]["epoch_overlap"], verbose=False
@@ -131,43 +141,49 @@ class BandPass(TransformationBase):
 
         # Run autoreject
         if config["Autoreject"] is not None:
-            autoreject_epochs = run_autoreject(epochs.copy(), **config["Autoreject"])
+            epochs, reject_log = run_autoreject(epochs, **config["Autoreject"])
         else:
-            autoreject_epochs = None
+            reject_log = None
 
         # Select epochs
         epochs = epochs[:num_epochs]
 
-        if autoreject_epochs is None or num_epochs > len(autoreject_epochs):
-            # Skipping autorejected epochs if insufficient amount
-            autoreject_epochs = None
-        else:
-            autoreject_epochs = autoreject_epochs[:num_epochs]
+        # Raising error if insufficient number of epochs
+        if num_epochs > len(epochs):
+            raise InsufficientNumEpochsError
 
         # ---------------
-        # Loop through and save EEG data for all frequency bands
+        # Loop through and save EEG data for all channel systems and frequency bands
         # ---------------
-        for band_name, (l_freq, h_freq) in config["FrequencyBands"].items():
-            # Save non-autorejected
-            self._save_eeg_with_specifics(
-                epochs=epochs.copy(), band_name=band_name, l_freq=l_freq, h_freq=h_freq,
-                resample_fmax_multiples=config["Details"]["resample_multiples"], subject_id=subject.subject_id,
-                is_autorejected=False, plot_data=plot_data, dataset_name=subject.dataset_name, save_data=save_data,
-                epoch_duration=epoch_duration, ocular_state=config["OcularState"]
-            )
+        interpolation_channel_systems = config["Details"]["interpolation_channel_systems"]
+        interpolation_method = config["Details"]["interpolation_method"]
+        for target_channel_system in interpolation_channel_systems:  # target_channel_system is the name of a dataset
+            # Do interpolation (unless it is the channel system of the subject, in which case we'll skip interpolation)
+            if target_channel_system != subject.dataset_name:
+                interpolated_epochs = interpolate_single_epochs(
+                    source_epochs=epochs.copy(), to_channel_system=get_channel_system(subject.dataset_name),
+                    sampling_freq=epochs.info["sfreq"], method=interpolation_method)
+            else:
+                interpolated_epochs = epochs.copy()
 
-            # (Maybe) save with autoreject
-            if autoreject_epochs is not None:
+            # Continue with the band-pass filtering
+            for band_name, (l_freq, h_freq) in config["FrequencyBands"].items():
+                # Save epochs object
                 self._save_eeg_with_specifics(
-                    epochs=autoreject_epochs.copy(), band_name=band_name, l_freq=l_freq, h_freq=h_freq,
+                    epochs=interpolated_epochs.copy(), band_name=band_name, l_freq=l_freq, h_freq=h_freq,
                     resample_fmax_multiples=config["Details"]["resample_multiples"], subject_id=subject.subject_id,
-                    is_autorejected=True, plot_data=plot_data, dataset_name=subject.dataset_name, save_data=save_data,
-                    epoch_duration=epoch_duration, ocular_state=config["OcularState"]
+                    is_autorejected=config["Autoreject"] is not None, plot_data=plot_data,
+                    dataset_name=subject.dataset_name, save_data=save_data, epoch_duration=epoch_duration,
+                    ocular_state=config["OcularState"], channel_system=target_channel_system, save_to=save_to
                 )
 
-    def _save_eeg_with_specifics(self, epochs: mne.Epochs, band_name, l_freq, h_freq, resample_fmax_multiples,
+        if return_rejected_epochs and reject_log is not None:
+            # This is what '_apply_drop()' in autoreject does (or, I convert to tuple of built-in ints, for json saving)
+            return tuple(int(bad) for bad in numpy.nonzero(reject_log.bad_epochs)[0])
+
+    def _save_eeg_with_specifics(self, epochs: mne.Epochs, *, band_name, l_freq, h_freq, resample_fmax_multiples,
                                  subject_id, is_autorejected, dataset_name: str, plot_data, save_data, epoch_duration,
-                                 ocular_state):
+                                 ocular_state, channel_system, save_to):
         """Function for saving EEG data as numpy arrays, which has already been pre-processed to some extent"""
         # Perform band-pass filtering
         epochs.filter(l_freq=l_freq, h_freq=h_freq, verbose=False)
@@ -204,8 +220,8 @@ class BandPass(TransformationBase):
 
             # Save numpy array
             if save_data:
-                root_path = self._get_path(ocular_state=ocular_state)
                 _folder_name = self._get_folder_name(freq_band=band_name, is_autorejected=is_autorejected,
-                                                     resample_multiple=resample_multiple, input_length=epoch_duration)
-                array_path = root_path / _folder_name / dataset_name / f"{subject_id}.npy"
+                                                     resample_multiple=resample_multiple, input_length=epoch_duration,
+                                                     channel_system=channel_system)
+                array_path = save_to / _folder_name / dataset_name / f"{subject_id}.npy"
                 numpy.save(array_path, arr=data)
