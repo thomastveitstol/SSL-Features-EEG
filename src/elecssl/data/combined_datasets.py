@@ -22,6 +22,12 @@ class LoadDetails:
     pre_processed_version: Optional[str] = None
 
 
+@dataclasses.dataclass(frozen=True)
+class DatasetDetails(frozen=True):
+    dataset: EEGDatasetBase
+    details: LoadDetails
+
+
 # -----------------
 # Classes
 # -----------------
@@ -33,8 +39,8 @@ class CombinedDatasets:
 
     __slots__ = "_subject_ids", "_data", "_targets", "_datasets", "_subjects_info", "_variable_availability"
 
-    def __init__(self, datasets, variables, load_details=None, target=None, interpolation_method=None,
-                 main_channel_system=None, sampling_freq=None, required_target=None):
+    def __init__(self, datasets, variables, load_details, target, interpolation_method,
+                 main_channel_system, sampling_freq, required_target):
         """
         Initialise
 
@@ -47,10 +53,10 @@ class CombinedDatasets:
         target: str, optional
             Targets to load. If None, no targets are loaded
         interpolation_method : str, optional
-        main_channel_system : str
+        main_channel_system : str, optional
             The channel system to interpolate to. If interpolation_method is None, this argument is ignored
         sampling_freq : float, optional
-            Sampling frequency. Ignored if interpolation_method is None
+            Sampling frequency which is needed for interpolation. Ignored if interpolation_method is None
         required_target : str, optional
         """
         # If no loading details are provided, use default
@@ -68,7 +74,7 @@ class CombinedDatasets:
         # --------------
         # Store subject IDs. Organised as {dataset_name: {subject_name: row-number in data matrix}}
         subject_ids: Dict[str, Dict[str, int]] = dict()
-        new_details = []
+        new_details: List[LoadDetails] = []
         for dataset, details in zip(datasets, load_details):
             _accepted_subject_ids: List[str] = []
             _subjects = details.subject_ids
@@ -157,8 +163,7 @@ class CombinedDatasets:
         self._variable_availability = variables
 
     @classmethod
-    def from_config(cls, config, interpolation_config, variables, target=None, sampling_freq=None,
-                    required_target=None):
+    def from_config(cls, config, interpolation_config, variables, target, sampling_freq, required_target):
         """
         Method for initialising directly from a config file
 
@@ -175,10 +180,10 @@ class CombinedDatasets:
         -------
         """
         # Initialise lists and dictionaries
-        load_details = []
-        datasets = []
-        subjects = dict()
-        channel_name_to_index = dict()
+        load_details: List[LoadDetails] = []
+        datasets: List[EEGDatasetBase] = []
+        subjects: Dict[str, Tuple[str, ...]] = dict()
+        channel_name_to_index: Dict[str, Dict[str, int]] = dict()
 
         # Loop through all datasets and loading details to be used
         for dataset_name, dataset_details in config.items():
@@ -187,9 +192,9 @@ class CombinedDatasets:
             datasets.append(dataset)
             dataset_subjects = dataset.get_subject_ids(
                 preprocessed_version=dataset_details["pre_processed_version"]
-            )[:dataset_details["num_subjects"]]
+            )[:dataset_details["num_subjects"]]  # TODO:if preprocessing discarded subjects this may not be reproducible
             subjects[dataset_name] = dataset_subjects
-            channel_name_to_index[dataset_name] = dataset.channel_name_to_index()
+            channel_name_to_index[dataset_name] = dataset.channel_name_to_index()  # todo: why include this?
 
             # Construct loading details
             load_details.append(
@@ -318,7 +323,7 @@ class CombinedDatasets:
 
         Parameters
         ----------
-        subjects : tuple[cdl_eeg.data.data_split.Subject, ...]
+        subjects : tuple[elecssl.data.subject_split.Subject, ...]
             Subjects to extract
 
         Returns
@@ -358,6 +363,3 @@ class CombinedDatasets:
     @property
     def channel_name_to_index(self):
         return {dataset.name: dataset.channel_name_to_index() for dataset in self._datasets}
-
-# todo: check out asyncio for loading. See mCoding at https://www.youtube.com/watch?v=ftmdDlwMwwQ and
-#  https://www.youtube.com/watch?v=ueTXYhtlnjA
