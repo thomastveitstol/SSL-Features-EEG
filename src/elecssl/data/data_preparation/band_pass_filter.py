@@ -119,8 +119,9 @@ class BandPass(TransformationBase):
         rejected_epochs: Dict[int, Tuple[int, ...]] = dict()
         for epoch_duration in config["Details"]["input_length"]:
             rejected = self._apply_and_save_single_epochs(
-                    raw.copy(), config=config, subject=subject, epoch_duration=epoch_duration, plot_data=plot_data,
-                    save_data=save_data, save_to=save_to, return_rejected_epochs=return_rejected_epochs
+                raw.copy(), config=config, subject=subject, epoch_duration=epoch_duration, plot_data=plot_data,
+                save_data=save_data, save_to=save_to, return_rejected_epochs=return_rejected_epochs,
+                default_band_pass=preprocessing["band_pass"]
             )
             if return_rejected_epochs:
                 rejected_epochs[epoch_duration] = rejected
@@ -128,7 +129,7 @@ class BandPass(TransformationBase):
             return rejected_epochs
 
     def _apply_and_save_single_epochs(self, raw, *, config, subject, epoch_duration, plot_data, save_data, save_to,
-                                      return_rejected_epochs):
+                                      return_rejected_epochs, default_band_pass):
         # Epoch the data
         epochs: mne.Epochs = mne.make_fixed_length_epochs(
             raw, duration=epoch_duration, preload=True, overlap=config["Details"]["epoch_overlap"], verbose=False
@@ -174,7 +175,7 @@ class BandPass(TransformationBase):
                     resample_fmax_multiples=config["Details"]["resample_multiples"], subject_id=subject.subject_id,
                     is_autorejected=config["Autoreject"] is not None, plot_data=plot_data,
                     dataset_name=subject.dataset_name, save_data=save_data, epoch_duration=epoch_duration,
-                    channel_system=target_channel_system, save_to=save_to
+                    channel_system=target_channel_system, save_to=save_to, default_band_pass=default_band_pass
                 )
 
         if return_rejected_epochs and reject_log is not None:
@@ -183,10 +184,13 @@ class BandPass(TransformationBase):
 
     def _save_eeg_with_specifics(self, epochs: mne.Epochs, *, band_name, l_freq, h_freq, resample_fmax_multiples,
                                  subject_id, is_autorejected, dataset_name: str, plot_data, save_data, epoch_duration,
-                                 channel_system, save_to):
+                                 channel_system, save_to, default_band_pass):
         """Function for saving EEG data as numpy arrays, which has already been pre-processed to some extent"""
         # Perform band-pass filtering
         epochs.filter(l_freq=l_freq, h_freq=h_freq, verbose=False)
+
+        l_freq = default_band_pass[0] if l_freq is None else l_freq
+        h_freq = default_band_pass[1] if h_freq is None else h_freq
 
         # Loop through all resampling frequencies
         for resample_multiple in resample_fmax_multiples:
