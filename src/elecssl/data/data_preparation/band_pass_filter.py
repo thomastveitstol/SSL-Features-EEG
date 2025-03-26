@@ -174,7 +174,7 @@ class BandPass(TransformationBase):
                     resample_fmax_multiples=config["Details"]["resample_multiples"], subject_id=subject.subject_id,
                     is_autorejected=config["Autoreject"] is not None, plot_data=plot_data,
                     dataset_name=subject.dataset_name, save_data=save_data, epoch_duration=epoch_duration,
-                    ocular_state=config["OcularState"], channel_system=target_channel_system, save_to=save_to
+                    channel_system=target_channel_system, save_to=save_to
                 )
 
         if return_rejected_epochs and reject_log is not None:
@@ -183,7 +183,7 @@ class BandPass(TransformationBase):
 
     def _save_eeg_with_specifics(self, epochs: mne.Epochs, *, band_name, l_freq, h_freq, resample_fmax_multiples,
                                  subject_id, is_autorejected, dataset_name: str, plot_data, save_data, epoch_duration,
-                                 ocular_state, channel_system, save_to):
+                                 channel_system, save_to):
         """Function for saving EEG data as numpy arrays, which has already been pre-processed to some extent"""
         # Perform band-pass filtering
         epochs.filter(l_freq=l_freq, h_freq=h_freq, verbose=False)
