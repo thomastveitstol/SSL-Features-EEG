@@ -2,7 +2,6 @@ import dataclasses
 from typing import Dict, List, Optional, Tuple, Union, Any
 
 import numpy
-import pandas
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, ChannelSystem
 from elecssl.data.datasets.getter import get_dataset, get_channel_system
