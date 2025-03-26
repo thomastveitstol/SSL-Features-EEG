@@ -1,23 +1,23 @@
 Autoreject:
   seed: 1
-  default_num_splits: 3
-  autoreject_resample: 36
+  default_num_splits: 10
+  autoreject_resample: 180
 OcularStates:
   EC:
     Datasets:
       DortmundVital: &DortmundVital
-        num_subjects: 2
+        num_subjects: 100
         kwargs:
           derivatives: false
           session: 1
           acquisition: pre
       LEMON: &LEMON
-        num_subjects: 1
+        num_subjects: all
         kwargs:
           derivatives: false
           interpolation_method: MNE
       Wang: &Wang
-        num_subjects: 2
+        num_subjects: all
         kwargs:
           visit: 1
           derivatives: true
@@ -30,15 +30,20 @@ Details:
   num_epochs: 3
   epoch_overlap: 0
   resample_multiples: [ 2, 3, 4 ]
-  input_length: [ 5 ]
-  interpolation_channel_systems: [ Wang ]
+  input_length: [ 5, 10, 20, 30 ]
+  interpolation_channel_systems: [ DortmundVital, LEMON, Wang ]
   interpolation_method: MNE  # Biophysical interpolation
 FrequencyBands:
+  delta: [ 1, 4 ]
   theta: [ 4, 8 ]
+  alpha: [ 8, 12 ]
+  beta: [ 12, 30 ]
+  gamma: [ 30, 45 ]
+  all: [ None, None ]  # Band-pass filtered in pre-processing
 _SharedSteps: &_SharedSteps
   excluded_channels: null
   time_series_start_secs: 30
-  band_pass: [ 1, 12 ]  # TODO: change this value
+  band_pass: [ 1, 45 ]
 InitialPreprocessing:
   LEMON:
     notch_filter: null
