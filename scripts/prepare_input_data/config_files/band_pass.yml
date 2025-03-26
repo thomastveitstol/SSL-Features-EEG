@@ -39,7 +39,7 @@ FrequencyBands:
   alpha: [ 8, 12 ]
   beta: [ 12, 30 ]
   gamma: [ 30, 45 ]
-  all: [ None, None ]  # Band-pass filtered in pre-processing
+  all: [ null, null ]  # Band-pass filtered in pre-processing
 _SharedSteps: &_SharedSteps
   excluded_channels: null
   time_series_start_secs: 30
