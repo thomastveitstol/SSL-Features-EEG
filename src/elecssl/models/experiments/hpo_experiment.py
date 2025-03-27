@@ -392,7 +392,7 @@ class HPOExperiment(MainExperiment):
 
             # Get the performance for each fold
             folds = (fold for fold in os.listdir(trial_path) if os.path.isdir(trial_path / fold)
-                     and fold.lower().startswith("fold_"))
+                     and fold.lower().startswith("split_"))
             for fold in folds:
                 # Get fold scores, but accept that some trials may have been pruned
                 try:
@@ -554,7 +554,7 @@ class HPOExperiment(MainExperiment):
 
             # Loop through all folds within the trial
             fold_folders = tuple(name for name in os.listdir(trial_path)
-                                 if name.lower().startswith("fold_") and os.path.isdir(trial_path / name))
+                                 if name.lower().startswith("split_") and os.path.isdir(trial_path / name))
             for fold_folder in fold_folders:
                 fold_path = trial_path / fold_folder
 
@@ -864,7 +864,7 @@ class PredictionModelsHPO(HPOExperiment):
             with SingleExperiment(hp_config=suggested_hyperparameters, pre_processing_config=preprocessing_config_file,
                                   experiments_config=experiments_config, results_path=results_dir,
                                   fine_tuning=None, experiment_name=None) as experiment:
-                experiment.run_experiment()
+                experiment.run_experiment(combined_datasets=None)
 
             # ---------------
             # Get the performance
@@ -1037,24 +1037,27 @@ class PretrainHPO(HPOExperiment):
             # Make directory for current iteration
             results_dir = self._get_hpo_folder_path(trial.number)
 
-            # Only pre-train if we have datasets to pre-train on. Trial pruning is handled elsewhere
-            do_pretraining = pretext_experiments_config["Datasets"] and not _excluded_dataset_only(
-                    dataset_config=pretext_experiments_config["Datasets"],
-                    subject_split_config=pretext_experiments_config["SubjectSplit"])
-            if do_pretraining:
-                with SingleExperiment(hp_config=pretext_hpcs, pre_processing_config=preprocessing_config_file,
-                                      experiments_config=pretext_experiments_config, results_path=results_dir,
-                                      fine_tuning=None, experiment_name="pretext") as experiment:
-                    experiment.run_experiment()
+            # Execute pre-training
+            with SingleExperiment(hp_config=pretext_hpcs, pre_processing_config=preprocessing_config_file,
+                                  experiments_config=pretext_experiments_config, results_path=results_dir,
+                                  fine_tuning=None, experiment_name="pretext") as experiment:
+                combined_datasets = experiment.run_experiment(combined_datasets=None)
 
             # ---------------
             # Train on downstream task
             # ---------------
-            fine_tuning = "pretext" if do_pretraining else None
+            # Remove pretext task datasets
+            combined_datasets.remove_datasets(
+                to_remove=tuple(dataset for dataset in self._pretext_sampling_config["Datasets"]
+                                if dataset not in self._downstream_sampling_config["Datasets"])
+            )
+
+            # Run experiment
+            fine_tuning = "pretext"
             with SingleExperiment(hp_config=downstream_hpcs, pre_processing_config=preprocessing_config_file,
                                   experiments_config=downstream_experiments_config, results_path=results_dir,
                                   fine_tuning=fine_tuning, experiment_name=None) as experiment:
-                experiment.run_experiment()
+                experiment.run_experiment(combined_datasets=combined_datasets)
 
             # ---------------
             # Compute the performance
@@ -1067,13 +1070,13 @@ class PretrainHPO(HPOExperiment):
             # ---------------
             # (Maybe) compute SSL biomarkers for future use
             # ---------------
-            if self._experiments_config["save_ssl_biomarkers"] and do_pretraining:
+            if self._experiments_config["save_ssl_biomarkers"]:
                 # Create and save dataframe with target and residuals
                 out_freq_band = pretext_specific_hpcs['out_freq_band']
                 residual_feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
 
                 df = _make_single_residuals_df(
-                    results_dir=results_dir / "Fold_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
+                    results_dir=results_dir / "split_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
                     downstream_target=self._downstream_experiments_config["Training"]["target"],
                     deviation_method=self._experiments_config["elecssl_deviation_method"],
                     in_ocular_state=in_ocular_state, experiment_name="pretext",
@@ -1305,13 +1308,13 @@ class SimpleElecsslHPO(HPOExperiment):
             with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
                                   pre_processing_config=preprocessing_config_file, results_path=results_path,
                                   fine_tuning=None, experiment_name=experiment_name) as experiment:
-                experiment.run_experiment()
+                experiment.run_experiment(combined_datasets=None)
 
             # ---------------
             # Extract expectation values and biomarkers
             # ---------------
             df = _make_single_residuals_df(
-                results_dir=results_path / "Fold_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
+                results_dir=results_path / "split_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
                 downstream_target=self._experiments_config["clinical_target"], in_ocular_state=in_ocular_state,
                 deviation_method=self._experiments_config["deviation_method"], experiment_name=experiment_name,
                 pretext_main_metric=self._experiments_config["Training"]["main_metric"],
@@ -1521,7 +1524,7 @@ class SimpleElecsslHPO(HPOExperiment):
 
                 # Loop through all folds (should be one, but better to just live with this code now)
                 fold_folders = (name for name in os.listdir(trial_path)
-                                if name.lower().startswith("fold_") and os.path.isdir(pretext_path / name))
+                                if name.lower().startswith("split_") and os.path.isdir(pretext_path / name))
                 for fold_folder in fold_folders:
                     fold_path = pretext_path / fold_folder
                     # Load the subjects from the predictions that were used for optimisation
@@ -1723,13 +1726,13 @@ class MultivariableElecsslHPO(HPOExperiment):
         with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
                               pre_processing_config=preprocessing_config_file, results_path=results_path,
                               fine_tuning=None, experiment_name=experiment_name) as experiment:
-            experiment.run_experiment()
+            experiment.run_experiment(combined_datasets=None)
 
         # ---------------
         # Extract expectation values and biomarkers
         # ---------------
         outputs = _get_delta_and_variable(
-            path=results_path / "Fold_0", target=experiments_config["Training"]["target"],
+            path=results_path / "split_0", target=experiments_config["Training"]["target"],
             downstream_target=downstream_target, deviation_method=deviation_method, num_eeg_epochs=num_eeg_epochs,
             pretext_main_metric=pretext_main_metric, experiment_name=experiment_name,
             include_pseudo_targets=include_pseudo_targets, continuous_testing=continuous_testing
@@ -1878,9 +1881,9 @@ class MultivariableElecsslHPO(HPOExperiment):
             for pretext_folder in pretext_folders:
                 pretext_path = trial_path / pretext_folder
 
-                # Loop through all folds (should be one, but better to just live with this code now)
+                # Loop through all splits (should be one, but better to just live with this code now)
                 fold_folders = (name for name in os.listdir(trial_path)
-                                if name.lower().startswith("fold_") and os.path.isdir(pretext_path / name))
+                                if name.lower().startswith("split_") and os.path.isdir(pretext_path / name))
                 for fold_folder in fold_folders:
                     fold_path = pretext_path / fold_folder
                     # Load the subjects from the predictions that were used for optimisation
@@ -1901,7 +1904,7 @@ class MultivariableElecsslHPO(HPOExperiment):
                             overlap = subjects & test_subjects
                             raise NonExclusiveTestSetError(
                                 f"Test subjects were found in the optimisation set {predictions} for trial "
-                                f"{trial_folder}, fold {fold_folder}. These subjects are (N={len(overlap)})): {overlap}"
+                                f"{trial_folder}, split {fold_folder}. These subjects are (N={len(overlap)})): {overlap}"
                             )
 
     # --------------
