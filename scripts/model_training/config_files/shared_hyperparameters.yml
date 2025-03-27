@@ -57,7 +57,7 @@ DLArchitectures:
     num_time_steps: UNAVAILABLE
     num_first_filters: { low: 10, high: 40, step: 1, log: false }
     filter_length: { low: 5, high: 15, step: 1, log: false }
-    drop_prob: { low: 0.0, high: 0.5, log: false }  # todo: should this be independent from shallownet?
+    drop_prob: { low: 0.0, high: 0.5, log: false }
   TCNMTS:
     num_classes: 1
     n_blocks: { low: 1, high: 5, step: 1, log: false }
