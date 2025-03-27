@@ -619,7 +619,7 @@ def get_data_split(split, **kwargs):
                      f"{tuple(split_class.__name__ for split_class in available_splits)}")
 
 
-def subjects_tuple_to_dict(subjects):
+def subjects_tuple_to_dict(subjects) -> Dict[str, Tuple[str, ...]]:
     """
     Function for converting from a tuple of subjects to a dictionary with dataset name as keys and tuple of subject IDs
     as values. This function is convenient for converting to the format expected in the classes inheriting from
@@ -639,6 +639,17 @@ def subjects_tuple_to_dict(subjects):
     ...     Subject("S2", "D2"), Subject("P1", "D3"), Subject("P2", "D3"), Subject("P3", "D3"), Subject("P1", "D4"))
     >>> subjects_tuple_to_dict(my_subjects)
     {'D1': ('S1', 'S2', 'S3'), 'D2': ('S1', 'S2'), 'D3': ('P1', 'P2', 'P3'), 'D4': ('P1',)}
+
+    Works for set as well (although, the order gets arbitrary for sets)
+
+    >>> my_subjects_set = {Subject("S1", "D1"), Subject("S2", "D1"), Subject("S3", "D1"), Subject("S1", "D2"),
+    ...     Subject("S2", "D2"), Subject("P1", "D3"), Subject("P2", "D3"), Subject("P3", "D3"), Subject("P1", "D4")}
+    >>> my_subjects_dict = subjects_tuple_to_dict(my_subjects_set)
+    >>> all((isinstance(my_subjects_dict["D1"], tuple), (set(my_subjects_dict["D1"]) == {"S1", "S2", "S3"}),
+    ...      isinstance(my_subjects_dict["D2"], tuple), (set(my_subjects_dict["D2"]) == {"S1", "S2"}),
+    ...      isinstance(my_subjects_dict["D3"], tuple), (set(my_subjects_dict["D3"]) == {"P1", "P2", "P3"}),
+    ...      isinstance(my_subjects_dict["D4"], tuple), (set(my_subjects_dict["D4"]) == {"P1"})))
+    True
 
     It even works when the subjects are keys in dictionaries (the keys are looped over by default)
 
