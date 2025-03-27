@@ -169,8 +169,8 @@ class EEGDatasetBase(abc.ABC):
         """
         raise NotImplementedError(f"A cleaned version is not available for this class ({self.__class__.__name__}).")
 
-    def load_numpy_arrays(self, subject_ids=None, pre_processed_version=None, *, time_series_start=None,
-                          num_time_steps=None, channels=None, required_target=None):
+    def load_numpy_arrays(self, subject_ids, pre_processed_version, *, time_series_start, num_time_steps, channels,
+                          required_target):
         """
         Method for loading numpy arrays
 
@@ -197,7 +197,7 @@ class EEGDatasetBase(abc.ABC):
         if required_target is not None:
             _accepted_subject_ids: List[str] = []
             _targets = self.load_targets(target=required_target, subject_ids=subject_ids)
-            for sub_id, target in zip(subject_ids, _targets):
+            for sub_id, target in zip(subject_ids, _targets):  # type: ignore[arg-type]
                 if not numpy.isnan(target):
                     _accepted_subject_ids.append(sub_id)
             subject_ids = tuple(_accepted_subject_ids)
