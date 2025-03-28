@@ -172,13 +172,18 @@ class Wang(EEGDatasetBase):
     @target_method
     def age(self, subject_ids):
         # Read the .tsv file
-        df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t")
+        df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t", usecols=["participant_id", "age"])
 
         # Convert to dict
-        sub_id_to_age = {name: age for name, age in zip(df["participant_id"], df["age"])}
+        sub_id_to_age = {row.participant_id: row.age for row in df.itertuple(index=False)}
 
         # Extract the ages of the subjects, in the same order as the input argument
         return numpy.array([sub_id_to_age[sub_id] for sub_id in subject_ids])
+
+    @age.availability
+    def age_availability(self):
+        df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t", usecols=["participant_id", "age"])
+        return tuple(df["participant_id"][df["age"].notna() & df["age"].notnull()])
 
     # ----------------
     # Methods for channel system

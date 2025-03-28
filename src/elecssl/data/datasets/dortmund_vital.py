@@ -27,6 +27,8 @@ class DortmundVital(EEGDatasetBase):
     64
     >>> DortmundVital().age(("sub-001", "sub-003", "sub-002", "sub-007"))  # doctest: +SKIP
     array([60, 44, 67, 24])
+    >>> len(DortmundVital().age_availability())  # doctest: +SKIP
+    608
     """
 
     __slots__ = ()
@@ -93,3 +95,8 @@ class DortmundVital(EEGDatasetBase):
 
         # Extract the ages of the subjects, in the same order as the input argument
         return numpy.array([sub_id_to_age[sub_id] for sub_id in subject_ids])
+
+    @age.availability
+    def age_availability(self):
+        df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t", usecols=["participant_id", "age"])
+        return tuple(df["participant_id"][df["age"].notna() & df["age"].notnull()])

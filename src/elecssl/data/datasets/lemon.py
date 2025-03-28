@@ -30,6 +30,10 @@ class LEMON(EEGDatasetBase):
     61
     >>> len(LEMON().get_subject_ids()), LEMON().get_subject_ids()[:4]  # doctest: +SKIP
     (203, ('sub-032301', 'sub-032302', 'sub-032303', 'sub-032304'))
+    >>> LEMON().get_downstream_target_subjects_availability(target_name="age")[:6]  # doctest: +SKIP
+    ('sub-032301', 'sub-032302', 'sub-032303', 'sub-032304', 'sub-032305', 'sub-032306')
+    >>> len(LEMON().get_downstream_target_subjects_availability(target_name="age"))  # doctest: +SKIP
+    228
     """
 
     __slots__ = ()
@@ -213,17 +217,32 @@ class LEMON(EEGDatasetBase):
         # Extract the ages of the subjects, in the same order as the input argument
         return numpy.array([sub_id_to_age[sub_id] for sub_id in subject_ids])
 
+    @age.availability
+    def age_availability(self):
+        """Returns the available subject IDs that have a valid age value"""
+        df = pandas.read_csv(self.get_participants_tsv_path(), usecols=("ID", "Age"))
+        valid_subjects = df["ID"][df["Age"].notna()]
+        return tuple(valid_subjects)
+
     @target_method
     def sex(self, subject_ids):
         # Read the .tsv file
-        df = pandas.read_csv(self.get_participants_tsv_path())
+        df = pandas.read_csv(self.get_participants_tsv_path(), usecols=["ID", "Gender_ 1=female_2=male"])
+        df.rename(columns={"ID": "sub_id", "Gender_ 1=female_2=male": "gender"}, inplace=True)
 
         # Convert to sex dict
-        sex = {sub_id: sex_to_int(_int_to_sex(gender)) for sub_id, gender
-               in zip(df["ID"], df["Gender_ 1=female_2=male"])}
+        sex = {row.sub_id: sex_to_int(_int_to_sex(row.gender)) for row  # type: ignore[attr-defined]
+               in df.itertuples(index=False)}
 
         # Select the ones passed in the subjects list, and return as numpy array
         return numpy.array([sex[sub_id] for sub_id in subject_ids])
+
+    @sex.availability
+    def sex_availability(self):
+        # Read the .tsv file
+        _gender_col_name = "Gender_ 1=female_2=male"
+        df = pandas.read_csv(self.get_participants_tsv_path(), usecols=["ID", _gender_col_name])
+        return tuple(df["ID"][df[_gender_col_name].notna() & df[_gender_col_name].isin((1, 2))])
 
 
 # -------------

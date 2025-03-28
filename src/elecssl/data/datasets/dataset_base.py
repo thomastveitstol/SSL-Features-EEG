@@ -4,7 +4,7 @@ import os
 import typing
 import warnings
 from enum import Enum
-from typing import Dict, Tuple, List, Optional, Union, Any
+from typing import Dict, Tuple, List, Optional, Union, Any, Iterable, Set
 
 import numpy
 import pandas
@@ -14,6 +14,7 @@ from mne.transforms import _cart_to_sph, _pol_to_cart
 from progressbar import progressbar
 
 from elecssl.data.paths import get_raw_data_storage_path, get_numpy_data_storage_path, get_eeg_features_storage_path
+from elecssl.data.subject_split import Subject
 from elecssl.models.region_based_pooling.utils import ELECTRODES_3D
 
 
@@ -22,6 +23,16 @@ from elecssl.models.region_based_pooling.utils import ELECTRODES_3D
 # --------------------
 def target_method(func):
     setattr(func, "_is_target_method", True)
+
+    def availability_decorator(availability_func):
+        """Allows defining an availability method for the target method"""
+        if not callable(availability_func):
+            raise TypeError(f"Expected availability method to be callable, but that was not the case for "
+                            f"(type={type(availability_func)}) {availability_func}")
+        setattr(func, "availability_method", availability_func)
+        return availability_func
+
+    func.availability = availability_decorator  # Attach decorator
     return func
 
 
@@ -224,7 +235,7 @@ class EEGDatasetBase(abc.ABC):
         data = []
         for sub_id in progressbar(subject_ids, prefix="Loading data ", redirect_stdout=True):
             # Load the numpy array
-            eeg_data = numpy.load(os.path.join(path, f"{sub_id}.npy"))
+            eeg_data = numpy.load(path / f"{sub_id}.npy")
 
             # (Maybe) crop the signal
             if time_series_start is not None:
@@ -264,12 +275,75 @@ class EEGDatasetBase(abc.ABC):
     def _get_subject_ids(self) -> Tuple[str, ...]:
         """Get the subject IDs available. Unless this method is overridden, it will collect the IDs from the
         participants.tsv file"""
-        return tuple(pandas.read_csv(self.get_participants_tsv_path(), sep="\t")["participant_id"])
+        return tuple(pandas.read_csv(self.get_participants_tsv_path(), sep="\t",
+                                     usecols=["participant_id"])["participant_id"])
 
     @classmethod
     def download(cls):
         """Method for downloading the dataset"""
         raise NotImplementedError
+
+    # ----------------
+    # Methods which helps to filter out subjects not reaching certain requirements
+    #
+    # (See 'Functions' below for 'pseudo_targets_filter_subjects')
+    # ----------------
+    def preprocessing_filter_subjects(self, subjects: Set[str], preprocessing_versions: Iterable[str]):
+        """
+        Method for including/excluding subjects which are not contained in ALL provided preprocessed versions of the
+        EEG data
+
+        Parameters
+        ----------
+        subjects : set[str]
+        preprocessing_versions : Iterable[str]
+
+        Returns
+        -------
+        tuple[set[Subject], set[Subject]]
+            Included and excluded subjects
+        """
+        # Get subjects available in all preprocessed versions
+        available_subjects_per_version: List[Set[str]] = []
+        for input_version in preprocessing_versions:
+            path = self.get_numpy_arrays_path(input_version)
+            available_subjects_per_version.append(set(subject_npy[:-4] for subject_npy in os.listdir(path)))
+        available_subjects = set.intersection(*available_subjects_per_version)
+
+        # Get all included and excluded subjects
+        included = subjects & available_subjects
+        excluded = subjects - included
+
+        # Correct the type
+        included_subjects = {Subject(dataset_name=self.name, subject_id=sub_id) for sub_id in included}
+        excluded_subjects = {Subject(dataset_name=self.name, subject_id=sub_id) for sub_id in excluded}
+        return included_subjects, excluded_subjects
+
+    def downstream_target_filter_subjects(self, subjects: Set[str], target: str):
+        """
+        Method for including/excluding subjects which has the provided downstream target
+
+        Parameters
+        ----------
+        subjects : set[str]
+        target : str
+
+        Returns
+        -------
+        tuple[set[Subject], set[Subject]]
+            Included and excluded subjects
+        """
+        # Get subjects availability based on the target
+        available_subjects = set(self.get_downstream_target_subjects_availability(target_name=target))
+
+        # Get all included and excluded subjects
+        included = subjects & available_subjects
+        excluded = subjects - included
+
+        # Correct the type and return
+        included_subjects = {Subject(dataset_name=self.name, subject_id=sub_id) for sub_id in included}
+        excluded_subjects = {Subject(dataset_name=self.name, subject_id=sub_id) for sub_id in excluded}
+        return included_subjects, excluded_subjects
 
     # ----------------
     # Target methods
@@ -317,8 +391,7 @@ class EEGDatasetBase(abc.ABC):
         return transformation(loaded_targets)
 
     def _load_ssl_targets(self, subject_ids, target):
-        # The feature names should identical to folder names inside the EEG features folder
-        features_path = (get_eeg_features_storage_path() / target / target).with_suffix(".csv")
+        features_path = _get_pseudo_target_csv_path(target)
 
         # Load csv file
         df = pandas.read_csv(features_path)
@@ -384,6 +457,25 @@ class EEGDatasetBase(abc.ABC):
         # Return available SSL features as a tuple
         return tuple(available_features)
 
+    def get_downstream_target_subjects_availability(self, target_name) -> Tuple[str, ...]:
+        """Get the available subjects, given that it needs to have the specified target available"""
+        # Verify that it exists
+        if target_name not in self.get_available_targets(exclude_ssl=True):
+            raise ValueError(f"Target {target_name!r} was not recognised. Make sure that the method passed shares the "
+                             f"name with the implemented method you want to use. The targets available for this class "
+                             f"({type(self).__name__}) are: {self.get_available_targets(exclude_ssl=False)}")
+
+        # Get the target function
+        target_func = getattr(self, target_name)
+
+        # Verify that it has an availability method
+        if not hasattr(target_func, "availability_method"):
+            raise ValueError(f"Target method {target_name!r} does not have an availability method.")
+
+        # Use it
+        return getattr(target_func, "availability_method")(self)
+
+
     # ----------------
     # Properties
     # ----------------
@@ -407,11 +499,8 @@ class EEGDatasetBase(abc.ABC):
     def get_mne_path(cls):
         return get_raw_data_storage_path() / cls.__name__
 
-    def get_numpy_arrays_path(self, pre_processed_version=None):
-        if pre_processed_version is None:
-            return os.path.join(get_numpy_data_storage_path(), self.name)
-        else:
-            return os.path.join(get_numpy_data_storage_path(), pre_processed_version, self.name)
+    def get_numpy_arrays_path(self, pre_processed_version):
+        return get_numpy_data_storage_path() / pre_processed_version / self.name
 
     def get_participants_tsv_path(self):
         """Get the path to the participants.tsv file"""
@@ -556,6 +645,48 @@ class EEGDatasetBase(abc.ABC):
 # ------------------
 # Functions
 # ------------------
+def pseudo_targets_filter_subjects(subjects: Set[Subject], pseudo_targets: Iterable[str]):
+    """
+    Method for including/excluding subjects which has ALL provided pseudo targets available. It assumes that the
+    values are valid
+
+    Parameters
+    ----------
+    subjects : set[Subject]
+    pseudo_targets : Iterable[str]
+
+    Returns
+    -------
+    tuple[set[Subject], set[Subject]]
+        Included and excluded subjects
+    """
+    # Get subjects with all pseudo targets
+    available_subjects_per_pseudo_target: List[Set[Subject]] = []
+    for target in pseudo_targets:
+        # Load the required columns (we assume that all values are ok)
+        path = _get_pseudo_target_csv_path(target)
+        target_df = pandas.read_csv(path, usecols=["Dataset", "Subject-ID"])
+        target_df.rename(columns={"Dataset": "dataset", "Subject-ID": "sub_id"}, inplace=True)
+
+        # Add to list
+        available_subjects_per_pseudo_target.append(
+            set(Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                for row in target_df.itertuples(index=False))
+        )
+    available_subjects = set.intersection(*available_subjects_per_pseudo_target)
+
+    # Get all included and excluded subjects
+    included_subjects = subjects & available_subjects
+    excluded_subjects = subjects - included_subjects
+
+    return included_subjects, excluded_subjects
+
+
+def _get_pseudo_target_csv_path(target):
+    # The feature names should identical to folder names inside the EEG features folder
+    return (get_eeg_features_storage_path() / target / target).with_suffix(".csv")
+
+
 def _get_pseudo_target_config_file_path(root_features_path, feature):
     """Checks for files with names config*. If there is only one, the path is returned, otherwise and error is raised"""
     # Get file name
