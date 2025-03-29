@@ -2574,7 +2574,7 @@ class AllHPOExperiments:
         os.mkdir(path)
 
         # Included
-        included_dict = {"dataset": [], "sub_id": []}
+        included_dict: Dict[str, List[str]] = {"dataset": [], "sub_id": []}
         for subject in included_subjects:
             included_dict["dataset"].append(subject.dataset_name)
             included_dict["sub_id"].append(subject.subject_id)
@@ -2582,14 +2582,14 @@ class AllHPOExperiments:
         os.chmod(path / "included.csv", 0o444)
 
         # Excluded (various reasons)
-        input_data_excluded_dict = {"dataset": [], "sub_id": []}
+        input_data_excluded_dict: Dict[str, List[str]] = {"dataset": [], "sub_id": []}
         for subject in input_data_excluded_subjects:
             input_data_excluded_dict["dataset"].append(subject.dataset_name)
             input_data_excluded_dict["sub_id"].append(subject.subject_id)
         pandas.DataFrame(input_data_excluded_dict).to_csv(path / "input_data_excluded.csv", index=False)
         os.chmod(path / "input_data_excluded.csv", 0o444)
 
-        pseudo_targets_excluded_dict = {"dataset": [], "sub_id": []}
+        pseudo_targets_excluded_dict: Dict[str, List[str]] = {"dataset": [], "sub_id": []}
         for subject in pseudo_target_excluded_subjects:
             pseudo_targets_excluded_dict["dataset"].append(subject.dataset_name)
             pseudo_targets_excluded_dict["sub_id"].append(subject.subject_id)
@@ -2642,7 +2642,7 @@ class AllHPOExperiments:
         os.mkdir(path)
 
         # Included
-        included_dict = {"dataset": [], "sub_id": []}
+        included_dict: Dict[str, List[str]] = {"dataset": [], "sub_id": []}
         for subject in included_subjects:
             included_dict["dataset"].append(subject.dataset_name)
             included_dict["sub_id"].append(subject.subject_id)
@@ -2650,21 +2650,21 @@ class AllHPOExperiments:
         os.chmod(path / "included.csv", 0o444)
 
         # Excluded (various reasons)
-        input_data_excluded_dict = {"dataset": [], "sub_id": []}
+        input_data_excluded_dict: Dict[str, List[str]] = {"dataset": [], "sub_id": []}
         for subject in input_data_excluded_subjects:
             input_data_excluded_dict["dataset"].append(subject.dataset_name)
             input_data_excluded_dict["sub_id"].append(subject.subject_id)
         pandas.DataFrame(input_data_excluded_dict).to_csv(path / "input_data_excluded.csv", index=False)
         os.chmod(path / "input_data_excluded.csv", 0o444)
 
-        pseudo_targets_excluded_dict = {"dataset": [], "sub_id": []}
+        pseudo_targets_excluded_dict: Dict[str, List[str]] = {"dataset": [], "sub_id": []}
         for subject in pseudo_target_excluded_subjects:
             pseudo_targets_excluded_dict["dataset"].append(subject.dataset_name)
             pseudo_targets_excluded_dict["sub_id"].append(subject.subject_id)
         pandas.DataFrame(pseudo_targets_excluded_dict).to_csv(path / "pseudo_targets_excluded.csv", index=False)
         os.chmod(path / "pseudo_targets_excluded.csv", 0o444)
 
-        downstream_target_excluded_dict = {"dataset": [], "sub_id": []}
+        downstream_target_excluded_dict: Dict[str, List[str]] = {"dataset": [], "sub_id": []}
         for subject in downstream_targets_excluded_subjects:
             downstream_target_excluded_dict["dataset"].append(subject.dataset_name)
             downstream_target_excluded_dict["sub_id"].append(subject.subject_id)

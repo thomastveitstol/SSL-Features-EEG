@@ -282,7 +282,8 @@ class CombinedDatasets:
         for dataset_name in to_remove:
             del self._subject_ids[dataset_name]
             del self._data[dataset_name]
-            del self._targets[dataset_name]
+            if self._targets is not None:
+                del self._targets[dataset_name]
             del self._variable_availability[dataset_name]
 
         # Delete from list

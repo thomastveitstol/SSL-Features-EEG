@@ -473,7 +473,7 @@ class EEGDatasetBase(abc.ABC):
             raise ValueError(f"Target method {target_name!r} does not have an availability method.")
 
         # Use it
-        return getattr(target_func, "availability_method")(self)
+        return getattr(target_func, "availability_method")(self)  # type: ignore[no-any-return]
 
     # ----------------
     # Properties
