@@ -781,8 +781,10 @@ class Histories:
         # Round the predictions
         df = df.round({col: decimals for col in epochs_column_names})
 
-        # Save csv file
-        df.to_csv(os.path.join(path, f"{history_name}_predictions.csv"), index=False)
+        # Save csv file and make it read-only
+        to_path = os.path.join(path, f"{history_name}_predictions.csv")
+        df.to_csv(to_path, index=False)
+        os.chmod(to_path, 0o444)
 
     def save_subgroup_metrics(self, history_name, path, *, save_plots, decimals, fig_size=(12, 6), font_size=15,
                               title_fontsize=20):
@@ -865,14 +867,18 @@ class Histories:
         # Save the metrics in .csv format
         # ---------------
         # Create pandas dataframe
-        df = pandas.DataFrame.from_dict(self._history)
+        df = pandas.DataFrame(self._history)
 
         # Maybe set decimals
         if decimals is not None:
             df = df.round(decimals)
 
         # Save as .csv
-        df.to_csv(os.path.join(path, f"{history_name}_metrics.csv"), index=False)
+        to_path = os.path.join(path, f"{history_name}_metrics.csv")
+        df.to_csv(to_path, index=False)
+
+        # Make read-only
+        os.chmod(to_path, 0o444)
 
     def save_variables_histories(self, history_name, path, decimals, save_plots):
         # If there is no history, raise a warning and do nothing
