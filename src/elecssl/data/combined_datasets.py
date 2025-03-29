@@ -1,4 +1,5 @@
 import dataclasses
+import warnings
 from typing import Dict, List, Optional, Tuple, Union, Any
 
 import numpy
@@ -73,6 +74,7 @@ class CombinedDatasets:
                 for details in datasets_details
             }
         else:
+            warnings.warn("Interpolating at runtime is slow, better to load it...", DeprecationWarning)
             # Load non-interpolated data
             non_interpolated: Dict[str, Dict[str, Union[numpy.ndarray, ChannelSystem]]] = (  # type: ignore[type-arg]
                 dict())
