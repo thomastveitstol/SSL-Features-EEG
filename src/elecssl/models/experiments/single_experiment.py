@@ -462,28 +462,21 @@ class SingleExperiment:
         train_history = histories["train"]
         val_history = histories["val"]
         test_history = histories["test"] if "test" in histories else None
-        if self.domain_discriminator_config is None:
-            train_history.save_main_history(history_name=f"{prefix_name}train_history", path=results_path,
-                                            decimals=decimals)
-            val_history.save_main_history(history_name=f"{prefix_name}val_history", path=results_path,
-                                          decimals=decimals)
-            if test_history is not None:
-                test_history.save_main_history(history_name=f"{prefix_name}test_history", path=results_path,
-                                               decimals=decimals)
-        else:
+
+        train_history.save_main_history(history_name=f"{prefix_name}train_history", path=results_path,
+                                        decimals=decimals)
+        val_history.save_main_history(history_name=f"{prefix_name}val_history", path=results_path,
+                                      decimals=decimals)
+        if test_history is not None:
+            test_history.save_main_history(history_name=f"{prefix_name}test_history", path=results_path,
+                                           decimals=decimals)
+
+        if self.domain_discriminator_config is not None:
             domain_discriminator_path = os.path.join(results_path, f"{prefix_name}domain_discriminator")
             os.mkdir(domain_discriminator_path)
 
             dd_train_history = histories["dd_train"]
             dd_val_history = histories["dd_val"]
-
-            train_history.save_main_history(history_name=f"{prefix_name}train_history", path=results_path,
-                                            decimals=decimals)
-            val_history.save_main_history(history_name=f"{prefix_name}val_history", path=results_path,
-                                          decimals=decimals)
-            if test_history is not None:
-                test_history.save_main_history(history_name=f"{prefix_name}test_history", path=results_path,
-                                               decimals=decimals)
 
             dd_train_history.save_main_history(history_name=f"{prefix_name}dd_train_history",
                                                path=domain_discriminator_path, decimals=decimals)
