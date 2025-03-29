@@ -4,13 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="major improvements to making subject splitting more robust (+ improved documentation)">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="changes to config files">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/specific_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/specific_settings.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/data/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/tests/data/.coverage" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -267,7 +262,7 @@
       <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctests in RandomSplitsTVTestHoldout">
+  <component name="RunManager" selected="Python tests.Doctest _excluded_dataset_only">
     <configuration name="combined_datasets" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
@@ -290,21 +285,21 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in DortmundVital" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctest _excluded_dataset_only" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/experiments" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/dortmund_vital.py" />
-      <option name="CLASS_NAME" value="DortmundVital" />
-      <option name="METHOD_NAME" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="_excluded_dataset_only" />
       <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_CLASS" />
+      <option name="TEST_TYPE" value="TEST_FUNCTION" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
@@ -368,18 +363,18 @@
     </configuration>
     <list>
       <item itemvalue="Python.combined_datasets" />
-      <item itemvalue="Python tests.Doctests in DortmundVital" />
+      <item itemvalue="Python tests.Doctest _excluded_dataset_only" />
       <item itemvalue="Python tests.Doctests in KeepDatasetsOutRandomSplits" />
       <item itemvalue="Python tests.Doctests in RandomSplitsTVTestHoldout" />
       <item itemvalue="Python tests.Doctests in dortmund_vital" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Doctest _excluded_dataset_only" />
         <item itemvalue="Python tests.Doctests in RandomSplitsTVTestHoldout" />
         <item itemvalue="Python tests.Doctests in KeepDatasetsOutRandomSplits" />
         <item itemvalue="Python.combined_datasets" />
         <item itemvalue="Python tests.Doctests in dortmund_vital" />
-        <item itemvalue="Python tests.Doctests in DortmundVital" />
       </list>
     </recent_temporary>
   </component>
@@ -398,70 +393,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00512" summary="improved sampling">
-      <option name="closed" value="true" />
-      <created>1742825761424</created>
-      <option name="number" value="00512" />
-      <option name="presentableId" value="LOCAL-00512" />
-      <option name="project" value="LOCAL" />
-      <updated>1742825761424</updated>
-    </task>
-    <task id="LOCAL-00513" summary="added abstract method">
-      <option name="closed" value="true" />
-      <created>1742827526330</created>
-      <option name="number" value="00513" />
-      <option name="presentableId" value="LOCAL-00513" />
-      <option name="project" value="LOCAL" />
-      <updated>1742827526330</updated>
-    </task>
-    <task id="LOCAL-00514" summary="removed default argument">
-      <option name="closed" value="true" />
-      <created>1742828773997</created>
-      <option name="number" value="00514" />
-      <option name="presentableId" value="LOCAL-00514" />
-      <option name="project" value="LOCAL" />
-      <updated>1742828773997</updated>
-    </task>
-    <task id="LOCAL-00515" summary="removed default argument">
-      <option name="closed" value="true" />
-      <created>1742828965626</created>
-      <option name="number" value="00515" />
-      <option name="presentableId" value="LOCAL-00515" />
-      <option name="project" value="LOCAL" />
-      <updated>1742828965626</updated>
-    </task>
-    <task id="LOCAL-00516" summary="added abstract method">
-      <option name="closed" value="true" />
-      <created>1742828985273</created>
-      <option name="number" value="00516" />
-      <option name="presentableId" value="LOCAL-00516" />
-      <option name="project" value="LOCAL" />
-      <updated>1742828985273</updated>
-    </task>
-    <task id="LOCAL-00517" summary="changed return from tuple to dict">
-      <option name="closed" value="true" />
-      <created>1742832791193</created>
-      <option name="number" value="00517" />
-      <option name="presentableId" value="LOCAL-00517" />
-      <option name="project" value="LOCAL" />
-      <updated>1742832791193</updated>
-    </task>
-    <task id="LOCAL-00518" summary="updates and fixes, and removed unused saving">
-      <option name="closed" value="true" />
-      <created>1742832948552</created>
-      <option name="number" value="00518" />
-      <option name="presentableId" value="LOCAL-00518" />
-      <option name="project" value="LOCAL" />
-      <updated>1742832948552</updated>
-    </task>
-    <task id="LOCAL-00519" summary="updates for not using test set for every epoch">
-      <option name="closed" value="true" />
-      <created>1742832971672</created>
-      <option name="number" value="00519" />
-      <option name="presentableId" value="LOCAL-00519" />
-      <option name="project" value="LOCAL" />
-      <updated>1742832971672</updated>
     </task>
     <task id="LOCAL-00520" summary="flake8 fixes and updated type hint from old code">
       <option name="closed" value="true" />
@@ -791,7 +722,71 @@
       <option name="project" value="LOCAL" />
       <updated>1743274297130</updated>
     </task>
-    <option name="localTasksCounter" value="561" />
+    <task id="LOCAL-00561" summary="removed comment">
+      <option name="closed" value="true" />
+      <created>1743274740087</created>
+      <option name="number" value="00561" />
+      <option name="presentableId" value="LOCAL-00561" />
+      <option name="project" value="LOCAL" />
+      <updated>1743274740087</updated>
+    </task>
+    <task id="LOCAL-00562" summary="flake8 fixes">
+      <option name="closed" value="true" />
+      <created>1743275003334</created>
+      <option name="number" value="00562" />
+      <option name="presentableId" value="LOCAL-00562" />
+      <option name="project" value="LOCAL" />
+      <updated>1743275003334</updated>
+    </task>
+    <task id="LOCAL-00563" summary="mypy fixes">
+      <option name="closed" value="true" />
+      <created>1743275238593</created>
+      <option name="number" value="00563" />
+      <option name="presentableId" value="LOCAL-00563" />
+      <option name="project" value="LOCAL" />
+      <updated>1743275238593</updated>
+    </task>
+    <task id="LOCAL-00564" summary="mypy fixes">
+      <option name="closed" value="true" />
+      <created>1743275382336</created>
+      <option name="number" value="00564" />
+      <option name="presentableId" value="LOCAL-00564" />
+      <option name="project" value="LOCAL" />
+      <updated>1743275382336</updated>
+    </task>
+    <task id="LOCAL-00565" summary="removed unused function">
+      <option name="closed" value="true" />
+      <created>1743275640600</created>
+      <option name="number" value="00565" />
+      <option name="presentableId" value="LOCAL-00565" />
+      <option name="project" value="LOCAL" />
+      <updated>1743275640600</updated>
+    </task>
+    <task id="LOCAL-00566" summary="mypy fix">
+      <option name="closed" value="true" />
+      <created>1743276001326</created>
+      <option name="number" value="00566" />
+      <option name="presentableId" value="LOCAL-00566" />
+      <option name="project" value="LOCAL" />
+      <updated>1743276001326</updated>
+    </task>
+    <task id="LOCAL-00567" summary="automatic updates">
+      <option name="closed" value="true" />
+      <created>1743276489155</created>
+      <option name="number" value="00567" />
+      <option name="presentableId" value="LOCAL-00567" />
+      <option name="project" value="LOCAL" />
+      <updated>1743276489155</updated>
+    </task>
+    <task id="LOCAL-00568" summary="changes to config files">
+      <option name="closed" value="true" />
+      <created>1743276547952</created>
+      <option name="number" value="00568" />
+      <option name="presentableId" value="LOCAL-00568" />
+      <option name="project" value="LOCAL" />
+      <updated>1743276547952</updated>
+    </task>
+    <option name="localTasksCounter" value="569" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -806,13 +801,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed default arguments" />
-    <MESSAGE value="made interpolation a part of 'preprocessing' to avoid doing it at runtime. Also, logging potential failures when doing preprocessing and documenting autorejected epochs" />
-    <MESSAGE value="removed unused arguments" />
-    <MESSAGE value="changes to config file" />
-    <MESSAGE value="flake8 fixes" />
-    <MESSAGE value="mypy fixes" />
-    <MESSAGE value="fix in config fiel" />
     <MESSAGE value="fix in generating input data" />
     <MESSAGE value="removed defaults" />
     <MESSAGE value="changed from 'fold' to 'split' and updates for avoid reloading data when some of it was loaded for pretext task in PretrainHPO" />
@@ -831,7 +819,14 @@
     <MESSAGE value="minor improvement" />
     <MESSAGE value="made files read-only" />
     <MESSAGE value="major improvements to making subject splitting more robust (+ improved documentation)" />
-    <option name="LAST_COMMIT_MESSAGE" value="major improvements to making subject splitting more robust (+ improved documentation)" />
+    <MESSAGE value="removed comment" />
+    <MESSAGE value="flake8 fixes" />
+    <MESSAGE value="mypy fixes" />
+    <MESSAGE value="removed unused function" />
+    <MESSAGE value="mypy fix" />
+    <MESSAGE value="automatic updates" />
+    <MESSAGE value="changes to config files" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes to config files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
