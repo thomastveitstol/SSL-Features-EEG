@@ -478,10 +478,10 @@ class LODOCV(DataSplitBase):
         return self._splits
 
 
-class KeepDatasetOutRandomSplits(DataSplitBase):
+class KeepDatasetsOutRandomSplits(DataSplitBase):
     """
-    Class for keeping a specified dataset out as the test set. The remaining ones are used for training and validation
-    with as many random splits as specified
+    Class for keeping one or more specified datasets out as the test set. The remaining ones are used for training and
+    validation with as many random splits as specified
 
     Examples
     --------
@@ -489,8 +489,8 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
     ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
     >>> my_num_splits = 5
-    >>> my_splits = KeepDatasetOutRandomSplits(f1_drivers, left_out_dataset="McLaren", val_split=0.2,
-    ...                                        num_random_splits=my_num_splits, seed=42, sort_first=False).splits
+    >>> my_splits = KeepDatasetsOutRandomSplits(f1_drivers, left_out_datasets="McLaren", val_split=0.2,
+    ...                                         num_random_splits=my_num_splits, seed=42, sort_first=False).splits
     >>> len(my_splits), type(my_splits)
     (5, <class 'tuple'>)
     >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
@@ -520,15 +520,15 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
 
     __slots__ = "_splits",
 
-    def __init__(self, dataset_subjects, *, left_out_dataset, val_split, num_random_splits, seed=None, sort_first):
+    def __init__(self, dataset_subjects, *, left_out_datasets, val_split, num_random_splits, seed=None, sort_first):
         """
         Initialise
 
         Parameters
         ----------
         dataset_subjects : dict[str, tuple[str, ...]]
-        left_out_dataset : str
-            Dataset to leave out as test set
+        left_out_datasets : str | tuple[str, ...]
+            Dataset(s) to leave out as test set
         val_split : float
         num_random_splits : int
         seed : int, optional
@@ -537,8 +537,11 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
         # Maybe make data split reproducible
         rng = random.Random(seed)
 
+        if isinstance(left_out_datasets, str):
+            left_out_datasets = (left_out_datasets,)
         # Just fix the test set
         test_subjects = tuple(Subject(dataset_name=left_out_dataset, subject_id=subject_id)
+                              for left_out_dataset in left_out_datasets
                               for subject_id in dataset_subjects[left_out_dataset])
 
         # Maybe sort it first
@@ -551,8 +554,8 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
         # Collect all non-test subjects
         non_test_subjects = []
         for dataset_name, subject_ids in dataset_subjects.items():
-            # Skipping the test dataset
-            if dataset_name == left_out_dataset:
+            # Skipping the test datasets
+            if dataset_name in left_out_datasets:
                 continue
 
             # Add all subjects from the current non-test dataset
@@ -591,7 +594,7 @@ class KeepDatasetOutRandomSplits(DataSplitBase):
 # -----------------
 def get_available_splits():
     """All available data splits must be included here"""
-    return KFoldDataSplit, LODOCV, KeepDatasetOutRandomSplits, RandomSplitsTV, RandomSplitsTVTestHoldout
+    return KFoldDataSplit, LODOCV, KeepDatasetsOutRandomSplits, RandomSplitsTV, RandomSplitsTVTestHoldout
 
 
 def get_data_split(split, **kwargs):
