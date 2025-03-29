@@ -8,7 +8,7 @@ import warnings
 from datetime import date, datetime
 from functools import reduce
 from pathlib import Path
-from typing import Dict, Any, Callable, Tuple, List, Literal, Set, Union, Optional, NamedTuple, Type
+from typing import Dict, Any, Callable, Tuple, List, Literal, Set, Union, Optional, NamedTuple, Type, Iterable
 
 import numpy
 import optuna
@@ -18,11 +18,13 @@ from optuna.trial import FrozenTrial
 from progressbar import progressbar
 from scipy.stats import NearConstantInputWarning, ConstantInputWarning
 
+from elecssl.data.datasets.dataset_base import pseudo_targets_filter_subjects, OcularState
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.paths import get_numpy_data_storage_path
 from elecssl.data.results_analysis.hyperparameters import to_hyperparameter
 from elecssl.data.results_analysis.utils import load_hpo_study
-from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split, simple_random_split
+from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split, simple_random_split, \
+    KeepDatasetsOutRandomSplits, RandomSplitsTVTestHoldout, DataSplitBase
 from elecssl.models.experiments.single_experiment import SingleExperiment
 from elecssl.models.hp_suggesting import make_trial_suggestion, suggest_spatial_dimension_mismatch, suggest_loss, \
     suggest_dl_architecture, get_optuna_sampler
@@ -48,10 +50,12 @@ class MainExperiment(abc.ABC):
     Base class for experiments to be run
     """
 
-    __slots__ = ("_experiments_config", "_sampling_config", "_results_path")
+    __slots__ = ("_experiments_config", "_sampling_config", "_results_path", "_pretext_subject_split",
+                 "_downstream_subject_split")
     _name: str
 
-    def __init__(self, hp_config, experiments_config, results_dir, is_continuation):
+    def __init__(self, *, hp_config, experiments_config, results_dir, is_continuation, pretext_subject_split,
+                 downstream_subject_split):
         # ---------------
         # Set attributes
         # ---------------
@@ -71,6 +75,8 @@ class MainExperiment(abc.ABC):
             self._sampling_config: Dict[str, Any] = sampling_config
             return
 
+        self._pretext_subject_split = pretext_subject_split
+        self._downstream_subject_split = downstream_subject_split
         self._experiments_config = experiments_config
         self._sampling_config = hp_config
         self._results_path = results_dir / self._name
@@ -206,9 +212,10 @@ class HPOExperiment(MainExperiment):
     # (will be used for checking test set integrity)
 
     @classmethod
-    def load_previous(cls, path):
+    def load_previous(cls, path, *, pretext_subject_split, downstream_subject_split):
         """Method for loading a previous study"""
-        return cls(hp_config=None, experiments_config=None, results_dir=path, is_continuation=True)
+        return cls(hp_config=None, experiments_config=None, results_dir=path, is_continuation=True,
+                   pretext_subject_split=pretext_subject_split, downstream_subject_split=downstream_subject_split)
 
     # --------------
     # Methods for running HPO
@@ -711,9 +718,9 @@ class MLFeatureExtraction(MainExperiment):
 
     _name = "ml_features"
 
-    def __init__(self, *, experiments_config, hp_config, results_dir):
+    def __init__(self, *, experiments_config, hp_config, results_dir, subject_split):
         super().__init__(experiments_config=experiments_config, hp_config=hp_config, is_continuation=False,
-                         results_dir=results_dir)
+                         results_dir=results_dir, pretext_subject_split=None, downstream_subject_split=subject_split)
 
     # --------------
     # Overriding abstract methods
@@ -804,6 +811,7 @@ class MLFeatureExtraction(MainExperiment):
 
         # Save it
         df.to_csv(self.results_path / "dataframe.csv", index=False)
+        os.chmod(self.results_path / "dataframe.csv", 0o444)
 
         # -------------
         # Compute predictive value
@@ -836,12 +844,17 @@ class PredictionModelsHPO(HPOExperiment):
     _test_predictions_file_name = "test_history_predictions"
     _optimisation_predictions_file_name = ("train_history_predictions", "val_history_predictions")
 
+    def __init__(self, *, hp_config, experiments_config, results_dir, is_continuation, subject_split):
+        super().__init__(hp_config=hp_config, experiments_config=experiments_config, results_dir=results_dir,
+                         is_continuation=is_continuation, pretext_subject_split=None,
+                         downstream_subject_split=subject_split)
+
     def _create_objective(self):
         def _objective(trial: optuna.Trial):
             # ---------------
             # Suggest / sample hyperparameters
             # ---------------
-            in_freq_band = "all"  # todo: hard coded :(
+            in_freq_band = self._experiments_config["in_freq_band"]
 
             suggested_hyperparameters = self.suggest_hyperparameters(
                 name=None, trial=trial, in_freq_band=in_freq_band
@@ -864,7 +877,7 @@ class PredictionModelsHPO(HPOExperiment):
             with SingleExperiment(hp_config=suggested_hyperparameters, pre_processing_config=preprocessing_config_file,
                                   experiments_config=experiments_config, results_path=results_dir,
                                   fine_tuning=None, experiment_name=None) as experiment:
-                experiment.run_experiment(combined_datasets=None)
+                experiment.run_experiment(combined_datasets=None, subject_split=self._downstream_subject_split)
 
             # ---------------
             # Get the performance
@@ -906,19 +919,20 @@ class PretrainHPO(HPOExperiment):
                                            "pretext_train_history_predictions", "pretext_val_history_predictions")
 
     @classmethod
-    def load_previous(cls, path):
+    def load_previous(cls, path, *, pretext_subject_split, downstream_subject_split):
         return cls(results_dir=path, is_continuation=True, downstream_hp_config=None,
                    downstream_experiments_config=None, pretext_hp_config=None, pretext_experiments_config=None,
-                   experiments_config=None, hp_config=None)
+                   experiments_config=None, hp_config=None, pretext_subject_split=pretext_subject_split,
+                   downstream_subject_split=downstream_subject_split)
 
     def __init__(self, *, experiments_config, hp_config, downstream_hp_config: Optional[Dict[str, Any]],
-                 downstream_experiments_config: Optional[Dict[str, Any]],
-                 pretext_hp_config: Optional[Dict[str, Any]],
-                 pretext_experiments_config: Optional[Dict[str, Any]],
-                 results_dir: Path, is_continuation: bool):
-
+                 downstream_experiments_config: Optional[Dict[str, Any]], pretext_hp_config: Optional[Dict[str, Any]],
+                 pretext_experiments_config: Optional[Dict[str, Any]], results_dir: Path, is_continuation: bool,
+                 pretext_subject_split: Callable[[Iterable[str]], DataSplitBase],
+                 downstream_subject_split: DataSplitBase):
         super().__init__(experiments_config=experiments_config, hp_config=hp_config, results_dir=results_dir,
-                         is_continuation=is_continuation)
+                         is_continuation=is_continuation, pretext_subject_split=pretext_subject_split,
+                         downstream_subject_split=downstream_subject_split)
 
         # ---------------
         # Set attributes
@@ -1041,15 +1055,17 @@ class PretrainHPO(HPOExperiment):
             with SingleExperiment(hp_config=pretext_hpcs, pre_processing_config=preprocessing_config_file,
                                   experiments_config=pretext_experiments_config, results_path=results_dir,
                                   fine_tuning=None, experiment_name="pretext") as experiment:
-                combined_datasets = experiment.run_experiment(combined_datasets=None)
+                combined_datasets = experiment.run_experiment(
+                    combined_datasets=None,
+                    subject_split=self._pretext_subject_split(pretext_experiments_config["Datasets"]))
 
             # ---------------
             # Train on downstream task
             # ---------------
             # Remove pretext task datasets
             combined_datasets.remove_datasets(
-                to_remove=tuple(dataset for dataset in self._pretext_sampling_config["Datasets"]
-                                if dataset not in self._downstream_sampling_config["Datasets"])
+                to_remove=tuple(dataset for dataset in pretext_experiments_config["Datasets"]
+                                if dataset not in self._downstream_experiments_config["Datasets"])
             )
 
             # Run experiment
@@ -1057,7 +1073,8 @@ class PretrainHPO(HPOExperiment):
             with SingleExperiment(hp_config=downstream_hpcs, pre_processing_config=preprocessing_config_file,
                                   experiments_config=downstream_experiments_config, results_path=results_dir,
                                   fine_tuning=fine_tuning, experiment_name=None) as experiment:
-                experiment.run_experiment(combined_datasets=combined_datasets)
+                experiment.run_experiment(combined_datasets=combined_datasets,
+                                          subject_split=self._downstream_subject_split)
 
             # ---------------
             # Compute the performance
@@ -1085,6 +1102,7 @@ class PretrainHPO(HPOExperiment):
                     continuous_testing=self._pretext_experiments_config["Training"]["continuous_testing"]
                 )
                 df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
+                os.chmod(results_dir / "ssl_biomarkers.csv", 0o444)
 
             # Return the score
             return score
@@ -1105,15 +1123,16 @@ class PretrainHPO(HPOExperiment):
         # -------------
         # The pre-training excluded
         datasets_to_use = dict()
-        if "left_out_dataset" in self._pretext_experiments_config["SubjectSplit"]["kwargs"]:
-            pretrain_excluded = self._pretext_experiments_config["SubjectSplit"]["kwargs"]["left_out_dataset"]
-            datasets_to_use[pretrain_excluded] = self._pretext_experiments_config["Datasets"][pretrain_excluded]
+        if "left_out_datasets" in self._pretext_experiments_config["SubjectSplit"]:
+            pretrain_excluded = self._pretext_experiments_config["SubjectSplit"]["left_out_datasets"]
+            for excluded_dataset in pretrain_excluded:
+                datasets_to_use[excluded_dataset] = self._pretext_experiments_config["Datasets"][excluded_dataset]
         else:
             pretrain_excluded = "NO_DATASET"  # convenient that the variable still exists
 
         # The datasets for pretraining
         datasets_for_pretraining = tuple(dataset for dataset in self._pretext_experiments_config["Datasets"]
-                                         if dataset != pretrain_excluded)
+                                         if dataset not in pretrain_excluded)
         possible_pretrain_combinations = _generate_dataset_combinations(datasets_for_pretraining)
         pretrain_combinations = trial.suggest_categorical(f"{name_prefix}datasets",
                                                           choices=possible_pretrain_combinations)
@@ -1233,15 +1252,16 @@ class SimpleElecsslHPO(HPOExperiment):
         # -------------
         # The pre-training excluded
         datasets_to_use = dict()
-        if "left_out_dataset" in self._experiments_config["SubjectSplit"]["kwargs"]:
-            pretrain_excluded = self._experiments_config["SubjectSplit"]["kwargs"]["left_out_dataset"]
-            datasets_to_use[pretrain_excluded] = self._experiments_config["Datasets"][pretrain_excluded]
+        if "left_out_datasets" in self._experiments_config["SubjectSplit"]:
+            pretrain_excluded = self._experiments_config["SubjectSplit"]["left_out_datasets"]
+            for excluded_dataset in pretrain_excluded:
+                datasets_to_use[excluded_dataset] = self._experiments_config["Datasets"][excluded_dataset]
         else:
             pretrain_excluded = "NO_DATASET"  # convenient that the variable still exists
 
         # The datasets for pretraining
         datasets_for_pretraining = tuple(dataset for dataset in self._experiments_config["Datasets"]
-                                         if dataset != pretrain_excluded)
+                                         if dataset not in pretrain_excluded)
         possible_pretrain_combinations = _generate_dataset_combinations(datasets_for_pretraining)
         pretrain_combinations = trial.suggest_categorical(f"{name_prefix}datasets",
                                                           choices=possible_pretrain_combinations)
@@ -1308,7 +1328,7 @@ class SimpleElecsslHPO(HPOExperiment):
             with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
                                   pre_processing_config=preprocessing_config_file, results_path=results_path,
                                   fine_tuning=None, experiment_name=experiment_name) as experiment:
-                experiment.run_experiment(combined_datasets=None)
+                experiment.run_experiment(combined_datasets=None, subject_split=self._pretext_subject_split)
 
             # ---------------
             # Extract expectation values and biomarkers
@@ -1322,11 +1342,12 @@ class SimpleElecsslHPO(HPOExperiment):
                 continuous_testing=self._experiments_config["Training"]["continuous_testing"]
             )
             df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
+            os.chmod(results_dir / "ssl_biomarkers.csv", 0o444)
 
             # ---------------
             # Use the biomarkers
             # ---------------
-            score = _compute_biomarker_predictive_value(
+            score = _compute_biomarker_predictive_value(  # todo: fix subjects splitting
                 df, test_split_config=self._experiments_config["TestSplit"],
                 subject_split_config=self._experiments_config["MLModelSubjectSplit"],
                 ml_model_hp_config=self.ml_model_hp_config, ml_model_settings_config=self.ml_model_settings_config,
@@ -1364,6 +1385,7 @@ class SimpleElecsslHPO(HPOExperiment):
             # Load the biomarkers
             df = pandas.read_csv(trial_path / "ssl_biomarkers.csv")
             df.to_csv(folder_path / "ssl_biomarkers.csv", index=False)  # nice to have here too
+            os.chmod(folder_path / "ssl_biomarkers.csv", 0o444)
 
             # Compute score
             score = _compute_biomarker_predictive_value(
@@ -1583,9 +1605,10 @@ class MultivariableElecsslHPO(HPOExperiment):
 
         # The pre-training excluded
         datasets_to_use = dict()
-        if "left_out_dataset" in self._experiments_config["SubjectSplit"]["kwargs"]:
-            pretrain_excluded = self._experiments_config["SubjectSplit"]["kwargs"]["left_out_dataset"]
-            datasets_to_use[pretrain_excluded] = self._experiments_config["Datasets"][pretrain_excluded]
+        if "left_out_datasets" in self._experiments_config["SubjectSplit"]["kwargs"]:
+            pretrain_excluded = self._experiments_config["SubjectSplit"]["left_out_datasets"]
+            for excluded_dataset in pretrain_excluded:
+                datasets_to_use[excluded_dataset] = self._experiments_config["Datasets"][excluded_dataset]
         else:
             pretrain_excluded = "NO_DATASET"  # convenient that the variable still exists
 
@@ -1665,7 +1688,8 @@ class MultivariableElecsslHPO(HPOExperiment):
                     num_eeg_epochs=num_epochs, feature_extractor_name=feature_extractor_name,
                     pretext_main_metric=self._experiments_config["Training"]["main_metric"],
                     include_pseudo_targets=self._experiments_config["include_pseudo_targets"],
-                    continuous_testing=self._experiments_config["Training"]["continuous_testing"]
+                    continuous_testing=self._experiments_config["Training"]["continuous_testing"],
+                    pretext_subject_split=self._pretext_subject_split
                 )
 
                 if include_pseudo_targets:
@@ -1693,6 +1717,7 @@ class MultivariableElecsslHPO(HPOExperiment):
             df["dataset"] = [idx.dataset_name for idx in df.index]
             df["sub_id"] = [idx.subject_id for idx in df.index]
             df.to_csv(results_dir / "ssl_biomarkers.csv", index=False)
+            os.chmod(results_dir / "ssl_biomarkers.csv", 0o444)
 
             # ---------------
             # Use the biomarkers
@@ -1711,7 +1736,8 @@ class MultivariableElecsslHPO(HPOExperiment):
     @staticmethod
     def _run_single_job(experiments_config, suggested_hyperparameters, trial_number, in_ocular_state, in_freq_band,
                         results_dir, downstream_target, deviation_method, num_eeg_epochs, pretext_main_metric,
-                        feature_extractor_name, include_pseudo_targets, continuous_testing) -> Tuple[Any, ...]:
+                        feature_extractor_name, include_pseudo_targets, continuous_testing,
+                        pretext_subject_split) -> Tuple[Any, ...]:
         """Method for running a single SSL experiments"""
         experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
             experiments_config=experiments_config, in_freq_band=in_freq_band, in_ocular_state=in_ocular_state,
@@ -1726,12 +1752,12 @@ class MultivariableElecsslHPO(HPOExperiment):
         with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
                               pre_processing_config=preprocessing_config_file, results_path=results_path,
                               fine_tuning=None, experiment_name=experiment_name) as experiment:
-            experiment.run_experiment(combined_datasets=None)
+            experiment.run_experiment(combined_datasets=None, subject_split=pretext_subject_split)
 
         # ---------------
         # Extract expectation values and biomarkers
         # ---------------
-        outputs = _get_delta_and_variable(
+        outputs = _get_delta_and_variable(  # todo: fix subjects splitting
             path=results_path / "split_0", target=experiments_config["Training"]["target"],
             downstream_target=downstream_target, deviation_method=deviation_method, num_eeg_epochs=num_eeg_epochs,
             pretext_main_metric=pretext_main_metric, experiment_name=experiment_name,
@@ -1799,6 +1825,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         multielecssl_folder_path = self._get_hpo_folder_path(trial_number=multielecssl_trial_number)
         os.mkdir(multielecssl_folder_path)
         df.to_csv(multielecssl_folder_path / "ssl_biomarkers.csv", index=False)
+        os.chmod(multielecssl_folder_path / "ssl_biomarkers.csv", 0o444)
 
         # Compute score
         score = _compute_biomarker_predictive_value(
@@ -2070,32 +2097,124 @@ class AllHPOExperiments:
         return config
 
     # --------------
+    # Methods for subject splitting
+    # --------------
+    def re_create_split(self):
+        # Load pretext and downstream subjects
+        pretext_subjects_df = pandas.read_csv(self._results_path / "pretext_subjects" / "included.csv",
+                                              usecols=["dataset", "sub_id"])
+        downstream_subjects_df = pandas.read_csv(self._results_path / "downstream_subjects" / "included.csv",
+                                                 usecols=["dataset", "sub_id"])
+
+        pretext_subjects = {Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                            for row in pretext_subjects_df.itertuples(index=False)}
+        downstream_subjects = {Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                               for row in downstream_subjects_df.itertuples(index=False)}
+
+        # Add downstream to pretext, as we will keep track of them for computing residuals
+        pretext_subjects.update(
+            (subject for subject in downstream_subjects
+             if subject.dataset_name in self.pretext_experiments_config["SubjectSplit"]["left_out_datasets"]))
+
+        return self.create_splits(possible_pretext_subjects=pretext_subjects, downstream_subjects=downstream_subjects)
+
+    def create_splits(self, *, possible_pretext_subjects: Set[Subject], downstream_subjects: Set[Subject]):
+        """Method for creating splits for (1) pre-training, (2) downstream training for predictions models, and (3)
+        downstream training for elecssl. As dataset selection is a hyperparameter itself, it is not possible to return
+        a split object like downstream split objects. For that reason, it returns a function (a callable) which creates
+        a split object when it is called, required that the datasets used for such pre-training (including potential
+        hold-outs) are passed as an argument"""
+        # --------------
+        # Pretext task
+        # --------------
+        # Keep in mind that the selection of dataset for pre-training is a hyperparameter...
+        # (Not my proudest implementation tbh...)
+        _possible_pretext_subjects = frozenset(possible_pretext_subjects)
+        _pretext_config = self.pretext_experiments_config["SubjectSplit"]
+        def pretext_subject_split_func(datasets: Iterable[str]):
+            """Function which creates"""
+            pretext_subjects = {subject for subject in _possible_pretext_subjects if subject.dataset_name in datasets}
+            return KeepDatasetsOutRandomSplits(
+                dataset_subjects=subjects_tuple_to_dict(pretext_subjects),
+                val_split=_pretext_config["val_split"], left_out_datasets=_pretext_config["left_out_datasets"],
+                seed=_pretext_config["seed"], num_random_splits=_pretext_config["num_random_splits"], sort_first=True
+            )
+
+        # --------------
+        # Downstream
+        # --------------
+        # Elecssl uses more train/val splits per HPC, because it can do so efficiently
+        _downstream_split = self.downstream_experiments_config["SubjectSplit"]
+        val_split = _downstream_split["val_split"]
+        test_split = _downstream_split["test_split"]
+        seed = _downstream_split["seed"]
+
+        prediction_models_downstream_subject_split = RandomSplitsTVTestHoldout(
+            dataset_subjects=subjects_tuple_to_dict(downstream_subjects), val_split=val_split, test_split=test_split,
+            num_random_splits=_downstream_split["normal_num_random_splits"], seed=seed, sort_first=True
+        )
+        elecssl_downstream_subject_split = RandomSplitsTVTestHoldout(
+            dataset_subjects=subjects_tuple_to_dict(downstream_subjects), val_split=val_split, test_split=test_split,
+            num_random_splits=_downstream_split["elecssl_num_random_splits"], seed=seed, sort_first=True
+        )
+
+        test_set_1 = prediction_models_downstream_subject_split.test_set
+        test_set_2 = elecssl_downstream_subject_split.test_set
+        assert test_set_1 == test_set_2, "The test sets were inconsistent"
+
+        return pretext_subject_split_func, prediction_models_downstream_subject_split, elecssl_downstream_subject_split
+
+    # --------------
     # Main HPO experiments
     # --------------
     def run_experiments(self):
         # --------------
+        # Make subject splits
+        # --------------
+        # Get all available subjects/participants
+        pretext_subjects, downstream_subjects = self.get_available_subjects()
+
+        # Add downstream to pretext, as we will keep track of them for computing residuals
+        pretext_subjects.update(
+            (subject for subject in downstream_subjects
+             if subject.dataset_name in self.pretext_experiments_config["SubjectSplit"]["left_out_datasets"]))
+
+        # Make splits
+        (pretext_subject_split_func, prediction_models_downstream_subject_split,
+         elecssl_downstream_subject_split) = self.create_splits(possible_pretext_subjects=pretext_subjects,
+                                                                downstream_subjects=downstream_subjects)
+
+        # --------------
         # HPO experiments
         # --------------
         # Feature extraction + ML
-        ml_features = self.run_ml_features()
+        # ml_features = self.run_ml_features()
 
         # Prediction models
-        # prediction_models = self.run_prediction_models_hpo()
+        prediction_models = self.run_prediction_models_hpo(subject_split=prediction_models_downstream_subject_split)
 
         # Pretraining
-        pretrain = self.run_pretraining_hpo()
+        pretrain = self.run_pretraining_hpo(pretext_subject_split=pretext_subject_split_func,
+                                            downstream_subject_split=prediction_models_downstream_subject_split)
+
 
         # Simple Elecssl
-        simple_elecssl = self.run_simple_elecssl_hpo(pretrain)
+        # simple_elecssl = self.run_simple_elecssl_hpo(pretrain, pretext_subject_split=pretext_subject_split,
+        #                                              downstream_subject_split=elecssl_downstream_subject_split)
 
         # Multivariable Elecssl
-        multivariable_elecssl = self.run_multivariable_elecssl_hpo(simple_elecssl)
+        # multivariable_elecssl = self.run_multivariable_elecssl_hpo(
+        #     simple_elecssl, pretext_subject_split=pretext_subject_split,
+        #    downstream_subject_split=elecssl_downstream_subject_split)
 
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((ml_features, pretrain, simple_elecssl,
-                                        multivariable_elecssl))
+        self.verify_test_set_integrity((
+            prediction_models,
+            pretrain,
+                                        # simple_elecssl, multivariable_elecssl
+                                        ))
 
         # --------------
         # Dataframe creation
@@ -2111,7 +2230,7 @@ class AllHPOExperiments:
     # --------------
     # Single HPO experiments
     # --------------
-    def run_ml_features(self):
+    def run_ml_features(self, *, subject_split):
         # Create the config file
         keys = ("TestSplit", "MLModelSubjectSplit", "MLModelSettings")
         _config = {key: self.pretext_experiments_config[key] for key in keys}
@@ -2122,12 +2241,12 @@ class AllHPOExperiments:
 
         # Run the experiment
         with MLFeatureExtraction(experiments_config=config, hp_config=self.specific_hpds["MLFeatureExtraction"],
-                                 results_dir=self._results_path) as experiment:
+                                 results_dir=self._results_path, subject_split=subject_split) as experiment:
             experiment.evaluate()
 
         return experiment
 
-    def run_prediction_models_hpo(self):
+    def run_prediction_models_hpo(self, *, subject_split):
         # Create merged config files
         hp_config = merge_dicts_strict(self.shared_hpds, self.specific_hpds["PredictionModelsHPO"])
         experiments_config = merge_dicts_strict(self.defaults_config, self.downstream_experiments_config,
@@ -2135,12 +2254,13 @@ class AllHPOExperiments:
 
         # Run experiments
         with PredictionModelsHPO(experiments_config=experiments_config, hp_config=hp_config,
-                                 results_dir=self._results_path, is_continuation=False) as experiment:
+                                 results_dir=self._results_path, is_continuation=False,
+                                 subject_split=subject_split) as experiment:
             experiment.run_hyperparameter_optimisation()
 
         return experiment
 
-    def run_pretraining_hpo(self):
+    def run_pretraining_hpo(self, *, pretext_subject_split, downstream_subject_split):
         # Create merged config files
         experiments_config = merge_dicts_strict(self.defaults_config, self.specific_experiments_config["PretrainHPO"])
 
@@ -2157,12 +2277,14 @@ class AllHPOExperiments:
                          pretext_experiments_config=self.pretext_experiments_config,
                          pretext_hp_config=self.specific_hpds["PretrainHPO"]["pretext"],
                          downstream_hp_config=self.specific_hpds["PretrainHPO"]["downstream"],
-                         results_dir=self._results_path, is_continuation=False) as experiment:
+                         results_dir=self._results_path, is_continuation=False,
+                         pretext_subject_split=pretext_subject_split,
+                         downstream_subject_split=downstream_subject_split) as experiment:
             experiment.run_hyperparameter_optimisation()
 
         return experiment
 
-    def run_simple_elecssl_hpo(self, pretrain_experiment):
+    def run_simple_elecssl_hpo(self, pretrain_experiment, *, pretext_subject_split, downstream_subject_split):
         # Create merged config files
         hp_config = merge_dicts_strict(self.shared_hpds, self.specific_hpds["SimpleElecsslHPO"])
         experiments_config = merge_dicts_strict(self.defaults_config, self.pretext_experiments_config,
@@ -2171,13 +2293,16 @@ class AllHPOExperiments:
 
         # Elecssl with one independent variable/residual
         with SimpleElecsslHPO(hp_config=hp_config, experiments_config=experiments_config,
-                              results_dir=self._results_path, is_continuation=False) as experiment:
+                              results_dir=self._results_path, is_continuation=False,
+                              pretext_subject_split=pretext_subject_split,
+                              downstream_subject_split=downstream_subject_split) as experiment:
             experiment.reuse_pretrained_runs(pretrain_experiment)
             experiment.continue_hyperparameter_optimisation(num_trials=experiments_config["num_additional_trials"])
 
         return experiment
 
-    def run_multivariable_elecssl_hpo(self, simple_elecssl_experiment):
+    def run_multivariable_elecssl_hpo(self, simple_elecssl_experiment, *, pretext_subject_split,
+                                      downstream_subject_split):
         # Create merged config files
         hp_config = merge_dicts_strict(self.shared_hpds, self.specific_hpds["MultivariableElecsslHPO"])
         experiments_config = merge_dicts_strict(self.defaults_config, self.pretext_experiments_config,
@@ -2186,7 +2311,9 @@ class AllHPOExperiments:
 
         # Elecssl with multiple independent variables/residuals
         with MultivariableElecsslHPO(hp_config=hp_config, experiments_config=experiments_config,
-                                     results_dir=self._results_path, is_continuation=False) as experiment:
+                                     results_dir=self._results_path, is_continuation=False,
+                                     pretext_subject_split=pretext_subject_split,
+                                     downstream_subject_split=downstream_subject_split) as experiment:
             experiment.reuse_simple_elecssl_runs(simple_elecssl_experiment)
             experiment.continue_hyperparameter_optimisation(experiments_config["num_additional_trials"])
 
@@ -2202,38 +2329,56 @@ class AllHPOExperiments:
         return cls(results_dir=path, config_path=None, is_continuation=True)
 
     def continue_prediction_models_hpo(self, num_trials: Optional[int]):
+        _, subject_split, _ = self.re_create_split()
+
         experiment_class = PredictionModelsHPO
         if experiment_class.is_existing_dir(self._results_path):
-            with experiment_class.load_previous(self._results_path) as experiment:
+            with experiment_class.load_previous(self._results_path, pretext_subject_split=None,
+                                                downstream_subject_split=subject_split) as experiment:
                 experiment.continue_hyperparameter_optimisation(num_trials)
         else:
-            self.run_prediction_models_hpo()
+            self.run_prediction_models_hpo(subject_split=subject_split)
 
     def continue_pretraining_hpo(self, num_trials: Optional[int]):
+        pretext_split, downstream_split, _ = self.re_create_split()
         experiment_class = PretrainHPO
         if experiment_class.is_existing_dir(self._results_path):
-            with experiment_class.load_previous(self._results_path) as experiment:
+            with experiment_class.load_previous(self._results_path, pretext_subject_split=pretext_split,
+                                                downstream_subject_split=downstream_split) as experiment:
                 experiment.continue_hyperparameter_optimisation(num_trials)
         else:
-            self.run_pretraining_hpo()
+            self.run_pretraining_hpo(pretext_subject_split=pretext_split, downstream_subject_split=downstream_split)
 
     def continue_simple_elecssl_hpo(self, num_trials: Optional[int]):
+        pretext_split, prediction_model_downstream_split, elecssl_downstream_split = self.re_create_split()
         experiment_class = SimpleElecsslHPO
         if experiment_class.is_existing_dir(self._results_path):
-            with experiment_class.load_previous(self._results_path) as experiment:
+            with experiment_class.load_previous(
+                    self._results_path, pretext_subject_split=pretext_split,
+                    downstream_subject_split=elecssl_downstream_split) as experiment:
                 experiment.continue_hyperparameter_optimisation(num_trials)
         else:
             # We restrict this method to only allowing SimpleElecsslHPO to be used AFTER a PretrainHPO has been executed
-            self.run_simple_elecssl_hpo(pretrain_experiment=PretrainHPO.load_previous(path=self._results_path))
+            self.run_simple_elecssl_hpo(
+                pretrain_experiment=PretrainHPO.load_previous(
+                    path=self._results_path, pretext_subject_split=pretext_split,
+                    downstream_subject_split=prediction_model_downstream_split),
+                pretext_subject_split=pretext_split, downstream_subject_split=elecssl_downstream_split)
 
     def continue_multivariable_elecssl_hpo(self, num_trials: Optional[int]):
+        pretext_split, _, elecssl_downstream_split = self.re_create_split()
         if MultivariableElecsslHPO.is_existing_dir(self._results_path):
-            with MultivariableElecsslHPO.load_previous(self._results_path) as experiment:
+            with MultivariableElecsslHPO.load_previous(
+                    self._results_path, pretext_subject_split=pretext_split,
+                    downstream_subject_split=elecssl_downstream_split) as experiment:
                 experiment.continue_hyperparameter_optimisation(num_trials)
         else:
             # We restrict this method to only allowing SimpleElecsslHPO to be used AFTER a PretrainHPO has been executed
             self.run_multivariable_elecssl_hpo(
-                simple_elecssl_experiment=SimpleElecsslHPO.load_previous(path=self._results_path))
+                simple_elecssl_experiment=SimpleElecsslHPO.load_previous(
+                    path=self._results_path, pretext_subject_split=pretext_split,
+                    downstream_subject_split=elecssl_downstream_split),
+                pretext_subject_split=pretext_split, downstream_subject_split=elecssl_downstream_split)
 
     # --------------
     # Test set integrity
@@ -2250,6 +2395,10 @@ class AllHPOExperiments:
     # --------------
     # Properties
     # --------------
+    @property
+    def downstream_target(self) -> str:
+        return self._downstream_experiments_config["Training"]["target"]
+
     @property
     def defaults_config(self):
         return copy.deepcopy(self._defaults_config)
@@ -2273,6 +2422,274 @@ class AllHPOExperiments:
     @property
     def specific_hpds(self):
         return copy.deepcopy(self._specific_hpds)
+
+    # --------------
+    # Methods for inclusion/exclusion based on different criteria
+    # --------------
+    def _get_multivariable_elecssl_input_freq_bands(self) -> Set[str]:
+        _melecssl_io_space = self.specific_experiments_config["MultivariableElecsslHPO"]["IOSpaces"]
+        return {in_band for _, (in_band, _) in _melecssl_io_space}
+
+    def _get_simple_elecssl_input_freq_bands(self) -> Set[str]:
+        # This may change in the future
+        freq_bands = set(self.specific_hpds["SimpleElecsslHPO"]["in_freq_band"]["choices"])
+        if "same" in freq_bands:
+            freq_bands.remove("same")
+            freq_bands.update(self.specific_hpds["SimpleElecsslHPO"]["out_freq_band"]["choices"])
+        return freq_bands
+
+    def _get_autoreject_choices(self):
+        # todo: This will probably change in the future
+        return self.shared_hpds["Preprocessing"]["autoreject"][1]["choices"]
+
+    def _get_required_datasets(self) -> Set[str]:
+        # todo: this is somewhat conservative, but currently ok for our purposes
+        in_datasets = set(self.pretext_experiments_config["Datasets"]).union(
+            self.downstream_experiments_config["Datasets"])
+        interpolation_datasets = self.shared_hpds["Interpolation"]["main_channel_system"]["choices"]
+        datasets = in_datasets.union(interpolation_datasets)
+        return datasets
+
+    def _get_required_pseudo_targets(self) -> Set[str]:
+        """Does NOT include log"""
+        # Simple elecssl
+        _selecssl_out_freq_bands = self.specific_hpds["SimpleElecsslHPO"]["out_freq_band"]["choices"]
+        _selecssl_out_ocular_state = self.specific_experiments_config["SimpleElecsslHPO"]["out_ocular_state"]
+        selecssl_pseudo_targets = {f"band_power_{freq_band}_{_selecssl_out_ocular_state}"
+                                   for freq_band in _selecssl_out_freq_bands}
+
+        # Multivariable elecssl
+        _melecssl_io_space = self.specific_experiments_config["MultivariableElecsslHPO"]["IOSpaces"]
+        melecssl_pseudo_targets = {f"band_power_{out_band}_{out_os}"
+                                   for (_, out_os), (_, out_band) in _melecssl_io_space}
+
+        # It would be very strange if multivariable and simple elecssl does not share the required pseudo targets. So
+        # raising an error if it found
+        if selecssl_pseudo_targets != melecssl_pseudo_targets:
+            raise RuntimeError(f"Expected multivariable and simple Elecssl HPO experiments to have the same output "
+                               f"frequency bands requirements, but found {selecssl_pseudo_targets=} and "
+                               f"{melecssl_pseudo_targets=}")
+        return selecssl_pseudo_targets
+
+    def _get_required_input_versions(self, ocular_state: OcularState) -> Tuple[str, ...]:
+        in_freq_bands = set.union(
+            {self.specific_experiments_config["PredictionModelsHPO"]["in_freq_band"]},  # Not strictly needed for pretext
+            {self.specific_experiments_config["PretrainHPO"]["in_freq_band"]},
+            self._get_simple_elecssl_input_freq_bands(),
+            self._get_multivariable_elecssl_input_freq_bands()
+
+        )
+        input_lengths = self._shared_hpds["Preprocessing"]["input_length"][1]["choices"]
+        datasets = self._get_required_datasets()
+        sfreq_multiples = self.shared_hpds["Preprocessing"]["sfreq_multiple"][1]["choices"]
+
+        # Entire input data space
+        input_data_config_space = itertools.product(in_freq_bands, input_lengths, self._get_autoreject_choices(),
+                                                    datasets, sfreq_multiples)
+
+        # Add all required versions
+        required_versions: List[str] = []
+        for in_freq_band, input_length, auto_reject, dataset, sfreq_multiple in input_data_config_space:
+            required_versions.append(
+                _get_preprocessed_folder_name(in_ocular_state=ocular_state, input_length=input_length,
+                                              in_freq_band=in_freq_band, autoreject=auto_reject, ch_system=dataset,
+                                              sfreq_multiple=sfreq_multiple)
+            )
+        return tuple(required_versions)
+
+    def _filter_by_input_data(self, dataset_names: Tuple[str, ...], preprocessed_versions: Tuple[str, ...]):
+        input_data_included_subjects: Set[Subject] = set()
+        input_data_excluded_subjects: Set[Subject] = set()
+        for dataset_name in dataset_names:
+            dataset = get_dataset(dataset_name)
+
+            # Begin by getting all requested subjects
+            num_subjects = self._pretext_experiments_config["Datasets"][dataset_name]["num_subjects"]
+            if num_subjects == "all":
+                all_subjects = set(dataset.get_subject_ids())
+            else:
+                all_subjects = set(dataset.get_subject_ids()[:num_subjects])
+
+            # Remove and exclude participants from the current dataset
+            included, excluded = dataset.preprocessing_filter_subjects(
+                subjects=all_subjects, preprocessing_versions=preprocessed_versions)
+
+            input_data_included_subjects.update(included)
+            input_data_excluded_subjects.update(excluded)
+        return input_data_included_subjects, input_data_excluded_subjects
+
+    def _filter_by_downstream_target(self, subjects: Set[Subject]):
+        # Existence of downstream targets should be checked per dataset
+        downstream_targets_included_subjects: Set[Subject] = set()
+        downstream_targets_excluded_subjects: Set[Subject] = set()
+        target = self.downstream_target
+        for dataset_name, subject_ids in subjects_tuple_to_dict(subjects).items():
+            dataset = get_dataset(dataset_name)
+
+            # Get the included and excluded subjects by the class itself
+            included, excluded = dataset.downstream_target_filter_subjects(subjects=set(subject_ids), target=target)
+
+            downstream_targets_included_subjects.update(included)
+            downstream_targets_excluded_subjects.update(excluded)
+
+        return downstream_targets_included_subjects, downstream_targets_excluded_subjects
+
+    def _get_available_subjects_pretext_constraints(self, pretext_datasets: Tuple[str, ...], save_inclusion_exclusion):
+        """
+        Get the subjects which are to be used for pre-training in the experiments. The following requirements must be
+        met for a subject to be included:
+
+            - EEG data should be present in all pre-processed versions for eyes closed
+            - All pseudo-targets that will be used must be available
+
+        Parameters
+        ----------
+        pretext_datasets : tuple[str, ...]
+        save_inclusion_exclusion : bool
+
+        Returns
+        -------
+        set[Subject]
+            The subjects which passed the requirements
+        """
+        # Get all pre-processed versions for eyes closed
+        ec_preprocessed_versions = self._get_required_input_versions(ocular_state=OcularState.EC)
+
+        # -------------
+        # Participants should be in all preprocessed versions
+        # -------------
+        input_data_included_subjects, input_data_excluded_subjects = self._filter_by_input_data(
+            dataset_names=pretext_datasets, preprocessed_versions=ec_preprocessed_versions)
+
+        # -------------
+        # Pseudo-targets should exist
+        # -------------
+        included_subjects, pseudo_target_excluded_subjects = pseudo_targets_filter_subjects(
+            subjects=input_data_included_subjects, pseudo_targets=self._get_required_pseudo_targets())
+
+        # -------------
+        # Saving / documentation of included and excluded
+        # -------------
+        if not save_inclusion_exclusion:
+            return
+
+        path = self._results_path / "pretext_subjects"
+        os.mkdir(path)
+
+        # Included
+        included_dict = {"dataset": [], "sub_id": []}
+        for subject in included_subjects:
+            included_dict["dataset"].append(subject.dataset_name)
+            included_dict["sub_id"].append(subject.subject_id)
+        pandas.DataFrame(included_dict).to_csv(path / "included.csv", index=False)
+        os.chmod(path / "included.csv", 0o444)
+
+        # Excluded (various reasons)
+        input_data_excluded_dict = {"dataset": [], "sub_id": []}
+        for subject in input_data_excluded_subjects:
+            input_data_excluded_dict["dataset"].append(subject.dataset_name)
+            input_data_excluded_dict["sub_id"].append(subject.subject_id)
+        pandas.DataFrame(input_data_excluded_dict).to_csv(path / "input_data_excluded.csv", index=False)
+        os.chmod(path / "input_data_excluded.csv", 0o444)
+
+        pseudo_targets_excluded_dict = {"dataset": [], "sub_id": []}
+        for subject in pseudo_target_excluded_subjects:
+            pseudo_targets_excluded_dict["dataset"].append(subject.dataset_name)
+            pseudo_targets_excluded_dict["sub_id"].append(subject.subject_id)
+        pandas.DataFrame(pseudo_targets_excluded_dict).to_csv(path / "pseudo_targets_excluded.csv", index=False)
+        os.chmod(path / "pseudo_targets_excluded.csv", 0o444)
+
+        return included_subjects
+
+    def _get_available_subjects_downstream_constraints(self, downstream_datasets, save_inclusion_exclusion):
+        """
+        Get the subjects which are to be used for downstream training in the experiments. The following requirements
+        must be met for a subject to be included:
+
+            - EEG data should be present in all pre-processed versions for both eyes closed and eyes open
+            - All pseudo-targets that will be used must be available
+            - The downstream target must be available
+
+        Returns
+        -------
+        set[Subject]
+            The subjects which passed the requirements
+        """
+        # Get all pre-processed versions for eyes closed and eyes open
+        ec_preprocessed_versions = self._get_required_input_versions(ocular_state=OcularState.EC)
+        eo_preprocessed_versions = self._get_required_input_versions(ocular_state=OcularState.EO)
+        preprocessed_version_requirements = ec_preprocessed_versions + eo_preprocessed_versions
+
+        # -------------
+        # Filter subjects
+        # -------------
+        # Participants should be in all preprocessed versions
+        included_subjects, input_data_excluded_subjects = self._filter_by_input_data(
+            dataset_names=downstream_datasets, preprocessed_versions=preprocessed_version_requirements)
+
+        # Pseudo-targets should exist
+        included_subjects, pseudo_target_excluded_subjects = pseudo_targets_filter_subjects(
+            subjects=included_subjects, pseudo_targets=self._get_required_pseudo_targets())
+
+        # Downstream targets should exist
+        included_subjects, downstream_targets_excluded_subjects = self._filter_by_downstream_target(
+            subjects=included_subjects)
+
+        # -------------
+        # Saving / documentation of included and excluded
+        # -------------
+        if not save_inclusion_exclusion:
+            return
+
+        path = self._results_path / "downstream_subjects"
+        os.mkdir(path)
+
+        # Included
+        included_dict = {"dataset": [], "sub_id": []}
+        for subject in included_subjects:
+            included_dict["dataset"].append(subject.dataset_name)
+            included_dict["sub_id"].append(subject.subject_id)
+        pandas.DataFrame(included_dict).to_csv(path / "included.csv", index=False)
+        os.chmod(path / "included.csv", 0o444)
+
+        # Excluded (various reasons)
+        input_data_excluded_dict = {"dataset": [], "sub_id": []}
+        for subject in input_data_excluded_subjects:
+            input_data_excluded_dict["dataset"].append(subject.dataset_name)
+            input_data_excluded_dict["sub_id"].append(subject.subject_id)
+        pandas.DataFrame(input_data_excluded_dict).to_csv(path / "input_data_excluded.csv", index=False)
+        os.chmod(path / "input_data_excluded.csv", 0o444)
+
+        pseudo_targets_excluded_dict = {"dataset": [], "sub_id": []}
+        for subject in pseudo_target_excluded_subjects:
+            pseudo_targets_excluded_dict["dataset"].append(subject.dataset_name)
+            pseudo_targets_excluded_dict["sub_id"].append(subject.subject_id)
+        pandas.DataFrame(pseudo_targets_excluded_dict).to_csv(path / "pseudo_targets_excluded.csv", index=False)
+        os.chmod(path / "pseudo_targets_excluded.csv", 0o444)
+
+        downstream_target_excluded_dict = {"dataset": [], "sub_id": []}
+        for subject in downstream_targets_excluded_subjects:
+            downstream_target_excluded_dict["dataset"].append(subject.dataset_name)
+            downstream_target_excluded_dict["sub_id"].append(subject.subject_id)
+        pandas.DataFrame(downstream_target_excluded_dict).to_csv(path / "downstream_target_excluded.csv", index=False)
+        os.chmod(path / "downstream_target_excluded.csv", 0o444)
+
+        return included_subjects
+
+    def get_available_subjects(self):
+        """Method for getting the subjects which are available for pre-training and downstream training"""
+        # Separate dataset into pretext and downstream
+        _pretext_datasets = tuple(self._pretext_experiments_config["Datasets"])
+
+        downstream_datasets = tuple(self._downstream_experiments_config["Datasets"])
+        pretext_datasets = tuple(dataset for dataset in _pretext_datasets if dataset not in downstream_datasets)
+
+        # Get available subjects based on the different constraints/requirements
+        pretext_subjects = self._get_available_subjects_pretext_constraints(
+            pretext_datasets, save_inclusion_exclusion=True)
+        downstream_subjects = self._get_available_subjects_downstream_constraints(
+            downstream_datasets, save_inclusion_exclusion=True)
+        return pretext_subjects, downstream_subjects
 
 
 # --------------
@@ -2545,8 +2962,13 @@ def _compute_biomarker_predictive_value(df, *, subject_split_config, test_split_
         )
         test_scores_df = test_scores_df.round(decimals=ml_model_settings_config["test_scores_decimals"])
 
+        # Save csv files
         test_predictions_df.to_csv(results_dir / "test_predictions.csv", index=False)
         test_scores_df.to_csv(results_dir / "test_scores.csv", index=False)
+
+        # Make read-only
+        os.chmod(results_dir / "test_predictions.csv", 0o444)
+        os.chmod(results_dir / "test_scores.csv", 0o444)
 
     return score
 
@@ -2567,13 +2989,13 @@ def _excluded_dataset_only(*, dataset_config, subject_split_config):
     Examples
     --------
     >>> _excluded_dataset_only(dataset_config={"L": {"num_subjects": 20}},
-    ...                        subject_split_config={"kwargs": {"left_out_dataset": "L"}})
+    ...                        subject_split_config={"kwargs": {"left_out_datasets": "L"}})
     True
     >>> _excluded_dataset_only(dataset_config={"L": {"num_subjects": 20}},
-    ...                        subject_split_config={"kwargs": {"left_out_dataset": "B"}})
+    ...                        subject_split_config={"kwargs": {"left_out_datasets": "B"}})
     False
     >>> _excluded_dataset_only(dataset_config={"L": {"num_subjects": 20}, "B": {"num_subjects": 30}},
-    ...                        subject_split_config={"kwargs": {"left_out_dataset": "L"}})
+    ...                        subject_split_config={"kwargs": {"left_out_datasets": "L"}})
     False
     """
     # todo: quite hard-coding tbh...
@@ -2583,7 +3005,7 @@ def _excluded_dataset_only(*, dataset_config, subject_split_config):
         return False
 
     # Check if there even is a hold-out dataset
-    if "left_out_dataset" not in subject_split_config["kwargs"]:
+    if "left_out_datasets" not in subject_split_config["kwargs"]:
         return False
 
     # Make check
@@ -2732,7 +3154,11 @@ def _get_warning(warning):
 def _get_prepared_experiments_config(experiments_config, in_freq_band, in_ocular_state, suggested_hyperparameters):
     # Load the preprocessing file and add some necessary info
     with open(_get_preprocessing_config_path(ocular_state=in_ocular_state)) as file:
-        f_max = yaml.safe_load(file)["FrequencyBands"][in_freq_band][-1]
+        config_file =  yaml.safe_load(file)
+        f_max = config_file["FrequencyBands"][in_freq_band][-1]
+        if f_max is None:
+            f_max = config_file["_SharedSteps"]["band_pass"][1]  # Not very elegant, but it is what it is atm...
+
     preprocessing_config_file = suggested_hyperparameters["Preprocessing"].copy()
     _resample = f_max * preprocessing_config_file['sfreq_multiple'] * preprocessing_config_file['input_length']
     preprocessing_config_file["resample"] = _resample
@@ -2749,13 +3175,33 @@ def _get_prepared_experiments_config(experiments_config, in_freq_band, in_ocular
         sampling_freq = preprocessing_config_file['sfreq_multiple'] * f_max
         suggested_hyperparameters["DLArchitecture"]["kwargs"]["sampling_freq"] = sampling_freq
 
+    # --------------
     # Add the preprocessed version to all datasets
-    preprocessed_version = (f"preprocessed_band_pass_{in_ocular_state}/data--band_pass-{in_freq_band}--"
-                            f"input_length-{preprocessing_config_file['input_length']}s--"
-                            f"autoreject-{preprocessing_config_file['autoreject']}--"
-                            f"sfreq-{preprocessing_config_file['sfreq_multiple']}fmax")
-
+    # --------------
+    # Infer the channel system from the HPCs. If RBP is used for handling varied electrode configurations use the
+    # channel system of the dataset itself
     experiments_config = experiments_config.copy()
-    for dataset_info in experiments_config["Datasets"].values():
+    if suggested_hyperparameters["SpatialDimensionMismatch"]["name"] == "RegionBasedPooling":
+        ch_system = None
+    elif suggested_hyperparameters["SpatialDimensionMismatch"]["name"] == "Interpolation":
+        ch_system = suggested_hyperparameters["SpatialDimensionMismatch"]["kwargs"]["main_channel_system"]
+    else:
+        raise ValueError(f"Method for handling varied electrode configurations not understood, and can therefore not "
+                         f"infer the pre-processed version to use for the datasets")
+
+    for dataset_name, dataset_info in experiments_config["Datasets"].items():
+        dataset_ch_system = dataset_name if ch_system is None else ch_system
+        preprocessed_version = _get_preprocessed_folder_name(
+            in_ocular_state=in_ocular_state, in_freq_band=in_freq_band, ch_system=dataset_ch_system,
+            input_length=preprocessing_config_file["input_length"], autoreject=preprocessing_config_file["autoreject"],
+            sfreq_multiple=preprocessing_config_file["sfreq_multiple"]
+        )
         dataset_info["pre_processed_version"] = preprocessed_version
     return experiments_config, preprocessing_config_file
+
+
+def _get_preprocessed_folder_name(*, in_ocular_state, in_freq_band, input_length, autoreject, sfreq_multiple,
+                                  ch_system) -> str:
+    in_ocular_state = in_ocular_state.value.lower() if isinstance(in_ocular_state, OcularState) else in_ocular_state
+    return (f"preprocessed_band_pass_{in_ocular_state}/data--band_pass-{in_freq_band}--input_length-{input_length}s--"
+            f"autoreject-{autoreject}--sfreq-{sfreq_multiple}fmax--ch_system-{ch_system}")
