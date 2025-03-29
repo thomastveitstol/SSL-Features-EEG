@@ -2394,7 +2394,10 @@ class AllHPOExperiments:
     # --------------
     @property
     def downstream_target(self) -> str:
-        return self._downstream_experiments_config["Training"]["target"]
+        """Get the downstream target"""
+        target = self._downstream_experiments_config["Training"]["target"]
+        assert isinstance(target, str)  # make mypy stop complaining
+        return target
 
     @property
     def defaults_config(self):
