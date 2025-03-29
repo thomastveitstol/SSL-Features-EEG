@@ -2,7 +2,7 @@ import abc
 import dataclasses
 import itertools
 import random
-from typing import List, Tuple, Sequence, Dict
+from typing import List, Tuple, Sequence, Dict, Set
 
 import numpy
 
@@ -83,6 +83,17 @@ class DataSplitBase(abc.ABC):
         Sequence rather than Iterable because __len__ is needed to know how many splits (e.g., k in k-fold CV) there are
         """
 
+    @property
+    def all_subjects(self) -> Set[Subject]:
+        """Get all subjects that are contained in the subject split"""
+        splits = self.splits
+        subjects = set(itertools.chain(*splits[0]))
+
+        # Verify that it is consistent
+        for split in splits[1:]:  # todo: consider removing this, as it can be tested instead...
+            if set(itertools.chain(*split)) != subjects:
+                raise RuntimeError("The union of subjects were inconsistent across splits")
+        return subjects
 
 # -----------------
 # Classes
@@ -97,8 +108,11 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
     ...               "Ferrari": ("Leclerc", "Smooth Sainz"), "McLaren": ("Norris", "Piastri"),
     ...               "Aston Martin": ("Alonso", "Stroll"), "Haas": ("Magnussen", "Hülkenberg")}
     >>> my_num_splits = 4
-    >>> my_splits = RandomSplitsTVTestHoldout(f1_drivers, val_split=0.2, test_split=0.3, sort_first=False,
-    ...                                       num_random_splits=my_num_splits, seed=42).splits
+    >>> my_splits_obj = RandomSplitsTVTestHoldout(f1_drivers, val_split=0.2, test_split=0.3, sort_first=False,
+    ...                                           num_random_splits=my_num_splits, seed=42)
+    >>> len(my_splits_obj.all_subjects), type(my_splits_obj.all_subjects)
+    (13, <class 'set'>)
+    >>> my_splits = my_splits_obj.splits
     >>> len(my_splits) == my_num_splits, type(my_splits)
     (True, <class 'tuple'>)
     >>> tuple((len(my_split), type(my_split)) for my_split in my_splits)  # type: ignore
@@ -194,6 +208,19 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
     @property
     def splits(self):
         return self._splits
+
+    @property
+    def test_set(self):
+        """Get the test set"""
+        # Get the test set per split (should be the same)
+        test_sets = {split[-1] for split in self.splits}
+
+        # Make check
+        if len(test_sets) != 1:
+            raise RuntimeError(f"Expected the test set to be consistent across splits, but found {len(test_sets)} "
+                               f"unique ones")
+
+        return tuple(test_sets)[0]
 
 
 class RandomSplitsTV(DataSplitBase):
