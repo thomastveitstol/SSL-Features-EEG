@@ -13,7 +13,10 @@ from elecssl.models.region_based_pooling.hyperparameter_sampling import generate
 
 def _get_num_time_steps(preprocessed_config_path, freq_band, suggested_preprocessing_steps):
     with open(preprocessed_config_path) as file:
-        f_max = yaml.safe_load(file)["FrequencyBands"][freq_band][-1]
+        config_file = yaml.safe_load(file)
+        f_max = config_file["FrequencyBands"][freq_band][-1]
+        if f_max is None:
+            f_max = config_file["_SharedSteps"]["band_pass"][1]  # Not very elegant, but it is what it is atm...
 
     return f_max * suggested_preprocessing_steps["sfreq_multiple"] * suggested_preprocessing_steps["input_length"]
 
