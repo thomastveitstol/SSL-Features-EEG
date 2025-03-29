@@ -475,7 +475,6 @@ class EEGDatasetBase(abc.ABC):
         # Use it
         return getattr(target_func, "availability_method")(self)
 
-
     # ----------------
     # Properties
     # ----------------

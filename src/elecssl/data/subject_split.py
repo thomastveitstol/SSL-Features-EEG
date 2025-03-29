@@ -95,6 +95,7 @@ class DataSplitBase(abc.ABC):
                 raise RuntimeError("The union of subjects were inconsistent across splits")
         return subjects
 
+
 # -----------------
 # Classes
 # -----------------

@@ -1093,7 +1093,8 @@ class PretrainHPO(HPOExperiment):
                 residual_feature_name = f"{in_ocular_state}{out_ocular_state}{in_freq_band}{out_freq_band}"
 
                 df = _make_single_residuals_df(
-                    results_dir=results_dir / "split_0", pseudo_target=pseudo_target, feature_name=residual_feature_name,
+                    results_dir=results_dir / "split_0", pseudo_target=pseudo_target,
+                    feature_name=residual_feature_name,
                     downstream_target=self._downstream_experiments_config["Training"]["target"],
                     deviation_method=self._experiments_config["elecssl_deviation_method"],
                     in_ocular_state=in_ocular_state, experiment_name="pretext",
@@ -1931,7 +1932,8 @@ class MultivariableElecsslHPO(HPOExperiment):
                             overlap = subjects & test_subjects
                             raise NonExclusiveTestSetError(
                                 f"Test subjects were found in the optimisation set {predictions} for trial "
-                                f"{trial_folder}, split {fold_folder}. These subjects are (N={len(overlap)})): {overlap}"
+                                f"{trial_folder}, split {fold_folder}. These subjects are (N={len(overlap)})): "
+                                f"{overlap}"
                             )
 
     # --------------
@@ -2130,6 +2132,7 @@ class AllHPOExperiments:
         # (Not my proudest implementation tbh...)
         _possible_pretext_subjects = frozenset(possible_pretext_subjects)
         _pretext_config = self.pretext_experiments_config["SubjectSplit"]
+
         def pretext_subject_split_func(datasets: Iterable[str]):
             """Function which creates"""
             pretext_subjects = {subject for subject in _possible_pretext_subjects if subject.dataset_name in datasets}
@@ -2196,7 +2199,6 @@ class AllHPOExperiments:
         pretrain = self.run_pretraining_hpo(pretext_subject_split=pretext_subject_split_func,
                                             downstream_subject_split=prediction_models_downstream_subject_split)
 
-
         # Simple Elecssl
         # simple_elecssl = self.run_simple_elecssl_hpo(pretrain, pretext_subject_split=pretext_subject_split,
         #                                              downstream_subject_split=elecssl_downstream_subject_split)
@@ -2209,11 +2211,7 @@ class AllHPOExperiments:
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((
-            prediction_models,
-            pretrain,
-                                        # simple_elecssl, multivariable_elecssl
-                                        ))
+        self.verify_test_set_integrity((prediction_models, pretrain))
 
         # --------------
         # Dataframe creation
@@ -2472,7 +2470,7 @@ class AllHPOExperiments:
 
     def _get_required_input_versions(self, ocular_state: OcularState) -> Tuple[str, ...]:
         in_freq_bands = set.union(
-            {self.specific_experiments_config["PredictionModelsHPO"]["in_freq_band"]},  # Not strictly needed for pretext
+            {self.specific_experiments_config["PredictionModelsHPO"]["in_freq_band"]},  # Not needed for pretext...
             {self.specific_experiments_config["PretrainHPO"]["in_freq_band"]},
             self._get_simple_elecssl_input_freq_bands(),
             self._get_multivariable_elecssl_input_freq_bands()
@@ -3153,7 +3151,7 @@ def _get_warning(warning):
 def _get_prepared_experiments_config(experiments_config, in_freq_band, in_ocular_state, suggested_hyperparameters):
     # Load the preprocessing file and add some necessary info
     with open(_get_preprocessing_config_path(ocular_state=in_ocular_state)) as file:
-        config_file =  yaml.safe_load(file)
+        config_file = yaml.safe_load(file)
         f_max = config_file["FrequencyBands"][in_freq_band][-1]
         if f_max is None:
             f_max = config_file["_SharedSteps"]["band_pass"][1]  # Not very elegant, but it is what it is atm...
@@ -3180,13 +3178,14 @@ def _get_prepared_experiments_config(experiments_config, in_freq_band, in_ocular
     # Infer the channel system from the HPCs. If RBP is used for handling varied electrode configurations use the
     # channel system of the dataset itself
     experiments_config = experiments_config.copy()
-    if suggested_hyperparameters["SpatialDimensionMismatch"]["name"] == "RegionBasedPooling":
+    method = suggested_hyperparameters["SpatialDimensionMismatch"]["name"]
+    if method == "RegionBasedPooling":
         ch_system = None
-    elif suggested_hyperparameters["SpatialDimensionMismatch"]["name"] == "Interpolation":
+    elif method == "Interpolation":
         ch_system = suggested_hyperparameters["SpatialDimensionMismatch"]["kwargs"]["main_channel_system"]
     else:
-        raise ValueError(f"Method for handling varied electrode configurations not understood, and can therefore not "
-                         f"infer the pre-processed version to use for the datasets")
+        raise ValueError(f"Method for handling varied electrode configurations {method!r} not understood, and can "
+                         f"therefore not infer the pre-processed version to use for the datasets")
 
     for dataset_name, dataset_info in experiments_config["Datasets"].items():
         dataset_ch_system = dataset_name if ch_system is None else ch_system
