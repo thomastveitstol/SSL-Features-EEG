@@ -4,7 +4,7 @@ import pytest
 from elecssl.data.combined_datasets import DatasetDetails, LoadDetails
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method
 from elecssl.data.subject_split import RandomSplitsTVTestHoldout, RandomSplitsTV, KFoldDataSplit, LODOCV, \
-    KeepDatasetOutRandomSplits
+    KeepDatasetsOutRandomSplits
 
 
 @pytest.fixture
@@ -27,8 +27,8 @@ def splits_and_kwargs(dummy_dataset_subjects):
         (KFoldDataSplit, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "num_folds": 4,
                           "seed": 42, "sort_first": True}),
         (LODOCV, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "seed": 42, "sort_first": True}),
-        (KeepDatasetOutRandomSplits, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "seed": 42,
-                                      "num_random_splits": 7, "sort_first": True, "left_out_dataset": "Mercedes"})
+        (KeepDatasetsOutRandomSplits, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "seed": 42,
+                                       "num_random_splits": 7, "sort_first": True, "left_out_datasets": "Mercedes"})
     )
 
 
