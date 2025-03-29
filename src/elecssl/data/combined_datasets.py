@@ -146,7 +146,7 @@ class CombinedDatasets:
         target : str, optional
         sampling_freq : float
         required_target : str, optional
-        all_subjects : pandas.DataFrame
+        all_subjects : set[Subject]
             Must have the columns 'dataset' and 'sub_id'. All subjects are expected to be loaded without problems
 
         Returns
@@ -159,7 +159,8 @@ class CombinedDatasets:
         for dataset_name, dataset_kwargs in config.items():
             # Get dataset
             dataset = get_dataset(dataset_name)
-            dataset_subjects = tuple(all_subjects[all_subjects["dataset"] == dataset_name]["sub_id"])
+            dataset_subjects = tuple(subject.subject_id for subject in all_subjects
+                                     if subject.dataset_name == dataset_name)
 
             # Construct dataset details
             load_details = LoadDetails(
@@ -255,6 +256,43 @@ class CombinedDatasets:
         # Convert to numpy arrays and return (here, we assume that the data matrices can be concatenated)
         return {dataset_name: numpy.concatenate(numpy.expand_dims(data_matrix, axis=0), axis=0)
                 for dataset_name, data_matrix in data.items()}
+
+    # --------------
+    # Methods for removing data
+    # --------------
+    def remove_datasets(self, to_remove: Tuple[str, ...]):
+        """
+        Method for removing datasets in-place. This can be convenient if a DL model has been trained on a pretext task,
+        and some of the datasets should also be used for downstream training.
+
+        Todo: make tests
+
+        Parameters
+        ----------
+        to_remove : tuple[str, ...]
+            The dataset names to remove
+
+        Returns
+        -------
+        None
+        """
+        # Delete from dictionaries
+        for dataset_name in to_remove:
+            del self._subject_ids[dataset_name]
+            del self._data[dataset_name]
+            del self._targets[dataset_name]
+            del self._variable_availability[dataset_name]
+
+        # Delete from list
+        subject_ids_to_delete = []
+        for subject in self._subjects_info:
+            if subject.dataset_name in to_remove:
+                subject_ids_to_delete.append(subject)
+        for subject in subject_ids_to_delete:
+            del self._subjects_info[subject]
+
+        # Remove from tuple
+        self._datasets = tuple(dataset for dataset in self._datasets if dataset.name not in to_remove)
 
     # --------------
     # Methods related to subject info (currently unused in the main HPO experiments)
