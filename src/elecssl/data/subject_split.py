@@ -520,7 +520,7 @@ class KeepDatasetsOutRandomSplits(DataSplitBase):
 
     __slots__ = "_splits",
 
-    def __init__(self, dataset_subjects, *, left_out_datasets, val_split, num_random_splits, seed=None, sort_first):
+    def __init__(self, dataset_subjects, *, left_out_datasets, val_split, num_random_splits, seed, sort_first):
         """
         Initialise
 
