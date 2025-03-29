@@ -6,17 +6,20 @@ _main_metric: &main_metric r2_score
 # Datasets
 # -----------------
 _LEMON: &LEMON
-  num_subjects: 203
+  num_subjects: all
   num_time_steps: null
   time_series_start: null
+  channels: null
 _Wang: &Wang
-  num_subjects: 60
+  num_subjects: all
   num_time_steps: null
   time_series_start: null
+  channels: null
 _DortmundVital: &DortmundVital
   num_subjects: 100
   num_time_steps: null
   time_series_start: null
+  channels: null
 
 DownstreamDatasets: &DownstreamDatasets
   LEMON: *LEMON
@@ -32,13 +35,11 @@ _split_seed: &split_seed 42
 _test_set_percentage: &test_set_percentage 0.3
 
 DownstreamSubjectSplit:
-  name: RandomSplitsTVTestHoldout
-  kwargs:
-    val_split: 0.2
-    test_split: *test_set_percentage
-    num_random_splits: &num_random_splits 1
-    seed: *split_seed
-    sort_first: true
+  val_split: 0.2
+  test_split: *test_set_percentage
+  seed: *split_seed
+  normal_num_random_splits: &num_random_splits 1
+  elecssl_num_random_splits: 50
 DOWNSTREAMval_scores_aggregation: median  # To use median or average of folds performance as signal to HPO algorithm.
 # However, as we are using one fold only, mean and median are the same
 
@@ -60,13 +61,10 @@ PretextMLModelSettings:  # todo: this is Elecssl only, not pretraining. Better t
   test_predictions_decimals: 4
   test_scores_decimals: 4
 PretextSubjectSplit:  # This is for the actual pretext tasks
-  name: KeepDatasetOutRandomSplits
-  kwargs:
-    left_out_dataset: LEMON
-    val_split: 0.3
-    num_random_splits: *num_random_splits
-    seed: *split_seed
-    sort_first: true
+  left_out_datasets: [ LEMON ]
+  val_split: 0.2
+  num_random_splits: *num_random_splits
+  seed: *split_seed
 
 # -----------------
 # Target scaling
@@ -84,7 +82,7 @@ PretextScalers: *Scaler
 # -----------------
 _Training: &Training
   batch_size: 16
-  num_epochs: 20
+  num_epochs: 10
   verbose: true
   verbose_variables: false
   continuous_testing: false  # too time-consuming I think, not worth it

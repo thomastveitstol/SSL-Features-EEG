@@ -1,7 +1,7 @@
 MLFeatureExtraction:
   features: [ log10_band_power_delta_eo, log10_band_power_theta_eo, log10_band_power_alpha_eo, log10_band_power_beta_eo,
               log10_band_power_gamma_eo ]
-PredictionModelsHPO: { }
+PredictionModelsHPO: { in_freq_band: all }
 PretrainHPO:
   in_ocular_state: ec  # It is possible to make these HPs, but we would lose the connection to reactivity I think
   out_ocular_state: eo

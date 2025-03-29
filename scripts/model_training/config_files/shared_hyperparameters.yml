@@ -2,8 +2,8 @@
 # Preprocessing
 # -----------------
 Preprocessing:
-  autoreject: !Categorical { choices: [ true, false ] }
-  input_length: !Categorical { choices: [ 5, 10, 20 ] }
+  autoreject: !Categorical { choices: [ true ] }
+  input_length: !Categorical { choices: [ 5, 10, 20, 30 ] }
   sfreq_multiple: !Categorical { choices: [ 2, 3 ] }
 
 # -----------------
