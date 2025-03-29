@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple, List, Optional
 
 import autoreject
 import pandas
-import yaml
+import yaml  # type: ignore[import-untyped]
 from progressbar import progressbar
 
 from elecssl.data.datasets.dataset_base import MNELoadingError, DatasetInfo, OcularState
