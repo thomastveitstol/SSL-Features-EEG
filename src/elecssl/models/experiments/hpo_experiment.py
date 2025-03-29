@@ -1954,7 +1954,6 @@ class AllHPOExperiments:
     Class which combines all the HPO experiments
     """
 
-    # __slots__ = ("_hpd_configs_path", "_experiments_configs_path", "_results_path")
     __slots__ = ("_defaults_config", "_downstream_experiments_config", "_pretext_experiments_config",
                  "_shared_hpds", "_specific_hpds", "_results_path", "_specific_experiments_config")
 
