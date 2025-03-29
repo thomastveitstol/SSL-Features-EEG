@@ -2973,48 +2973,6 @@ def _compute_biomarker_predictive_value(df, *, subject_split_config, test_split_
     return score
 
 
-def _excluded_dataset_only(*, dataset_config, subject_split_config):
-    """
-    Check if the only dataset in the dataset config is a hold-out dataset in the subject split config
-
-    Parameters
-    ----------
-    dataset_config : dict[str, Any]
-    subject_split_config : dict[str, Any]
-
-    Returns
-    -------
-    bool
-
-    Examples
-    --------
-    >>> _excluded_dataset_only(dataset_config={"L": {"num_subjects": 20}},
-    ...                        subject_split_config={"kwargs": {"left_out_datasets": "L"}})
-    True
-    >>> _excluded_dataset_only(dataset_config={"L": {"num_subjects": 20}},
-    ...                        subject_split_config={"kwargs": {"left_out_datasets": "B"}})
-    False
-    >>> _excluded_dataset_only(dataset_config={"L": {"num_subjects": 20}, "B": {"num_subjects": 30}},
-    ...                        subject_split_config={"kwargs": {"left_out_datasets": "L"}})
-    False
-    """
-    # todo: quite hard-coding tbh...
-    # Check if more than one datasets
-    datasets = tuple(dataset_config.keys())
-    if len(datasets) > 1:
-        return False
-
-    # Check if there even is a hold-out dataset
-    if "left_out_datasets" not in subject_split_config["kwargs"]:
-        return False
-
-    # Make check
-    assert len(datasets) == 1
-    dataset = datasets[0]
-
-    return dataset == subject_split_config["kwargs"]["left_out_dataset"]
-
-
 def _get_delta_and_variable(path, *, target, downstream_target, deviation_method, num_eeg_epochs, pretext_main_metric,
                             experiment_name, include_pseudo_targets, continuous_testing):
     # todo: make test
