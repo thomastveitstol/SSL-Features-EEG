@@ -13,7 +13,7 @@ from elecssl.data.combined_datasets import CombinedDatasets
 from elecssl.data.data_generators.data_generator import InterpolationDataGenerator, RBPDataGenerator
 from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.scalers.target_scalers import get_target_scaler
-from elecssl.data.subject_split import get_data_split
+from elecssl.data.subject_split import get_data_split, DataSplitBase
 from elecssl.models.losses import CustomWeightedLoss, get_activation_function
 from elecssl.models.main_models.main_base_class import MainModuleBase
 from elecssl.models.main_models.main_fixed_channels_model import MainFixedChannelsModel
@@ -633,19 +633,19 @@ class SingleExperiment:
             model.save_model(name=f"{prefix_name}model", path=results_path)
 
     def _run(self, *, splits, channel_systems, channel_name_to_index, combined_dataset):
-        # Loop through all folds
+        # Loop through all splits (e.g, folds if k-fold cross validation)
         for i, (train_subjects, val_subjects, test_subjects) in enumerate(splits):
-            print(f"\nFold {i + 1}/{len(splits)}")
+            print(f"\nSplit {i + 1}/{len(splits)}")
 
             # -----------------
             # Make folder for the current fold
             # -----------------
-            fold_path = self._results_path / f"Fold_{i}"
+            fold_path = self._results_path / f"split_{i}"
             if self._fine_tuning is None:
                 os.mkdir(fold_path)
 
             # -----------------
-            # Run the current fold
+            # Run the current split/fold
             # -----------------
             self._run_single_fold(
                 train_subjects=train_subjects, val_subjects=val_subjects, test_subjects=test_subjects,
@@ -656,32 +656,49 @@ class SingleExperiment:
     # -------------
     # Main method for running the cross validation experiment
     # -------------
-    def run_experiment(self):
+    def run_experiment(self, subject_split, combined_datasets):
+        """
+        Method for running a single experiment. This method does not use HPO, but can be used as part of HPO by serving
+        as a single trial
+
+        Parameters
+        ----------
+        combined_datasets : CombinedDatasets | None
+            The combined datasets to use. It can be convenient when a model has been pre-trained, to avoid loading the
+            same data twice
+        subject_split : elecssl.data.subject_split.DataSplitBase
+            This dataframe requires two columns, 'dataset' and 'sub_id'. This contains all data which is supposed to be
+            loaded. Does not need to be specified if 'combined_datasets' is not None
+
+        Returns
+        -------
+        CombinedDatasets
+        """
         print(f"Running on device: {self._device}")
 
         # -----------------
         # Load data and extract some details
         # -----------------
-        combined_dataset = self._load_data()
+        if combined_datasets is None:
+            combined_datasets = self._load_data(subject_split)
 
         # Get some dataset details
-        dataset_details = self._extract_dataset_details(combined_dataset)
+        dataset_details = self._extract_dataset_details(combined_datasets)
 
-        subjects = dataset_details["subjects"]
         channel_systems = dataset_details["channel_systems"]
         channel_name_to_index = dataset_details["channel_name_to_index"]
 
         # -----------------
         # Make subject split
         # -----------------
-        splits = self._make_subject_split(subjects)
+        splits = subject_split.splits
 
         # -----------------
         # Run the experiment
         # -----------------
         self._run(
             splits=splits, channel_systems=channel_systems, channel_name_to_index=channel_name_to_index,
-            combined_dataset=combined_dataset
+            combined_dataset=combined_datasets
         )
 
         # -----------------
@@ -691,24 +708,26 @@ class SingleExperiment:
         with open(self._results_path / f"{prefix_name}finished_successfully.txt", "w"):
             pass
 
+        return combined_datasets
+
+
     # -------------
     # Methods for preparing for cross validation
     # -------------
-    def _load_data(self):
+    def _load_data(self, subject_split: DataSplitBase):
         """Method for loading data"""
         return CombinedDatasets.from_config(config=self.datasets_config, target=self.train_config["target"],
                                             interpolation_config=self.interpolation_config,
                                             sampling_freq=self.shared_pre_processing_config["resample"],
-                                            required_target=self.train_config["target"], variables=self.variables)
+                                            required_target=self.train_config["target"], variables=self.variables,
+                                            all_subjects=subject_split.all_subjects)
 
     @staticmethod
     def _extract_dataset_details(combined_dataset: CombinedDatasets):
-        subjects = combined_dataset.dataset_subjects
         datasets = combined_dataset.datasets
         channel_systems = {dataset.name: dataset.channel_system for dataset in datasets}
         channel_name_to_index = {dataset.name: dataset.channel_name_to_index() for dataset in datasets}
-        return {"subjects": subjects, "channel_systems": channel_systems,
-                "channel_name_to_index": channel_name_to_index}
+        return {"channel_systems": channel_systems, "channel_name_to_index": channel_name_to_index}
 
     def _make_subject_split(self, subjects):
         """Method for splitting subjects into multiple folds"""
