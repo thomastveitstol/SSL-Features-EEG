@@ -1066,7 +1066,7 @@ class PretrainHPO(HPOExperiment):
             combined_datasets.remove_datasets(
                 to_remove=tuple(dataset for dataset in pretext_experiments_config["Datasets"]
                                 if dataset not in self._downstream_experiments_config["Datasets"])
-            )
+            )  # TODO: Must change the target...
 
             # Run experiment
             fine_tuning = "pretext"
