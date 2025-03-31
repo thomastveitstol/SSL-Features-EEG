@@ -5,9 +5,10 @@ from elecssl.data.subject_split import Subject
 
 
 # -------------
-# Tests
+# As the data is copied when calling .get_data() and .get_targets()
+# makes manipulating the data afterwards safe
 # -------------
-def test_get_data_immutability(dummy_dataset_details):
+def test_get_data_copy(dummy_dataset_details):
     """Verify that changing data after calling .get_data() does not change the data provided by .get_data() upon a new
     call"""
     # Initialise object
@@ -48,7 +49,7 @@ def test_get_data_immutability(dummy_dataset_details):
     assert "FakeDataset" not in data_3
 
 
-def test_get_target_immutability(dummy_dataset_details):
+def test_get_target_copy(dummy_dataset_details):
     """Verify that changing data after calling .get_targets() does not change the data provided by .get_targets() upon
     a new call"""
     # Initialise object
