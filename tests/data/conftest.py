@@ -46,12 +46,12 @@ def dummy_eeg_dataset(dummy_data):
         def _load_single_raw_mne_object(self, *args, **kwargs):
             raise NotImplementedError
 
-        def channel_name_to_index(self):
-            raise NotImplementedError
-
         # -------------
         # Overriding methods to make this class suited for testing
         # -------------
+        def channel_name_to_index(self):
+            return {f"ch_{i}": i for i in range(self._num_channels)}
+
         def load_numpy_arrays(self, subject_ids=None, pre_processed_version=None, *, time_series_start=None,
                               num_time_steps=None, channels=None, required_target=None):
             return numpy.random.normal(loc=0, scale=1.,
@@ -60,6 +60,10 @@ def dummy_eeg_dataset(dummy_data):
         @target_method
         def age(self, subject_ids):
             return numpy.random.randint(18, 90, size=(len(subject_ids),))
+
+        @target_method
+        def sex(self, subject_ids):
+            return numpy.random.randint(0, 2, size=(len(subject_ids),))  # 0s and 1s
 
     return DummyDataset()
 

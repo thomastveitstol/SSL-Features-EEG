@@ -37,10 +37,11 @@ class CombinedDatasets:
     efficient, but more time efficient
     """
 
-    __slots__ = "_subject_ids", "_data", "_targets", "_datasets", "_subjects_info", "_variable_availability"
+    __slots__ = ("_subject_ids", "_data", "_targets", "_target_names", "_current_target", "_datasets", "_subjects_info",
+                 "_variable_availability")
 
-    def __init__(self, datasets_details: Tuple[DatasetDetails, ...], variables, target, interpolation_method,
-                 main_channel_system, sampling_freq, required_target):
+    def __init__(self, datasets_details: Tuple[DatasetDetails, ...], *, variables, target_names, current_target,
+                 interpolation_method, main_channel_system, sampling_freq, required_target):
         """
         Initialise. Note that, if interpolation is used, it is preferred to specify this as part of the preprocessed
         version. This is because interpolation during runtime can be slow.
@@ -48,7 +49,9 @@ class CombinedDatasets:
         Parameters
         ----------
         datasets_details : tuple[DatasetDetails, ...]
-        target: str, optional
+        current_target : str
+            This determines which target is loaded when calling .get_targets()
+        target_names: tuple[str, ...] | str, optional
             Targets to load. If None, no targets are loaded
         interpolation_method : str, optional
         main_channel_system : str, optional
@@ -101,10 +104,16 @@ class CombinedDatasets:
             )
 
         # Load targets
-        self._targets = None if target is None \
-            else {details.dataset.name: details.dataset.load_targets(subject_ids=details.details.subject_ids,
-                                                                     target=target)
-                  for details in datasets_details}
+        target_names = (target_names,) if isinstance(target_names, str) else target_names
+        self._current_target = current_target  # This determines which target is loaded when calling .get_targets()
+        if target_names is None:
+            self._targets = None
+        else:
+            self._targets = {
+                target_name: {details.dataset.name: details.dataset.load_targets(
+                    subject_ids=details.details.subject_ids, target=target_name) for details in datasets_details}
+                for target_name in target_names
+            }
 
         # Convenient for e.g. extracting channel systems
         self._datasets: Tuple[EEGDatasetBase, ...] = tuple(details.dataset for details in datasets_details)
@@ -136,7 +145,7 @@ class CombinedDatasets:
 
     @classmethod
     def from_config(cls, config, interpolation_config, variables, target, sampling_freq, required_target,
-                    all_subjects):
+                    additional_targets, all_subjects):
         """
         Method for initialising directly from a config file
 
@@ -146,6 +155,7 @@ class CombinedDatasets:
         variables
         interpolation_config : dict[str, typing.Any] | None
         target : str, optional
+        additional_targets : tuple[str, ...] | None
         sampling_freq : float
         required_target : str, optional
         all_subjects : set[Subject]
@@ -177,10 +187,19 @@ class CombinedDatasets:
         interpolation_method = None if interpolation_config is None else interpolation_config["method"]
         main_channel_system = None if interpolation_method is None else interpolation_config["main_channel_system"]
 
+        # Combine all targets
+        additional_targets = () if additional_targets is None else additional_targets
+        assert isinstance(target, str)
+        assert isinstance(additional_targets, tuple)
+        if target in additional_targets:
+            all_target_names = additional_targets
+        else:
+            all_target_names = (target,) + additional_targets
+
         # Load all data and return object
-        return cls(datasets_details=tuple(datasets_details), target=target, interpolation_method=interpolation_method,
+        return cls(datasets_details=tuple(datasets_details), current_target=target, interpolation_method=interpolation_method,
                    main_channel_system=main_channel_system, sampling_freq=sampling_freq,
-                   required_target=required_target, variables=variables)
+                   required_target=required_target, variables=variables, target_names=all_target_names)
 
     # --------------
     # Methods for getting data
@@ -223,7 +242,8 @@ class CombinedDatasets:
     def get_targets(self, subjects: Tuple[Subject, ...]):
         """
         Method for getting targets. If modifying data after calling this method, the attribute 'self._data' will not be
-        changed
+        changed. To modify which target is loaded, please change the 'current_target' by using the setter method of the
+        property (combined_dataset.current_target = "new_target")
 
         (unittests in test folder)
 
@@ -247,7 +267,7 @@ class CombinedDatasets:
 
             # Get the target
             idx = self._subject_ids[dataset_name][subject.subject_id]
-            subject_data = self._targets[dataset_name][idx]  # type: ignore[index]
+            subject_data = self._targets[self.current_target][dataset_name][idx]  # type: ignore[index]
 
             # Add the subject data
             if dataset_name in data:
@@ -267,7 +287,7 @@ class CombinedDatasets:
         Method for removing datasets in-place. This can be convenient if a DL model has been trained on a pretext task,
         and some of the datasets should also be used for downstream training.
 
-        Todo: make tests
+        (unittests in test folder)
 
         Parameters
         ----------
@@ -278,12 +298,15 @@ class CombinedDatasets:
         -------
         None
         """
+        to_remove = (to_remove,) if isinstance(to_remove, str) else to_remove
+
         # Delete from dictionaries
         for dataset_name in to_remove:
             del self._subject_ids[dataset_name]
             del self._data[dataset_name]
             if self._targets is not None:
-                del self._targets[dataset_name]
+                for target_name in self.target_names:
+                    del self._targets[target_name][dataset_name]
             del self._variable_availability[dataset_name]
 
         # Delete from list
@@ -296,6 +319,12 @@ class CombinedDatasets:
 
         # Remove from tuple
         self._datasets = tuple(dataset for dataset in self._datasets if dataset.name not in to_remove)
+
+    def remove_targets(self, to_remove: Union[str, Tuple[str, ...]]):
+        """Method for removing targets. This method does not automatically switch 'current_target'"""
+        to_remove = (to_remove,) if isinstance(to_remove, str) else to_remove
+        for target in to_remove:
+            del self._targets[target]
 
     # --------------
     # Methods related to subject info (currently unused in the main HPO experiments)
@@ -383,6 +412,20 @@ class CombinedDatasets:
         """Get 'channel_name_to_index' per dataset. Note that this may be misleading if interpolation has been applied,
         as it just goes to the class implementation"""
         return {dataset.name: dataset.channel_name_to_index() for dataset in self._datasets}
+
+    @property
+    def target_names(self) -> Optional[Tuple[str, ...]]:
+        if self._targets is None:
+            return None
+        return tuple(self._targets)
+
+    @property
+    def current_target(self):
+        return self._current_target
+
+    @current_target.setter
+    def current_target(self, value: str):
+        self._current_target = value
 
 
 # ----------------
