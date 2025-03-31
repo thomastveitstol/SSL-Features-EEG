@@ -23,8 +23,8 @@ from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.paths import get_numpy_data_storage_path
 from elecssl.data.results_analysis.hyperparameters import to_hyperparameter
 from elecssl.data.results_analysis.utils import load_hpo_study
-from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, get_data_split, simple_random_split, \
-    KeepDatasetsOutRandomSplits, RandomSplitsTVTestHoldout, DataSplitBase
+from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, KeepDatasetsOutRandomSplits, \
+    RandomSplitsTVTestHoldout, DataSplitBase
 from elecssl.models.experiments.single_experiment import SingleExperiment
 from elecssl.models.hp_suggesting import make_trial_suggestion, suggest_spatial_dimension_mismatch, suggest_loss, \
     suggest_dl_architecture, get_optuna_sampler
@@ -54,8 +54,9 @@ class MainExperiment(abc.ABC):
                  "_downstream_subject_split")
     _name: str
 
-    def __init__(self, *, hp_config, experiments_config, results_dir, is_continuation, pretext_subject_split,
-                 downstream_subject_split):
+    def __init__(self, *, hp_config, experiments_config, results_dir, is_continuation,
+                 pretext_subject_split: Optional[Callable[[Iterable[str]], DataSplitBase]],
+                 downstream_subject_split: DataSplitBase):
         # ---------------
         # Set attributes
         # ---------------
@@ -513,7 +514,7 @@ class HPOExperiment(MainExperiment):
 
             # Loop through all folds within the trial
             fold_folders = (name for name in os.listdir(trial_path)
-                            if name.lower().startswith("fold_") and os.path.isdir(trial_path / name))
+                            if name.lower().startswith("split_") and os.path.isdir(trial_path / name))
             for fold_folder in fold_folders:
                 fold_path = trial_path / fold_folder
 
@@ -817,10 +818,9 @@ class MLFeatureExtraction(MainExperiment):
         # Compute predictive value
         # -------------
         # todo: I should store the validation score too...
+        assert isinstance(self._downstream_subject_split, RandomSplitsTVTestHoldout)  # make mypy stop complaining
         _compute_biomarker_predictive_value(
-            df=df, test_split_config=self._experiments_config["TestSplit"],
-            subject_split_config=self._experiments_config["MLModelSubjectSplit"],
-            ml_model_hp_config=self._sampling_config["MLModel"],
+            df=df, subject_split=self._downstream_subject_split, ml_model_hp_config=self._sampling_config["MLModel"],
             ml_model_settings_config=self._experiments_config["MLModelSettings"],
             save_test_predictions=self._experiments_config["save_test_predictions"], results_dir=self.results_path,
             verbose=True
@@ -1339,7 +1339,8 @@ class SimpleElecsslHPO(HPOExperiment):
             with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
                                   pre_processing_config=preprocessing_config_file, results_path=results_path,
                                   fine_tuning=None, experiment_name=experiment_name) as experiment:
-                experiment.run_experiment(combined_datasets=None, subject_split=self._pretext_subject_split)
+                experiment.run_experiment(combined_datasets=None,
+                                          subject_split=self._pretext_subject_split(experiment_config_file["Datasets"]))
 
             # ---------------
             # Extract expectation values and biomarkers
@@ -1358,10 +1359,10 @@ class SimpleElecsslHPO(HPOExperiment):
             # ---------------
             # Use the biomarkers
             # ---------------
-            score = _compute_biomarker_predictive_value(  # todo: fix subjects splitting
-                df, test_split_config=self._experiments_config["TestSplit"],
-                subject_split_config=self._experiments_config["MLModelSubjectSplit"],
-                ml_model_hp_config=self.ml_model_hp_config, ml_model_settings_config=self.ml_model_settings_config,
+            assert isinstance(self._downstream_subject_split, RandomSplitsTVTestHoldout)  # make mypy stop complaining
+            score = _compute_biomarker_predictive_value(
+                df, subject_split=self._downstream_subject_split, ml_model_hp_config=self.ml_model_hp_config,
+                ml_model_settings_config=self.ml_model_settings_config,
                 save_test_predictions=self._experiments_config["save_test_predictions"], results_dir=results_dir,
                 verbose=True
             )
@@ -1399,11 +1400,11 @@ class SimpleElecsslHPO(HPOExperiment):
             os.chmod(folder_path / "ssl_biomarkers.csv", 0o444)
 
             # Compute score
+            assert isinstance(self._downstream_subject_split, RandomSplitsTVTestHoldout)  # make mypy stop complaining
             score = _compute_biomarker_predictive_value(
-                df, subject_split_config=self._experiments_config["MLModelSubjectSplit"], results_dir=folder_path,
-                test_split_config=self._experiments_config["TestSplit"], ml_model_hp_config=self.ml_model_hp_config,
-                ml_model_settings_config=self.ml_model_settings_config, verbose=True,
-                save_test_predictions=self._experiments_config["save_test_predictions"]
+                df,  subject_split=self._downstream_subject_split, results_dir=folder_path,
+                ml_model_hp_config=self.ml_model_hp_config, ml_model_settings_config=self.ml_model_settings_config,
+                verbose=True, save_test_predictions=self._experiments_config["save_test_predictions"]
             )
 
             # Add trial with info
@@ -1700,7 +1701,7 @@ class MultivariableElecsslHPO(HPOExperiment):
                     pretext_main_metric=self._experiments_config["Training"]["main_metric"],
                     include_pseudo_targets=self._experiments_config["include_pseudo_targets"],
                     continuous_testing=self._experiments_config["Training"]["continuous_testing"],
-                    pretext_subject_split=self._pretext_subject_split
+                    pretext_subject_split=self._pretext_subject_split(experiment_config_file["Datasets"])
                 )
 
                 if include_pseudo_targets:
@@ -1733,9 +1734,9 @@ class MultivariableElecsslHPO(HPOExperiment):
             # ---------------
             # Use the biomarkers
             # ---------------
+            assert isinstance(self._downstream_subject_split, RandomSplitsTVTestHoldout)  # make mypy stop complaining
             score = _compute_biomarker_predictive_value(
-                df, subject_split_config=self._experiments_config["MLModelSubjectSplit"],
-                test_split_config=self._experiments_config["TestSplit"], ml_model_hp_config=self.ml_model_hp_config,
+                df, subject_split=self._downstream_subject_split, ml_model_hp_config=self.ml_model_hp_config,
                 ml_model_settings_config=self.ml_model_settings_config, results_dir=results_dir,
                 save_test_predictions=self._experiments_config["save_test_predictions"], verbose=True
             )
@@ -1839,9 +1840,9 @@ class MultivariableElecsslHPO(HPOExperiment):
         os.chmod(multielecssl_folder_path / "ssl_biomarkers.csv", 0o444)
 
         # Compute score
+        assert isinstance(self._downstream_subject_split, RandomSplitsTVTestHoldout)  # make mypy stop complaining
         score = _compute_biomarker_predictive_value(
-            df, subject_split_config=self._experiments_config["MLModelSubjectSplit"],
-            test_split_config=self._experiments_config["TestSplit"], ml_model_hp_config=self.ml_model_hp_config,
+            df, subject_split=self._downstream_subject_split, ml_model_hp_config=self.ml_model_hp_config,
             ml_model_settings_config=self.ml_model_settings_config, verbose=True,
             save_test_predictions=self._experiments_config["save_test_predictions"],
             results_dir=multielecssl_folder_path
@@ -2200,7 +2201,7 @@ class AllHPOExperiments:
         # HPO experiments
         # --------------
         # Feature extraction + ML
-        # ml_features = self.run_ml_features()
+        ml_features = self.run_ml_features(subject_split=prediction_models_downstream_subject_split)
 
         # Prediction models
         prediction_models = self.run_prediction_models_hpo(subject_split=prediction_models_downstream_subject_split)
@@ -2210,18 +2211,19 @@ class AllHPOExperiments:
                                             downstream_subject_split=prediction_models_downstream_subject_split)
 
         # Simple Elecssl
-        # simple_elecssl = self.run_simple_elecssl_hpo(pretrain, pretext_subject_split=pretext_subject_split,
-        #                                              downstream_subject_split=elecssl_downstream_subject_split)
+        simple_elecssl = self.run_simple_elecssl_hpo(pretrain, pretext_subject_split=pretext_subject_split_func,
+                                                     downstream_subject_split=elecssl_downstream_subject_split)
 
         # Multivariable Elecssl
-        # multivariable_elecssl = self.run_multivariable_elecssl_hpo(
-        #     simple_elecssl, pretext_subject_split=pretext_subject_split,
-        #    downstream_subject_split=elecssl_downstream_subject_split)
+        multivariable_elecssl = self.run_multivariable_elecssl_hpo(
+            simple_elecssl, pretext_subject_split=pretext_subject_split_func,
+            downstream_subject_split=elecssl_downstream_subject_split)
 
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((prediction_models, pretrain))
+        self.verify_test_set_integrity((ml_features, prediction_models, pretrain, simple_elecssl,
+                                        multivariable_elecssl))
 
         # --------------
         # Dataframe creation
@@ -2239,7 +2241,7 @@ class AllHPOExperiments:
     # --------------
     def run_ml_features(self, *, subject_split):
         # Create the config file
-        keys = ("TestSplit", "MLModelSubjectSplit", "MLModelSettings")
+        keys = ("MLModelSettings",)
         _config = {key: self.pretext_experiments_config[key] for key in keys}
         _config["save_test_predictions"] = self.defaults_config["save_test_predictions"]
         _config["Datasets"] = self.downstream_experiments_config["Datasets"]
@@ -2804,6 +2806,7 @@ def verify_equal_test_sets(hpo_runs: Tuple[HPORun, ...]):
     test_sets: List[Set[Subject]] = []
     for run in hpo_runs:
         test_set = run.experiment.get_test_subjects(path=run.path)
+        assert test_set, f"The test set of {run.experiment.__name__} at {run.path} was empty"
         assert isinstance(test_set, set), f"Expected test set to be a set, but found {type(test_set)}"
         assert all(isinstance(subject, Subject) for subject in test_set), \
             f"Expected subjects om test set to be of type 'Subject', but found {set(type(s) for s in test_set)}"
@@ -2811,7 +2814,9 @@ def verify_equal_test_sets(hpo_runs: Tuple[HPORun, ...]):
 
     # Check if they are all equal
     if not all(test_set == test_sets[0] for test_set in test_sets):
-        raise DissimilarTestSetsError
+        raise DissimilarTestSetsError(
+            f"Test sets across splits are inconsistent. Expected all test sets to be identical, but found "
+            f"{len(test_sets)} different test sets: {test_sets}.")
 
 
 def check_equal_test_sets(hpo_experiments):
@@ -2916,23 +2921,16 @@ def _make_single_residuals_df(*, results_dir, feature_name, pseudo_target, downs
     return pandas.DataFrame(biomarkers)
 
 
-def _compute_biomarker_predictive_value(df, *, subject_split_config, test_split_config, ml_model_hp_config,
+def _compute_biomarker_predictive_value(df, *, subject_split, ml_model_hp_config,
                                         ml_model_settings_config, save_test_predictions, results_dir, verbose):
-    # Create the subject splitting
-    non_test_subjects, test_subjects = simple_random_split(
-        subjects=tuple(Subject(subject_id=row.sub_id, dataset_name=row.dataset)  # type: ignore[attr-defined]
-                       for row in df.itertuples(index=False)),
-        split_percent=test_split_config["split_percentage"], seed=test_split_config["seed"], require_seeding=True,
-        sort_first=True
-    )
-
-    split_kwargs = {"dataset_subjects": subjects_tuple_to_dict(non_test_subjects), **subject_split_config["kwargs"]}
-    biomarker_evaluation_splits = get_data_split(split=subject_split_config["name"], **split_kwargs).splits
+    # a little hard-coded, but it'll do for now
+    assert isinstance(subject_split, RandomSplitsTVTestHoldout), f"Unexpected split type {type(subject_split)}"
+    test_subjects = subject_split.test_set
+    non_test_subjects = subject_split.non_test_set
 
     # Create ML model
     ml_model = MLModel(
-        model=ml_model_hp_config["model"], model_kwargs=ml_model_hp_config["kwargs"],
-        splits=biomarker_evaluation_splits,
+        model=ml_model_hp_config["model"], model_kwargs=ml_model_hp_config["kwargs"], splits=subject_split.splits,
         evaluation_metric=ml_model_settings_config["evaluation_metric"],
         aggregation_method=ml_model_settings_config["aggregation_method"]
     )
@@ -2942,7 +2940,7 @@ def _compute_biomarker_predictive_value(df, *, subject_split_config, test_split_
     df["subject"] = [Subject(dataset_name=row.dataset, subject_id=row.sub_id) for row in df.itertuples(index=False)]
     df = df.set_index("subject")
 
-    # Do evaluation (used as feedback to HPO algorithm)  todo: must implement splitting test
+    # Do evaluation (used as feedback to HPO algorithm)
     score = ml_model.evaluate_features(non_test_df=df.loc[list(non_test_subjects)])
     if verbose:
         print(f"Training done! Obtained {ml_model_settings_config['aggregation_method']} "
