@@ -201,17 +201,17 @@ class InceptionNetwork(MTSModuleBase):
 
     Examples
     --------
-    >>> _ = InceptionNetwork(64, 5, cnn_units=32, depth=6)
+    >>> _ = InceptionNetwork(64, 5, cnn_units=32, num_res_blocks=2)
 
     Latent feature dimension does not depend on number of input channels
-    >>> features_1 = InceptionNetwork.get_latent_features_dim(64, 15, cnn_units=32, depth=6)
-    >>> features_2 = InceptionNetwork.get_latent_features_dim(3, 3, cnn_units=32, depth=6)
+    >>> features_1 = InceptionNetwork.get_latent_features_dim(64, 15, cnn_units=32, num_res_blocks=2)
+    >>> features_2 = InceptionNetwork.get_latent_features_dim(3, 3, cnn_units=32, num_res_blocks=2)
     >>> features_1 == features_2
     True
 
     How it looks like (but note that the ordering does not reflect the forward pass, as this is not a Sequential model)
 
-    >>> InceptionNetwork(64, 5, cnn_units=32, depth=6)
+    >>> InceptionNetwork(64, 5, cnn_units=32, num_res_blocks=2)
     InceptionNetwork(
       (_inception_modules): ModuleList(
         (0): _InceptionModule(
@@ -251,7 +251,7 @@ class InceptionNetwork(MTSModuleBase):
     )
     """
 
-    def __init__(self, in_channels, num_classes, *, cnn_units, depth, use_bottleneck=True, activation=None,
+    def __init__(self, in_channels, num_classes, *, cnn_units, num_res_blocks, use_bottleneck=True, activation=None,
                  max_kernel_size=40, use_residual=True):
         """
         Initialise
@@ -265,8 +265,8 @@ class InceptionNetwork(MTSModuleBase):
             shape=(batch, num_classes)
         cnn_units : int
             Number of output channels of the Inception modules
-        depth : int
-            Number of Inception modules used
+        num_res_blocks : int
+            Number of residual blocks used. Number of Inception modules will be three times num_res_blocks
         use_bottleneck : bool
             Using bottleneck or not
         activation : typing.Callable, optional
@@ -282,6 +282,7 @@ class InceptionNetwork(MTSModuleBase):
         # -----------------------------
         # Define Inception modules
         # -----------------------------
+        depth = 3 * num_res_blocks
         output_channels = cnn_units * (_InceptionModule.num_kernel_sizes + 1)  # Output channel dim of inception modules
         self._inception_modules = nn.ModuleList(
             [_InceptionModule(in_channels=in_channel, units=cnn_units,
@@ -327,7 +328,7 @@ class InceptionNetwork(MTSModuleBase):
 
         Examples
         --------
-        >>> my_model = InceptionNetwork(in_channels=43, num_classes=3, cnn_units=23, depth=30)
+        >>> my_model = InceptionNetwork(in_channels=43, num_classes=3, cnn_units=23, num_res_blocks=10)
         >>> my_model.extract_latent_features(torch.rand(size=(10, 43, 500))).size()
         torch.Size([10, 92])
         """
@@ -347,7 +348,7 @@ class InceptionNetwork(MTSModuleBase):
 
         Examples
         --------
-        >>> my_model = InceptionNetwork(in_channels=43, num_classes=3, cnn_units=23, depth=9)
+        >>> my_model = InceptionNetwork(in_channels=43, num_classes=3, cnn_units=23, num_res_blocks=3)
         >>> my_model.classify_latent_features(torch.rand(size=(10, 92))).size()
         torch.Size([10, 3])
         """
@@ -373,7 +374,7 @@ class InceptionNetwork(MTSModuleBase):
 
         Examples
         --------
-        >>> my_model = InceptionNetwork(in_channels=43, num_classes=3, cnn_units=28, depth=9)
+        >>> my_model = InceptionNetwork(in_channels=43, num_classes=3, cnn_units=28, num_res_blocks=3)
         >>> my_model(torch.rand(size=(10, 43, 500))).size()
         torch.Size([10, 3])
         >>> my_model(torch.rand(size=(13, 43, 1000))).size()  # The model is compatible with different num time steps
@@ -381,8 +382,9 @@ class InceptionNetwork(MTSModuleBase):
 
         Verify that it runs with other arguments specified
 
-        >>> my_model = InceptionNetwork(in_channels=533, num_classes=2, cnn_units=43, depth=7, use_residual=False,
-        ...                             use_bottleneck=False, activation=nn.functional.elu, max_kernel_size=8)
+        >>> my_model = InceptionNetwork(in_channels=533, num_classes=2, cnn_units=43, num_res_blocks=2,
+        ...                             use_residual=False, use_bottleneck=False, activation=nn.functional.elu,
+        ...                             max_kernel_size=8)
         >>> my_model(torch.rand(size=(11, 533, 400))).size()
         torch.Size([11, 2])
         >>> my_model(torch.rand(size=(11, 533, 400)), return_features=True).size()  # cnn_units * 4
@@ -422,10 +424,10 @@ class InceptionNetwork(MTSModuleBase):
         # Sample CNN units
         cnn_units = trial.suggest_int(f"{name}_cnn_units", **config["cnn_units"])
 
-        # Sample depth
-        depth = 3 * trial.suggest_int(f"{name}_depth", **config["depth"])
+        # Sample number of residual blocks
+        num_res_blocks = trial.suggest_int(f"{name}_num_res_blocks", **config["num_res_blocks"])
 
-        return {"cnn_units": cnn_units, "depth": depth, "num_classes": config["num_classes"]}
+        return {"cnn_units": cnn_units, "num_res_blocks": num_res_blocks, "num_classes": config["num_classes"]}
 
     # ----------------
     # Properties

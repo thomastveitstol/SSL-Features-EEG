@@ -43,7 +43,8 @@ def green_models(dummy_data, dummy_num_classes):
 # The other ones
 @pytest.fixture
 def inception_network(dummy_data, dummy_num_classes):
-    return InceptionNetwork(in_channels=dummy_data.size()[1], num_classes=dummy_num_classes, cnn_units=31, depth=12)
+    return InceptionNetwork(in_channels=dummy_data.size()[1], num_classes=dummy_num_classes, cnn_units=31,
+                            num_res_blocks=4)
 
 
 @pytest.fixture

@@ -44,7 +44,7 @@ DLArchitectures:
   InceptionNetwork:
     num_classes: 1
     cnn_units: { low: 4, high: 64, log: true }  # { low: 8, high: 64, log: true }
-    depth: { low: 1, high: 27, log: true }  # Remember that this value will be multiplied by 3
+    num_res_blocks: { low: 1, high: 27, log: true }
   ShallowFBCSPNetMTS:
     num_classes: 1
     num_time_steps: UNAVAILABLE
