@@ -1019,8 +1019,14 @@ class PretrainHPO(HPOExperiment):
             # Add the selected datasets to pretext task (including subgroups for performance tracking). The ones in the
             # experiments config file are only the available ones, not the ones we will always use
             incomplete_pretext_experiments_config["Datasets"] = dict()
+            downstream_target = self._downstream_experiments_config["Training"]["target"]
             for dataset_name, dataset_info in datasets_to_use.items():
                 incomplete_pretext_experiments_config["Datasets"][dataset_name] = dataset_info
+
+                # Add downstream targets to load for downstream datasets
+                if dataset_name in self._downstream_experiments_config["Datasets"]:
+                    incomplete_pretext_experiments_config["Datasets"][dataset_name]["targets"] = downstream_target
+
             incomplete_pretext_experiments_config["SubGroups"]["sub_groups"]["dataset_name"] = tuple(
                 dataset_name for dataset_name in datasets_to_use)
 
@@ -1066,7 +1072,11 @@ class PretrainHPO(HPOExperiment):
             combined_datasets.remove_datasets(
                 to_remove=tuple(dataset for dataset in pretext_experiments_config["Datasets"]
                                 if dataset not in self._downstream_experiments_config["Datasets"])
-            )  # TODO: Must change the target...
+            )
+
+            # Delete pseudo-target and switch to downstream target
+            combined_datasets.remove_targets(to_remove=pretext_experiments_config["Training"]["target"])
+            combined_datasets.current_target = downstream_experiments_config["Training"]["target"]
 
             # Run experiment
             fine_tuning = "pretext"
