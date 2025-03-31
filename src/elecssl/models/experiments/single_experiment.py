@@ -715,8 +715,6 @@ class SingleExperiment:
     def _load_data(self, subject_split: DataSplitBase):
         """Method for loading data"""
         return CombinedDatasets.from_config(config=self.datasets_config, target=self.train_config["target"],
-                                            interpolation_config=self.interpolation_config,
-                                            sampling_freq=self.shared_pre_processing_config["resample"],
                                             required_target=None,  # Not necessary nor wanted to specify
                                             variables=self.variables, all_subjects=subject_split.all_subjects)
 

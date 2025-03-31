@@ -12,8 +12,7 @@ def test_remove_data(dummy_dataset_details):
     # Initialise object
     dataset_name_1 = dummy_dataset_details.dataset.name
     combined_dataset = CombinedDatasets(datasets_details=(dummy_dataset_details,), variables={dataset_name_1: []},
-                                        current_target="age", required_target=None, interpolation_method=None,
-                                        main_channel_system=None, sampling_freq=None)
+                                        current_target="age", required_target=None)
 
     # Select a subject of subjects
     subjects_subset = tuple(Subject(dataset_name=dataset_name_1, subject_id=sub_id)
@@ -44,8 +43,7 @@ def test_remove_and_switch_targets(dummy_dataset_details):
     # Initialise object
     dataset_name = dummy_dataset_details.dataset.name
     combined_dataset = CombinedDatasets(datasets_details=(dummy_dataset_details,), variables={dataset_name: []},
-                                        current_target="age", required_target=None, interpolation_method=None,
-                                        main_channel_system=None, sampling_freq=None)
+                                        current_target="age", required_target=None)
 
     # Select a subject of subjects
     subjects_subset = tuple(Subject(dataset_name=dataset_name, subject_id=sub_id)
@@ -96,8 +94,7 @@ def test_get_data_copy(dummy_dataset_details):
     # Initialise object
     dataset_name = dummy_dataset_details.dataset.name
     combined_dataset = CombinedDatasets(datasets_details=(dummy_dataset_details,), variables={dataset_name: []},
-                                        current_target="age", required_target=None, interpolation_method=None,
-                                        main_channel_system=None, sampling_freq=None)
+                                        current_target="age", required_target=None)
 
     # Select a subject of subjects
     subjects_subset = tuple(Subject(dataset_name=dataset_name, subject_id=sub_id)
@@ -137,8 +134,7 @@ def test_get_target_copy(dummy_dataset_details):
     # Initialise object
     dataset_name = dummy_dataset_details.dataset.name
     combined_dataset = CombinedDatasets(datasets_details=(dummy_dataset_details,), variables={dataset_name: []},
-                                        current_target="age", required_target=None, interpolation_method=None,
-                                        main_channel_system=None, sampling_freq=None)
+                                        current_target="age", required_target=None)
 
     # Select a subject of subjects
     subjects_subset = tuple(Subject(dataset_name=dataset_name, subject_id=sub_id)

@@ -1,12 +1,10 @@
 import dataclasses
-import warnings
 from typing import Dict, List, Optional, Tuple, Union, Any
 
 import numpy
 
-from elecssl.data.datasets.dataset_base import EEGDatasetBase, ChannelSystem
-from elecssl.data.datasets.getter import get_dataset, get_channel_system
-from elecssl.data.interpolate_datasets import interpolate_datasets
+from elecssl.data.datasets.dataset_base import EEGDatasetBase
+from elecssl.data.datasets.getter import get_dataset
 from elecssl.data.subject_split import Subject
 
 
@@ -42,7 +40,7 @@ class CombinedDatasets:
                  "_variable_availability")
 
     def __init__(self, datasets_details: Tuple[DatasetDetails, ...], *, variables, current_target,
-                 interpolation_method, main_channel_system, sampling_freq, required_target):
+                 required_target):
         """
         Initialise. Note that, if interpolation is used, it is preferred to specify this as part of the preprocessed
         version. This is because interpolation during runtime can be slow.
@@ -52,11 +50,6 @@ class CombinedDatasets:
         datasets_details : tuple[DatasetDetails, ...]
         current_target : str
             This determines which target is loaded when calling .get_targets()
-        interpolation_method : str, optional
-        main_channel_system : str, optional
-            The channel system to interpolate to. If interpolation_method is None, this argument is ignored
-        sampling_freq : float, optional
-            Sampling frequency which is needed for interpolation. Ignored if interpolation_method is None
         required_target : str, optional
         """
         # Store subject IDs. Organised as {dataset_name: {subject_name: row-number in data matrix}}
@@ -66,41 +59,14 @@ class CombinedDatasets:
         # Load data
         # --------------
         # Load and store input data
-        if interpolation_method is None:
-            self._data = {
-                details.dataset.name: details.dataset.load_numpy_arrays(
-                    subject_ids=self._subject_ids[details.dataset.name],
-                    pre_processed_version=details.details.pre_processed_version,
-                    time_series_start=details.details.time_series_start, num_time_steps=details.details.num_time_steps,
-                    channels=details.details.channels, required_target=required_target)
-                for details in datasets_details
-            }
-        else:
-            warnings.warn("Interpolating at runtime is slow, better to load it...", DeprecationWarning)
-            # Load non-interpolated data
-            non_interpolated: Dict[str, Dict[str, Union[numpy.ndarray, ChannelSystem]]] = (  # type: ignore[type-arg]
-                dict())
-            for details in datasets_details:
-                non_interpolated[details.dataset.name] = {
-                    "data": details.dataset.load_numpy_arrays(
-                        subject_ids=details.details.subject_ids,
-                        pre_processed_version=details.details.pre_processed_version,
-                        time_series_start=details.details.time_series_start,
-                        num_time_steps=details.details.num_time_steps,
-                        channels=details.details.channels, required_target=required_target
-                    ),
-                    "channel_system": details.dataset.channel_system
-                }
-
-            # Interpolate
-            if main_channel_system in non_interpolated:
-                target_channel_system = non_interpolated[main_channel_system]["channel_system"]
-            else:
-                target_channel_system = get_channel_system(main_channel_system)
-            self._data = interpolate_datasets(
-                datasets=non_interpolated, method=interpolation_method, sampling_freq=sampling_freq,
-                main_channel_system=target_channel_system
-            )
+        self._data = {
+            details.dataset.name: details.dataset.load_numpy_arrays(
+                subject_ids=self._subject_ids[details.dataset.name],
+                pre_processed_version=details.details.pre_processed_version,
+                time_series_start=details.details.time_series_start, num_time_steps=details.details.num_time_steps,
+                channels=details.details.channels, required_target=required_target)
+            for details in datasets_details
+        }
 
         # Load targets
         target_names = _extract_target_names(datasets_details=datasets_details)
@@ -143,8 +109,7 @@ class CombinedDatasets:
         self._variable_availability = variables
 
     @classmethod
-    def from_config(cls, config, interpolation_config, variables, target, sampling_freq, required_target,
-                    all_subjects):
+    def from_config(cls, config, variables, target, required_target, all_subjects):
         """
         Method for initialising directly from a config file
 
@@ -152,9 +117,7 @@ class CombinedDatasets:
         ----------
         config : dict[str, typing.Any]
         variables
-        interpolation_config : dict[str, typing.Any] | None
         target : str, optional
-        sampling_freq : float
         required_target : str, optional
         all_subjects : set[Subject]
             Must have the columns 'dataset' and 'sub_id'. All subjects are expected to be loaded without problems
@@ -196,14 +159,9 @@ class CombinedDatasets:
             )
             datasets_details.append(DatasetDetails(dataset=dataset, details=load_details))
 
-        # Extract details for interpolation
-        interpolation_method = None if interpolation_config is None else interpolation_config["method"]
-        main_channel_system = None if interpolation_method is None else interpolation_config["main_channel_system"]
-
         # Load all data and return object
         return cls(datasets_details=tuple(datasets_details), current_target=target,
-                   interpolation_method=interpolation_method, main_channel_system=main_channel_system,
-                   sampling_freq=sampling_freq, required_target=required_target, variables=variables)
+                   required_target=required_target, variables=variables)
 
     # --------------
     # Methods for getting data
@@ -231,7 +189,7 @@ class CombinedDatasets:
 
             # Get the data
             idx = self._subject_ids[dataset_name][subject.subject_id]
-            subject_data = self._data[dataset_name][idx]
+            subject_data = self._data[dataset_name][idx]  # type: ignore[index]
 
             # Add the subject data
             if dataset_name in data:
