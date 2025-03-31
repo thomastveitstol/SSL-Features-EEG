@@ -95,6 +95,16 @@ class DataSplitBase(abc.ABC):
                 raise RuntimeError("The union of subjects were inconsistent across splits")
         return subjects
 
+    @property
+    def all_datasets(self):
+        # Todo: consider just using the first split, because it should work and this three for-loops...
+        datasets: Set[str] = set()
+        for single_split in self.splits:  # E.g., looping through many random splits
+            for subject_set in single_split:  # Loop though train, val, and test set
+                for subject in subject_set:
+                    datasets.add(subject.dataset_name)
+        return datasets
+
 
 # -----------------
 # Classes
