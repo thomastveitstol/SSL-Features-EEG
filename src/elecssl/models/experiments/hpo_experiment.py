@@ -1058,6 +1058,7 @@ class PretrainHPO(HPOExperiment):
             results_dir = self._get_hpo_folder_path(trial.number)
 
             # Execute pre-training
+            assert self._pretext_subject_split is not None
             with SingleExperiment(hp_config=pretext_hpcs, pre_processing_config=preprocessing_config_file,
                                   experiments_config=pretext_experiments_config, results_path=results_dir,
                                   fine_tuning=None, experiment_name="pretext") as experiment:
@@ -1336,6 +1337,7 @@ class SimpleElecsslHPO(HPOExperiment):
 
             # Convenient to make folder structure the same as MultivariableElecssl
             results_path = results_dir / f"hpo_{trial.number}_{residual_feature_name}"
+            assert self._pretext_subject_split is not None
             with SingleExperiment(hp_config=suggested_hyperparameters, experiments_config=experiments_config,
                                   pre_processing_config=preprocessing_config_file, results_path=results_path,
                                   fine_tuning=None, experiment_name=experiment_name) as experiment:
@@ -1690,6 +1692,7 @@ class MultivariableElecsslHPO(HPOExperiment):
                 # ---------------
                 # Initiate experiment
                 # ---------------
+                assert self._pretext_subject_split is not None
                 include_pseudo_targets = self._experiments_config["include_pseudo_targets"]
                 feature_extractor_name, *outputs = self._run_single_job(
                     experiments_config=experiment_config_file, trial_number=trial.number,
