@@ -162,7 +162,7 @@ class BandPass(TransformationBase):
             # Do interpolation (unless it is the channel system of the subject, in which case we'll skip interpolation)
             if target_channel_system != subject.dataset_name:
                 interpolated_epochs = interpolate_single_epochs(
-                    source_epochs=epochs.copy(), to_channel_system=get_channel_system(subject.dataset_name),
+                    source_epochs=epochs.copy(), to_channel_system=get_channel_system(target_channel_system),
                     sampling_freq=epochs.info["sfreq"], method=interpolation_method)
             else:
                 interpolated_epochs = epochs.copy()
