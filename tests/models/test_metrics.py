@@ -22,7 +22,7 @@ def test_nan_predictions_error_regression_metrics():
     for metric in Histories.get_available_regression_metrics():
         try:
             result = Histories.compute_metric(metric=metric, y_pred=pred_tensor, y_true=ground_truth)
-            assert math.isnan(result)  # This happens for 'conc_cc', 'pearson_r', and 'spearman_rho'
+            assert math.isnan(result) and metric in ("conc_cc", "pearson_r", "spearman_rho")
         except NaNValueError:
             # If NaNValueError is raised, it's expected behavior for most metrics
             pass
@@ -79,7 +79,7 @@ def test_nan_target_error_regression_metrics():
     for metric in Histories.get_available_regression_metrics():
         try:
             result = Histories.compute_metric(metric=metric, y_pred=pred_tensor, y_true=ground_truth)
-            assert math.isnan(result)  # This happens for 'conc_cc', 'pearson_r', and 'spearman_rho'
+            assert math.isnan(result) and metric in ("conc_cc", "pearson_r", "spearman_rho")
         except NaNValueError:
             # If NaNValueError is raised, it's expected behavior for most metrics
             pass
