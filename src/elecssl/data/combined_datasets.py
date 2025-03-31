@@ -144,7 +144,7 @@ class CombinedDatasets:
 
     @classmethod
     def from_config(cls, config, interpolation_config, variables, target, sampling_freq, required_target,
-                    additional_targets, all_subjects):
+                    all_subjects):
         """
         Method for initialising directly from a config file
 
@@ -154,8 +154,6 @@ class CombinedDatasets:
         variables
         interpolation_config : dict[str, typing.Any] | None
         target : str, optional
-        additional_targets : dict[str, tuple[str, ...]]
-            Keys are dataset names, values are targets to load
         sampling_freq : float
         required_target : str, optional
         all_subjects : set[Subject]
@@ -174,12 +172,28 @@ class CombinedDatasets:
             dataset_subjects = tuple(subject.subject_id for subject in all_subjects
                                      if subject.dataset_name == dataset_name)
 
+            # Get the targets to load, and ensure that the 'current_target' is loaded
+            dataset_targets = dataset_kwargs.get("targets", ())
+            if isinstance(dataset_targets, str):
+                dataset_targets = (dataset_targets,)
+            elif isinstance(dataset_targets, list):
+                dataset_targets = tuple(dataset_targets)
+            elif isinstance(dataset_targets, tuple):
+                pass
+            else:
+                #  Better be conservative
+                raise TypeError(f"Unexpected datasets target type {type(dataset_targets)=}, {dataset_targets=}")
+
+
+            if target not in dataset_targets:
+                dataset_targets += (target,)
+
             # Construct dataset details
             load_details = LoadDetails(
                 subject_ids=dataset_subjects, time_series_start=dataset_kwargs["time_series_start"],
                 num_time_steps=dataset_kwargs["num_time_steps"],
-                pre_processed_version=dataset_kwargs["pre_processed_version"],
-                channels=dataset_kwargs["channels"], targets=additional_targets["dataset_name"]
+                pre_processed_version=dataset_kwargs["pre_processed_version"], channels=dataset_kwargs["channels"],
+                targets=dataset_targets
             )
             datasets_details.append(DatasetDetails(dataset=dataset, details=load_details))
 
@@ -273,7 +287,7 @@ class CombinedDatasets:
     # --------------
     # Methods for removing data
     # --------------
-    def remove_datasets(self, to_remove: Tuple[str, ...]):
+    def remove_datasets(self, to_remove: Union[str, Tuple[str, ...]]):
         """
         Method for removing datasets in-place. This can be convenient if a DL model has been trained on a pretext task,
         and some of the datasets should also be used for downstream training.
@@ -282,7 +296,7 @@ class CombinedDatasets:
 
         Parameters
         ----------
-        to_remove : tuple[str, ...]
+        to_remove : str | tuple[str, ...]
             The dataset names to remove
 
         Returns
@@ -404,9 +418,7 @@ class CombinedDatasets:
         return {dataset.name: dataset.channel_name_to_index() for dataset in self._datasets}
 
     @property
-    def target_names(self) -> Optional[Tuple[str, ...]]:
-        if self._targets is None:
-            return None
+    def target_names(self):
         return tuple(self._targets)
 
     @property
@@ -470,9 +482,9 @@ def _extract_subject_ids(datasets_details: Tuple[DatasetDetails, ...]):
     >>> from elecssl.data.datasets.dortmund_vital import DortmundVital
     >>> from elecssl.data.datasets.lemon import LEMON
     >>> ld_1 = LoadDetails(subject_ids=("sub-1", "sub-2", "sub-3"), time_series_start=None, num_time_steps=None,
-    ...                    channels=None, pre_processed_version=None)
+    ...                    channels=None, pre_processed_version=None, targets=())
     >>> ld_2 = LoadDetails(subject_ids=("sub-512", "sub-56", "sub-1"), time_series_start=None, num_time_steps=None,
-    ...                    channels=None, pre_processed_version=None)
+    ...                    channels=None, pre_processed_version=None, targets=())
     >>> d1 = DatasetDetails(dataset=LEMON(), details=ld_1)
     >>> d2 = DatasetDetails(dataset=DortmundVital(), details=ld_2)
     >>> _extract_subject_ids(datasets_details=(d1, d2))  # doctest: +NORMALIZE_WHITESPACE
