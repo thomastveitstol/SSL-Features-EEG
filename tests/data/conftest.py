@@ -72,5 +72,5 @@ def dummy_eeg_dataset(dummy_data):
 def dummy_dataset_details(dummy_eeg_dataset):
     num_subjects = 34
     load_details = LoadDetails(subject_ids=tuple(f"sub-{i}" for i in range(num_subjects)), time_series_start=None,
-                               num_time_steps=None, channels=None, pre_processed_version=None)
+                               num_time_steps=None, channels=None, pre_processed_version=None, targets=("age", "sex"))
     return DatasetDetails(dummy_eeg_dataset, load_details)

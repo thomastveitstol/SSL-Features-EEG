@@ -10,41 +10,43 @@ from elecssl.data.subject_split import Subject
 # -------------
 def test_remove_data(dummy_dataset_details):
     # Initialise object
-    dataset_name = dummy_dataset_details.dataset.name
-    combined_dataset = CombinedDatasets(datasets_details=(dummy_dataset_details,), variables={dataset_name: []},
-                                        target_names=("age",), current_target="age", required_target=None,
-                                        interpolation_method=None, main_channel_system=None, sampling_freq=None)
+    dataset_name_1 = dummy_dataset_details.dataset.name
+    combined_dataset = CombinedDatasets(datasets_details=(dummy_dataset_details,), variables={dataset_name_1: []},
+                                        current_target="age", required_target=None, interpolation_method=None,
+                                        main_channel_system=None, sampling_freq=None)
+
     # Select a subject of subjects
-    subjects_subset = tuple(Subject(dataset_name=dataset_name, subject_id=sub_id)
+    subjects_subset = tuple(Subject(dataset_name=dataset_name_1, subject_id=sub_id)
                             for sub_id in dummy_dataset_details.details.subject_ids[:20])
 
     # Data and targets contain dataset
-    assert dataset_name in combined_dataset.get_data(subjects_subset)
-    assert dataset_name in combined_dataset.get_targets(subjects_subset)
-    assert dataset_name in combined_dataset.dataset_subjects
-    assert dataset_name in combined_dataset.channel_name_to_index
-    assert dataset_name in tuple(d.name for d in combined_dataset.datasets)
+    assert dataset_name_1 in combined_dataset.get_data(subjects_subset)
+    assert dataset_name_1 in combined_dataset.get_targets(subjects_subset)
+    assert dataset_name_1 in combined_dataset.dataset_subjects
+    assert dataset_name_1 in combined_dataset.channel_name_to_index
+    assert dataset_name_1 in tuple(d.name for d in combined_dataset.datasets)
 
     # -------------
     # Remove dataset and do tests
     # -------------
-    combined_dataset.remove_datasets(to_remove=dataset_name)
+    combined_dataset.remove_datasets(to_remove=dataset_name_1)
 
     with pytest.raises(KeyError):
         combined_dataset.get_data(subjects_subset)
     with pytest.raises(KeyError):
         combined_dataset.get_targets(subjects_subset)
-    assert dataset_name not in combined_dataset.dataset_subjects
-    assert dataset_name not in combined_dataset.channel_name_to_index
-    assert dataset_name not in tuple(d.name for d in combined_dataset.datasets)
+    assert dataset_name_1 not in combined_dataset.dataset_subjects
+    assert dataset_name_1 not in combined_dataset.channel_name_to_index
+    assert dataset_name_1 not in tuple(d.name for d in combined_dataset.datasets)
 
 
 def test_remove_and_switch_targets(dummy_dataset_details):
     # Initialise object
     dataset_name = dummy_dataset_details.dataset.name
     combined_dataset = CombinedDatasets(datasets_details=(dummy_dataset_details,), variables={dataset_name: []},
-                                        target_names=("age", "sex"), current_target="age", required_target=None,
-                                        interpolation_method=None, main_channel_system=None, sampling_freq=None)
+                                        current_target="age", required_target=None, interpolation_method=None,
+                                        main_channel_system=None, sampling_freq=None)
+
     # Select a subject of subjects
     subjects_subset = tuple(Subject(dataset_name=dataset_name, subject_id=sub_id)
                             for sub_id in dummy_dataset_details.details.subject_ids[:20])
@@ -94,8 +96,8 @@ def test_get_data_copy(dummy_dataset_details):
     # Initialise object
     dataset_name = dummy_dataset_details.dataset.name
     combined_dataset = CombinedDatasets(datasets_details=(dummy_dataset_details,), variables={dataset_name: []},
-                                        target_names=("age",), current_target="age", required_target=None,
-                                        interpolation_method=None, main_channel_system=None, sampling_freq=None)
+                                        current_target="age", required_target=None, interpolation_method=None,
+                                        main_channel_system=None, sampling_freq=None)
 
     # Select a subject of subjects
     subjects_subset = tuple(Subject(dataset_name=dataset_name, subject_id=sub_id)
@@ -135,8 +137,8 @@ def test_get_target_copy(dummy_dataset_details):
     # Initialise object
     dataset_name = dummy_dataset_details.dataset.name
     combined_dataset = CombinedDatasets(datasets_details=(dummy_dataset_details,), variables={dataset_name: []},
-                                        target_names=("age",), current_target="age", required_target=None,
-                                        interpolation_method=None, main_channel_system=None, sampling_freq=None)
+                                        current_target="age", required_target=None, interpolation_method=None,
+                                        main_channel_system=None, sampling_freq=None)
 
     # Select a subject of subjects
     subjects_subset = tuple(Subject(dataset_name=dataset_name, subject_id=sub_id)

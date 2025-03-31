@@ -20,6 +20,7 @@ class LoadDetails:
     num_time_steps: Optional[int]
     channels: Optional[Tuple[str, ...]]
     pre_processed_version: Optional[str]
+    targets: Tuple[str, ...]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -40,7 +41,7 @@ class CombinedDatasets:
     __slots__ = ("_subject_ids", "_data", "_targets", "_target_names", "_current_target", "_datasets", "_subjects_info",
                  "_variable_availability")
 
-    def __init__(self, datasets_details: Tuple[DatasetDetails, ...], *, variables, target_names, current_target,
+    def __init__(self, datasets_details: Tuple[DatasetDetails, ...], *, variables, current_target,
                  interpolation_method, main_channel_system, sampling_freq, required_target):
         """
         Initialise. Note that, if interpolation is used, it is preferred to specify this as part of the preprocessed
@@ -51,8 +52,6 @@ class CombinedDatasets:
         datasets_details : tuple[DatasetDetails, ...]
         current_target : str
             This determines which target is loaded when calling .get_targets()
-        target_names: tuple[str, ...] | str, optional
-            Targets to load. If None, no targets are loaded
         interpolation_method : str, optional
         main_channel_system : str, optional
             The channel system to interpolate to. If interpolation_method is None, this argument is ignored
@@ -104,16 +103,16 @@ class CombinedDatasets:
             )
 
         # Load targets
-        target_names = (target_names,) if isinstance(target_names, str) else target_names
+        target_names = _extract_target_names(datasets_details=datasets_details)
+        all_targets = dict()
+
+        for target_name, dataset_names in target_names.items():
+            all_targets[target_name] = {details.dataset.name: details.dataset.load_targets(
+                subject_ids=details.details.subject_ids, target=target_name) for details in datasets_details
+                if target_name in details.details.targets}
+
+        self._targets = all_targets
         self._current_target = current_target  # This determines which target is loaded when calling .get_targets()
-        if target_names is None:
-            self._targets = None
-        else:
-            self._targets = {
-                target_name: {details.dataset.name: details.dataset.load_targets(
-                    subject_ids=details.details.subject_ids, target=target_name) for details in datasets_details}
-                for target_name in target_names
-            }
 
         # Convenient for e.g. extracting channel systems
         self._datasets: Tuple[EEGDatasetBase, ...] = tuple(details.dataset for details in datasets_details)
@@ -155,7 +154,8 @@ class CombinedDatasets:
         variables
         interpolation_config : dict[str, typing.Any] | None
         target : str, optional
-        additional_targets : tuple[str, ...] | None
+        additional_targets : dict[str, tuple[str, ...]]
+            Keys are dataset names, values are targets to load
         sampling_freq : float
         required_target : str, optional
         all_subjects : set[Subject]
@@ -179,7 +179,7 @@ class CombinedDatasets:
                 subject_ids=dataset_subjects, time_series_start=dataset_kwargs["time_series_start"],
                 num_time_steps=dataset_kwargs["num_time_steps"],
                 pre_processed_version=dataset_kwargs["pre_processed_version"],
-                channels=dataset_kwargs["channels"]
+                channels=dataset_kwargs["channels"], targets=additional_targets["dataset_name"]
             )
             datasets_details.append(DatasetDetails(dataset=dataset, details=load_details))
 
@@ -187,19 +187,10 @@ class CombinedDatasets:
         interpolation_method = None if interpolation_config is None else interpolation_config["method"]
         main_channel_system = None if interpolation_method is None else interpolation_config["main_channel_system"]
 
-        # Combine all targets
-        additional_targets = () if additional_targets is None else additional_targets
-        assert isinstance(target, str)
-        assert isinstance(additional_targets, tuple)
-        if target in additional_targets:
-            all_target_names = additional_targets
-        else:
-            all_target_names = (target,) + additional_targets
-
         # Load all data and return object
-        return cls(datasets_details=tuple(datasets_details), current_target=target, interpolation_method=interpolation_method,
-                   main_channel_system=main_channel_system, sampling_freq=sampling_freq,
-                   required_target=required_target, variables=variables, target_names=all_target_names)
+        return cls(datasets_details=tuple(datasets_details), current_target=target,
+                   interpolation_method=interpolation_method, main_channel_system=main_channel_system,
+                   sampling_freq=sampling_freq, required_target=required_target, variables=variables)
 
     # --------------
     # Methods for getting data
@@ -304,9 +295,8 @@ class CombinedDatasets:
         for dataset_name in to_remove:
             del self._subject_ids[dataset_name]
             del self._data[dataset_name]
-            if self._targets is not None:
-                for target_name in self.target_names:
-                    del self._targets[target_name][dataset_name]
+            for target_name in self.target_names:
+                self._targets[target_name].pop(dataset_name, None)
             del self._variable_availability[dataset_name]
 
         # Delete from list
@@ -431,6 +421,37 @@ class CombinedDatasets:
 # ----------------
 # Functions
 # ----------------
+def _extract_target_names(datasets_details: Tuple[DatasetDetails, ...]):
+    """
+    Function for extracting the target names (keys) with datasets (values)
+
+    Examples
+    --------
+    >>> my_subjects_0 = tuple(f"sub-{i}" for i in range(30))  # type: ignore[attr-defined]
+    >>> my_details_0 = LoadDetails(subject_ids=my_subjects_0, time_series_start=None, num_time_steps=None,
+    ...                            channels=None, pre_processed_version=None, targets=("age", "sex"))
+    >>> my_subjects_1 = tuple(f"participant-0{i}" for i in range(25))  # type: ignore[attr-defined]
+    >>> my_details_1 = LoadDetails(subject_ids=my_subjects_1, time_series_start=None, num_time_steps=None,
+    ...                            channels=None, pre_processed_version=None, targets=("age",))
+    >>> from elecssl.data.datasets.lemon import LEMON
+    >>> from elecssl.data.datasets.dortmund_vital import DortmundVital
+    >>> d_0 = DatasetDetails(dataset=LEMON(), details=my_details_0)
+    >>> d_1 = DatasetDetails(dataset=DortmundVital(), details=my_details_1)
+    >>> _extract_target_names(datasets_details=(d_0, d_1))
+    {'age': ('LEMON', 'DortmundVital'), 'sex': ('LEMON',)}
+    """
+    # Keys are target names, values are dataset names
+    target_names: Dict[str, List[str]] = dict()
+    for details in datasets_details:
+        dataset_target = details.details.targets
+        for target in dataset_target:
+            if target not in target_names:
+                target_names[target] = []
+
+            target_names[target].append(details.dataset.name)
+    return {target_name: tuple(dataset_names) for target_name, dataset_names in target_names.items()}
+
+
 def _extract_subject_ids(datasets_details: Tuple[DatasetDetails, ...]):
     """
     Function for getting a dictionary containing information of the integer position of a subject in the data matrix
