@@ -666,6 +666,9 @@ class Histories:
         except ValueError as e:
             if "NaN" in str(e):  # Can't make it too specific due to minor differences in versions
                 raise NaNValueError
+            elif "inf" in str(e).lower() or "infinity" in str(e).lower():
+                # As per now, I'll treat it just like NaN because I want the same behaviour
+                raise NaNValueError
             raise e
 
     @classmethod

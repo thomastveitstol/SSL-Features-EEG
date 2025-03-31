@@ -203,3 +203,64 @@ def test_constant_targets_multiclass_classification_metrics():
     # Test metrics
     for metric in Histories.get_available_multiclass_classification_metrics():
         _ = Histories.compute_metric(metric=metric, y_pred=pred_tensor, y_true=ground_truth)
+
+
+# ----------------
+# Inf in predictions are treated as nan
+# ----------------
+def test_inf_predictions_error_regression_metrics():
+    """Test if NaNPredictionError is either correctly raised or no error at all, when there are inf values in the model
+    predictions, when computing regression scores"""
+    # Create an invalid predicted tensor (containing inf) and a valid ground truth tensor
+    pred_tensor = torch.rand(size=(10, 1))
+    pred_tensor[5] = float("inf")
+    ground_truth = torch.rand(size=(10, 1))
+
+    # Test metrics
+    for metric in Histories.get_available_regression_metrics():
+        try:
+            Histories.compute_metric(metric=metric, y_pred=pred_tensor, y_true=ground_truth)
+
+            # Correlations can be numeric
+            assert metric in ('conc_cc', 'pearson_r', 'spearman_rho'), (f"The metric {metric!r} did not raise "
+                                                                        f"NaNValueError, which was unexpected")
+        except NaNValueError:
+            # If NaNValueError is raised, it's expected behavior for most metrics
+            pass
+
+
+def test_inf_predictions_error_classification_metrics():
+    """Test if NaNPredictionError is either correctly raised or no error at all, when there are inf values in the model
+    predictions, when computing classification scores"""
+    # Create an invalid predicted tensor (containing inf) and a valid ground truth tensor
+    pred_tensor = torch.rand(size=(10, 1))
+    pred_tensor[5] = float("inf")
+    ground_truth = torch.rand(size=(10, 1))
+
+    # Test metrics
+    for metric in Histories.get_available_classification_metrics():
+        try:
+            result = Histories.compute_metric(metric=metric, y_pred=pred_tensor, y_true=ground_truth)
+            assert metric in ("auc",) and math.isnan(result), (f"The metric {metric!r} did not raise NaNValueError, "
+                                                               f"and obtained an unexpected value {result}")
+        except NaNValueError:
+            # If NaNValueError is raised, it's expected behavior for most metrics
+            pass
+
+
+def test_inf_predictions_error_multiclass_classification_metrics():
+    """For multiclass classification score, NaNPredictionError is sometimes raised, and other times it seems to be
+    ignored"""
+    # Create an invalid predicted tensor (containing inf) and a valid ground truth tensor
+    pred_tensor = torch.rand(size=(40, 5), dtype=torch.float) * 7
+    pred_tensor[5] = float("inf")
+    ground_truth = torch.tensor([random.randint(0, 4) for _ in range(40)])
+
+    # Test metrics
+    for metric in Histories.get_available_multiclass_classification_metrics():
+        try:
+            result = Histories.compute_metric(metric=metric, y_pred=pred_tensor, y_true=ground_truth)
+            assert isinstance(result, float)
+        except NaNValueError:
+            # If NaNValueError is raised, it's expected behavior for many metrics
+            pass
