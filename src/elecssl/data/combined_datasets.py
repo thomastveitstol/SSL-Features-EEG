@@ -184,7 +184,6 @@ class CombinedDatasets:
                 #  Better be conservative
                 raise TypeError(f"Unexpected datasets target type {type(dataset_targets)=}, {dataset_targets=}")
 
-
             if target not in dataset_targets:
                 dataset_targets += (target,)
 
