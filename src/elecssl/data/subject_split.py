@@ -123,6 +123,9 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
     ...                                           num_random_splits=my_num_splits, seed=42)
     >>> len(my_splits_obj.all_subjects), type(my_splits_obj.all_subjects)
     (13, <class 'set'>)
+    >>> my_test_set = my_splits_obj.test_set
+    >>> len(my_test_set)
+    4
     >>> my_splits = my_splits_obj.splits
     >>> len(my_splits) == my_num_splits, type(my_splits)
     (True, <class 'tuple'>)
@@ -149,6 +152,7 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
     >>> my_test_subjects = tuple(my_split[-1] for my_split in my_splits)  # type: ignore
     >>> for test_subjects in my_test_subjects:
     ...     assert test_subjects == my_test_subjects[0]
+    ...     assert set(test_subjects) == my_test_set
 
     But train and val are not
 
@@ -231,7 +235,11 @@ class RandomSplitsTVTestHoldout(DataSplitBase):
             raise RuntimeError(f"Expected the test set to be consistent across splits, but found {len(test_sets)} "
                                f"unique ones")
 
-        return tuple(test_sets)[0]
+        return set(test_sets.pop())
+
+    @property
+    def non_test_set(self):
+        return self.all_subjects - self.test_set
 
 
 class RandomSplitsTV(DataSplitBase):
