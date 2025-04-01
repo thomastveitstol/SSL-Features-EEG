@@ -1619,7 +1619,7 @@ class MultivariableElecsslHPO(HPOExperiment):
 
         # The pre-training excluded
         datasets_to_use = dict()
-        if "left_out_datasets" in self._experiments_config["SubjectSplit"]["kwargs"]:
+        if "left_out_datasets" in self._experiments_config["SubjectSplit"]:
             pretrain_excluded = self._experiments_config["SubjectSplit"]["left_out_datasets"]
             for excluded_dataset in pretrain_excluded:
                 datasets_to_use[excluded_dataset] = self._experiments_config["Datasets"][excluded_dataset]
