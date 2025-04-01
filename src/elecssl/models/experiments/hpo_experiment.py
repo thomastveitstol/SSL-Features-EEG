@@ -1628,7 +1628,7 @@ class MultivariableElecsslHPO(HPOExperiment):
 
         # The datasets for pretraining
         datasets_for_pretraining = tuple(dataset for dataset in self._experiments_config["Datasets"]
-                                         if dataset != pretrain_excluded)
+                                         if dataset not in pretrain_excluded)
         possible_pretrain_combinations = _generate_dataset_combinations(datasets_for_pretraining)
         pretrain_combinations = trial.suggest_categorical(f"{name_prefix}datasets",
                                                           choices=possible_pretrain_combinations)
