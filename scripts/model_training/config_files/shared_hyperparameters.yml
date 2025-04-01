@@ -3,7 +3,7 @@
 # -----------------
 Preprocessing:
   autoreject: !Categorical { choices: [ true ] }
-  input_length: !Categorical { choices: [ 5, 10, 20, 30 ] }
+  input_length: !Categorical { choices: [ 5, 10, 20 ] }
   sfreq_multiple: !Categorical { choices: [ 2, 3 ] }
 
 # -----------------
@@ -11,14 +11,14 @@ Preprocessing:
 # -----------------
 # Domain discriminator
 Discriminators:
-  NoDiscriminator: {}
+  NoDiscriminator: { }
   ExponentialDecalFC:
-    proposed_depth: {low: 1, high: 5, log: false}
-    first_layer_multiple: {low: 0.5, high: 2, log: false}
-    exponential_decrease: {low: 2, high: 5, log: false}
+    proposed_depth: { low: 1, high: 5, log: false }
+    first_layer_multiple: { low: 0.5, high: 2, log: false }
+    exponential_decrease: { low: 2, high: 5, log: false }
     activation_function:
-      relu: {}
-      elu: {low: 0.2, high: 1.8, log: false}
+      relu: { }
+      elu: { low: 0.2, high: 1.8, log: false }
 
 # Convolutional Monge mapping normalisation
 # todo
@@ -44,7 +44,7 @@ DLArchitectures:
   InceptionNetwork:
     num_classes: 1
     cnn_units: { low: 4, high: 64, log: true }  # { low: 8, high: 64, log: true }
-    num_res_blocks: { low: 1, high: 27, log: true }
+    num_res_blocks: { low: 1, high: 9, log: true }
   ShallowFBCSPNetMTS:
     num_classes: 1
     num_time_steps: UNAVAILABLE
@@ -112,7 +112,7 @@ Interpolation:
 _num_kernels: &num_kernels !Int { low: 10, high: 100, log: true }
 _max_receptive_field: &max_receptive_field !Int { low: 15, high: 50, log: true }  # { low: 15, high: 100, log: true }
 RegionBasedPooling:
-  num_montage_splits: { low: 1, high: 32, log: true }
+  num_montage_splits: { low: 1, high: 16, log: true }
   share_all_pooling_modules: { choices: [ true, false ] }
   num_pooling_modules_percentage: { low: 0.0, high: 1.0, step: null, log: false }
   num_designs: 1
@@ -139,4 +139,4 @@ RegionBasedPooling:
       channel_positions: !NotAHyperparameterList
         [ LEMON, Wang, DortmundVital ]
 
-SpatialDimensionMismatch: { choices: [ Interpolation, RegionBasedPooling ] }
+SpatialDimensionMismatch: { choices: [ RegionBasedPooling ] }

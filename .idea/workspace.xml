@@ -4,12 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="mypy fix">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="bugfix">
+      <change afterPath="$PROJECT_DIR$/scripts/results_scripts/hp_importance/importance_plots.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/results_scripts/plots.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/.coverage" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/data/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/tests/data/.coverage" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/specific_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/specific_settings.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,6 +43,13 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/elecssl/data/results/experiments_2025-04-01_104834/defaults_config.yml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/elecssl/data/results/experiments_2025-04-01_104834/downstream_subjects/downstream_target_excluded.csv" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/elecssl/data/results/experiments_2025-04-01_104834/downstream_subjects/included.csv" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/elecssl/data/results/experiments_2025-04-01_104834/downstream_subjects/input_data_excluded.csv" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/elecssl/data/results/experiments_2025-04-01_104834/ml_features/hpd_config.yml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/elecssl/data/results/experiments_2025-04-01_104834/ml_features/test_predictions.csv" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/elecssl/data/results/experiments_2025-04-01_104834/ml_features/test_scores.csv" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
@@ -192,6 +202,7 @@
     &quot;Python tests.Python tests for test_combined_datasets.test_remove_and_switch_targets.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests for test_combined_datasets.test_remove_data.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests for test_green_model.test_forward.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_input_data.test_equal_num_channel_and_time_steps.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests for test_metrics.test_constant_predictions_multiclass_classification_metrics.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests for test_metrics.test_constant_predictions_regression_metrics.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests for test_metrics.test_constant_targets_multiclass_classification_metrics.executor&quot;: &quot;Run&quot;,
@@ -218,6 +229,7 @@
     &quot;Python tests.Python tests for test_subject_split.test_subject_split_equality.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests in test_combined_datasets.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests in test_hpo_experiment.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_input_data.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests in test_metrics.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests in test_models.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests in test_paths.py.executor&quot;: &quot;Run&quot;,
@@ -236,6 +248,7 @@
     &quot;Python.elecssl_hpo.executor&quot;: &quot;Run&quot;,
     &quot;Python.group_differences.executor&quot;: &quot;Run&quot;,
     &quot;Python.hpo_experiment.executor&quot;: &quot;Run&quot;,
+    &quot;Python.importance_plots.executor&quot;: &quot;Run&quot;,
     &quot;Python.lemon.executor&quot;: &quot;Run&quot;,
     &quot;Python.linear_regresison.executor&quot;: &quot;Run&quot;,
     &quot;Python.metrics.executor&quot;: &quot;Run&quot;,
@@ -257,7 +270,7 @@
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/model_training&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -276,27 +289,30 @@
       <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctests in main_fixed_channels_model">
-    <configuration name="Doctest CombinedDatasets.get_subjects_dict" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.importance_plots">
+    <configuration name="importance_plots" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results_scripts/hp_importance" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/combined_datasets.py" />
-      <option name="CLASS_NAME" value="CombinedDatasets" />
-      <option name="METHOD_NAME" value="get_subjects_dict" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_METHOD" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results_scripts/hp_importance/importance_plots.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctest _extract_subject_ids" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in RandomSplitsTVTestHoldout" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -306,30 +322,11 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/combined_datasets.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="_extract_subject_ids" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_FUNCTION" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Doctests in combined_datasets" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/combined_datasets.py" />
-      <option name="CLASS_NAME" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/subject_split.py" />
+      <option name="CLASS_NAME" value="RandomSplitsTVTestHoldout" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
@@ -353,7 +350,7 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests in test_combined_datasets.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python tests for test_input_data.test_equal_num_channel_and_time_steps" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -364,24 +361,39 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/data/test_combined_datasets.py&quot;" />
+      <option name="_new_target" value="&quot;test_input_data.test_equal_num_channel_and_time_steps&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests in test_input_data.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/data/test_input_data.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.importance_plots" />
+      <item itemvalue="Python tests.Doctests in RandomSplitsTVTestHoldout" />
       <item itemvalue="Python tests.Doctests in main_fixed_channels_model" />
-      <item itemvalue="Python tests.Doctest CombinedDatasets.get_subjects_dict" />
-      <item itemvalue="Python tests.Doctest _extract_subject_ids" />
-      <item itemvalue="Python tests.Doctests in combined_datasets" />
-      <item itemvalue="Python tests.Python tests in test_combined_datasets.py" />
+      <item itemvalue="Python tests.Python tests for test_input_data.test_equal_num_channel_and_time_steps" />
+      <item itemvalue="Python tests.Python tests in test_input_data.py" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.importance_plots" />
+        <item itemvalue="Python tests.Doctests in RandomSplitsTVTestHoldout" />
+        <item itemvalue="Python tests.Python tests in test_input_data.py" />
+        <item itemvalue="Python tests.Python tests for test_input_data.test_equal_num_channel_and_time_steps" />
         <item itemvalue="Python tests.Doctests in main_fixed_channels_model" />
-        <item itemvalue="Python tests.Doctests in combined_datasets" />
-        <item itemvalue="Python tests.Doctest _extract_subject_ids" />
-        <item itemvalue="Python tests.Doctest CombinedDatasets.get_subjects_dict" />
-        <item itemvalue="Python tests.Python tests in test_combined_datasets.py" />
       </list>
     </recent_temporary>
   </component>
@@ -400,94 +412,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00535" summary="improved docstring">
-      <option name="closed" value="true" />
-      <created>1742993643874</created>
-      <option name="number" value="00535" />
-      <option name="presentableId" value="LOCAL-00535" />
-      <option name="project" value="LOCAL" />
-      <updated>1742993643874</updated>
-    </task>
-    <task id="LOCAL-00536" summary="removed default arguments">
-      <option name="closed" value="true" />
-      <created>1742994033970</created>
-      <option name="number" value="00536" />
-      <option name="presentableId" value="LOCAL-00536" />
-      <option name="project" value="LOCAL" />
-      <updated>1742994033970</updated>
-    </task>
-    <task id="LOCAL-00537" summary="made interpolation a part of 'preprocessing' to avoid doing it at runtime. Also, logging potential failures when doing preprocessing and documenting autorejected epochs">
-      <option name="closed" value="true" />
-      <created>1743012503223</created>
-      <option name="number" value="00537" />
-      <option name="presentableId" value="LOCAL-00537" />
-      <option name="project" value="LOCAL" />
-      <updated>1743012503223</updated>
-    </task>
-    <task id="LOCAL-00538" summary="removed unused arguments">
-      <option name="closed" value="true" />
-      <created>1743012866347</created>
-      <option name="number" value="00538" />
-      <option name="presentableId" value="LOCAL-00538" />
-      <option name="project" value="LOCAL" />
-      <updated>1743012866347</updated>
-    </task>
-    <task id="LOCAL-00539" summary="changes to config file">
-      <option name="closed" value="true" />
-      <created>1743012913670</created>
-      <option name="number" value="00539" />
-      <option name="presentableId" value="LOCAL-00539" />
-      <option name="project" value="LOCAL" />
-      <updated>1743012913670</updated>
-    </task>
-    <task id="LOCAL-00540" summary="flake8 fixes">
-      <option name="closed" value="true" />
-      <created>1743012972082</created>
-      <option name="number" value="00540" />
-      <option name="presentableId" value="LOCAL-00540" />
-      <option name="project" value="LOCAL" />
-      <updated>1743012972082</updated>
-    </task>
-    <task id="LOCAL-00541" summary="mypy fixes">
-      <option name="closed" value="true" />
-      <created>1743013176254</created>
-      <option name="number" value="00541" />
-      <option name="presentableId" value="LOCAL-00541" />
-      <option name="project" value="LOCAL" />
-      <updated>1743013176254</updated>
-    </task>
-    <task id="LOCAL-00542" summary="fix in config fiel">
-      <option name="closed" value="true" />
-      <created>1743013294022</created>
-      <option name="number" value="00542" />
-      <option name="presentableId" value="LOCAL-00542" />
-      <option name="project" value="LOCAL" />
-      <updated>1743013294022</updated>
-    </task>
-    <task id="LOCAL-00543" summary="fix in generating input data">
-      <option name="closed" value="true" />
-      <created>1743013552619</created>
-      <option name="number" value="00543" />
-      <option name="presentableId" value="LOCAL-00543" />
-      <option name="project" value="LOCAL" />
-      <updated>1743013552619</updated>
-    </task>
-    <task id="LOCAL-00544" summary="removed defaults">
-      <option name="closed" value="true" />
-      <created>1743063133863</created>
-      <option name="number" value="00544" />
-      <option name="presentableId" value="LOCAL-00544" />
-      <option name="project" value="LOCAL" />
-      <updated>1743063133863</updated>
-    </task>
-    <task id="LOCAL-00545" summary="changed from 'fold' to 'split' and updates for avoid reloading data when some of it was loaded for pretext task in PretrainHPO">
-      <option name="closed" value="true" />
-      <created>1743078775364</created>
-      <option name="number" value="00545" />
-      <option name="presentableId" value="LOCAL-00545" />
-      <option name="project" value="LOCAL" />
-      <updated>1743078775364</updated>
     </task>
     <task id="LOCAL-00546" summary="removed todo">
       <option name="closed" value="true" />
@@ -793,7 +717,95 @@
       <option name="project" value="LOCAL" />
       <updated>1743427143511</updated>
     </task>
-    <option name="localTasksCounter" value="584" />
+    <task id="LOCAL-00584" summary="fixed docstest">
+      <option name="closed" value="true" />
+      <created>1743427492441</created>
+      <option name="number" value="00584" />
+      <option name="presentableId" value="LOCAL-00584" />
+      <option name="project" value="LOCAL" />
+      <updated>1743427492442</updated>
+    </task>
+    <task id="LOCAL-00585" summary="automatic updates">
+      <option name="closed" value="true" />
+      <created>1743427827032</created>
+      <option name="number" value="00585" />
+      <option name="presentableId" value="LOCAL-00585" />
+      <option name="project" value="LOCAL" />
+      <updated>1743427827032</updated>
+    </task>
+    <task id="LOCAL-00586" summary="removed interpolation at runtime">
+      <option name="closed" value="true" />
+      <created>1743433113866</created>
+      <option name="number" value="00586" />
+      <option name="presentableId" value="LOCAL-00586" />
+      <option name="project" value="LOCAL" />
+      <updated>1743433113866</updated>
+    </task>
+    <task id="LOCAL-00587" summary="bugfix for interpolation">
+      <option name="closed" value="true" />
+      <created>1743433125744</created>
+      <option name="number" value="00587" />
+      <option name="presentableId" value="LOCAL-00587" />
+      <option name="project" value="LOCAL" />
+      <updated>1743433125745</updated>
+    </task>
+    <task id="LOCAL-00588" summary="added property in subject split class">
+      <option name="closed" value="true" />
+      <created>1743434941309</created>
+      <option name="number" value="00588" />
+      <option name="presentableId" value="LOCAL-00588" />
+      <option name="project" value="LOCAL" />
+      <updated>1743434941309</updated>
+    </task>
+    <task id="LOCAL-00589" summary="added property and doctest in subject split class">
+      <option name="closed" value="true" />
+      <created>1743438581775</created>
+      <option name="number" value="00589" />
+      <option name="presentableId" value="LOCAL-00589" />
+      <option name="project" value="LOCAL" />
+      <updated>1743438581775</updated>
+    </task>
+    <task id="LOCAL-00590" summary="updates for using the safe subject splitting">
+      <option name="closed" value="true" />
+      <created>1743438651451</created>
+      <option name="number" value="00590" />
+      <option name="presentableId" value="LOCAL-00590" />
+      <option name="project" value="LOCAL" />
+      <updated>1743438651451</updated>
+    </task>
+    <task id="LOCAL-00591" summary="removed unused keys in yml file">
+      <option name="closed" value="true" />
+      <created>1743439004445</created>
+      <option name="number" value="00591" />
+      <option name="presentableId" value="LOCAL-00591" />
+      <option name="project" value="LOCAL" />
+      <updated>1743439004445</updated>
+    </task>
+    <task id="LOCAL-00592" summary="mypy fixes">
+      <option name="closed" value="true" />
+      <created>1743439365954</created>
+      <option name="number" value="00592" />
+      <option name="presentableId" value="LOCAL-00592" />
+      <option name="project" value="LOCAL" />
+      <updated>1743439365954</updated>
+    </task>
+    <task id="LOCAL-00593" summary="fixed keyerror">
+      <option name="closed" value="true" />
+      <created>1743494399600</created>
+      <option name="number" value="00593" />
+      <option name="presentableId" value="LOCAL-00593" />
+      <option name="project" value="LOCAL" />
+      <updated>1743494399600</updated>
+    </task>
+    <task id="LOCAL-00594" summary="bugfix">
+      <option name="closed" value="true" />
+      <created>1743498486579</created>
+      <option name="number" value="00594" />
+      <option name="presentableId" value="LOCAL-00594" />
+      <option name="project" value="LOCAL" />
+      <updated>1743498486580</updated>
+    </task>
+    <option name="localTasksCounter" value="595" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -808,17 +820,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="changed type to argument and added remove method" />
-    <MESSAGE value="changed path to input data" />
-    <MESSAGE value="added warning" />
-    <MESSAGE value="minor improvement" />
-    <MESSAGE value="major improvements to making subject splitting more robust (+ improved documentation)" />
-    <MESSAGE value="removed comment" />
-    <MESSAGE value="flake8 fixes" />
-    <MESSAGE value="mypy fixes" />
-    <MESSAGE value="removed unused function" />
-    <MESSAGE value="automatic updates" />
-    <MESSAGE value="changes to config files" />
     <MESSAGE value="made files read-only" />
     <MESSAGE value="confiug files" />
     <MESSAGE value="added todo" />
@@ -833,6 +834,17 @@
     <MESSAGE value="fixed switching target between pretext and downstream task" />
     <MESSAGE value="changed HP in inception network from depth to number of residual blocks" />
     <MESSAGE value="mypy fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="mypy fix" />
+    <MESSAGE value="fixed docstest" />
+    <MESSAGE value="automatic updates" />
+    <MESSAGE value="removed interpolation at runtime" />
+    <MESSAGE value="bugfix for interpolation" />
+    <MESSAGE value="added property in subject split class" />
+    <MESSAGE value="added property and doctest in subject split class" />
+    <MESSAGE value="updates for using the safe subject splitting" />
+    <MESSAGE value="removed unused keys in yml file" />
+    <MESSAGE value="mypy fixes" />
+    <MESSAGE value="fixed keyerror" />
+    <MESSAGE value="bugfix" />
+    <option name="LAST_COMMIT_MESSAGE" value="bugfix" />
   </component>
 </project>
