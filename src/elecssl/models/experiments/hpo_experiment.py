@@ -819,12 +819,17 @@ class MLFeatureExtraction(MainExperiment):
         # -------------
         # todo: I should store the validation score too...
         assert isinstance(self._downstream_subject_split, RandomSplitsTVTestHoldout)  # make mypy stop complaining
-        _compute_biomarker_predictive_value(
+        score = _compute_biomarker_predictive_value(
             df=df, subject_split=self._downstream_subject_split, ml_model_hp_config=self._sampling_config["MLModel"],
             ml_model_settings_config=self._experiments_config["MLModelSettings"],
             save_test_predictions=self._experiments_config["save_test_predictions"], results_dir=self.results_path,
             verbose=True
         )
+
+        # Store similar to optuna study
+        to_path = self._results_path / "val_score.csv"
+        pandas.DataFrame({"value": [score]}).to_csv(to_path, index=False)
+        os.chmod(to_path, 0o444)
 
     # --------------
     # Properties

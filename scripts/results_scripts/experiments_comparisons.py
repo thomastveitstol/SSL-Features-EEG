@@ -26,9 +26,18 @@ def main():
     experiments_path = Path(get_results_dir() / experiment_name)
 
     # -------------
-    # Aggregate results in a dataframe
+    # Aggregate results in a dataframe. Currently, using validation score
     # -------------
     results: Dict[str, List[Union[str, float]]] = {"Performance": [], "Experiment": []}
+
+    # Add features + linear regression
+    linreg_df = pandas.read_csv(experiments_path / "ml_features" / "val_score.csv")
+    assert linreg_df["value"].shape[0] == 1
+
+    results["Performance"].append(linreg_df["value"][0])
+    results["Experiment"].append("Band power\n+ Lin. Reg.")
+
+    # Add everything else
     for study_name in study_names:
         study_path = (experiments_path / study_name / f"{study_name}-study.db")
         study_storage = f"sqlite:///{study_path}"
@@ -40,8 +49,7 @@ def main():
         results["Performance"] .extend(experiment_df["value"].tolist())
         results["Experiment"].extend([_PRETTY_NAME[study_name]] * experiment_df.shape[0])
 
-    # todo: must add band power + ML
-
+    # Create df
     df = pandas.DataFrame(results)
 
     # -------------
