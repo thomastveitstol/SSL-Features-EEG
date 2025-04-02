@@ -15,4 +15,4 @@ source "$old_env/bin/activate"
 # pip install --upgrade optuna
 
 # Run the plotting
-python -m importance_plots
+python -m generate_importance_scores

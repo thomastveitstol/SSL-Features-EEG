@@ -5,6 +5,8 @@ I've only managed to compute interaction effects with an old environment. So, to
 fanova. This also requires pyrfr, which I was not able to download with Python 3.12
 """
 import itertools
+import os.path
+import warnings
 from collections import OrderedDict
 from pathlib import Path
 from types import MappingProxyType
@@ -15,8 +17,6 @@ import fanova  # type: ignore
 import numpy
 import optuna
 import pandas
-import seaborn
-from matplotlib import pyplot
 
 try:
     from elecssl.data.paths import get_results_dir
@@ -231,6 +231,37 @@ def _generate_interactions_df(fanova_object, *, num_trees):
     return pandas.DataFrame(pairwise_marginals)
 
 
+def _clean_dataframe(trials_df, *, selected_hps, study_name):
+    """Cleaning of the trials dataframe"""
+    # Restrict to unconditional HPs
+    unconditional_hps = [col for col in trials_df.columns if col.startswith("params_")
+                         and not trials_df[col].isnull().values.any()]
+    _wanted_cols = unconditional_hps + ["value"]
+    trials_df.drop(columns=[col for col in trials_df.columns if col not in _wanted_cols], inplace=True)
+
+    # Remove annoying prefix
+    _prefix = "params_"
+    col_mapping = {col: col[len(_prefix):] for col in trials_df.columns if col.startswith(_prefix)}
+    trials_df.rename(columns=col_mapping, inplace=True)
+
+    # Maybe use a selection only
+    if selected_hps is not None:
+        _wanted_cols = ["value"] + list(selected_hps[study_name])
+        trials_df.drop(columns=[col for col in trials_df.columns if col not in _wanted_cols])
+
+    # Convert some of the categorical to numerical encoding
+    trials_df.replace(_NUMERICAL_ENCODING, inplace=True)
+    for name, mapping in _NUMERICAL_ENCODING_ADDS.items():
+        if name in trials_df.columns:
+            trials_df[name].replace(mapping, inplace=True)
+
+    # Drop nans
+    trials_df.dropna(inplace=True)
+    trials_df.reset_index(drop=True, inplace=True)
+
+    return trials_df
+
+
 def main():
     # -------------
     # A few things to select
@@ -239,6 +270,7 @@ def main():
     experiment_time = "2025-04-01_171150"
 
     selected_hps: Optional[Dict[str, Tuple[str, ...]]] = None
+    percentiles = (0, 50, 75, 90)
 
     num_trees = 8
     fanova_kwargs = {"n_trees": num_trees, "max_depth": 16}
@@ -250,66 +282,55 @@ def main():
     # Make plots
     # -------------
     for study_name in studies:
+        print(f"Analysing study {_PRETTY_NAME[study_name]!r}...")
         study_path = (experiments_path / study_name / f"{study_name}-study.db")
         study_storage = f"sqlite:///{study_path}"
 
-        # Load optuna study object
+        # Load dataframe and make it clean
         study = optuna.load_study(study_name=f"{study_name}-study", storage=study_storage)
-
-        # Compute HP importance scores
         trials_df: pandas.DataFrame = study.trials_dataframe()
-
-        # Restrict to unconditional HPs
-        unconditional_hps = [col for col in trials_df.columns if col.startswith("params_")
-                             and not trials_df[col].isnull().values.any()]
-        trials_df = trials_df[["value"] + unconditional_hps]
-
-        # Remove annoying prefix
-        _prefix = "params_"
-        col_mapping = {col: col[len(_prefix):] for col in trials_df.columns if col.startswith(_prefix)}
-        trials_df.rename(columns=col_mapping, inplace=True)
-
-        # Maybe use a selection only
-        if selected_hps is not None:
-            trials_df = trials_df[["value"] + list(selected_hps[study_name])]
-
-        # Convert some of the categoricals to numerical encoding
-        trials_df.replace(_NUMERICAL_ENCODING, inplace=True)
-        for name, mapping in _NUMERICAL_ENCODING_ADDS.items():
-            if name in trials_df.columns:
-                trials_df[name].replace(mapping, inplace=True)
-
-        # Drop nans
-        trials_df.dropna(inplace=True)
-        trials_df.reset_index(drop=True, inplace=True)
+        trials_df = _clean_dataframe(trials_df, selected_hps=selected_hps, study_name=study_name)
 
         # Create the configuration space
         distributions = {param_name: param_dist for param_name, param_dist in study.trials[-1].distributions.items()
                          if param_name in trials_df.columns}
         config_space = ConfigSpace.ConfigurationSpace(_optuna_to_configspace(distributions))
 
-        # Create object
-        fanova_object = UpdatedFANOVA(X=trials_df.drop("value", axis="columns", inplace=False), Y=trials_df["value"],
-                                      config_space=config_space, **fanova_kwargs)
+        for percentile in percentiles:
+            # Create object
+            fanova_object = UpdatedFANOVA(
+                X=trials_df.drop("value", axis="columns", inplace=False), Y=trials_df["value"],
+                config_space=config_space, **fanova_kwargs)
 
-        # todo: set cutoffs / percentile
+            # Set cutoffs / percentile
+            if study.direction == optuna.study.StudyDirection.MAXIMIZE:
+                lower_cutoff = numpy.percentile(trials_df["value"], percentile)
+                upper_cutoff = numpy.inf
+            elif study.direction == optuna.study.StudyDirection.MINIMIZE:
+                lower_cutoff = -numpy.inf
+                upper_cutoff = numpy.percentile(trials_df["value"], 100 - percentile)
+            else:
+                raise ValueError(f"Unexpected direction: {study.direction}")
 
-        # Compute marginals
-        marginals_df = _generate_marginals_df(trials_df, num_trees=num_trees, fanova_object=fanova_object)
+            fanova_object.set_cutoffs(cutoffs=(lower_cutoff, upper_cutoff))
 
-        # Compute HP interaction effects
-        interactions_df = _generate_interactions_df(fanova_object, num_trees=num_trees)
+            # Compute marginals
+            print(f"\tComputing main effects at percentile {percentile}...")
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=DeprecationWarning)
+                marginals_df = _generate_marginals_df(trials_df, num_trees=num_trees, fanova_object=fanova_object)
 
-        # Plot
-        pyplot.figure()
-        seaborn.barplot(marginals_df, y="Mean", x="HP")
-        pyplot.title(f"Main effects {_PRETTY_NAME[study_name]}")
+            to_path = Path(os.path.dirname(__file__)) / f"marginals_{study_name}_percentile_{percentile}"
+            marginals_df.to_csv(to_path, index=False)
+            os.chmod(to_path, 0o444)
 
-        pyplot.figure()
-        seaborn.barplot(interactions_df, y="Mean", x="HP")
-        pyplot.title(f"Interaction effects {_PRETTY_NAME[study_name]}")
+            # Compute HP interaction effects
+            print(f"\tComputing interaction effects at percentile {percentile}...")
+            interactions_df = _generate_interactions_df(fanova_object, num_trees=num_trees)
 
-    pyplot.show()
+            to_path = Path(os.path.dirname(__file__)) / f"interactions_{study_name}_percentile_{percentile}"
+            interactions_df.to_csv(to_path, index=False)
+            os.chmod(to_path, 0o444)
 
 
 if __name__ == "__main__":
