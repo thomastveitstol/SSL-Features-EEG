@@ -8,7 +8,7 @@ import itertools
 from collections import OrderedDict
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional, Tuple
 
 import ConfigSpace
 import fanova  # type: ignore
@@ -161,8 +161,7 @@ _NUMERICAL_ENCODING = MappingProxyType({
     "RegionBasedPooling": 0, "Interpolation": 1,
     "delta": 0, "theta": 1, "alpha": 2, "beta": 3, "gamma": 4, "all": 5,
     "k_1": 0, "k_2": 1, "k_3": 2, "k_4": 3,
-    "InceptionNetwork": 0, "ShallowFBCSPNetMTS": 1, "Deep4NetMTS": 2, "TCNMTS": 3, "GreenModel,": 4,
-    # "False": 0, "True": 1, False: 0, True: 1,
+    "InceptionNetwork": 0, "ShallowFBCSPNetMTS": 1, "Deep4NetMTS": 2, "TCNMTS": 3, "GreenModel": 4,
     "True": 0, "False": 1, True: 0, False: 1,
     "MultiMSMean": 0, "MultiMSSharedRocket": 1, "MultiMSSharedRocketHeadRegion": 2,
     "CentroidPolygons": 0,
@@ -182,6 +181,7 @@ _NUMERICAL_ENCODING_ADDS = MappingProxyType({
     "eceoallalpha_sfreq_multiple": {2: 0, 3: 1},
     "eceoallbeta_sfreq_multiple": {2: 0, 3: 1},
     "eceoallgamma_sfreq_multiple": {2: 0, 3: 1},
+    "ocular_state": {"ec": 0, "eo": 1},
 })
 
 
@@ -189,15 +189,10 @@ def main():
     # -------------
     # A few things to select
     # -------------
-    studies = ("simple_elecssl", "multivariable_elecssl")
-    experiment_time = "2025-04-01_104834"
+    studies = ("prediction_models", "pretraining", "simple_elecssl", "multivariable_elecssl")
+    experiment_time = "2025-04-01_171150"
 
-    selected_hps = {
-        "simple_elecssl": ("beta_1", "beta_2", "eps", "architecture", "datasets", "out_freq_band", "input_length",
-                           "learning_rate"),
-        "multivariable_elecssl": ("eceoallalpha_beta_1", "eceoallalpha_beta_2")
-    }
-    selected_hps = None
+    selected_hps: Optional[Dict[str, Tuple[str, ...]]] = None
 
     num_trees = 8
     fanova_kwargs = {"n_trees": num_trees, "max_depth": 16}
@@ -227,7 +222,6 @@ def main():
         _prefix = "params_"
         col_mapping = {col: col[len(_prefix):] for col in trials_df.columns if col.startswith(_prefix)}
         trials_df.rename(columns=col_mapping, inplace=True)
-        print(f"Columns HPs (N={len(trials_df.columns)}): \n{trials_df.columns}")
 
         # Maybe use a selection only
         if selected_hps is not None:
@@ -242,7 +236,6 @@ def main():
         # Drop nans
         trials_df.dropna(inplace=True)  # todo: drop them or say they are bad?
         trials_df.reset_index(drop=True, inplace=True)
-        print(trials_df)
 
         # Create the configuration space
         distributions = {param_name: param_dist for param_name, param_dist in study.trials[-1].distributions.items()
@@ -266,7 +259,6 @@ def main():
                 continue
 
             summary = fanova_object.quantify_importance(dims=(hp_name,))[(hp_name,)]
-            print(summary.keys())
 
             importance = summary["individual importance"]
             std = summary["individual std"]
@@ -298,11 +290,7 @@ def main():
 
         # Make dataframe
         hp_pairwise_marginals_df = pandas.DataFrame(pairwise_marginals)
-        print(hp_pairwise_marginals_df)
-
-        #
         hp_pairwise_marginals_df["HP"] = hp_pairwise_marginals_df["HP1"] + "\n+ " + hp_pairwise_marginals_df["HP2"]
-        print(hp_pairwise_marginals_df)
 
         pyplot.figure()
         seaborn.barplot(hp_pairwise_marginals_df, y="Mean", x="HP")
