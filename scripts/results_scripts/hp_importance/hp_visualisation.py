@@ -27,13 +27,13 @@ _NUM_TO_STR = ("input_length",)
 
 
 def main():
-    hp_1 = "pretext_datasets"
-    hp_2 = "pretext_out_freq_band"
+    hp_1 = "architecture"
+    hp_2 = "rbp_pooling_method_0"
 
     study_name = "pretraining"
     random_only = False
 
-    experiment_time = "2025-04-02_145156"
+    experiment_time = "2025-04-01_171150"
 
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name)

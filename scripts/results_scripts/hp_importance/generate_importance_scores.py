@@ -278,6 +278,9 @@ def main():
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name)
 
+    results_path = Path(os.path.dirname(__file__)) / "importance_scores" / experiment_name
+    os.mkdir(results_path)
+
     # -------------
     # Make plots
     # -------------
@@ -320,7 +323,7 @@ def main():
                 warnings.filterwarnings("ignore", category=DeprecationWarning)
                 marginals_df = _generate_marginals_df(trials_df, num_trees=num_trees, fanova_object=fanova_object)
 
-            to_path = Path(os.path.dirname(__file__)) / f"marginals_{study_name}_percentile_{percentile}"
+            to_path = results_path / f"marginals_{study_name}_percentile_{percentile}"
             marginals_df.to_csv(to_path, index=False)
             os.chmod(to_path, 0o444)
 
@@ -328,7 +331,7 @@ def main():
             print(f"\tComputing interaction effects at percentile {percentile}...")
             interactions_df = _generate_interactions_df(fanova_object, num_trees=num_trees)
 
-            to_path = Path(os.path.dirname(__file__)) / f"interactions_{study_name}_percentile_{percentile}"
+            to_path = results_path / f"interactions_{study_name}_percentile_{percentile}"
             interactions_df.to_csv(to_path, index=False)
             os.chmod(to_path, 0o444)
 
