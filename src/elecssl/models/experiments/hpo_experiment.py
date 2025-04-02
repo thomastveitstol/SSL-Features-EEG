@@ -851,6 +851,8 @@ class PredictionModelsHPO(HPOExperiment):
 
     def _create_objective(self):
         def _objective(trial: optuna.Trial):
+            _log_sampler_state(trial)
+
             # ---------------
             # Suggest / sample hyperparameters
             # ---------------
@@ -982,6 +984,8 @@ class PretrainHPO(HPOExperiment):
 
     def _create_objective(self):
         def _objective(trial: optuna.Trial):
+            _log_sampler_state(trial)
+
             # todo: should I also add these as HPs?
             in_ocular_state = self._experiments_config["in_ocular_state"]
             in_freq_band = self._experiments_config["in_freq_band"]
@@ -1292,6 +1296,8 @@ class SimpleElecsslHPO(HPOExperiment):
     def _create_objective(self) -> Callable[[optuna.Trial], float]:
 
         def _objective(trial: optuna.Trial):
+            _log_sampler_state(trial)
+
             # Make directory for current iteration
             results_dir = self._get_hpo_folder_path(trial.number)
             os.mkdir(results_dir)
@@ -1641,6 +1647,8 @@ class MultivariableElecsslHPO(HPOExperiment):
     def _create_objective(self):
 
         def _objective(trial: optuna.Trial):
+            _log_sampler_state(trial)
+
             # ---------------
             # Create configurations for all feature extractors
             # ---------------
@@ -2730,6 +2738,22 @@ class ExperimentNotFoundError(Exception):
 # --------------
 # Functions
 # --------------
+def _log_sampler_state(trial: optuna.Trial):
+    """Method for logging if the trial is random or sampled with the sampler such as TPE. The logging is made by setting
+    user attr to the trial"""
+    # Looking at sample_independent in TPESampler, this looks correct as both completed and pruned trials are counted.
+    # Failed ones lead to error message anyway
+    sampler = trial.study.sampler
+    if hasattr(sampler, "_n_startup_trials"):
+        # noinspection PyProtectedMember
+        if trial.number < sampler._n_startup_trials:
+            trial.set_user_attr("trial_sampler", "RandomSampler")
+        else:
+            trial.set_user_attr("trial_sampler", type(sampler).__name__)
+    else:
+        trial.set_user_attr("trial_sampler", "Unknown")
+
+
 def _save_yaml_file(*, results_path: Path, config_file_name: str, config: Dict[str, Any], make_read_only: bool):
     """Method for saving a config file"""
     # Save the config file
