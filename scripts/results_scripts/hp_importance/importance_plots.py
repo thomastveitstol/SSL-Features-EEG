@@ -183,6 +183,52 @@ _NUMERICAL_ENCODING_ADDS = MappingProxyType({
     "eceoallgamma_sfreq_multiple": {2: 0, 3: 1},
     "ocular_state": {"ec": 0, "eo": 1},
 })
+_PRETTY_NAME = {
+    "prediction_models": "Prediction models", "pretraining": "Pretraining", "simple_elecssl": "S. Elecssl",
+    "multivariable_elecssl": "M. Elecssl"
+}
+
+
+def _generate_marginals_df(df, *, num_trees, fanova_object):
+    marginal_importance: Dict[str, List[Any]] = {
+        "HP": [], "Mean": [], "Std": [], **{f"Tree {i}": [] for i in range(num_trees)}
+    }
+    for hp_name in df.columns:
+        if hp_name == "value":
+            continue
+
+        summary = fanova_object.quantify_importance(dims=(hp_name,))[(hp_name,)]
+
+        importance = summary["individual importance"]
+        std = summary["individual std"]
+
+        # Add to marginal importance
+        marginal_importance["Mean"].append(importance)
+        marginal_importance["Std"].append(std)
+
+        # Add the rest of the info to marginal importance results
+        marginal_importance["HP"].append(hp_name)
+
+        for tree in range(num_trees):
+            marginal_importance[f"Tree {tree}"].append(summary[f"Tree {tree}"])
+    return pandas.DataFrame(marginal_importance)
+
+
+def _generate_interactions_df(fanova_object, *, num_trees):
+    hp_interaction_ranking = fanova_object.get_most_important_pairwise_marginals(n=None)
+    pairwise_marginals = {"Rank": [], "HP": [], "Mean": [], "Std": [], **{f"Tree {i}": [] for i in range(num_trees)}}
+
+    for rank, ((hp_1, hp_2), (importance, std, all_trees)) in enumerate(hp_interaction_ranking.items()):
+        # Add results. The HPs are ranked naturally
+        pairwise_marginals["HP"].append(f"{hp_1}\n+ {hp_2}")
+        pairwise_marginals["Rank"].append(rank)
+        pairwise_marginals["Mean"].append(importance)
+        pairwise_marginals["Std"].append(std)
+        for tree, imp in all_trees.items():
+            pairwise_marginals[tree].append(imp)
+
+    # Make dataframe
+    return pandas.DataFrame(pairwise_marginals)
 
 
 def main():
@@ -234,66 +280,34 @@ def main():
                 trials_df[name].replace(mapping, inplace=True)
 
         # Drop nans
-        trials_df.dropna(inplace=True)  # todo: drop them or say they are bad?
+        trials_df.dropna(inplace=True)
         trials_df.reset_index(drop=True, inplace=True)
 
         # Create the configuration space
         distributions = {param_name: param_dist for param_name, param_dist in study.trials[-1].distributions.items()
                          if param_name in trials_df.columns}
         config_space = ConfigSpace.ConfigurationSpace(_optuna_to_configspace(distributions))
-        print(config_space)
 
         # Create object
         fanova_object = UpdatedFANOVA(X=trials_df.drop("value", axis="columns", inplace=False), Y=trials_df["value"],
-                                      config_space=config_space, **fanova_kwargs
-                                      )
+                                      config_space=config_space, **fanova_kwargs)
 
         # todo: set cutoffs / percentile
 
         # Compute marginals
-        marginal_importance: Dict[str, List[Any]] = {
-            "HP": [], "Mean": [], "Std": [], **{f"Tree {i}": [] for i in range(num_trees)}
-        }
-        for hp_name in trials_df.columns:
-            if hp_name == "value":
-                continue
-
-            summary = fanova_object.quantify_importance(dims=(hp_name,))[(hp_name,)]
-
-            importance = summary["individual importance"]
-            std = summary["individual std"]
-
-            # Add to marginal importance
-            marginal_importance["Mean"].append(importance)
-            marginal_importance["Std"].append(std)
-
-            # Add the rest of the info to marginal importance results
-            marginal_importance["HP"].append(hp_name)
-
-            for tree in range(num_trees):
-                marginal_importance[f"Tree {tree}"].append(summary[f"Tree {tree}"])
+        marginals_df = _generate_marginals_df(trials_df, num_trees=num_trees, fanova_object=fanova_object)
 
         # Compute HP interaction effects
-        hp_interaction_ranking = fanova_object.get_most_important_pairwise_marginals(n=None)
-        pairwise_marginals = {"Rank": [], "HP1": [], "HP2": [], "Mean": [], "Std": [],
-                              **{f"Tree {i}": [] for i in range(num_trees)}}
-        for rank, ((hp_1, hp_2), (importance, std, all_trees)) in enumerate(hp_interaction_ranking.items()):
-            # Add results. The HPs are ranked naturally
-            pairwise_marginals["HP1"].append(hp_1)
-            pairwise_marginals["HP2"].append(hp_2)
-            pairwise_marginals["Rank"].append(rank)
-            # pairwise_marginals["Percentile"].append(percentile)
-            pairwise_marginals["Mean"].append(importance)
-            pairwise_marginals["Std"].append(std)
-            for tree, imp in all_trees.items():
-                pairwise_marginals[tree].append(imp)
+        interactions_df = _generate_interactions_df(fanova_object, num_trees=num_trees)
 
-        # Make dataframe
-        hp_pairwise_marginals_df = pandas.DataFrame(pairwise_marginals)
-        hp_pairwise_marginals_df["HP"] = hp_pairwise_marginals_df["HP1"] + "\n+ " + hp_pairwise_marginals_df["HP2"]
+        # Plot
+        pyplot.figure()
+        seaborn.barplot(marginals_df, y="Mean", x="HP")
+        pyplot.title(f"Main effects {_PRETTY_NAME[study_name]}")
 
         pyplot.figure()
-        seaborn.barplot(hp_pairwise_marginals_df, y="Mean", x="HP")
+        seaborn.barplot(interactions_df, y="Mean", x="HP")
+        pyplot.title(f"Interaction effects {_PRETTY_NAME[study_name]}")
 
     pyplot.show()
 
