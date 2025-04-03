@@ -19,7 +19,7 @@ _PRETTY_NAME = {
 
 
 def main():
-    experiment_time = "2025-04-01_171150"
+    experiment_time = "2025-04-02_173237"
     study_names = ("prediction_models", "pretraining", "simple_elecssl", "multivariable_elecssl")
 
     experiment_name = f"experiments_{experiment_time}"

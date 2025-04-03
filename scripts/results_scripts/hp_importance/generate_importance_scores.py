@@ -169,12 +169,12 @@ _NUMERICAL_ENCODING = MappingProxyType({
     "Wang": 0, "DortmundVital": 1, "Wang+DortmundVital": 2
 })
 _NUMERICAL_ENCODING_ADDS = MappingProxyType({
-    "input_length": {5: 0, 10: 1, 20: 2},
-    "eceoalldelta_input_length": {5: 0, 10: 1, 20: 2},
-    "eceoalltheta_input_length": {5: 0, 10: 1, 20: 2},
-    "eceoallalpha_input_length": {5: 0, 10: 1, 20: 2},
-    "eceoallbeta_input_length": {5: 0, 10: 1, 20: 2},
-    "eceoallgamma_input_length": {5: 0, 10: 1, 20: 2},
+    "input_length": {5: 0, 10: 1, 20: 2, 30: 3},
+    "eceoalldelta_input_length": {5: 0, 10: 1, 20: 2, 30: 3},
+    "eceoalltheta_input_length": {5: 0, 10: 1, 20: 2, 30: 3},
+    "eceoallalpha_input_length": {5: 0, 10: 1, 20: 2, 30: 3},
+    "eceoallbeta_input_length": {5: 0, 10: 1, 20: 2, 30: 3},
+    "eceoallgamma_input_length": {5: 0, 10: 1, 20: 2, 30: 3},
     "sfreq_multiple": {2: 0, 3: 1},
     "eceoalldelta_sfreq_multiple": {2: 0, 3: 1},
     "eceoalltheta_sfreq_multiple": {2: 0, 3: 1},
@@ -267,13 +267,13 @@ def main():
     # A few things to select
     # -------------
     studies = ("prediction_models", "pretraining", "simple_elecssl", "multivariable_elecssl")
-    experiment_time = "2025-04-01_171150"
+    experiment_time = "2025-04-02_173237"
 
     selected_hps: Optional[Dict[str, Tuple[str, ...]]] = None
     percentiles = (0, 50, 75, 90)
 
-    num_trees = 8
-    fanova_kwargs = {"n_trees": num_trees, "max_depth": 16}
+    num_trees = 32
+    fanova_kwargs = {"n_trees": num_trees, "max_depth": 32}
 
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name)
