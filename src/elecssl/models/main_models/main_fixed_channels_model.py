@@ -14,7 +14,7 @@ from elecssl.models.utils import ReverseLayerF, tensor_dict_to_device, flatten_t
 
 
 # ----------------
-# Convenient decorators  todo: move to some base .py file
+# Convenient decorators
 # ----------------
 def train_method(func):
     setattr(func, "_is_train_method", True)
@@ -136,7 +136,6 @@ class MainFixedChannelsModel(MainModuleBase):
         mts_config : dict[str, typing.Any]
         discriminator_config : dict[str, typing.Any] | None
         cmmn_config : dict[str, typing.Any]
-            todo: this may be merged with the MTS config
         """
         use_cmmn_layer = cmmn_config["use_cmmn_layer"]
         return cls(mts_module=mts_config["model"],
@@ -705,7 +704,7 @@ class MainFixedChannelsModel(MainModuleBase):
         return self._domain_discriminator is not None
 
     @property
-    def has_cmmn_layer(self) -> bool:  # todo: inconsistent property name with respect to the RBP version
+    def has_cmmn_layer(self) -> bool:  # inconsistent property name with respect to the RBP version
         """Boolean indicating if the model uses a CMMN layer (True) or not (False)"""
         return self._cmmn_layer is not None
 
