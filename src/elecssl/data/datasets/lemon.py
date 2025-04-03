@@ -49,9 +49,10 @@ class LEMON(EEGDatasetBase):
     # ----------------
     # Loading methods
     # ----------------
-    def get_participants_tsv_path(self):
+    @classmethod
+    def get_participants_tsv_path(cls):
         # Doesn't matter if we specify EC or EO
-        return self.get_mne_path() / "EC" / "Participants_MPILMBB_LEMON.csv"
+        return cls.get_mne_path() / "EC" / "Participants_MPILMBB_LEMON.csv"
 
     def _get_subject_ids(self) -> Tuple[str, ...]:
         # Get the subject IDs from participants file

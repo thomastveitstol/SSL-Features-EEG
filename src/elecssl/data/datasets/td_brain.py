@@ -65,8 +65,9 @@ class TDBRAIN(EEGDatasetBase):
 
         return tuple(uniques)
 
-    def get_participants_tsv_path(self):
-        return os.path.join(self.get_mne_path(), "TDBRAIN_participants_V2_data", "TDBRAIN_participants_V2.tsv")
+    @classmethod
+    def get_participants_tsv_path(cls):
+        return os.path.join(cls.get_mne_path(), "TDBRAIN_participants_V2_data", "TDBRAIN_participants_V2.tsv")
 
     def _load_single_raw_mne_object(self, subject_id, *, ocular_state, preload=True):
         # Create path. We will use the first available one

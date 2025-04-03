@@ -62,9 +62,10 @@ class AIMind(EEGDatasetBase):
     # ----------------
     # Path methods
     # ----------------
-    def get_participants_tsv_path(self):
+    @classmethod
+    def get_participants_tsv_path(cls):
         # It will actually be a .csv file. Maybe I'll fix it at some point...
-        return self.get_mne_path().parent / "ai_scd_crf_corr_apoe_ptau217_ptau181_data_2024-09-16.csv"
+        return cls.get_mne_path().parent / "ai_scd_crf_corr_apoe_ptau217_ptau181_data_2024-09-16.csv"
 
     @classmethod
     def get_mne_path(cls):

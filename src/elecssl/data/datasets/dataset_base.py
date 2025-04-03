@@ -501,9 +501,10 @@ class EEGDatasetBase(abc.ABC):
     def get_numpy_arrays_path(self, pre_processed_version):
         return get_numpy_data_storage_path() / pre_processed_version / self.name
 
-    def get_participants_tsv_path(self):
+    @classmethod
+    def get_participants_tsv_path(cls):
         """Get the path to the participants.tsv file"""
-        return os.path.join(self.get_mne_path(), "participants.tsv")
+        return os.path.join(cls.get_mne_path(), "participants.tsv")
 
     # ----------------
     # Channel system  TODO: consider changing to classmethods
