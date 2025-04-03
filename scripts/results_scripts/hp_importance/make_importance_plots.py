@@ -14,7 +14,7 @@ def main():
     effect: Literal["marginals", "interactions"] = "marginals"
     study_name: _STUDIES = "pretraining"
     percentile = 90
-    num_hps = 5  # Plotting only the top 'num_hps' HP effects
+    num_hps = 10  # Plotting only the top 'num_hps' HP effects
 
     experiment_time = "2025-04-02_173237"
 
@@ -29,11 +29,10 @@ def main():
     id_vars = ("Rank", "HP", "Mean", "Std") if effect == "interactions" else ("HP", "Mean", "Std")
     df = df.melt(id_vars=id_vars, var_name="Tree", value_name="Importance")
     df.sort_values(by=["Mean"], inplace=True, ascending=False)
+
     if effect == "marginals" and num_hps is not None:
         top_hps = df["HP"].drop_duplicates(inplace=False)[:num_hps]
-        print(top_hps)
         df = df[df["HP"].isin(top_hps)]
-        print(df)
 
     # Plot
     seaborn.boxplot(df, y="Importance",  x="HP")
