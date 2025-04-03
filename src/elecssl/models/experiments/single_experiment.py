@@ -460,7 +460,7 @@ class SingleExperiment:
     # Methods for saving results
     # -------------
     def _save_results(self, *, histories: Dict[str, Histories], results_path):
-        decimals = 3  # todo: cmon...
+        decimals = self.saving_config["performance_score_decimals"]
 
         prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
 
