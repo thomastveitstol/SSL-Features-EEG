@@ -13,7 +13,7 @@ def interpolate_datasets(datasets, main_channel_system, method, sampling_freq):
     """
     Function for interpolating all datasets to a single main channel system
 
-    todo: add tests
+    (This function is no longer in use)
 
     Parameters
     ----------
