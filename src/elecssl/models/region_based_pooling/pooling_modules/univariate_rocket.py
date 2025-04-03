@@ -103,7 +103,6 @@ class MultiMSSharedRocket(MultiMontageSplitsPoolingBase):
         # --------------
         output_channel_splits: List[torch.Tensor] = []
         for channel_split, fc_modules in zip(channel_splits, self._fc_modules):
-            # todo: very similar to forward method of SingleCSSharedRocket
             # Input check
             num_regions = len(fc_modules)
             assert len(channel_split) == num_regions, (f"Expected {num_regions} number of regions, but input "
@@ -518,11 +517,15 @@ def compute_ppv_and_max(x):
     >>> my_data = torch.rand(size=(10, 5, 300))
     >>> compute_ppv_and_max(my_data).size()  # type: ignore
     torch.Size([10, 5, 2])
+    >>> my_data = torch.tensor([[[1.0, -2.0, 3.0, -0.1], [-1.0, -2.0, -3.0, -4.0]]])  # Shape: (1, 2, 4)
+    >>> my_result = compute_ppv_and_max(my_data)
+    >>> my_result.size()  # type: ignore
+    torch.Size([1, 2, 2])
+    >>> my_result
+    tensor([[[ 0.5000,  3.0000],
+             [ 0.0000, -1.0000]]])
     """
-    # Compute PPV and max
-    # todo: should see if I can optimise the computations further here
-    ppv = torch.mean(torch.heaviside(x, values=torch.tensor(0., dtype=torch.float)), dim=-1)
-    max_ = torch.max(x, dim=-1)[0]  # Keep only the values, not the indices
+    ppv = (x > 0).float().mean(dim=-1, keepdim=True)
+    max_ = torch.max(x, dim=-1, keepdim=True).values
 
-    # Concatenate and return
-    return torch.cat([torch.unsqueeze(ppv, dim=-1), torch.unsqueeze(max_, dim=-1)], dim=-1)
+    return torch.cat([ppv, max_], dim=-1)
