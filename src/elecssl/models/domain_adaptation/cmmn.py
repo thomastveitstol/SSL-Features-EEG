@@ -184,13 +184,12 @@ class ConvMMN:
             # Extract monge filter (one per channel)
             monge_filter = self._monge_filters[dataset_name]
 
-            # Channel dimension check  todo: this must likely be more flexible in the future
+            # Channel dimension check
             if x.shape[1] != monge_filter.shape[0]:
                 raise ValueError(f"Expected the number of channels to be the same as number of monge filters, but "
                                  f"received {x.shape[1]} and {monge_filter.shape[0]}")
 
             # Apply monge filter channel-wise and store it
-            # todo: so many for-loops, should be possible to improve this
             convoluted[dataset_name] = numpy.concatenate(
                 [numpy.expand_dims(self._compute_single_eeg_convolution(mts, monge_filter), axis=0) for mts in x],
                 axis=0
@@ -228,8 +227,6 @@ class ConvMMN:
     def __call__(self, data):
         """
         Method which applies monge filters (see _apply_monge_filters)
-
-        todo: add unittest which checks if numpy and pytorch gets the same results, at least on CPU
 
         Parameters
         ----------
@@ -435,7 +432,6 @@ class RBPConvMMN:
             # Apply dataset specific filters
             for dataset_name, indices in dataset_indices.items():
                 # Convolve only the subjects of the current indices (this changes region_representations in-place)
-                # todo: a little un-intuitive/sub-optimal code going on here..
                 ms_output[list(indices)] = cmmn_layer({dataset_name: ms_output[list(indices)]})[dataset_name]
 
         return region_representations
