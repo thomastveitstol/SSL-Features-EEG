@@ -95,13 +95,13 @@ def dl_hpds(input_data):
 
 @pytest.fixture
 def rbp_main_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
-    num_models = 20
+    num_models = 50
 
     # Fix HP distributions
     num_kernels = ("int", {"low": 10, "high": 20, "log": True})
     max_receptive_field = ("int", {"low": 15, "high": 30, "log": True})
     rbp_hpds = {
-        "num_montage_splits": {"low": 1, "high": 4, "log": True},
+        "num_montage_splits": {"low": 1, "high": 4, "log": False},
         "share_all_pooling_modules": {"choices": [True, False]},
         "num_pooling_modules_percentage": {"low": 0.0, "high": 1.0, "step": None, "log": False},
         "num_designs": 1,
@@ -111,14 +111,14 @@ def rbp_main_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
             "MultiMSSharedRocket": {
                 "num_kernels": num_kernels,
                 "max_receptive_field": max_receptive_field
-            }
-        },
-        "MultiMSSharedRocketHeadRegion": {
-            "num_kernels": num_kernels,
-            "max_receptive_field": max_receptive_field,
-            "latent_search_features": ("int", {"low": 2, "high": 16, "log": True}),
-            "share_search_receiver_modules": ("categorical", {"choices": [True, False]}),
-            "bias": ("categorical", {"choices": [False]})
+            },
+            "MultiMSSharedRocketHeadRegion": {
+                "num_kernels": num_kernels,
+                "max_receptive_field": max_receptive_field,
+                "latent_search_features": ("int", {"low": 2, "high": 16, "log": True}),
+                "share_search_receiver_modules": ("categorical", {"choices": [True, False]}),
+                "bias": ("categorical", {"choices": [False]})
+            },
         },
         "MontageSplits": {
             "CentroidPolygons": {
