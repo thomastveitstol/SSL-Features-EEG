@@ -44,7 +44,7 @@ class MainModuleBase(nn.Module, abc.ABC):
 # ----------
 # Errors
 # ----------
-def reorder_subjects(order, subjects):  # todo: move to base .py file
+def reorder_subjects(order, subjects):
     """
     Function for re-ordering subjects such that they align with how the input and target tensors are concatenated
 

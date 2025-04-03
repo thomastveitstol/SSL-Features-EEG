@@ -133,7 +133,7 @@ class FCModule(DomainDiscriminatorBase):
         return x
 
 
-class ExponentialDecayFC(FCModule):  # todo: some clean-up for domain discriminators...
+class ExponentialDecayFC(FCModule):
 
     @staticmethod
     def suggest_hyperparameters(*, name, trial: optuna.Trial, config, in_features, num_classes):
