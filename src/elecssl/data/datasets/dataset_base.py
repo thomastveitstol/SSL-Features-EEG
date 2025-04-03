@@ -214,7 +214,7 @@ class EEGDatasetBase(abc.ABC):
             subject_ids = tuple(_accepted_subject_ids)
 
         # ------------------
-        # Input checks todo: copied from save as numpy
+        # Input checks
         # ------------------
         # Check if all subjects are passed only once
         if len(set(subject_ids)) != len(subject_ids):
@@ -403,7 +403,7 @@ class EEGDatasetBase(abc.ABC):
         df = df.set_index("Subject-ID").reindex(subject_ids)
 
         # Return numpy array
-        return df.iloc[:, -1].values  # todo: column name and target does not match!
+        return df.iloc[:, -1].values  # Column name and target does not match, but this works for the current pipeline
 
     @classmethod
     def get_available_targets(cls, exclude_ssl):
