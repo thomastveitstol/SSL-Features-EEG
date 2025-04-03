@@ -54,7 +54,7 @@ def _compute_band_power_from_psd(psd, f_min, f_max, aggregation_method):
     else:
         raise ValueError(f"Could not recognise aggregation method: {aggregation_method}")
 
-    # Return power with sensible unit  todo: what should the unit be?
+    # Return power with sensible unit
     return agg(power) * 10**12
 
 
@@ -78,7 +78,6 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method, verbose):
     # Compute power of bands
     power: Dict[str, float] = dict()
     for band_name, (f_min, f_max) in frequency_bands.items():
-        # todo: maybe this can be computed in parallel?
         power[band_name] = _compute_band_power_from_psd(
             psd, f_min=f_min, f_max=f_max, aggregation_method=aggregation_method
         )
