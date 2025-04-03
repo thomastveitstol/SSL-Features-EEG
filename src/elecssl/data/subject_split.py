@@ -89,15 +89,14 @@ class DataSplitBase(abc.ABC):
         splits = self.splits
         subjects = set(itertools.chain(*splits[0]))
 
-        # Verify that it is consistent
-        for split in splits[1:]:  # todo: consider removing this, as it can be tested instead...
+        # Verify that it is consistent (suboptimal for efficiency, but also nice to have)
+        for split in splits[1:]:
             if set(itertools.chain(*split)) != subjects:
                 raise RuntimeError("The union of subjects were inconsistent across splits")
         return subjects
 
     @property
     def all_datasets(self):
-        # Todo: consider just using the first split, because it should work and this three for-loops...
         datasets: Set[str] = set()
         for single_split in self.splits:  # E.g., looping through many random splits
             for subject_set in single_split:  # Loop though train, val, and test set
@@ -424,7 +423,8 @@ class KFoldDataSplit(DataSplitBase):
 
 class LODOCV(DataSplitBase):
     """
-    Class for leave-one-dataset-out cross validation
+    Class for leave-one-dataset-out cross validation. It does not ensure that all datasets in non-test set has, e.g.,
+    20% in validation set.
 
     Examples
     --------
@@ -477,8 +477,6 @@ class LODOCV(DataSplitBase):
         seed : int, optional
             Seed for making the data split reproducible. If None, no seed is set
         val_split : float
-            todo: setting val_split=0.2 does not force that all datasets have 20% in validation. This should be an
-             option
         sort_first : bool
         """
         # Maybe make data split reproducible
