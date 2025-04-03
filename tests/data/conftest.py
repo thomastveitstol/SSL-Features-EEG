@@ -1,8 +1,6 @@
-import numpy
 import pytest
 
 from elecssl.data.combined_datasets import DatasetDetails, LoadDetails
-from elecssl.data.datasets.dataset_base import EEGDatasetBase, target_method
 from elecssl.data.subject_split import RandomSplitsTVTestHoldout, RandomSplitsTV, KFoldDataSplit, LODOCV, \
     KeepDatasetsOutRandomSplits
 
@@ -30,42 +28,6 @@ def splits_and_kwargs(dummy_dataset_subjects):
         (KeepDatasetsOutRandomSplits, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "seed": 42,
                                        "num_random_splits": 7, "sort_first": True, "left_out_datasets": "Mercedes"})
     )
-
-
-@pytest.fixture
-def dummy_eeg_dataset(dummy_data):
-    _, dummy_num_channels, dummy_num_time_steps = dummy_data.shape
-
-    class DummyDataset(EEGDatasetBase):
-        _num_channels = dummy_num_channels
-        _num_time_steps = dummy_num_time_steps
-
-        # -------------
-        # Overriding abstract methods which are not required for these tests
-        # -------------
-        def _load_single_raw_mne_object(self, *args, **kwargs):
-            raise NotImplementedError
-
-        # -------------
-        # Overriding methods to make this class suited for testing
-        # -------------
-        def channel_name_to_index(self):
-            return {f"ch_{i}": i for i in range(self._num_channels)}
-
-        def load_numpy_arrays(self, subject_ids=None, pre_processed_version=None, *, time_series_start=None,
-                              num_time_steps=None, channels=None, required_target=None):
-            return numpy.random.normal(loc=0, scale=1.,
-                                       size=(len(subject_ids), self._num_channels, self._num_time_steps))
-
-        @target_method
-        def age(self, subject_ids):
-            return numpy.random.randint(18, 90, size=(len(subject_ids),))
-
-        @target_method
-        def sex(self, subject_ids):
-            return numpy.random.randint(0, 2, size=(len(subject_ids),))  # 0s and 1s
-
-    return DummyDataset()
 
 
 @pytest.fixture
