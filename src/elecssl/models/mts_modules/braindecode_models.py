@@ -689,7 +689,7 @@ class TCNMTS(MTSModuleBase):
         torch.Size([10, 16])
         """
         with warnings.catch_warnings():
-            warnings.filterwarnings(action="ignore", category=UserWarning)  # todo: ideally this should be fixed...
+            warnings.filterwarnings(action="ignore", category=UserWarning)
             x = self._model(x, return_features)
         return x
 

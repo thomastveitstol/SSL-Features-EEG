@@ -41,7 +41,7 @@ def _compute_gaborwavelet(
         parameter is a time domain parameter. It matches the formalism
         described in "A betterway to define and describe Morlet wavelets for
         time-frequency analysis"by Michael X Cohen. It is related to the time
-        domain standard deviationby fwhm =  std / 2 * sqrt(2 * log(2))  # todo: this should actually be multiplication
+        domain standard deviationby fwhm =  std / 2 * sqrt(2 * log(2))
     dtype : torch.dtype, optional
         The dtype of the output wavelets, by default torch.complex64
     sfreq : int, optional
@@ -503,7 +503,7 @@ def get_pooling_layer(pool_layer: Union[str, nn.Module], n_ch, n_freqs, pool_lay
         assert isinstance(pool_layer_kwargs, dict)
         return CrossCovariance(**pool_layer_kwargs)  # type: ignore[call-arg]
     elif pool_layer.lower() in ("combined_pooling", "combinedpooling", "combinedpoolingcross",
-                                "combinedpoolingnocross"):  # todo: quite un-elegant
+                                "combinedpoolingnocross"):
         pooling_modules = []
         for layer_name, kwargs in pool_layer_kwargs:
             pooling_modules.append(

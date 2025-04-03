@@ -45,7 +45,7 @@ class RBPPoolType(Enum):
     >>> RBPPoolType("single_cs") == RBPPoolType.SINGLE_CS
     True
     """
-    SINGLE_CS = "single_cs"  # todo: this is no longer in use
+    SINGLE_CS = "single_cs"  # this is no longer in use
     MULTI_CS = "multi_cs"
 
 
@@ -232,7 +232,7 @@ class MultiMontageSplitsRegionBasedPooling(RegionBasedPoolingBase):
         Returns
         -------
         dict[str, torch.Tensor]
-            Pre-computed tensors  todo: is this correct?
+            Pre-computed tensors
         """
         # Quick check to see if this method should be run
         if not self.supports_precomputing:
@@ -244,7 +244,6 @@ class MultiMontageSplitsRegionBasedPooling(RegionBasedPoolingBase):
 
     # ----------------
     # Methods for fitting channel systems
-    # todo: I think these might be moved to the base class
     # ----------------
     def fit_channel_system(self, channel_system):
         """
@@ -437,7 +436,6 @@ class RegionBasedPooling(nn.Module):
         for pre_comp_features, rbp_module in zip(pre_computed, self._rbp_modules):
             # Handle the unsupported case, or when pre-computing is not desired
             if not rbp_module.supports_precomputing or pre_comp_features is None:
-                # TODO: somewhat hard-coded
                 if isinstance(rbp_module, MultiMontageSplitsRegionBasedPooling):
                     rbp_outputs.extend(rbp_module(input_tensors, channel_name_to_index=channel_name_to_index))
                 else:

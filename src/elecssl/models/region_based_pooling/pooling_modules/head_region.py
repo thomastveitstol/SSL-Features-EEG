@@ -231,7 +231,7 @@ class MultiMSSharedRocketHeadRegion(MultiMontageSplitsPoolingBase):
             batch, _, time_steps = x.size()
             region_representations = torch.empty(size=(batch, num_regions, time_steps)).to(x.device)
 
-            # Compute channel indices of head region  todo: poor variable naming?
+            # Compute channel indices of head region
             ch_names = tuple(channel_split.values())
             head_region_indices = channel_names_to_indices(
                 ch_names=ch_names[head_region_idx],
@@ -310,7 +310,6 @@ class MultiMSSharedRocketHeadRegion(MultiMontageSplitsPoolingBase):
 
         # --------------
         # Loop through all datasets
-        # todo: not sure if this is the best approach (triple for-loop!!)... maybe padding+masking is better?
         # --------------
         dataset_region_representations = []
         for dataset_name, x in input_tensors.items():

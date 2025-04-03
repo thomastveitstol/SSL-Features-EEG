@@ -1,7 +1,5 @@
 """
 The GREEN model implemented to suit the pipeline of this project
-
-TODO: update LICENCE file
 """
 
 import torch.nn as nn

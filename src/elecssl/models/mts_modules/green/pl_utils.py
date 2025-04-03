@@ -69,7 +69,7 @@ class Green(nn.Module):
         X_hat = self.spd_layers(X_hat)
         X_hat = self.proj(X_hat)
         if isinstance(self.pooling_layers, (RealCovariance, PW_PLV, CombinedPooling)):
-            X_hat = vectorize_upper(X_hat)  # todo: I have a feeling it should be PW_PLV? So I just added it
+            X_hat = vectorize_upper(X_hat)
 
         elif isinstance(self.pooling_layers, (CrossCovariance, CrossPW_PLV)):
             X_hat = vectorize_upper_one(X_hat)
