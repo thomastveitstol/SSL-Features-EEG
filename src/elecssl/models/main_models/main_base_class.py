@@ -1,10 +1,11 @@
 import abc
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import torch
 import torch.nn as nn
 
+from elecssl.data.subject_split import Subject
 from elecssl.models.metrics import Histories
 
 
@@ -38,6 +39,48 @@ class MainModuleBase(nn.Module, abc.ABC):
     def save_model(self, name: str, path: Path):
         # todo: Sub-optimal to use this saving
         torch.save(self, (path / name).with_suffix(".pt"))
+
+
+# ----------
+# Errors
+# ----------
+def reorder_subjects(order, subjects):  # todo: move to base .py file
+    """
+    Function for re-ordering subjects such that they align with how the input and target tensors are concatenated
+
+    Parameters
+    ----------
+    order : tuple[str, ...]
+        Ordering of the datasets
+    subjects : tuple[Subject, ...]
+        Subjects to re-order
+
+    Returns
+    -------
+    tuple[Subject, ...]
+
+    Examples
+    --------
+    >>> my_subjects = (Subject("P3", "D2"), Subject("P1", "D2"), Subject("P1", "D1"), Subject("P4", "D1"),
+    ...                Subject("P2", "D2"))
+    >>> reorder_subjects(order=("D1", "D2"), subjects=my_subjects)  # doctest: +NORMALIZE_WHITESPACE
+    (Subject(subject_id='P1', dataset_name='D1'),
+     Subject(subject_id='P4', dataset_name='D1'),
+     Subject(subject_id='P3', dataset_name='D2'),
+     Subject(subject_id='P1', dataset_name='D2'),
+     Subject(subject_id='P2', dataset_name='D2'))
+    """
+    subjects_dict: Dict[str, List[Subject]] = {dataset_name: [] for dataset_name in order}
+    for subject in subjects:
+        subjects_dict[subject.dataset_name].append(subject)
+
+    # Convert to list
+    corrected_subjects = []
+    for subject_list in subjects_dict.values():
+        corrected_subjects.extend(subject_list)
+
+    # return as a tuple
+    return tuple(corrected_subjects)
 
 
 # ----------

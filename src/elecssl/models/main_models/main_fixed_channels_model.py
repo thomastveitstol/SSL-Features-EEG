@@ -7,8 +7,7 @@ from progressbar import progressbar
 from elecssl.data.data_generators.data_generator import strip_tensors
 from elecssl.models.domain_adaptation.cmmn import ConvMMN
 from elecssl.models.domain_adaptation.domain_discriminators.getter import get_domain_discriminator
-from elecssl.models.main_models.main_base_class import MainModuleBase
-from elecssl.models.main_models.main_rbp_model import reorder_subjects
+from elecssl.models.main_models.main_base_class import MainModuleBase, reorder_subjects
 from elecssl.models.metrics import Histories, is_improved_model
 from elecssl.models.mts_modules.getter import get_mts_module
 from elecssl.models.utils import ReverseLayerF, tensor_dict_to_device, flatten_targets
