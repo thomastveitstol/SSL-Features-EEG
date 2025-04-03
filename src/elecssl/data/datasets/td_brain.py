@@ -164,9 +164,7 @@ class TDBRAIN(EEGDatasetBase):
     @staticmethod
     def _status_to_target(status):
         """Mapping from diagnostic status to numerical value"""
-        # I'll follow Table 1. todo: Are they certain about healthy? in that case, I need to add it to formal Dx as well
-        # todo: sometimes, there are several diagnosis per subject, s.a., ADHD / ASPERGER, how to handle that?
-        #  and what to do with the replication subjects?
+        # I'll follow Table 1.
         mapping = {"MDD": 0, "ADHD": 1, "SMC": 2, "OCD": 3, "Tinnitus": 4, "Insomnia": 5, "Parkinson": 6, "Burnout": 7,
                    "Dyslexia": 8, "Chronic Pain": 9, "UNKNOWN": 10, "Healthy": 11, "Other": 12, "REPLICATION": 13}
         if status in mapping:
