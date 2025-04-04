@@ -452,7 +452,7 @@ class MainRBPModel(MainModuleBase):
                 if patience is not None:
                     remaining_patience = patience
             else:
-                if patience is not None:
+                if remaining_patience is not None:
                     remaining_patience -= 1
 
             # ----------------
