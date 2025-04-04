@@ -24,25 +24,29 @@ def test_save_load_model_reproducibility(input_data, target_data, subjects, rbp_
 
         assert isinstance(model, MainRBPModel)
         if model.supports_precomputing:
-            pre_computed = model.pre_compute({name: torch.unsqueeze(inputs, dim=1)
-                                              for name, inputs in input_data.items()})
+            pre_computed = model.pre_compute(input_data)
+            data_gen_pre_computed = model.pre_compute({name: torch.unsqueeze(inputs, dim=1)
+                                                       for name, inputs in input_data.items()})
         else:
             pre_computed = None
+            data_gen_pre_computed = None
 
         # -------------
         # Training preparations
         # -------------
         # Create dummy dataloaders. The dataloaders have en EEG epochs dimension too
         train_loader = DataLoader(
-            RBPDataGenerator(data={name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in input_data.items()},
-                             targets=target_data, subjects=subjects, pre_computed=pre_computed, subjects_info=dict(),
-                             expected_variables=None),
+            RBPDataGenerator(data={name: numpy.expand_dims(inputs.numpy(), axis=1)
+                                   for name, inputs in input_data.items()},
+                             targets=target_data, subjects=subjects, pre_computed=data_gen_pre_computed,
+                             subjects_info=dict(), expected_variables=None),
             batch_size=4, shuffle=True
         )
         val_loader = DataLoader(
-            RBPDataGenerator(data={name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in input_data.items()},
-                             targets=target_data, subjects=subjects, pre_computed=pre_computed, subjects_info=dict(),
-                             expected_variables=None),
+            RBPDataGenerator(data={name: numpy.expand_dims(inputs.numpy(), axis=1)
+                                   for name, inputs in input_data.items()},
+                             targets=target_data, subjects=subjects, pre_computed=data_gen_pre_computed,
+                             subjects_info=dict(), expected_variables=None),
             batch_size=4, shuffle=True
         )
 

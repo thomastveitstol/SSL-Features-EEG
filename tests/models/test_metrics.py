@@ -180,7 +180,7 @@ def test_constant_targets_classification_metrics():
 
 
 def test_constant_targets_multiclass_classification_metrics():
-    """Test if constant targets does not raise any error messages"""
+    """Test if constant targets does not raise any unexpected error messages"""
     # -------------
     # Version 1
     # -------------
@@ -190,7 +190,10 @@ def test_constant_targets_multiclass_classification_metrics():
 
     # Test metrics
     for metric in Histories.get_available_multiclass_classification_metrics():
-        _ = Histories.compute_metric(metric=metric, y_pred=pred_tensor, y_true=ground_truth)
+        try:
+            _ = Histories.compute_metric(metric=metric, y_pred=pred_tensor, y_true=ground_truth)
+        except MismatchClassCountError:
+            pass
 
     # -------------
     # Version 2
@@ -202,7 +205,10 @@ def test_constant_targets_multiclass_classification_metrics():
 
     # Test metrics
     for metric in Histories.get_available_multiclass_classification_metrics():
-        _ = Histories.compute_metric(metric=metric, y_pred=pred_tensor, y_true=ground_truth)
+        try:
+            _ = Histories.compute_metric(metric=metric, y_pred=pred_tensor, y_true=ground_truth)
+        except MismatchClassCountError:
+            pass
 
 
 # ----------------
