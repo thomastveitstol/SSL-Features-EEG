@@ -22,19 +22,23 @@ class BandPass(TransformationBase):
     # Methods related to folders
     # ---------------
     @staticmethod
-    def _get_folder_name(*, freq_band, input_length, is_autorejected, resample_multiple, channel_system):
+    def _get_folder_name(*, freq_band, input_length, is_autorejected, resample_multiple, channel_system,
+                         interpolation_method):
         """
         Get name of the folder
 
         Examples
         --------
         >>> my_path = BandPass._get_folder_name(freq_band="delta", is_autorejected=True, resample_multiple=5.5,
-        ...                                     input_length=4, channel_system="AChannelSystem")
-        >>> str(my_path)
-        'data--band_pass-delta--input_length-4s--autoreject-True--sfreq-5.5fmax--ch_system-AChannelSystem'
+        ...                                     input_length=4, channel_system="AChannelSystem",
+        ...                                     interpolation_method="spline")
+        >>> expected = "data--band_pass-delta--input_length-4s--autoreject-True--sfreq-5.5fmax--interpolation-spline--"
+        >>> expected += "ch_system-AChannelSystem"
+        >>> str(my_path) == expected
+        True
         """
         return Path(f"data--band_pass-{freq_band}--input_length-{input_length}s--autoreject-{is_autorejected}--"
-                    f"sfreq-{resample_multiple}fmax--ch_system-{channel_system}")
+                    f"sfreq-{resample_multiple}fmax--interpolation-{interpolation_method}--ch_system-{channel_system}")
 
     def _create_folders(self, config, save_to):
         # --------------
@@ -56,13 +60,16 @@ class BandPass(TransformationBase):
         _autoreject_options = ((config["Autoreject"] is not None),)
         _configurations = itertools.product(
             config["FrequencyBands"], _autoreject_options, config["Details"]["resample_multiples"],
-            config["Details"]["input_length"], config["Details"]["interpolation_channel_systems"]
+            config["Details"]["input_length"], config["Details"]["interpolation_channel_systems"],
+            config["Details"]["interpolation_methods"]
         )
-        for freq_band, is_autorejected, resample_multiple, input_length, channel_system in _configurations:
+        for (freq_band, is_autorejected, resample_multiple, input_length, channel_system,
+             interpolation_method) in _configurations:
             # Create folder for a specific version
-            folder_name = self._get_folder_name(freq_band=freq_band, input_length=input_length,
-                                                is_autorejected=is_autorejected, resample_multiple=resample_multiple,
-                                                channel_system=channel_system)
+            folder_name = self._get_folder_name(
+                freq_band=freq_band, input_length=input_length, is_autorejected=is_autorejected,
+                resample_multiple=resample_multiple, channel_system=channel_system,
+                interpolation_method=interpolation_method)
             folder_path = save_to / folder_name
             try:
                 os.mkdir(folder_path)
@@ -157,8 +164,9 @@ class BandPass(TransformationBase):
         # Loop through and save EEG data for all channel systems and frequency bands
         # ---------------
         interpolation_channel_systems = config["Details"]["interpolation_channel_systems"]
-        interpolation_method = config["Details"]["interpolation_method"]
-        for target_channel_system in interpolation_channel_systems:  # target_channel_system is the name of a dataset
+        interpolation_methods = config["Details"]["interpolation_method"]
+        for target_channel_system, interpolation_method in itertools.product(interpolation_channel_systems,
+                                                                             interpolation_methods):
             # Do interpolation (unless it is the channel system of the subject, in which case we'll skip interpolation)
             if target_channel_system != subject.dataset_name:
                 interpolated_epochs = interpolate_single_epochs(
@@ -175,7 +183,8 @@ class BandPass(TransformationBase):
                     resample_fmax_multiples=config["Details"]["resample_multiples"], subject_id=subject.subject_id,
                     is_autorejected=config["Autoreject"] is not None, plot_data=plot_data,
                     dataset_name=subject.dataset_name, save_data=save_data, epoch_duration=epoch_duration,
-                    channel_system=target_channel_system, save_to=save_to, default_band_pass=default_band_pass
+                    channel_system=target_channel_system, save_to=save_to, default_band_pass=default_band_pass,
+                    interpolation_method=interpolation_method
                 )
 
         if return_rejected_epochs and reject_log is not None:
@@ -184,7 +193,7 @@ class BandPass(TransformationBase):
 
     def _save_eeg_with_specifics(self, epochs: mne.Epochs, *, band_name, l_freq, h_freq, resample_fmax_multiples,
                                  subject_id, is_autorejected, dataset_name: str, plot_data, save_data, epoch_duration,
-                                 channel_system, save_to, default_band_pass):
+                                 channel_system, save_to, default_band_pass, interpolation_method):
         """Function for saving EEG data as numpy arrays, which has already been pre-processed to some extent"""
         # Perform band-pass filtering
         epochs.filter(l_freq=l_freq, h_freq=h_freq, verbose=False)
@@ -224,8 +233,9 @@ class BandPass(TransformationBase):
 
             # Save numpy array
             if save_data:
-                _folder_name = self._get_folder_name(freq_band=band_name, is_autorejected=is_autorejected,
-                                                     resample_multiple=resample_multiple, input_length=epoch_duration,
-                                                     channel_system=channel_system)
+                _folder_name = self._get_folder_name(
+                    freq_band=band_name, is_autorejected=is_autorejected, resample_multiple=resample_multiple,
+                    input_length=epoch_duration, channel_system=channel_system,
+                    interpolation_method=interpolation_method)
                 array_path = save_to / _folder_name / dataset_name / f"{subject_id}.npy"
                 numpy.save(array_path, arr=data)

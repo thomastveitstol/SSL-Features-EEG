@@ -32,13 +32,8 @@ Details:
   resample_multiples: [ 2, 3, 4 ]
   input_length: [ 5, 10, 20, 30 ]
   interpolation_channel_systems: [ DortmundVital, LEMON, Wang ]
-  interpolation_method: MNE  # Biophysical interpolation
+  interpolation_methods: [ spline, MNE ]
 FrequencyBands:
-  delta: [ 1, 4 ]
-  theta: [ 4, 8 ]
-  alpha: [ 8, 12 ]
-  beta: [ 12, 30 ]
-  gamma: [ 30, 45 ]
   all: [ null, null ]  # Band-pass filtered in pre-processing
 _SharedSteps: &_SharedSteps
   excluded_channels: null
