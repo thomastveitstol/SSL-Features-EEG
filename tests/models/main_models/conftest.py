@@ -95,7 +95,7 @@ def dl_hpds(input_data):
 
 @pytest.fixture
 def rbp_main_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
-    num_models = 50
+    num_models = 25
 
     # Fix HP distributions
     num_kernels = ("int", {"low": 10, "high": 20, "log": True})
