@@ -628,6 +628,12 @@ def _yaml_optuna_not_a_hyperparameter_list(loader, node):
     return "not_a_hyperparameter", loader.construct_sequence(node, deep=True)
 
 
+def _yaml_optuna_not_a_hyperparameter_scalar(loader, node):
+    """This is supposed to be used if it is convenient to loop through HPs (or store something in the HPD config file),
+    but you don't actually want it to be registered as a HP by the trial object"""
+    return "not_a_hyperparameter", loader.construct_scalar(node)
+
+
 def add_yaml_constructors(loader):
     """
     Function for adding varied needed formatters to yaml loader
@@ -650,4 +656,5 @@ def add_yaml_constructors(loader):
     loader.add_constructor("!Int", _yaml_optuna_int)
     loader.add_constructor("!CategoricalDict", _yaml_optuna_categorical_dict)
     loader.add_constructor("!NotAHyperparameterList", _yaml_optuna_not_a_hyperparameter_list)
+    loader.add_constructor("!NotAHyperparameterScalar", _yaml_optuna_not_a_hyperparameter_scalar)
     return loader
