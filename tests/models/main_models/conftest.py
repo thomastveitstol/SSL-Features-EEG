@@ -12,7 +12,7 @@ from elecssl.models.main_models.main_rbp_model import MainRBPModel
 @pytest.fixture
 def input_data():
     return {"DummyDataset": torch.rand(size=(10, 19, 200)),
-            "DummyDataset2": torch.rand(size=(10, 32, 200))}
+            "DummyDataset2": torch.rand(size=(6, 32, 200))}
 
 
 @pytest.fixture
