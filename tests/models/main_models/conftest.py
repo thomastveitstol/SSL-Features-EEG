@@ -4,6 +4,7 @@ import optuna
 import pytest
 import torch
 
+from elecssl.data.subject_split import Subject
 # noinspection PyProtectedMember
 from elecssl.models.hp_suggesting import _suggest_rbp, suggest_dl_architecture
 from elecssl.models.main_models.main_rbp_model import MainRBPModel
@@ -13,6 +14,18 @@ from elecssl.models.main_models.main_rbp_model import MainRBPModel
 def input_data():
     return {"DummyDataset": torch.rand(size=(10, 19, 200)),
             "DummyDataset2": torch.rand(size=(6, 32, 200))}
+
+
+@pytest.fixture
+def target_data(input_data):
+    return {dataset_name: torch.rand(inputs.size()[0]) for dataset_name, inputs in input_data.items()}
+
+
+@pytest.fixture
+def subjects(input_data):
+    return {dataset_name: tuple(Subject(dataset_name=dataset_name, subject_id=f"sub-{i}")
+                                for i in range(inputs.size()[0]))
+            for dataset_name, inputs in input_data.items()}
 
 
 @pytest.fixture
