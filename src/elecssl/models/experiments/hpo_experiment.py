@@ -236,7 +236,7 @@ class HPOExperiment(MainExperiment):
         with warnings.catch_warnings():
             for warning in self._experiments_config["Warnings"]["ignore"]:
                 warnings.filterwarnings(action="ignore", category=_get_warning(warning))
-            study.optimize(self._create_objective(), n_trials=num_trials)
+            study.optimize(self._create_objective(), n_trials=num_trials, n_jobs=self.hpo_study_config["num_jobs"])
 
     def run_hyperparameter_optimisation(self):
         """Run HPO with optuna"""
@@ -247,7 +247,8 @@ class HPOExperiment(MainExperiment):
         with warnings.catch_warnings():
             for warning in self._experiments_config["Warnings"]["ignore"]:
                 warnings.filterwarnings(action="ignore", category=_get_warning(warning))
-            study.optimize(self._create_objective(), n_trials=self.hpo_study_config["num_trials"])
+            study.optimize(self._create_objective(), n_trials=self.hpo_study_config["num_trials"],
+                           n_jobs=self.hpo_study_config["num_jobs"])
 
     def _create_study(self):
         """Creates and returns the study object"""
@@ -1047,7 +1048,7 @@ class PretrainHPO(HPOExperiment):
             # Must set saving model of pretext task to true
             pretext_experiments_config["Saving"]["save_model"] = True
 
-            # Adding target  TODO: verify that band power is not already log-transformed!!!
+            # Adding target
             pseudo_target = f"band_power_{pretext_specific_hpcs['out_freq_band']}_{out_ocular_state}"
             if self._pretext_experiments_config["Training"]["log_transform_targets"] is not None:
                 pseudo_target = (f"{self._pretext_experiments_config['Training']['log_transform_targets']}_"
@@ -1524,7 +1525,6 @@ class SimpleElecsslHPO(HPOExperiment):
     @classmethod
     def _verify_test_set_consistency(cls, path):
         """This class stores test predictions differently, so need to override it"""
-        # todo: copied from MultivariateElecsslHPO
         expected_subjects: Set[Subject] = set()
 
         # Loop through all trials
@@ -1556,7 +1556,7 @@ class SimpleElecsslHPO(HPOExperiment):
     @classmethod
     def _verify_test_set_exclusivity(cls, path, test_subjects):
         """As this class does not store the model train and validation predictions, we will rather check the pretext
-        tasks."""  # todo: copied from MultivariateElecsslHPO
+        tasks."""
         # Loop through all trials
         trial_folders = tuple(file_name for file_name in os.listdir(path)
                               if file_name.startswith("hpo_") and os.path.isdir(path / file_name))
@@ -1785,7 +1785,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         # ---------------
         # Extract expectation values and biomarkers
         # ---------------
-        outputs = _get_delta_and_variable(  # todo: fix subjects splitting
+        outputs = _get_delta_and_variable(
             path=results_path / "split_0", target=experiments_config["Training"]["target"],
             downstream_target=downstream_target, deviation_method=deviation_method, num_eeg_epochs=num_eeg_epochs,
             pretext_main_metric=pretext_main_metric, experiment_name=experiment_name,
@@ -2467,8 +2467,13 @@ class AllHPOExperiments:
         return freq_bands
 
     def _get_autoreject_choices(self):
-        # todo: This will probably change in the future
-        return self.shared_hpds["Preprocessing"]["autoreject"][1]["choices"]
+        hp_type = self.shared_hpds["Preprocessing"]["autoreject"][0]
+        if hp_type == "not_a_hyperparameter":
+            return (self.shared_hpds["Preprocessing"]["autoreject"][1],)
+        elif hp_type == "categorical":
+            return self.shared_hpds["Preprocessing"]["autoreject"][1]["choices"]
+        else:
+            raise ValueError(f"Unrecognised autoreject distribution {hp_type!r}")
 
     def _get_required_datasets(self) -> Set[str]:
         # todo: this is somewhat conservative, but currently ok for our purposes
