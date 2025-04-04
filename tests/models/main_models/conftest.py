@@ -7,12 +7,19 @@ import torch
 from elecssl.data.subject_split import Subject
 # noinspection PyProtectedMember
 from elecssl.models.hp_suggesting import _suggest_rbp, suggest_dl_architecture
+from elecssl.models.main_models.main_fixed_channels_model import MainFixedChannelsModel
 from elecssl.models.main_models.main_rbp_model import MainRBPModel
 
 
 @pytest.fixture
 def input_data():
     return {"DummyDataset": torch.rand(size=(10, 19, 200)),
+            "DummyDataset2": torch.rand(size=(6, 32, 200))}
+
+
+@pytest.fixture
+def interpolated_input_data():
+    return {"DummyDataset": torch.rand(size=(10, 32, 200)),
             "DummyDataset2": torch.rand(size=(6, 32, 200))}
 
 
@@ -106,6 +113,9 @@ def dl_hpds(input_data):
     return config
 
 
+# --------------
+# Main models
+# --------------
 @pytest.fixture
 def rbp_main_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
     num_models = 25
@@ -162,6 +172,38 @@ def rbp_main_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
         # Create and prepare model
         model = MainRBPModel.from_config(rbp_config=rbp_config, discriminator_config=None, mts_config=dl_config)
         model.fit_channel_systems((dummy_eeg_dataset.channel_system, dummy_eeg_dataset_2.channel_system))
+
+        models.append(model)
+
+    return tuple(models)
+
+
+@pytest.fixture
+def interpolation_main_models(dl_hpds, interpolated_input_data):
+    num_models = 25
+
+    # Create a fake trial
+    study = optuna.create_study()
+    trial = study.ask()
+
+    # Get number of channels
+    _num_channels = set(arr.shape[1] for arr in interpolated_input_data.values())
+    assert len(_num_channels) == 1
+    num_channels = next(iter(_num_channels))
+
+    # Make many models
+    models = []
+    for _ in range(num_models):
+        # Make up some HPCs
+        dl_config = suggest_dl_architecture(
+            name="unimportant", trial=trial, config=dl_hpds, preprocessed_config_path=None,
+            suggested_preprocessing_steps=None, freq_band=None)
+        dl_config["normalise"] = random.choice((True, False))
+        dl_config["kwargs"]["in_channels"] = num_channels
+
+        # Create and prepare model
+        model = MainFixedChannelsModel.from_config(
+            mts_config=dl_config, discriminator_config=None, cmmn_config={"kwargs": {}, "use_cmmn_layer": False})
 
         models.append(model)
 
