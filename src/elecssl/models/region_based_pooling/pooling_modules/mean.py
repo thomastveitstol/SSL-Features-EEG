@@ -40,7 +40,7 @@ class MultiMSMean(MultiMontageSplitsPoolingBase):
             A dict with keys being dataset names and values are tensors containing EEG data with
             shape=(batch, channels, time_steps). Note that the channels are correctly selected within this method, and
             the EEG data should be the full data matrix (such that channel_name_to_index maps correctly)
-        channel_splits : dict[str, cdl_eeg.models.region_based_pooling.utils.CHANNELS_IN_MONTAGE_SPLIT]
+        channel_splits : dict[str, elecssl.models.region_based_pooling.utils.CHANNELS_IN_MONTAGE_SPLIT]
         channel_name_to_index : dict[str, dict[str, int]]
 
         Returns
@@ -82,9 +82,8 @@ class MultiMSMean(MultiMontageSplitsPoolingBase):
                 allowed_node_indices = channel_names_to_indices(ch_names=channels,
                                                                 channel_name_to_index=channel_name_to_index)
 
-                # Compute region representation by averaging and insert it
-                region_representations[:, i] = torch.mean(x[:, allowed_node_indices])  # Consider to keep dim in the
-                # future
+                # Compute region representation by averaging and insert it. Just the channel dimension
+                region_representations[:, i] = torch.mean(x[:, allowed_node_indices, :], dim=1)
 
             # Append as montage split output
             output_channel_splits.append(region_representations)
