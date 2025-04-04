@@ -1,5 +1,5 @@
 import copy
-from typing import List
+from typing import List, Optional
 
 import torch
 from progressbar import progressbar
@@ -277,7 +277,7 @@ class MainFixedChannelsModel(MainModuleBase):
     def downstream_training(self, *, train_loader, val_loader, test_loader=None, metrics, main_metric, num_epochs,
                             classifier_criterion, optimiser, device, prediction_activation_function=None,
                             verbose=True, target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables,
-                            variable_metrics):
+                            variable_metrics, patience):
         """
         Method for normal downstream training
 
@@ -301,6 +301,7 @@ class MainFixedChannelsModel(MainModuleBase):
         sub_groups_verbose
         verbose_variables
         variable_metrics
+        patience : int | None
 
         Returns
         -------
@@ -320,6 +321,7 @@ class MainFixedChannelsModel(MainModuleBase):
         # ---------------
         # Fit model
         # ---------------
+        remaining_patience = patience
         best_metrics = None
         best_model_state = {k: v.cpu() for k, v in self.state_dict().items()}
         for epoch in range(num_epochs):
@@ -456,6 +458,19 @@ class MainFixedChannelsModel(MainModuleBase):
                 # Update the best metrics
                 best_metrics = val_history.newest_metrics
 
+                # Patience revived
+                if patience is not None:
+                    remaining_patience = patience
+            else:
+                if patience is not None:
+                    remaining_patience -= 1
+
+            # ----------------
+            # Break if we are out of patience
+            # ----------------
+            if patience is not None and remaining_patience == 0:
+                break
+
         # Set the parameters back to those of the best model
         self.load_state_dict({k: v.to(device) for k, v in best_model_state.items()})  # type: ignore[arg-type]
 
@@ -470,7 +485,7 @@ class MainFixedChannelsModel(MainModuleBase):
             self, *, train_loader, val_loader, test_loader=None, metrics, main_metric, num_epochs, classifier_criterion,
             optimiser, discriminator_criterion, discriminator_weight, discriminator_metrics, device,
             prediction_activation_function=None, verbose=True, target_scaler=None, sub_group_splits, sub_groups_verbose,
-            verbose_variables, variable_metrics
+            verbose_variables, variable_metrics, patience: Optional[int]
     ):
         # Defining histories objects
         train_history = Histories(metrics=metrics, splits=sub_group_splits, variable_metrics=variable_metrics,
@@ -488,6 +503,7 @@ class MainFixedChannelsModel(MainModuleBase):
         # ---------------
         # Fit model
         # ---------------
+        remaining_patience = patience
         best_metrics = None
         best_model_state = {k: v.cpu() for k, v in self.state_dict().items()}
         for epoch in range(num_epochs):
@@ -643,6 +659,19 @@ class MainFixedChannelsModel(MainModuleBase):
 
                 # Update the best metrics
                 best_metrics = val_history.newest_metrics
+
+                # Patience revived
+                if patience is not None:
+                    remaining_patience = patience
+            else:
+                if patience is not None:
+                    remaining_patience -= 1
+
+            # ----------------
+            # Break if we are out of patience
+            # ----------------
+            if patience is not None and remaining_patience == 0:
+                break
 
         # Set the parameters back to those of the best model
         self.load_state_dict({k: v.to(device) for k, v in best_model_state.items()})  # type: ignore[arg-type]

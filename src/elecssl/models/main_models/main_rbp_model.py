@@ -1,5 +1,5 @@
 import copy
-from typing import Dict
+from typing import Dict, Optional
 
 import torch
 from progressbar import progressbar
@@ -214,7 +214,7 @@ class MainRBPModel(MainModuleBase):
             classifier_criterion, optimiser, discriminator_criterion=None, discriminator_weight=None,
             discriminator_metrics=None, device, channel_name_to_index, prediction_activation_function=None,
             verbose=True, target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables,
-            variable_metrics
+            variable_metrics, patience: Optional[int]
     ):
         if method == "downstream_training":
             return self._train_model(
@@ -223,7 +223,7 @@ class MainRBPModel(MainModuleBase):
                 device=device, channel_name_to_index=channel_name_to_index, verbose=verbose,
                 target_scaler=target_scaler, prediction_activation_function=prediction_activation_function,
                 sub_group_splits=sub_group_splits, sub_groups_verbose=sub_groups_verbose,
-                verbose_variables=verbose_variables, variable_metrics=variable_metrics
+                verbose_variables=verbose_variables, variable_metrics=variable_metrics, patience=patience
             )
         elif method == "domain_discriminator_training":
             return self._train_model_with_domain_adversarial_learning(
@@ -234,7 +234,7 @@ class MainRBPModel(MainModuleBase):
                 channel_name_to_index=channel_name_to_index,
                 prediction_activation_function=prediction_activation_function, verbose=verbose,
                 target_scaler=target_scaler, sub_group_splits=sub_group_splits, sub_groups_verbose=sub_groups_verbose,
-                verbose_variables=verbose_variables, variable_metrics=variable_metrics
+                verbose_variables=verbose_variables, variable_metrics=variable_metrics, patience=patience
             )
         else:
             raise ValueError(f"Unexpected training method: {method}")
@@ -243,7 +243,7 @@ class MainRBPModel(MainModuleBase):
             self, *, train_loader, val_loader, test_loader=None, metrics, main_metric, num_epochs, classifier_criterion,
             optimiser, discriminator_criterion, discriminator_weight, discriminator_metrics, device,
             channel_name_to_index, prediction_activation_function=None, verbose=True, target_scaler=None,
-            sub_group_splits, sub_groups_verbose, verbose_variables, variable_metrics):
+            sub_group_splits, sub_groups_verbose, verbose_variables, variable_metrics, patience: Optional[int]):
         """Method for training with domain adversarial learning"""
         # Defining histories objects
         train_history = Histories(metrics=metrics, splits=sub_group_splits, variable_metrics=variable_metrics,
@@ -261,6 +261,7 @@ class MainRBPModel(MainModuleBase):
         # ------------------------
         # Fit model
         # ------------------------
+        remaining_patience = patience
         best_metrics = None
         best_model_state = {k: v.cpu() for k, v in self.state_dict().items()}
         for epoch in range(num_epochs):
@@ -447,6 +448,19 @@ class MainRBPModel(MainModuleBase):
                 # Update the best metrics
                 best_metrics = val_history.newest_metrics
 
+                # Patience revived
+                if patience is not None:
+                    remaining_patience = patience
+            else:
+                if patience is not None:
+                    remaining_patience -= 1
+
+            # ----------------
+            # Break if we are out of patience
+            # ----------------
+            if patience is not None and remaining_patience == 0:
+                break
+
             # Set the parameters back to those of the best model
         self.load_state_dict({k: v.to(device) for k, v in best_model_state.items()})  # type: ignore[arg-type]
 
@@ -458,7 +472,8 @@ class MainRBPModel(MainModuleBase):
 
     def _train_model(self, *, train_loader, val_loader, test_loader=None, metrics, main_metric, num_epochs, criterion,
                      optimiser, device, channel_name_to_index, prediction_activation_function=None, verbose=True,
-                     target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables, variable_metrics):
+                     target_scaler=None, sub_group_splits, sub_groups_verbose, verbose_variables, variable_metrics,
+                     patience):
         """
         Method for training
 
@@ -478,6 +493,7 @@ class MainRBPModel(MainModuleBase):
         prediction_activation_function : typing.Callable | None
         verbose : bool
         target_scaler : elecssl.data.scalers.target_scalers.TargetScalerBase, optional
+        patience : int | None
 
         Returns
         -------
@@ -497,6 +513,7 @@ class MainRBPModel(MainModuleBase):
         # ------------------------
         # Fit model
         # ------------------------
+        remaining_patience = patience
         best_metrics = None
         best_model_state = {k: v.cpu() for k, v in self.state_dict().items()}
         for epoch in range(num_epochs):
@@ -656,6 +673,19 @@ class MainRBPModel(MainModuleBase):
 
                 # Update the best metrics
                 best_metrics = val_history.newest_metrics
+
+                # Patience revived
+                if patience is not None:
+                    remaining_patience = patience
+            else:
+                if patience is not None:
+                    remaining_patience -= 1
+
+            # ----------------
+            # Break if we are out of patience
+            # ----------------
+            if patience is not None and remaining_patience == 0:
+                break
 
         # Set the parameters back to those of the best model
         self.load_state_dict({k: v.to(device) for k, v in best_model_state.items()})  # type: ignore[arg-type]

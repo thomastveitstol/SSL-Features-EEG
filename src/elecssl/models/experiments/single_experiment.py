@@ -586,7 +586,8 @@ class SingleExperiment:
                                                                                          "function"]),
                 sub_group_splits=self.sub_groups_config["sub_groups"],
                 sub_groups_verbose=self.sub_groups_config["verbose"],
-                verbose_variables=self.train_config["verbose_variables"], variable_metrics=self.variables_metrics
+                verbose_variables=self.train_config["verbose_variables"], variable_metrics=self.variables_metrics,
+                patience=self._experiments_config["EarlyStopping"]["patience"]
             )
         except NaNValueError as e:
             if self._experiments_config.get("raise_upon_nan_predictions") is None:
