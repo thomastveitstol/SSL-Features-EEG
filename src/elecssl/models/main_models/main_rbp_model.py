@@ -461,7 +461,7 @@ class MainRBPModel(MainModuleBase):
             if patience is not None and remaining_patience == 0:
                 break
 
-            # Set the parameters back to those of the best model
+        # Set the parameters back to those of the best model
         self.load_state_dict({k: v.to(device) for k, v in best_model_state.items()})  # type: ignore[arg-type]
 
         # Return the histories
