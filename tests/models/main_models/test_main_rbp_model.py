@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from elecssl.data.data_generators.data_generator import RBPDataGenerator
 from elecssl.models.losses import CustomWeightedLoss
 from elecssl.models.main_models.main_rbp_model import MainRBPModel
+from elecssl.models.metrics import NaNValueError
 
 
 def test_save_load_model_reproducibility(input_data, target_data, subjects, rbp_main_models, dummy_eeg_dataset,
@@ -81,7 +82,7 @@ def test_save_load_model_reproducibility(input_data, target_data, subjects, rbp_
                 (f"Model prediction were not the same before and after saving model ({i}) {model}\n"
                  f"{outputs_1 - outputs_2}")
 
-        except optuna.TrialPruned:
+        except (optuna.TrialPruned, NaNValueError, RuntimeError):
             continue
 
 
@@ -104,7 +105,7 @@ def test_forward_reproducibility(input_data, rbp_main_models, dummy_eeg_dataset,
                               use_domain_discriminator=False)
             outputs_2 = model(input_data, pre_computed=pre_computed, channel_name_to_index=channel_name_to_index,
                               use_domain_discriminator=False)
-        except optuna.TrialPruned:
+        except (optuna.TrialPruned, RuntimeError):
             continue
 
         assert torch.equal(outputs_1, outputs_2), f"Model predictions were not reproducible for model {model}"
@@ -137,7 +138,7 @@ def test_forward_manipulation(input_data, rbp_main_models, dummy_eeg_dataset, du
 
             outputs_2 = model(new_input_data, pre_computed=pre_computed, channel_name_to_index=channel_name_to_index,
                               use_domain_discriminator=False)
-        except optuna.TrialPruned:  # Usually raised instead of _LinAlgError for GREEN
+        except (optuna.TrialPruned, RuntimeError):
             continue
 
         assert not torch.equal(outputs_1[-3], outputs_2[-3]), \

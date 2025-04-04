@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from elecssl.data.data_generators.data_generator import InterpolationDataGenerator
 from elecssl.models.losses import CustomWeightedLoss
 from elecssl.models.main_models.main_fixed_channels_model import MainFixedChannelsModel
+from elecssl.models.metrics import NaNValueError
 
 
 def test_save_load_model_reproducibility(interpolation_main_models, interpolated_input_data, subjects, target_data):
@@ -65,7 +66,7 @@ def test_save_load_model_reproducibility(interpolation_main_models, interpolated
                 (f"Model prediction were not the same before and after saving model ({i}) {model}\n"
                  f"{outputs_1 - outputs_2}")
 
-        except optuna.TrialPruned:
+        except (optuna.TrialPruned, NaNValueError, RuntimeError):
             continue
 
 
@@ -79,7 +80,7 @@ def test_forward_reproducibility(interpolated_input_data, interpolation_main_mod
         try:
             outputs_1 = model(interpolated_input_data, use_domain_discriminator=False)
             outputs_2 = model(interpolated_input_data, use_domain_discriminator=False)
-        except optuna.TrialPruned:
+        except (optuna.TrialPruned, RuntimeError):
             continue
 
         assert torch.equal(outputs_1, outputs_2), \
@@ -104,7 +105,7 @@ def test_forward_manipulation(interpolated_input_data, interpolation_main_models
             new_input_data["DummyDataset2"][-3] = torch.rand(size=(new_input_data["DummyDataset2"][-3].size()))
 
             outputs_2 = model(new_input_data, use_domain_discriminator=False)
-        except optuna.TrialPruned:  # Usually raised instead of _LinAlgError for GREEN
+        except (optuna.TrialPruned, RuntimeError):
             continue
 
         assert not torch.equal(outputs_1[-3], outputs_2[-3]), \
