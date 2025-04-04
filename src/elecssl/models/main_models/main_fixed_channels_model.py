@@ -291,12 +291,12 @@ class MainFixedChannelsModel(MainModuleBase):
         metrics : str | tuple[str, ...]
         main_metric : str
         num_epochs : int
-        classifier_criterion : cdl_eeg.models.losses.CustomWeightedLoss
+        classifier_criterion : elecssl.models.losses.CustomWeightedLoss
         optimiser : torch.optim.Optimizer
         device : torch.device
         prediction_activation_function : typing.Callable | None
         verbose : bool
-        target_scaler : cdl_eeg.data.scalers.target_scalers.TargetScalerBase, optional
+        target_scaler : elecssl.data.scalers.target_scalers.TargetScalerBase, optional
         sub_group_splits
         sub_groups_verbose
         verbose_variables
