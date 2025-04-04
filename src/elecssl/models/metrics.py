@@ -832,7 +832,7 @@ class Histories:
                         df_dict[subgroup_name] = performance
 
                     # Plot, if values are registered
-                    if performance:
+                    if performance and save_plots:
                         pyplot.plot(range(1, len(performance) + 1), performance, label=subgroup_name)
 
                 # Plotting
