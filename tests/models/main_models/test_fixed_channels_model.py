@@ -3,7 +3,6 @@ from tempfile import TemporaryDirectory
 
 import numpy
 import optuna
-import pytest
 import torch
 from torch import optim
 from torch.utils.data import DataLoader
@@ -16,8 +15,6 @@ from elecssl.models.main_models.main_fixed_channels_model import MainFixedChanne
 def test_save_load_model_reproducibility(interpolation_main_models, interpolated_input_data, subjects, target_data):
     """Test if the model produces the same output after saving and loading, as before the model was saved"""
     for i, model in enumerate(interpolation_main_models):
-        if i > 10:
-            break
         assert isinstance(model, MainFixedChannelsModel)
 
         # -------------
@@ -72,7 +69,49 @@ def test_save_load_model_reproducibility(interpolation_main_models, interpolated
             continue
 
 
-@pytest.mark.skip(reason="The test has not been implemented yet...")
-def test_forward_manipulation():
+def test_forward_reproducibility(interpolated_input_data, interpolation_main_models):
+    """Test if the model predictions are reproducible when model is set to evaluate mode"""
+    for i, model in enumerate(interpolation_main_models):
+        assert isinstance(model, MainFixedChannelsModel)
+
+        # Test if forward method is reproducible (in eval mode. In train mode it is not expected)
+        model.eval()
+        try:
+            outputs_1 = model(interpolated_input_data, use_domain_discriminator=False)
+            outputs_2 = model(interpolated_input_data, use_domain_discriminator=False)
+        except optuna.TrialPruned:
+            continue
+
+        assert torch.equal(outputs_1, outputs_2), \
+            f"Model predictions were not reproducible for model ({i}) {model}\n{outputs_1 - outputs_2}"
+
+
+def test_forward_manipulation(interpolated_input_data, interpolation_main_models):
     """Test if manipulating the input of an EEG changes the predictions made on that and only that EEG"""
-    assert False
+    for i, model in enumerate(interpolation_main_models):
+        assert isinstance(model, MainFixedChannelsModel)
+
+        # --------------
+        # Test
+        # --------------
+        model.eval()
+        try:
+            outputs_1 = model(interpolated_input_data, use_domain_discriminator=False)
+
+            # Make a change to the input data. The keys should ("DummyDataset", "DummyDataset2"), in that order
+            new_input_data = {"DummyDataset": interpolated_input_data["DummyDataset"].clone(),
+                              "DummyDataset2": interpolated_input_data["DummyDataset2"].clone()}
+            new_input_data["DummyDataset2"][-3] = torch.rand(size=(new_input_data["DummyDataset2"][-3].size()))
+
+            outputs_2 = model(new_input_data, use_domain_discriminator=False)
+        except optuna.TrialPruned:  # Usually raised instead of _LinAlgError for GREEN
+            continue
+
+        assert not torch.equal(outputs_1[-3], outputs_2[-3]), \
+            f"Model prediction was the same after changing the input in model ({i}) {model}\n{outputs_1-outputs_2}"
+        assert torch.equal(outputs_1[:-3], outputs_2[:-3]), \
+            (f"Changing the input of a subject lead to changes for other subjects for model ({i}) {model}\n"
+             f"{outputs_1-outputs_2}")
+        assert torch.equal(outputs_1[-2:], outputs_2[-2:]), \
+            (f"Changing the input of a subject lead to changes for other subjects for model ({i}) {model}\n"
+             f"{outputs_1-outputs_2}")
