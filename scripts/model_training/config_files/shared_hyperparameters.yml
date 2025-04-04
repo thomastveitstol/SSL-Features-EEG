@@ -2,7 +2,7 @@
 # Preprocessing
 # -----------------
 Preprocessing:
-  autoreject: !Categorical { choices: [ true ] }
+  autoreject: !NotAHyperparameterScalar true
   input_length: !Categorical { choices: [ 5, 10, 20, 30 ] }
   sfreq_multiple: !Categorical { choices: [ 2, 3 ] }
 
@@ -88,12 +88,12 @@ DLArchitectures:
       CombinedPoolingCross: { CrossCovariance: *CC, CrossPW_PLV: *CPWPLV }
     # Shrinkage layer
     shrinkage_init: { low: -5.0, high: -1.0, step: null, log: false }
-    # BiMap layer  todo: in the documentation it seems like it should be int, be code looked like iterable of ints
+    # BiMap layer
     bi_out_perc: { low: 0.5, high: 1, step: null, log: false }
-    orth_weights: { choices: [ false ] }  # todo: setting to True makes current method for saving impossible
+    orth_weights: { choices: [ false ] }
     # Combined ReEig and LogMap layer
     logref: { choices: [ identity, logeuclid ] }
-    reeig_reg: { low: 0.00001, high: 0.001, step: null, log: true }  # todo: can be None in the code too...
+    reeig_reg: { low: 0.00001, high: 0.001, step: null, log: true }
     momentum: { low: 0.8, high: 1.0, step: null, log: false }
     # Fully connected module
     num_fc_layers: { low: 1, high: 3, step: 1, log: false }
@@ -109,10 +109,10 @@ Interpolation:
   main_channel_system: { choices: [ LEMON, Wang, DortmundVital ] }
   methods: { choices: [ MNE, spline ] }
 
-_num_kernels: &num_kernels !Int { low: 10, high: 100, log: true }
+_num_kernels: &num_kernels !Int { low: 10, high: 1000, log: true }
 _max_receptive_field: &max_receptive_field !Int { low: 15, high: 50, log: true }  # { low: 15, high: 100, log: true }
 RegionBasedPooling:
-  num_montage_splits: { low: 1, high: 16, log: true }
+  num_montage_splits: { low: 1, high: 25, log: true }
   share_all_pooling_modules: { choices: [ true, false ] }
   num_pooling_modules_percentage: { low: 0.0, high: 1.0, step: null, log: false }
   num_designs: 1
@@ -127,7 +127,7 @@ RegionBasedPooling:
       max_receptive_field: *max_receptive_field
       latent_search_features: !Int { low: 8, high: 64, log: true }
       share_search_receiver_modules: !Categorical { choices: [ true, false ] }
-      bias: !Categorical { choices: [ false ] }
+      bias: !Categorical { choices: [ true, false ] }
   MontageSplits:
     CentroidPolygons:
       k: !CategoricalDict

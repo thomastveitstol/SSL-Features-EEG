@@ -27,13 +27,13 @@ _NUM_TO_STR = ("input_length",)
 
 
 def main():
-    hp_1 = "InceptionNetwork_num_res_blocks"
-    hp_2 = "rbp_pooling_method_0"
+    hp_1 = "architecture"
+    hp_2 = "input_length"
 
-    study_name = "pretraining"
-    random_only = True
+    study_name = "prediction_models"
+    random_only = False
 
-    experiment_time = "2025-04-02_173237"
+    experiment_time = "2025-04-04_113008"
 
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name)

@@ -73,7 +73,7 @@ PretextScalers: *Scaler
 # -----------------
 _Training: &Training
   batch_size: 16
-  num_epochs: 20
+  num_epochs: 50
   verbose: true
   verbose_variables: false
   continuous_testing: false  # too time-consuming I think, not worth it
