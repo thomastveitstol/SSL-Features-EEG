@@ -11,7 +11,6 @@ import pandas
 import seaborn
 
 from elecssl.data.paths import get_eeg_features_storage_path
-from elecssl.data.results_analysis import PRETTY_NAME, FREQ_BAND_ORDER
 
 
 def _get_power_distributions(datasets, targets, log_transform):
@@ -31,7 +30,7 @@ def _get_power_distributions(datasets, targets, log_transform):
                 continue
 
             powers["Dataset"].append(dataset)
-            powers["Freq band"].append(PRETTY_NAME[band_name])
+            powers["Freq band"].append(band_name)
             powers["Subject-ID"].append(subject_id)
             powers["Value"].append(numpy.log10(target_value) if log_transform else target_value)
 
@@ -96,7 +95,7 @@ def _create_plots(*, datasets, diag_kind, dpi, height, log_transform, lower_kind
     # --------------
     # Plot
     # --------------
-    pairplot_fig = seaborn.PairGrid(df, vars=FREQ_BAND_ORDER, hue="Dataset", height=height, hue_order=datasets)
+    pairplot_fig = seaborn.PairGrid(df, hue="Dataset", height=height, hue_order=datasets)
 
     pairplot_fig.map_lower(**lower_kind)
     pairplot_fig.map_upper(**upper_kind)
