@@ -771,6 +771,7 @@ class MLFeatureExtraction(MainExperiment):
 
         # Initialise data matrix
         data_matrix: Dict[str, Any] = {"subject": [], "clinical_target": [], **{feature: [] for feature in features}}
+        available_subjects = self._downstream_subject_split.all_subjects
         all_subjects = []
 
         # Loop though all datasets to use
@@ -778,20 +779,15 @@ class MLFeatureExtraction(MainExperiment):
             # Get the dataset
             dataset = get_dataset(dataset_name=dataset_name)
 
-            # Get the subject IDs
-            sample_size = dataset_kwargs["num_subjects"]
-            if sample_size == "all":
-                subjects = dataset.get_subject_ids()
-            else:
-                subjects = dataset.get_subject_ids()[:sample_size]
-
-            # Update data matrix
-            dataset_subjects = [Subject(subject_id=subject, dataset_name=dataset_name) for subject in subjects]
+            # Get the subject IDs and update data matrix
+            dataset_subjects = [subject for subject in available_subjects if subject.dataset_name == dataset_name]
+            subject_ids = tuple(subject.subject_id for subject in dataset_subjects)
             all_subjects.extend(dataset_subjects)
             for feature in features:
-                feature_array = dataset.load_targets(target=feature)
+                feature_array = dataset.load_targets(target=feature, subject_ids=subject_ids)
                 data_matrix[feature].extend(feature_array)
-            target_array = dataset.load_targets(target=self._experiments_config["downstream_target"])
+            target_array = dataset.load_targets(target=self._experiments_config["downstream_target"],
+                                                subject_ids=subject_ids)
             data_matrix["clinical_target"].extend(target_array)
 
         # Make dataframe, fix index, and return
@@ -2515,18 +2511,20 @@ class AllHPOExperiments:
         input_lengths = self._shared_hpds["Preprocessing"]["input_length"][1]["choices"]
         datasets = self._get_required_datasets()
         sfreq_multiples = self.shared_hpds["Preprocessing"]["sfreq_multiple"][1]["choices"]
+        interpolation_methods = self.shared_hpds["Interpolation"]["methods"]["choices"]
 
         # Entire input data space
         input_data_config_space = itertools.product(in_freq_bands, input_lengths, self._get_autoreject_choices(),
-                                                    datasets, sfreq_multiples)
+                                                    datasets, sfreq_multiples, interpolation_methods)
 
         # Add all required versions
         required_versions: List[str] = []
-        for in_freq_band, input_length, auto_reject, dataset, sfreq_multiple in input_data_config_space:
+        for (in_freq_band, input_length, auto_reject, dataset, sfreq_multiple,
+             interpolation_method) in input_data_config_space:
             required_versions.append(
                 _get_preprocessed_folder_name(in_ocular_state=ocular_state, input_length=input_length,
                                               in_freq_band=in_freq_band, autoreject=auto_reject, ch_system=dataset,
-                                              sfreq_multiple=sfreq_multiple)
+                                              sfreq_multiple=sfreq_multiple, interpolation_method=interpolation_method)
             )
         return tuple(required_versions)
 
@@ -3187,8 +3185,10 @@ def _get_prepared_experiments_config(experiments_config, in_freq_band, in_ocular
     method = suggested_hyperparameters["SpatialDimensionMismatch"]["name"]
     if method == "RegionBasedPooling":
         ch_system = None
+        interpolation_method = "spline"  # Doesn't matter, because it isn't really interpolated
     elif method == "Interpolation":
         ch_system = suggested_hyperparameters["SpatialDimensionMismatch"]["kwargs"]["main_channel_system"]
+        interpolation_method = suggested_hyperparameters["SpatialDimensionMismatch"]["kwargs"]["method"]
     else:
         raise ValueError(f"Method for handling varied electrode configurations {method!r} not understood, and can "
                          f"therefore not infer the pre-processed version to use for the datasets")
@@ -3198,14 +3198,15 @@ def _get_prepared_experiments_config(experiments_config, in_freq_band, in_ocular
         preprocessed_version = _get_preprocessed_folder_name(
             in_ocular_state=in_ocular_state, in_freq_band=in_freq_band, ch_system=dataset_ch_system,
             input_length=preprocessing_config_file["input_length"], autoreject=preprocessing_config_file["autoreject"],
-            sfreq_multiple=preprocessing_config_file["sfreq_multiple"]
+            sfreq_multiple=preprocessing_config_file["sfreq_multiple"], interpolation_method=interpolation_method
         )
         dataset_info["pre_processed_version"] = preprocessed_version
     return experiments_config, preprocessing_config_file
 
 
 def _get_preprocessed_folder_name(*, in_ocular_state, in_freq_band, input_length, autoreject, sfreq_multiple,
-                                  ch_system) -> str:
+                                  ch_system, interpolation_method) -> str:
     in_ocular_state = in_ocular_state.value.lower() if isinstance(in_ocular_state, OcularState) else in_ocular_state
     return (f"preprocessed_band_pass_{in_ocular_state}/data--band_pass-{in_freq_band}--input_length-{input_length}s--"
-            f"autoreject-{autoreject}--sfreq-{sfreq_multiple}fmax--ch_system-{ch_system}")
+            f"autoreject-{autoreject}--sfreq-{sfreq_multiple}fmax--interpolation-{interpolation_method}--"
+            f"ch_system-{ch_system}")
