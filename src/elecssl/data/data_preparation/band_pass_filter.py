@@ -149,7 +149,7 @@ class BandPass(TransformationBase):
 
         # Run autoreject
         if config["Autoreject"] is not None:
-            epochs, reject_log = run_autoreject(epochs, **config["Autoreject"])
+            epochs, reject_log = run_autoreject(epochs, return_log=True, **config["Autoreject"])
         else:
             reject_log = None
 
@@ -164,7 +164,7 @@ class BandPass(TransformationBase):
         # Loop through and save EEG data for all channel systems and frequency bands
         # ---------------
         interpolation_channel_systems = config["Details"]["interpolation_channel_systems"]
-        interpolation_methods = config["Details"]["interpolation_method"]
+        interpolation_methods = config["Details"]["interpolation_methods"]
         for target_channel_system, interpolation_method in itertools.product(interpolation_channel_systems,
                                                                              interpolation_methods):
             # Do interpolation (unless it is the channel system of the subject, in which case we'll skip interpolation)

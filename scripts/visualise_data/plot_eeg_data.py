@@ -51,7 +51,7 @@ def main():
         eeg = make_fixed_length_epochs(raw=eeg, duration=duration, preload=True, verbose=False)
 
         if apply_autoreject:
-            eeg = run_autoreject(eeg, autoreject_resample=None, seed=1, default_num_splits=10)
+            eeg = run_autoreject(eeg, autoreject_resample=None, seed=1, default_num_splits=10, return_log=False)
 
     # -------------
     # Plot

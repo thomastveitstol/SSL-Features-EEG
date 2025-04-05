@@ -47,6 +47,7 @@ def _single_ocular_state(config):
     # ---------------
     folder_root_path = get_eeg_features_storage_path()
     for feature in band_powers.columns:
+        print(feature)
         if feature in ("Dataset", "Subject-ID"):
             # These are not features, so skipping them
             continue

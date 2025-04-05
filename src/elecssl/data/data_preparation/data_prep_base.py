@@ -181,9 +181,9 @@ class TransformationBase(abc.ABC):
 # ------------
 # Functions
 # ------------
-def run_autoreject(epochs, *, autoreject_resample, seed, default_num_splits):
+def run_autoreject(epochs, *, autoreject_resample, seed, default_num_splits, return_log):
     """Function for running autoreject. Operates in-place"""
     if autoreject_resample is not None:
         epochs.resample(autoreject_resample, verbose=False)
     reject = autoreject.AutoReject(verbose=False, random_state=seed, cv=min(default_num_splits, len(epochs)))
-    return reject.fit_transform(epochs, return_log=True)
+    return reject.fit_transform(epochs, return_log=return_log)
