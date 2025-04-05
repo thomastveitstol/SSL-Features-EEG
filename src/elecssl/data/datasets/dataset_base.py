@@ -348,7 +348,7 @@ class EEGDatasetBase(abc.ABC):
     # ----------------
     # Target methods
     # ----------------
-    def load_targets(self, target, subject_ids=None):
+    def load_targets(self, target, subject_ids):
         """
         Method for loading targets. There are some default logarithmic transformations which are also included
 
