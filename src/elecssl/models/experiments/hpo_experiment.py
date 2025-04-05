@@ -1806,9 +1806,43 @@ class MultivariableElecsslHPO(HPOExperiment):
         # Random sampling
         self._random_simple_elecssl_reuse(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
 
-        # Best individual biomarkers  todo: keep it up, don't give up now!
-        # Mixed integer linear programming solution
-        # Score-based sampling
+        # Best individual biomarkers
+        self._reuse_best_individual_biomarkers(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
+
+        # Score-based sampling  todo: keep it up, don't give up now!
+
+    def _reuse_best_individual_biomarkers(self, study: optuna.Study, simple_elecssl_hpo: SimpleElecsslHPO):
+        # --------------
+        # Make biomarkers dataframe
+        # --------------
+        biomarkers_dfs: List[pandas.DataFrame] = []
+        hyperparameters: Dict[str, Any] = dict()
+        hp_distributions: Dict[str, Any] = dict()
+        user_attrs: Dict[str, Any] = dict()
+        for feature_name, trials_and_folder_paths in simple_elecssl_hpo.get_trials_and_folders(
+                completed_only=True).items():
+            # Select the best biomarker for this feature
+            trial, folder_path = _get_best_trial_and_folder_path(trials_and_folder_paths, study.direction)
+
+            # Load the biomarker df
+            biomarkers_dfs.append(pandas.read_csv(folder_path / "ssl_biomarkers.csv"))
+
+            # Add the HPCs, HPDs, and which SimpleElecssl trial it was taken from
+            hpcs, distributions = self._get_simple_elecssl_hpcs_and_distributions(trial)
+
+            hyperparameters.update({f"{feature_name}_{hp_name}": hp_value for hp_name, hp_value in hpcs.items()})
+            hp_distributions.update({f"{feature_name}_{hp_name}": hp_dist
+                                     for hp_name, hp_dist in distributions.items()})
+            user_attrs[f"Simple elecssl re-used ({feature_name})"] = trial.number
+
+        # Merge to single df
+        df = _merge_ssl_biomarkers_dataframes(biomarkers_dfs)
+
+        # --------------
+        # Re-use the biomarkers
+        # --------------
+        self._reuse_selected_biomarkers(df=df, study=study, user_attrs=user_attrs, hyperparameters=hyperparameters,
+                                        hp_distributions=hp_distributions)
 
     def _random_simple_elecssl_reuse(self, study: optuna.Study, simple_elecssl_hpo: SimpleElecsslHPO):
         for _ in range(self._experiments_config["num_random_reuse"]):
@@ -1841,6 +1875,19 @@ class MultivariableElecsslHPO(HPOExperiment):
         # Merge to single df
         df = _merge_ssl_biomarkers_dataframes(biomarkers_dfs)
 
+        # Re-use the selected biomarkers
+        self._reuse_selected_biomarkers(df=df, study=study, user_attrs=user_attrs, hyperparameters=hyperparameters,
+                                        hp_distributions=hp_distributions)
+
+    @staticmethod
+    def _get_simple_elecssl_hpcs_and_distributions(simple_elecssl_trial):
+        """Method for extracting the HPCs and HPDs of a trial run in SimpleElecssl, such that the trial can be re-used
+        for MultivariableElecssl"""
+        hpcs = {name: value for name, value in simple_elecssl_trial.params.items()}
+        distributions = {name: value for name, value in simple_elecssl_trial.distributions.items()}
+        return hpcs, distributions
+
+    def _reuse_selected_biomarkers(self, *, df, study, user_attrs, hyperparameters, hp_distributions):
         # --------------
         # Use the biomarkers
         # --------------
@@ -1865,14 +1912,6 @@ class MultivariableElecsslHPO(HPOExperiment):
             user_attrs=user_attrs, system_attrs=dict(), intermediate_values=dict(), value=score
         )
         study.add_trial(reused_trial)
-
-    @staticmethod
-    def _get_simple_elecssl_hpcs_and_distributions(simple_elecssl_trial):
-        """Method for extracting the HPCs and HPDs of a trial run in SimpleElecssl, such that the trial can be re-used
-        for MultivariableElecssl"""
-        hpcs = {name: value for name, value in simple_elecssl_trial.params.items()}
-        distributions = {name: value for name, value in simple_elecssl_trial.distributions.items()}
-        return hpcs, distributions
 
     # --------------
     # Methods for analysis
@@ -2746,6 +2785,32 @@ class ExperimentNotFoundError(Exception):
 # --------------
 # Functions
 # --------------
+def _get_best_trial_and_folder_path(trials_and_folder_paths: Tuple[Tuple[FrozenTrial, Path], ...],
+                                    study_direction: optuna.study.StudyDirection):
+    best_trial = None
+    best_folder = None
+    for trial, folder in trials_and_folder_paths:
+        # Initialise if first
+        if best_trial is None:
+            best_trial = trial
+            best_folder = folder
+            continue
+
+        # Update trial and folder if this one is best
+        if study_direction == optuna.study.StudyDirection.MAXIMIZE:
+            if trial.value > best_trial.value:
+                best_trial = trial
+                best_folder = folder
+        elif study_direction == optuna.study.StudyDirection.MINIMIZE:
+            if trial.value < best_trial.value:
+                best_trial = trial
+                best_folder = folder
+        else:
+            raise ValueError(f"Unexpected study direction {study_direction}")
+
+    return best_trial, best_folder
+
+
 def _log_sampler_state(trial: optuna.Trial):
     """Method for logging if the trial is random or sampled with the sampler such as TPE. The logging is made by setting
     user attr to the trial"""
