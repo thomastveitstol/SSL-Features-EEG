@@ -16,6 +16,7 @@ import pandas
 import yaml  # type: ignore[import-untyped]
 from optuna.trial import FrozenTrial
 from progressbar import progressbar
+from scipy.optimize import brentq
 from scipy.stats import NearConstantInputWarning, ConstantInputWarning
 
 from elecssl.data.datasets.dataset_base import pseudo_targets_filter_subjects, OcularState
@@ -1809,7 +1810,47 @@ class MultivariableElecsslHPO(HPOExperiment):
         # Best individual biomarkers
         self._reuse_best_individual_biomarkers(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
 
-        # Score-based sampling  todo: keep it up, don't give up now!
+        # Score-based sampling
+        self._score_based_simple_elecssl_reuse(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
+
+    def _score_based_simple_elecssl_reuse(self, study, simple_elecssl_hpo):
+        for _ in range(self._experiments_config["num_score_based_reuse"]):
+            self._single_random_simple_elecssl_reuse(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
+
+    def _single_score_based_simple_elecssl_reuse(self, study: optuna.Study, simple_elecssl_hpo: SimpleElecsslHPO):
+        # --------------
+        # Make biomarkers dataframe
+        # --------------
+        biomarkers_dfs: List[pandas.DataFrame] = []
+        hyperparameters: Dict[str, Any] = dict()
+        hp_distributions: Dict[str, Any] = dict()
+        user_attrs: Dict[str, Any] = dict()
+        for feature_name, trials_and_folder_paths in simple_elecssl_hpo.get_trials_and_folders(
+                completed_only=True).items():
+            trial_values = tuple(trial.value for trial, _ in trials_and_folder_paths)
+            trial_weights = _softmax_with_target_mass(
+                scores=trial_values, **self._experiments_config["score_based_kwargs"])
+
+            # Randomly select a trial and its corresponding path using the computed weights
+            trial, folder_path = random.choices(trials_and_folder_paths, weights=trial_weights, k=1)[0]
+
+            # Load the biomarker df
+            biomarkers_dfs.append(pandas.read_csv(folder_path / "ssl_biomarkers.csv"))
+
+            # Add the HPCs, HPDs, and which SimpleElecssl trial it was taken from
+            hpcs, distributions = self._get_simple_elecssl_hpcs_and_distributions(trial)
+
+            hyperparameters.update({f"{feature_name}_{hp_name}": hp_value for hp_name, hp_value in hpcs.items()})
+            hp_distributions.update({f"{feature_name}_{hp_name}": hp_dist
+                                     for hp_name, hp_dist in distributions.items()})
+            user_attrs[f"Simple elecssl re-used ({feature_name})"] = trial.number
+
+        # Merge to single df
+        df = _merge_ssl_biomarkers_dataframes(biomarkers_dfs)
+
+        # Re-use the selected biomarkers
+        self._reuse_selected_biomarkers(df=df, study=study, user_attrs=user_attrs, hyperparameters=hyperparameters,
+                                        hp_distributions=hp_distributions)
 
     def _reuse_best_individual_biomarkers(self, study: optuna.Study, simple_elecssl_hpo: SimpleElecsslHPO):
         # --------------
@@ -2796,8 +2837,8 @@ def _get_best_trial_and_folder_path(trials_and_folder_paths: Tuple[Tuple[FrozenT
             best_folder = folder
             continue
 
-        # Update trial and folder if this one is best
-        if study_direction == optuna.study.StudyDirection.MAXIMIZE:
+        # Update trial and folder if this one is best (todo: why does mypy complain?)
+        if study_direction == optuna.study.StudyDirection.MAXIMIZE:  # type: ignore[unreachable]
             if trial.value > best_trial.value:
                 best_trial = trial
                 best_folder = folder
@@ -3275,3 +3316,61 @@ def _get_preprocessed_folder_name(*, in_ocular_state, in_freq_band, input_length
     return (f"preprocessed_band_pass_{in_ocular_state}/data--band_pass-{in_freq_band}--input_length-{input_length}s--"
             f"autoreject-{autoreject}--sfreq-{sfreq_multiple}fmax--interpolation-{interpolation_method}--"
             f"ch_system-{ch_system}")
+
+
+# --------------
+# Functions
+# --------------
+def _compute_softmax_probs(scores, temp):
+    scores = numpy.array(scores)
+    exp_scores = numpy.exp(scores / temp)
+    return exp_scores / numpy.sum(exp_scores)
+
+
+def _find_temperature(scores, k_percent, target_mass, temp_bounds, tol):
+    scores = numpy.array(scores)
+    n_top = max(1, int(len(scores) * k_percent))
+    sorted_indices = numpy.argsort(scores)[::-1]
+    top_indices = sorted_indices[:n_top]
+
+    def _mass_difference(temp):
+        probs = _compute_softmax_probs(scores, temp)
+        return numpy.sum(probs[top_indices]) - target_mass
+
+    # Use Brent's method to solve for temperature
+    temp_opt = brentq(_mass_difference, *temp_bounds, xtol=tol)
+    return temp_opt
+
+
+def _softmax_with_target_mass(scores, *, k_percent, target_mass, temp_bounds, tol):
+    """
+    Compute softmax probabilities over scores with temperature T chosen such that the top `k_percent` of scores receive
+    `target_mass` of the total probability mass.
+
+    Parameters
+    ----------
+    scores : list or np.ndarray
+        A list of numeric scores (higher is better), e.g., R^2 values.
+    k_percent : float
+        The top proportion of biomarkers (e.g., 0.1 for top 10%) to focus on.
+    target_mass : float
+        The target total probability mass assigned to the top k_percent scores (e.g., 0.5 for 50%).
+    temp_bounds
+    tol
+
+    Returns
+    -------
+    list[float]
+        A probability vector summing to 1, same length as `scores`.
+
+    Examples
+    --------
+    >>> my_scores = [0.01, 0.12, 0.05, 0.33, 0.47, 0.02, 0.15]
+    >>> my_probs = _softmax_with_target_mass(my_scores, k_percent=0.2, target_mass=0.6, temp_bounds=(1e-3, 1e3),
+    ...                                      tol=1e-5)
+    >>> my_probs  # doctest: +ELLIPSIS
+    [0.0216..., 0.0479..., 0.0289..., 0.218..., 0.599..., 0.0233..., 0.0595...]
+    """
+    temp = _find_temperature(scores, k_percent=k_percent, target_mass=target_mass, temp_bounds=temp_bounds, tol=tol)
+    probs = _compute_softmax_probs(scores, temp)
+    return probs.tolist()
