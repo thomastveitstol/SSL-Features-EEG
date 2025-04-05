@@ -120,7 +120,7 @@ def _compute_band_power_single_subject(*, subject, info, crop, band_pass, notch_
 
     # Maybe run autoreject
     if autoreject is not None:
-        eeg = run_autoreject(eeg, **autoreject, autoreject_resample=None)
+        eeg = run_autoreject(eeg, **autoreject, autoreject_resample=None, return_log=False)
 
     # Again, maybe skip this subject if the number of epochs is insufficient after autoreject
     if len(eeg) < min_epochs:
