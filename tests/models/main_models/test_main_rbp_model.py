@@ -64,7 +64,7 @@ def test_save_load_model_reproducibility(input_data, target_data, subjects, rbp_
                 metrics="regression", main_metric="r2_score", num_epochs=2, classifier_criterion=criterion,
                 optimiser=optimiser, device=torch.device("cpu"), channel_name_to_index=channel_name_to_index,
                 prediction_activation_function=None, verbose=False, target_scaler=None, sub_group_splits=None,
-                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None
+                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None, patience=3
             )
             outputs_1 = model(input_data, pre_computed=pre_computed, channel_name_to_index=channel_name_to_index,
                               use_domain_discriminator=False)

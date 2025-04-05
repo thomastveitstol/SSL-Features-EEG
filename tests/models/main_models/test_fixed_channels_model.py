@@ -48,7 +48,7 @@ def test_save_load_model_reproducibility(interpolation_main_models, interpolated
             model.train_model(
                 method="downstream_training", train_loader=train_loader, val_loader=val_loader, test_loader=None,
                 metrics="regression", main_metric="r2_score", num_epochs=2, classifier_criterion=criterion,
-                optimiser=optimiser, device=torch.device("cpu"),
+                optimiser=optimiser, device=torch.device("cpu"), patience=3,
                 prediction_activation_function=None, verbose=False, target_scaler=None, sub_group_splits=None,
                 sub_groups_verbose=False, verbose_variables=False, variable_metrics=None
             )
