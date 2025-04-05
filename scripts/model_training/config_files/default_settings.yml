@@ -8,7 +8,7 @@ log_transform_clinical_target: false  # todo: this should be removed now, as one
 enable_domain_discriminator: false
 enable_cmmn: false
 
-Device: cpu
+Device: cuda
 
 Warnings:
   ignore: [ NearConstantInputWarning, ConstantInputWarning, FutureWarning ]
@@ -29,13 +29,13 @@ Saving:
 HPO:
   HPOStudy:
     sampler: TPESampler
-    sampler_kwargs: { n_startup_trials: 40 }
+    sampler_kwargs: { n_startup_trials: 10 }
     direction: UNAVAILABLE  # this will be added at runtime. Inferred from the selected downstream main metric
-  num_trials: 50
-  num_jobs: 3
+  num_trials: 15
+  num_jobs: 2
 
 EarlyStopping:
-  patience: 10
+  patience: 3
 
 # -----------------
 # Configurations for associating prediction errors with

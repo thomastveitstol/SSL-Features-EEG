@@ -6,7 +6,7 @@ OcularStates:
   EC:
     Datasets:
       DortmundVital: &DortmundVital
-        num_subjects: 100
+        num_subjects: all
         kwargs:
           derivatives: false
           session: 1

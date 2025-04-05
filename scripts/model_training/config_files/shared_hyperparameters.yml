@@ -139,4 +139,4 @@ RegionBasedPooling:
       channel_positions: !NotAHyperparameterList
         [ LEMON, Wang, DortmundVital ]
 
-SpatialDimensionMismatch: { choices: [ RegionBasedPooling ] }
+SpatialDimensionMismatch: { choices: [ RegionBasedPooling, Interpolation ] }
