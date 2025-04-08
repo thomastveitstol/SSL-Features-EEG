@@ -33,13 +33,14 @@ def main():
     study_name = "prediction_models"
     random_only = False
 
-    experiment_time = "2025-04-04_113008"
+    experiment_time = "2025-04-08_162529"
 
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name)
 
     value_name = "Performance"
-    val_lim = (-1, 1)
+    val_lim = (None, 1)
+
     # -------------
     # Make plots
     # -------------
