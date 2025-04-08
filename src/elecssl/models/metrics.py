@@ -1112,10 +1112,10 @@ class Histories:
                 y_pred = torch.squeeze(y_pred, dim=1)
 
             # Make some computations
-            mean_true = torch.mean(y_true)
+            mean_true = torch.mean(y_true.float())
             mean_pred = torch.mean(y_pred)
 
-            var_true = torch.var(y_true, unbiased=False)  # Using population variance
+            var_true = torch.var(y_true.float(), unbiased=False)  # Using population variance
             var_pred = torch.var(y_pred, unbiased=False)
 
             cov = torch.mean((y_true - mean_true) * (y_pred - mean_pred))  # Covariance
