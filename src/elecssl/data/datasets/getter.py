@@ -139,8 +139,10 @@ def get_channel_system(dataset_name, **kwargs):
     -------
     elecssl.data.datasets.dataset_base.ChannelSystem
     """
+    # Maybe use one of the built-in ones
     basic_channel_systems = _get_basic_channel_systems()
     if dataset_name in basic_channel_systems:
         return basic_channel_systems[dataset_name]
 
+    # Otherwise, get from dataset
     return get_dataset(dataset_name, **kwargs).channel_system
