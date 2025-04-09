@@ -3312,7 +3312,7 @@ def _get_prepared_experiments_config(experiments_config, in_freq_band, in_ocular
     experiments_config = experiments_config.copy()
     method = suggested_hyperparameters["SpatialDimensionMismatch"]["name"]
     if method == "RegionBasedPooling":
-        ch_system = None
+        ch_system = "self"
         interpolation_method = "spline"  # Doesn't matter, because it isn't really interpolated
     elif method == "Interpolation":
         ch_system = suggested_hyperparameters["SpatialDimensionMismatch"]["kwargs"]["main_channel_system"]
@@ -3322,9 +3322,8 @@ def _get_prepared_experiments_config(experiments_config, in_freq_band, in_ocular
                          f"therefore not infer the pre-processed version to use for the datasets")
 
     for dataset_name, dataset_info in experiments_config["Datasets"].items():
-        dataset_ch_system = dataset_name if ch_system is None else ch_system
         preprocessed_version = _get_preprocessed_folder_name(
-            in_ocular_state=in_ocular_state, in_freq_band=in_freq_band, ch_system=dataset_ch_system,
+            in_ocular_state=in_ocular_state, in_freq_band=in_freq_band, ch_system=ch_system,
             input_length=preprocessing_config_file["input_length"], autoreject=preprocessing_config_file["autoreject"],
             sfreq_multiple=preprocessing_config_file["sfreq_multiple"], interpolation_method=interpolation_method
         )
