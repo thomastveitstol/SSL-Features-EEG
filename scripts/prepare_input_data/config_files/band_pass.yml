@@ -31,7 +31,7 @@ Details:
   epoch_overlap: 0
   resample_multiples: [ 2, 3, 4 ]
   input_length: [ 5, 10, 20, 30 ]
-  interpolation_channel_systems: [ DortmundVital, LEMON, Wang ]
+  interpolation_channel_systems: [ self, Standard19, Standard32, Standard64, Standard126 ]
   interpolation_methods: [ spline, MNE ]
 FrequencyBands:
   all: [ null, null ]  # Band-pass filtered in pre-processing
