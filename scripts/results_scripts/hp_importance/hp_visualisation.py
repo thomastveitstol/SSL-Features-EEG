@@ -33,13 +33,13 @@ def main():
     study_name = "prediction_models"
     random_only = False
 
-    experiment_time = "2025-04-08_162529"
+    experiment_time = "2025-04-08_173502"
 
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name)
 
     value_name = "Performance"
-    val_lim = (None, 1)
+    val_lim = (-0.3, 1)
 
     # -------------
     # Make plots
@@ -82,7 +82,7 @@ def main():
     hp_type_1 = distributions[old_hp_1]
     hp_type_2 = distributions[old_hp_2]
     if isinstance(hp_type_1, CHP) and isinstance(hp_type_2, CHP):
-        seaborn.boxplot(trials_df, x=value_name, y=hp_1, hue=hp_2, linewidth=1.2, showfliers=False, fill=True,
+        seaborn.boxplot(trials_df, x=value_name, y=hp_1, hue=hp_2, linewidth=1.2, showfliers=False, fill=False,
                         dodge=True)
         seaborn.stripplot(trials_df, x=value_name, y=hp_1, hue=hp_2, dodge=True, jitter=True, size=3, marker='o',
                           alpha=0.5, legend=False)

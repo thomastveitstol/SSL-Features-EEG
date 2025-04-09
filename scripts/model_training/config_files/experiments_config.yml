@@ -16,13 +16,13 @@ _Wang: &Wang
   time_series_start: null
   channels: null
 _DortmundVital: &DortmundVital
-  num_subjects: 100
+  num_subjects: all
   num_time_steps: null
   time_series_start: null
   channels: null
 
 DownstreamDatasets: &DownstreamDatasets
-  LEMON: *LEMON
+  DortmundVital: *DortmundVital
 PretextDatasets: &PretextDatasets
   LEMON: *LEMON
   Wang: *Wang
@@ -52,7 +52,7 @@ PretextMLModelSettings:  # todo: this is Elecssl only, not pretraining. Better t
   test_predictions_decimals: 4
   test_scores_decimals: 4
 PretextSubjectSplit:  # This is for the actual pretext tasks
-  left_out_datasets: [ LEMON ]
+  left_out_datasets: !GetKeys { <<: *DownstreamDatasets }
   val_split: 0.2
   num_random_splits: *num_random_splits
   seed: *split_seed
@@ -73,7 +73,7 @@ PretextScalers: *Scaler
 # -----------------
 _Training: &Training
   batch_size: 16
-  num_epochs: 20
+  num_epochs: 50
   verbose: true
   verbose_variables: false
   continuous_testing: false  # too time-consuming I think, not worth it
