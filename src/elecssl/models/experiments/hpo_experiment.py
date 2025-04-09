@@ -14,9 +14,10 @@ import numpy
 import optuna
 import pandas
 import yaml  # type: ignore[import-untyped]
-from optuna.trial import FrozenTrial
+from optuna.trial import FrozenTrial, TrialState
 from progressbar import progressbar
 from scipy.optimize import brentq
+from scipy.special import softmax
 from scipy.stats import NearConstantInputWarning, ConstantInputWarning
 
 from elecssl.data.datasets.dataset_base import pseudo_targets_filter_subjects, OcularState
@@ -61,6 +62,9 @@ class MainExperiment(abc.ABC):
         # ---------------
         # Set attributes
         # ---------------
+        self._pretext_subject_split = pretext_subject_split
+        self._downstream_subject_split = downstream_subject_split
+
         if is_continuation:
             self._results_path = results_dir / self._name
 
@@ -77,8 +81,6 @@ class MainExperiment(abc.ABC):
             self._sampling_config: Dict[str, Any] = sampling_config
             return
 
-        self._pretext_subject_split = pretext_subject_split
-        self._downstream_subject_split = downstream_subject_split
         self._experiments_config = experiments_config
         self._sampling_config = hp_config
         self._results_path = results_dir / self._name
@@ -847,10 +849,13 @@ class PredictionModelsHPO(HPOExperiment):
     _test_predictions_file_name = "test_history_predictions"
     _optimisation_predictions_file_name = ("train_history_predictions", "val_history_predictions")
 
-    def __init__(self, *, hp_config, experiments_config, results_dir, is_continuation, subject_split):
+    def __init__(self, *, hp_config, experiments_config, results_dir, is_continuation, pretext_subject_split=None,
+                 downstream_subject_split):
+        if pretext_subject_split is not None:
+            warnings.warn("Pretext subject split was passed, but will not be used", UnusedInputArgumentWarning)
         super().__init__(hp_config=hp_config, experiments_config=experiments_config, results_dir=results_dir,
                          is_continuation=is_continuation, pretext_subject_split=None,
-                         downstream_subject_split=subject_split)
+                         downstream_subject_split=downstream_subject_split)
 
     def _create_objective(self):
         def _objective(trial: optuna.Trial):
@@ -1815,7 +1820,7 @@ class MultivariableElecsslHPO(HPOExperiment):
 
     def _score_based_simple_elecssl_reuse(self, study, simple_elecssl_hpo):
         for _ in range(self._experiments_config["num_score_based_reuse"]):
-            self._single_random_simple_elecssl_reuse(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
+            self._single_score_based_simple_elecssl_reuse(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
 
     def _single_score_based_simple_elecssl_reuse(self, study: optuna.Study, simple_elecssl_hpo: SimpleElecsslHPO):
         # --------------
@@ -1824,7 +1829,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         biomarkers_dfs: List[pandas.DataFrame] = []
         hyperparameters: Dict[str, Any] = dict()
         hp_distributions: Dict[str, Any] = dict()
-        user_attrs: Dict[str, Any] = dict()
+        user_attrs: Dict[str, Any] = {"reuse": "score-based sampling"}
         for feature_name, trials_and_folder_paths in simple_elecssl_hpo.get_trials_and_folders(
                 completed_only=True).items():
             trial_values = tuple(trial.value for trial, _ in trials_and_folder_paths)
@@ -1859,7 +1864,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         biomarkers_dfs: List[pandas.DataFrame] = []
         hyperparameters: Dict[str, Any] = dict()
         hp_distributions: Dict[str, Any] = dict()
-        user_attrs: Dict[str, Any] = dict()
+        user_attrs: Dict[str, Any] = {"reuse": "best individuals"}
         for feature_name, trials_and_folder_paths in simple_elecssl_hpo.get_trials_and_folders(
                 completed_only=True).items():
             # Select the best biomarker for this feature
@@ -1896,7 +1901,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         biomarkers_dfs: List[pandas.DataFrame] = []
         hyperparameters: Dict[str, Any] = dict()
         hp_distributions: Dict[str, Any] = dict()
-        user_attrs: Dict[str, Any] = dict()
+        user_attrs: Dict[str, Any] = {"reuse": "random sampling"}
         for feature_name, trials_and_folder_paths in simple_elecssl_hpo.get_trials_and_folders(
                 completed_only=True).items():
             # Randomly select a trial and also get the corresponding path
@@ -2356,7 +2361,7 @@ class AllHPOExperiments:
         # Run experiments
         with PredictionModelsHPO(experiments_config=experiments_config, hp_config=hp_config,
                                  results_dir=self._results_path, is_continuation=False,
-                                 subject_split=subject_split) as experiment:
+                                 downstream_subject_split=subject_split) as experiment:
             experiment.run_hyperparameter_optimisation()
 
         return experiment
@@ -2428,6 +2433,18 @@ class AllHPOExperiments:
     def load_previous(cls, path: Path):
         """Method for loading a previous study"""
         return cls(results_dir=path, config_path=None, is_continuation=True)
+
+    def resume_experiments(self):
+        """Method for resuming HPO. It has been designed for resuming a study automatically after if something goes
+        wrong"""
+        # Logging is probably preferred...
+        with open(self._results_path / f"resuming_hpo_{date.today()}_{datetime.now().strftime('%H%M%S')}.txt",  "w"):
+            pass
+
+        self.continue_prediction_models_hpo(num_trials=None)
+        self.continue_pretraining_hpo(num_trials=None)
+        self.continue_simple_elecssl_hpo(num_trials=None)
+        self.continue_multivariable_elecssl_hpo(num_trials=None)
 
     def continue_prediction_models_hpo(self, num_trials: Optional[int]):
         _, subject_split, _ = self.re_create_split()
@@ -2804,7 +2821,7 @@ class AllHPOExperiments:
 
 
 # --------------
-# Exceptions
+# Exceptions and warnings
 # --------------
 class InconsistentTestSetError(Exception):
     """This error should be raised if the test set should be consistent across different trials/folds, but is not"""
@@ -2821,6 +2838,11 @@ class DissimilarTestSetsError(Exception):
 
 class ExperimentNotFoundError(Exception):
     """This error should be raised if an experiment was attempted loaded, but it wasn't found at the expected path"""
+
+
+class UnusedInputArgumentWarning(UserWarning):
+    """To be used when there are input arguments which are passed, but will not be used. Convenient to make method
+    signatures consistent, but still warning when an argument is ignored"""
 
 
 # --------------
@@ -2856,11 +2878,11 @@ def _log_sampler_state(trial: optuna.Trial):
     """Method for logging if the trial is random or sampled with the sampler such as TPE. The logging is made by setting
     user attr to the trial"""
     # Looking at sample_independent in TPESampler, this looks correct as both completed and pruned trials are counted.
-    # Failed ones lead to error message anyway
     sampler = trial.study.sampler
+    num_trials = len(trial.study.get_trials(states=(TrialState.COMPLETE, TrialState.PRUNED)))
     if hasattr(sampler, "_n_startup_trials"):
         # noinspection PyProtectedMember
-        if trial.number < sampler._n_startup_trials:
+        if num_trials < sampler._n_startup_trials:
             trial.set_user_attr("trial_sampler", "RandomSampler")
         else:
             trial.set_user_attr("trial_sampler", type(sampler).__name__)
@@ -3319,12 +3341,30 @@ def _get_preprocessed_folder_name(*, in_ocular_state, in_freq_band, input_length
 
 
 # --------------
-# Functions
+# Functions for doing score-based sampling
 # --------------
 def _compute_softmax_probs(scores, temp):
-    scores = numpy.array(scores)
-    exp_scores = numpy.exp(scores / temp)
-    return exp_scores / numpy.sum(exp_scores)
+    """
+    Computing softmax
+
+    Examples
+    --------
+    >>> my_scores = (0.070, 0.090, 0.083, 0.060, 0.081, 0.107, 0.096, 0.059, 0.052, 0.065, 0.055, 0.060, 0.057, 0.069,
+    ...              0.053, 0.059, 0.073)
+    >>> my_array = _compute_softmax_probs(my_scores, temp=1e-1)
+    >>> numpy.round(my_array, decimals=3)  # type: ignore[arg-type]
+    array([0.058, 0.071, 0.066, 0.053, 0.065, 0.084, 0.075, 0.052, 0.049,
+           0.055, 0.05 , 0.053, 0.051, 0.058, 0.049, 0.052, 0.06 ])
+    >>> float(numpy.sum(my_array))
+    1.0
+
+    Very small tmeparatures does not cause nan values
+
+    >>> _compute_softmax_probs(my_scores, temp=1e-6)
+    array([0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+    """
+    scaled_scores = numpy.array(scores) / temp
+    return softmax(scaled_scores)
 
 
 def _find_temperature(scores, k_percent, target_mass, temp_bounds, tol):
@@ -3366,11 +3406,36 @@ def _softmax_with_target_mass(scores, *, k_percent, target_mass, temp_bounds, to
     Examples
     --------
     >>> my_scores = [0.01, 0.12, 0.05, 0.33, 0.47, 0.02, 0.15]
-    >>> my_probs = _softmax_with_target_mass(my_scores, k_percent=0.2, target_mass=0.6, temp_bounds=(1e-3, 1e3),
+    >>> my_probs = _softmax_with_target_mass(my_scores, k_percent=0.25, target_mass=0.6, temp_bounds=(1e-3, 1e3),
     ...                                      tol=1e-5)
     >>> my_probs  # doctest: +ELLIPSIS
     [0.0216..., 0.0479..., 0.0289..., 0.218..., 0.599..., 0.0233..., 0.0595...]
+
+    If the temperature bounds are 'bad', ValueError is raised
+
+    >>> my_scores = [0.01, 0.12, 0.05, 0.33, 0.47, 0.02, 0.15]
+    >>> my_probs = _softmax_with_target_mass(my_scores, k_percent=0.2, target_mass=0.6, temp_bounds=(1e2, 1e3),
+    ...                                      tol=1e-5)
+    Traceback (most recent call last):
+    ...
+    ValueError: f(a) and f(b) must have different signs
+
+    If there are nan values, a ValueError is raised
+
+    >>> my_scores = [float("nan"), 0.12, 0.05, 0.33, 0.47, 0.02, 0.15]
+    >>> my_probs = _softmax_with_target_mass(my_scores, k_percent=0.2, target_mass=0.6, temp_bounds=(1e-3, 1e3),
+    ...                                      tol=1e-5)
+    Traceback (most recent call last):
+    ...
+    ValueError: The function value at x=0.001 is NaN; solver cannot continue.
     """
+    # Input checks
+    if not (0 <= k_percent <= 1):
+        raise ValueError(f"'k' out of its range: {k_percent}")
+    if not (0 <= target_mass <= 1):
+        raise ValueError(f"'target_mass' out of its range: {target_mass}")
+
+    # Compute temperature and get the softmax probabilities
     temp = _find_temperature(scores, k_percent=k_percent, target_mass=target_mass, temp_bounds=temp_bounds, tol=tol)
     probs = _compute_softmax_probs(scores, temp)
     return probs.tolist()
