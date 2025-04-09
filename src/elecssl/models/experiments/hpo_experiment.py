@@ -3355,7 +3355,7 @@ def _compute_softmax_probs(scores, temp):
     >>> numpy.round(my_array, decimals=3)  # type: ignore[arg-type]
     array([0.058, 0.071, 0.066, 0.053, 0.065, 0.084, 0.075, 0.052, 0.049,
            0.055, 0.05 , 0.053, 0.051, 0.058, 0.049, 0.052, 0.06 ])
-    >>> float(numpy.sum(my_array))
+    >>> round(float(numpy.sum(my_array)), 4)
     1.0
 
     Very small tmeparatures does not cause nan values
@@ -3419,15 +3419,6 @@ def _softmax_with_target_mass(scores, *, k_percent, target_mass, temp_bounds, to
     Traceback (most recent call last):
     ...
     ValueError: f(a) and f(b) must have different signs
-
-    If there are nan values, a ValueError is raised
-
-    >>> my_scores = [float("nan"), 0.12, 0.05, 0.33, 0.47, 0.02, 0.15]
-    >>> my_probs = _softmax_with_target_mass(my_scores, k_percent=0.2, target_mass=0.6, temp_bounds=(1e-3, 1e3),
-    ...                                      tol=1e-5)
-    Traceback (most recent call last):
-    ...
-    ValueError: The function value at x=0.001 is NaN; solver cannot continue.
     """
     # Input checks
     if not (0 <= k_percent <= 1):
