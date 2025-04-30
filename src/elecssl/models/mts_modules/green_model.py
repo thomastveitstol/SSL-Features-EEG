@@ -296,7 +296,7 @@ class GreenModel(MTSModuleBase):
         """Save foi and fwhm"""
         file_path = (path / f"green_{name}").with_suffix(".csv")
         df = pandas.DataFrame({"foi": self.foi, "fwhm": self.fwhm})
-        df.to_csv(file_path , index=False)
+        df.to_csv(file_path, index=False)
         os.chmod(file_path, 0o444)
 
     # ----------------
