@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# ---------------
+# For the queue system
+# ---------------
+#SBATCH --job-name=aimind-thomas
+#SBATCH --account=p1504_tsd
+#SBATCH --time=00:30:10
+#SBATCH --mem-per-cpu=6G
+#SBATCH --ntasks=4  # Number of tasks (parallel processes)
+#SBATCH --cpus-per-task=2  # Number of CPUs per task
+#SBATCH --output=job_%x_%j.log
+
+# ---------------
+# Fail on errors and unset variables
+# ---------------
+set -o errexit
+set -o nounset
+
+# ---------------
+# Load the Python module (required before activating venv)
+# ---------------
+module purge
+module load Python/3.12.3-GCCcore-13.3.0
+
+# ---------------
+# Activate virtual environment
+# ---------------
+# Get the directory where the .sm script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Go up three levels to get to the project root
+PROJECT_ROOT="$(dirname "$(dirname "$(dirname "$SCRIPT_DIR")")")"
+
+# Activate the virtual environment
+source "$PROJECT_ROOT/.venv/bin/activate"
+
+# ---------------
+# Run the .bash script
+# ---------------
+cd "$PROJECT_ROOT"
+bash ./scripts/model_training/multiple_scripts.bash
