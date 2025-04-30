@@ -25,6 +25,10 @@ class MainModuleBase(nn.Module, abc.ABC):
     def test_model(self, *args, **kwargs) -> Histories:
         """Method for testing the model"""
 
+    @abc.abstractmethod
+    def save_metadata(self, *, name, path):
+        """Method for saving metadata, such as the frequencies in GREEN architecture"""
+
     # ------------
     # Model saving and loading
     # ------------

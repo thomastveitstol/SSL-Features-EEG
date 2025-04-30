@@ -746,6 +746,12 @@ class MainRBPModel(MainModuleBase):
         return history
 
     # ----------------
+    # Some additional abstract methods
+    # ----------------
+    def save_metadata(self, *, name, path):
+        self._mts_module.save_metadata(name=name, path=path)
+
+    # ----------------
     # Properties
     # ----------------
     @property

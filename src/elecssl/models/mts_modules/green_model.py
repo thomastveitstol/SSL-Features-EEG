@@ -1,7 +1,9 @@
 """
 The GREEN model implemented to suit the pipeline of this project
 """
+import os
 
+import pandas
 import torch.nn as nn
 
 from elecssl.models.mts_modules.green.pl_utils import get_green
@@ -82,6 +84,8 @@ class GreenModel(MTSModuleBase):
     )
     >>> my_model.latent_features_dim
     67
+    >>> len(my_model.foi), len(my_model.fwhm)  # 30 frequencies
+    (30, 30)
     """
 
     def __init__(self, in_channels, num_classes, sampling_freq, **kwargs):
@@ -288,6 +292,13 @@ class GreenModel(MTSModuleBase):
                 "dropout": dropout,
                 "hidden_dim": hidden_dim}
 
+    def save_metadata(self, *, name, path):
+        """Save foi and fwhm"""
+        file_path = (path / f"green_{name}").with_suffix(".csv")
+        df = pandas.DataFrame({"foi": self.foi, "fwhm": self.fwhm})
+        df.to_csv(file_path , index=False)
+        os.chmod(file_path, 0o444)
+
     # ----------------
     # Properties
     # ----------------
@@ -295,6 +306,14 @@ class GreenModel(MTSModuleBase):
     def latent_features_dim(self) -> int:
         # Infer it from the final layer
         return self._model.head[-1].in_features  # type: ignore[no-any-return]
+
+    @property
+    def foi(self):
+        return tuple(self._model.conv_layers[0].foi.tolist())
+
+    @property
+    def fwhm(self):
+        return tuple(self._model.conv_layers[0].fwhm.tolist())
 
 
 # ----------------

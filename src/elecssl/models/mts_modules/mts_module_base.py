@@ -57,6 +57,9 @@ class MTSModuleBase(nn.Module, abc.ABC):
         """Get the expected latent feature dimension"""
         return cls(*args, **kwargs).latent_features_dim  # type: ignore[call-arg]
 
+    def save_metadata(self, *, name, path):
+        pass
+
     # ----------------
     # Properties
     # ----------------

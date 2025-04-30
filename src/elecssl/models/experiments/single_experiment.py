@@ -538,6 +538,10 @@ class SingleExperiment:
         model = self._prepare_model(model=model, channel_systems=channel_systems, combined_dataset=combined_dataset,
                                     train_subjects=train_subjects, test_subjects=test_subjects)
 
+        # Save some metadata
+        prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
+        model.save_metadata(name=f"{prefix_name}metadata_before", path=self._results_path)
+
         # -----------------
         # Create data loaders (and target scaler)
         # -----------------
@@ -595,6 +599,9 @@ class SingleExperiment:
             else:
                 selected_error = _get_error(self._experiments_config["raise_upon_nan_predictions"])
                 raise selected_error("Error raised due to NaN values, most likely in the predictions")
+
+        # Save some metadata
+        model.save_metadata(name=f"{prefix_name}metadata_after", path=self._results_path)
 
         # -----------------
         # Test model (but only if continuous testing was not used)
