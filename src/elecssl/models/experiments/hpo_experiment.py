@@ -2606,21 +2606,21 @@ class AllHPOExperiments:
 
         )
         input_lengths = self._shared_hpds["Preprocessing"]["input_length"][1]["choices"]
-        datasets = self._get_required_datasets()
+        ch_systems = self.shared_hpds["Interpolation"]["main_channel_system"]["choices"]
         sfreq_multiples = self.shared_hpds["Preprocessing"]["sfreq_multiple"][1]["choices"]
         interpolation_methods = self.shared_hpds["Interpolation"]["methods"]["choices"]
 
         # Entire input data space
         input_data_config_space = itertools.product(in_freq_bands, input_lengths, self._get_autoreject_choices(),
-                                                    datasets, sfreq_multiples, interpolation_methods)
+                                                    ch_systems, sfreq_multiples, interpolation_methods)
 
         # Add all required versions
         required_versions: List[str] = []
-        for (in_freq_band, input_length, auto_reject, dataset, sfreq_multiple,
+        for (in_freq_band, input_length, auto_reject, ch_system, sfreq_multiple,
              interpolation_method) in input_data_config_space:
             required_versions.append(
                 _get_preprocessed_folder_name(in_ocular_state=ocular_state, input_length=input_length,
-                                              in_freq_band=in_freq_band, autoreject=auto_reject, ch_system=dataset,
+                                              in_freq_band=in_freq_band, autoreject=auto_reject, ch_system=ch_system,
                                               sfreq_multiple=sfreq_multiple, interpolation_method=interpolation_method)
             )
         return tuple(required_versions)
