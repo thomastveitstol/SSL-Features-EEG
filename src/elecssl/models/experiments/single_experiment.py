@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 
 from elecssl.data.combined_datasets import CombinedDatasets
 from elecssl.data.data_generators.data_generator import InterpolationDataGenerator, RBPDataGenerator
-from elecssl.data.datasets.getter import get_dataset
+from elecssl.data.datasets.getter import get_dataset, get_channel_system
 from elecssl.data.scalers.target_scalers import get_target_scaler
 from elecssl.data.subject_split import get_data_split, DataSplitBase
 from elecssl.models.losses import CustomWeightedLoss, get_activation_function
@@ -108,7 +108,7 @@ class SingleExperiment:
             mts_config["kwargs"]["num_time_steps"] = self.shared_pre_processing_config["num_time_steps"]
 
         # Add number of input channels
-        mts_config["kwargs"]["in_channels"] = get_dataset(
+        mts_config["kwargs"]["in_channels"] = get_channel_system(
             dataset_name=self.interpolation_config["main_channel_system"]  # type: ignore[index]
         ).num_channels
 
