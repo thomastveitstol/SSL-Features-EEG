@@ -278,8 +278,8 @@ class HPOExperiment(MainExperiment):
     # --------------
     # Methods for HPO sampling
     # --------------
-    def _suggest_common_hyperparameters(self, trial, name, in_freq_band, preprocessed_config_path, skip_training,
-                                        skip_loss):
+    def _suggest_common_hyperparameters(self, trial, name, *, in_freq_band, preprocessed_config_path, skip_training,
+                                        skip_loss, num_datasets):
         suggested_hps: Dict[str, Any] = {"Preprocessing": {}}
         name_prefix = "" if name is None else f"{name}_"
 
@@ -313,7 +313,8 @@ class HPOExperiment(MainExperiment):
 
         # Loss
         if not skip_loss:
-            suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=self._sampling_config["Loss"])
+            suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=self._sampling_config["Loss"],
+                                                 num_datasets=num_datasets)
 
         # Handling varied numbers of electrodes
         suggested_hps["SpatialDimensionMismatch"] = suggest_spatial_dimension_mismatch(
@@ -902,9 +903,9 @@ class PredictionModelsHPO(HPOExperiment):
         in_ocular_state = trial.suggest_categorical(f"{name_prefix}ocular_state",
                                                     **self._sampling_config["OcularStates"])
         preprocessing_config_path = _get_preprocessing_config_path(ocular_state=in_ocular_state)
-        suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
-                                                             preprocessed_config_path=preprocessing_config_path,
-                                                             skip_loss=False, skip_training=False)
+        suggested_hps = self._suggest_common_hyperparameters(
+            trial, name, in_freq_band=in_freq_band, preprocessed_config_path=preprocessing_config_path, skip_loss=False,
+            skip_training=False, num_datasets=len(self._experiments_config["Datasets"]))
         suggested_hps["ocular_state"] = in_ocular_state
         return suggested_hps
 
@@ -1169,7 +1170,8 @@ class PretrainHPO(HPOExperiment):
         suggested_hps["Training"] = self._suggest_training_hpcs(trial=trial, name=name, hpd_config=hpd_config)
 
         # Loss
-        suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=hpd_config["Loss"])
+        suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=hpd_config["Loss"],
+                                             num_datasets=len(datasets_for_pretraining))
 
         # Domain discriminator
         if self._experiments_config["enable_domain_discriminator"]:
@@ -1183,7 +1185,8 @@ class PretrainHPO(HPOExperiment):
         return suggested_hps, datasets_to_use
 
     def _suggest_downstream_specific_hyperparameters(self, name, trial):
-        suggested_hps = {"Loss": suggest_loss(name=name, trial=trial, config=self._sampling_config["Loss"]),
+        suggested_hps = {"Loss": suggest_loss(name=name, trial=trial, config=self._sampling_config["Loss"],
+                                              num_datasets=len(self._downstream_experiments_config["Datasets"])),
                          "Training": self._suggest_training_hpcs(trial=trial, name=name,
                                                                  hpd_config=self._sampling_config)}
 
@@ -1202,9 +1205,9 @@ class PretrainHPO(HPOExperiment):
         preprocessing_config_path = _get_preprocessing_config_path(
             ocular_state=self._experiments_config["in_ocular_state"]
         )
-        suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
-                                                             preprocessed_config_path=preprocessing_config_path,
-                                                             skip_loss=True, skip_training=True)
+        suggested_hps = self._suggest_common_hyperparameters(
+            trial, name, in_freq_band=in_freq_band, preprocessed_config_path=preprocessing_config_path, skip_loss=True,
+            skip_training=True, num_datasets=-1)
 
         # Need to remove some HPCs because they are not shared
         del suggested_hps["DomainDiscriminator"]
@@ -1294,9 +1297,9 @@ class SimpleElecsslHPO(HPOExperiment):
             datasets_to_use[dataset_name] = self._experiments_config["Datasets"][dataset_name]
 
         # All other HPs
-        suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
-                                                             preprocessed_config_path=preprocessing_config_path,
-                                                             skip_training=False, skip_loss=False)
+        suggested_hps = self._suggest_common_hyperparameters(
+            trial, name, in_freq_band=in_freq_band, preprocessed_config_path=preprocessing_config_path,
+            skip_training=False, skip_loss=False, num_datasets=len(datasets_for_pretraining))
         suggested_hps["MLModel"] = self._sampling_config["MLModel"]
 
         return in_freq_band, out_freq_band, preprocessing_config_path, suggested_hps, datasets_to_use
@@ -1620,11 +1623,6 @@ class MultivariableElecsslHPO(HPOExperiment):
     _optimisation_predictions_file_name = ("pretext_train_history_predictions", "pretext_val_history_predictions")
 
     def suggest_hyperparameters(self, trial, name, in_freq_band, preprocessing_config_path):
-        suggested_hps = self._suggest_common_hyperparameters(trial, name, in_freq_band=in_freq_band,
-                                                             preprocessed_config_path=preprocessing_config_path,
-                                                             skip_training=False, skip_loss=False)
-        suggested_hps["MLModel"] = self._sampling_config["MLModel"]
-
         # -------------
         # Pick the datasets to be used for pre-training
         # -------------
@@ -1648,6 +1646,14 @@ class MultivariableElecsslHPO(HPOExperiment):
 
         for dataset_name in _datasets_str_to_tuple(pretrain_combinations):
             datasets_to_use[dataset_name] = self._experiments_config["Datasets"][dataset_name]
+
+        # -------------
+        # Suggest HPCs
+        # -------------
+        suggested_hps = self._suggest_common_hyperparameters(
+            trial, name, in_freq_band=in_freq_band, preprocessed_config_path=preprocessing_config_path,
+            skip_training=False, skip_loss=False, num_datasets=len(datasets_for_pretraining))
+        suggested_hps["MLModel"] = self._sampling_config["MLModel"]
 
         return suggested_hps, datasets_to_use
 

@@ -44,13 +44,16 @@ def suggest_dl_architecture(name, trial, config, suggested_preprocessing_steps, 
     return {"model": model, "kwargs": kwargs}
 
 
-def suggest_loss(name, trial, config):
+def suggest_loss(name, trial, config, *, num_datasets: int):
     name_prefix = "" if name is None else f"{name}_"
 
     loss = trial.suggest_categorical(f"{name_prefix}loss", **config["loss"])
 
     # Sample re-weighting
-    weighter = trial.suggest_categorical(f"{name_prefix}weighter", **config["weighter"])
+    if num_datasets > 1:
+        weighter = trial.suggest_categorical(f"{name_prefix}weighter", **config["weighter"])
+    else:
+        weighter = None
 
     if weighter is None:
         return {"loss": loss, "loss_kwargs": {"reduction": "mean"}, "weighter": weighter, "weighter_kwargs": {}}
