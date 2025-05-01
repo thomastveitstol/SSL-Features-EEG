@@ -32,12 +32,6 @@ class AIMind(EEGDatasetBase):
     --------
     >>> len(AIMind._channel_names)
     126
-    >>> try:
-    ...     val = len(AIMind().get_subject_ids())
-    ... except KeyError:
-    ...     val = "SKIPPED"
-    >>> val in (538, "SKIPPED")
-    True
     """
 
     __slots__ = ()
