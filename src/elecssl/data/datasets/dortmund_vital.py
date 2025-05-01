@@ -66,6 +66,9 @@ class DortmundVital(EEGDatasetBase):
         # Drop non-eeg channels
         raw.drop_channels("Status")
 
+        # Reorder channels
+        raw.reorder_channels(list(self._channel_names))
+
         return raw
 
     # ----------------
