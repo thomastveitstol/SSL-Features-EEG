@@ -16,16 +16,10 @@ OcularStates:
         kwargs:
           derivatives: false
           interpolation_method: MNE
-      Wang: &Wang
-        num_subjects: all
-        kwargs:
-          visit: 1
-          derivatives: true
   EO:
     Datasets:
       DortmundVital: *DortmundVital
       LEMON: *LEMON
-      Wang: *Wang
 Details:
   num_epochs: 3
   epoch_overlap: 0
@@ -45,8 +39,5 @@ InitialPreprocessing:
     <<: *_SharedSteps
   DortmundVital:
     notch_filter: 50
-    <<: *_SharedSteps
-  Wang:
-    notch_filter: null
     <<: *_SharedSteps
 IgnoreExistingFolder: false

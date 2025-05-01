@@ -12,11 +12,6 @@ OcularStates:
         kwargs:
           derivatives: false
           interpolation_method: MNE
-      Wang:
-        num_subjects: all
-        kwargs:
-          visit: 1
-          derivatives: true
 FrequencyBands:
   delta: [ 1, 4 ]
   theta: [ 4, 8 ]
