@@ -105,8 +105,7 @@ normalisation: { choices: [ true, false ] }
 # HPs for varied numbers of channels
 # -----------------
 Interpolation:
-  # todo: not elegant, consider inferring these at runtime
-  main_channel_system: { choices: [ LEMON, Wang, DortmundVital ] }
+  main_channel_system: { choices: [ Standard19, Standard32, Standard64, Standard126 ] }
   methods: { choices: [ MNE, spline ] }
 
 _num_kernels: &num_kernels !Int { low: 10, high: 1000, log: true }
@@ -137,6 +136,6 @@ RegionBasedPooling:
         k_4: [ 4, 3, 2, 3, 4, 3, 2, 3, 4 ]
       min_nodes: !Int { low: 1, high: 6, step: 1, log: false }
       channel_positions: !NotAHyperparameterList
-        [ LEMON, Wang, DortmundVital ]
+        [ LEMON, DortmundVital ]
 
 SpatialDimensionMismatch: { choices: [ RegionBasedPooling, Interpolation ] }
