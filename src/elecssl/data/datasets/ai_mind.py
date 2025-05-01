@@ -7,8 +7,7 @@ import numpy
 import pandas
 
 from elecssl.data.datasets.dataset_base import EEGDatasetBase, OcularState, target_method
-from elecssl.data.paths import get_pre_ctad_raw_data_path
-
+from elecssl.data.paths import get_ai_mind_path
 
 _ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -70,7 +69,7 @@ class AIMind(EEGDatasetBase):
     @classmethod
     def get_mne_path(cls):
         """The original data is stored in TSD, in a completely different folder than the other external datasets"""
-        return get_pre_ctad_raw_data_path()
+        return get_ai_mind_path()
 
     # ----------------
     # Loading methods
@@ -79,7 +78,7 @@ class AIMind(EEGDatasetBase):
         # As ctad is approaching, I'm just hard-coding up this...
         # todo
         # Get path to all the pickle files
-        path_to_pickle_files = get_pre_ctad_raw_data_path() / "1-continuous"
+        path_to_pickle_files = self.get_mne_path() / "1-continuous"
 
         # Get all pickle file names. Also, remove.pickle and safety character (e.g., 1-111)
         file_names = {file_name[:5] for file_name in os.listdir(path_to_pickle_files)}

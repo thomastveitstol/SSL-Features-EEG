@@ -88,7 +88,7 @@ def get_td_brain_raw_data_storage_path():
     return Path(config["MNEPathTDBrain"])
 
 
-def get_pre_ctad_raw_data_path():
+def get_ai_mind_path():
     """
     Gives the path to where the AI-Mind data is stored
 
@@ -101,4 +101,4 @@ def get_pre_ctad_raw_data_path():
     with open(config_path) as f:
         config = json.load(f)
 
-    return Path(config["AIMindPreCTADAIDevSetPath"])
+    return Path(config["AIMind"])
