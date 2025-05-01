@@ -4,14 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="doctest fixes">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="removed skipping pytest">
       <change beforePath="$PROJECT_DIR$/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/.coverage" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/specific_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/specific_settings.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/multiple_scripts.bash" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/multiple_scripts.bash" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/experiments_comparisons.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/experiments_comparisons.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/hp_importance/hp_visualisation.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/hp_importance/hp_visualisation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/debugging.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,6 +89,7 @@
     "Python tests.Doctest _extract_subject_ids.executor": "Run",
     "Python tests.Doctest _extract_target_names.executor": "Run",
     "Python tests.Doctest _generate_dataset_combinations.executor": "Run",
+    "Python tests.Doctest _get_basic_channel_systems.executor": "Run",
     "Python tests.Doctest _get_error.executor": "Run",
     "Python tests.Doctest _get_pooling_layer.executor": "Run",
     "Python tests.Doctest _mne_map_montage.executor": "Run",
@@ -204,6 +204,8 @@
     "Python tests.Python tests for test_combined_datasets.test_get_target_copy.executor": "Run",
     "Python tests.Python tests for test_combined_datasets.test_remove_and_switch_targets.executor": "Run",
     "Python tests.Python tests for test_combined_datasets.test_remove_data.executor": "Run",
+    "Python tests.Python tests for test_datasets.test_channel_names_ordering.executor": "Run",
+    "Python tests.Python tests for test_datasets.test_channel_names_ordering_lemon.executor": "Run",
     "Python tests.Python tests for test_green_model.test_forward.executor": "Run",
     "Python tests.Python tests for test_input_data.test_equal_num_channel_and_time_steps.executor": "Run",
     "Python tests.Python tests for test_metrics.test_constant_predictions_multiclass_classification_metrics.executor": "Run",
@@ -275,7 +277,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/model_training",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
@@ -295,8 +297,8 @@
       <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctest _compute_softmax_probs">
-    <configuration name="continue_experiments" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.Doctests in AIMind">
+    <configuration name="plot_eeg_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -305,11 +307,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/model_training" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/visualise_data" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/model_training/continue_experiments.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -318,77 +320,36 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="experiments_comparisons" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results_scripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results_scripts/experiments_comparisons.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Doctest _compute_softmax_probs" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in AIMind" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/experiments" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="_compute_softmax_probs" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/ai_mind.py" />
+      <option name="CLASS_NAME" value="AIMind" />
+      <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_FUNCTION" />
+      <option name="TEST_TYPE" value="TEST_CLASS" />
       <option name="PATTERN" value="" />
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctest _softmax_with_target_mass" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctests in ai_mind" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/experiments" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="_softmax_with_target_mass" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_FUNCTION" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Doctests in hpo_experiment" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
-      <module name="SSL-Features-EEG" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/experiments" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/ai_mind.py" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="FOLDER_NAME" value="" />
@@ -397,20 +358,50 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="Python tests for test_datasets.test_channel_names_ordering" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data/datasets" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_datasets.test_channel_names_ordering&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_datasets.test_channel_names_ordering_lemon" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="SSL-Features-EEG" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data/datasets" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_datasets.test_channel_names_ordering_lemon&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <list>
-      <item itemvalue="Python.continue_experiments" />
-      <item itemvalue="Python.experiments_comparisons" />
-      <item itemvalue="Python tests.Doctest _compute_softmax_probs" />
-      <item itemvalue="Python tests.Doctest _softmax_with_target_mass" />
-      <item itemvalue="Python tests.Doctests in hpo_experiment" />
+      <item itemvalue="Python.plot_eeg_data" />
+      <item itemvalue="Python tests.Doctests in AIMind" />
+      <item itemvalue="Python tests.Doctests in ai_mind" />
+      <item itemvalue="Python tests.Python tests for test_datasets.test_channel_names_ordering" />
+      <item itemvalue="Python tests.Python tests for test_datasets.test_channel_names_ordering_lemon" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Doctest _compute_softmax_probs" />
-        <item itemvalue="Python tests.Doctests in hpo_experiment" />
-        <item itemvalue="Python tests.Doctest _softmax_with_target_mass" />
-        <item itemvalue="Python.continue_experiments" />
-        <item itemvalue="Python.experiments_comparisons" />
+        <item itemvalue="Python tests.Doctests in AIMind" />
+        <item itemvalue="Python tests.Doctests in ai_mind" />
+        <item itemvalue="Python tests.Python tests for test_datasets.test_channel_names_ordering" />
+        <item itemvalue="Python.plot_eeg_data" />
+        <item itemvalue="Python tests.Python tests for test_datasets.test_channel_names_ordering_lemon" />
       </list>
     </recent_temporary>
   </component>
@@ -429,134 +420,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00563" summary="mypy fixes">
-      <option name="closed" value="true" />
-      <created>1743275238593</created>
-      <option name="number" value="00563" />
-      <option name="presentableId" value="LOCAL-00563" />
-      <option name="project" value="LOCAL" />
-      <updated>1743275238593</updated>
-    </task>
-    <task id="LOCAL-00564" summary="mypy fixes">
-      <option name="closed" value="true" />
-      <created>1743275382336</created>
-      <option name="number" value="00564" />
-      <option name="presentableId" value="LOCAL-00564" />
-      <option name="project" value="LOCAL" />
-      <updated>1743275382336</updated>
-    </task>
-    <task id="LOCAL-00565" summary="removed unused function">
-      <option name="closed" value="true" />
-      <created>1743275640600</created>
-      <option name="number" value="00565" />
-      <option name="presentableId" value="LOCAL-00565" />
-      <option name="project" value="LOCAL" />
-      <updated>1743275640600</updated>
-    </task>
-    <task id="LOCAL-00566" summary="mypy fix">
-      <option name="closed" value="true" />
-      <created>1743276001326</created>
-      <option name="number" value="00566" />
-      <option name="presentableId" value="LOCAL-00566" />
-      <option name="project" value="LOCAL" />
-      <updated>1743276001326</updated>
-    </task>
-    <task id="LOCAL-00567" summary="automatic updates">
-      <option name="closed" value="true" />
-      <created>1743276489155</created>
-      <option name="number" value="00567" />
-      <option name="presentableId" value="LOCAL-00567" />
-      <option name="project" value="LOCAL" />
-      <updated>1743276489155</updated>
-    </task>
-    <task id="LOCAL-00568" summary="changes to config files">
-      <option name="closed" value="true" />
-      <created>1743276547952</created>
-      <option name="number" value="00568" />
-      <option name="presentableId" value="LOCAL-00568" />
-      <option name="project" value="LOCAL" />
-      <updated>1743276547952</updated>
-    </task>
-    <task id="LOCAL-00569" summary="made files read-only">
-      <option name="closed" value="true" />
-      <created>1743277663439</created>
-      <option name="number" value="00569" />
-      <option name="presentableId" value="LOCAL-00569" />
-      <option name="project" value="LOCAL" />
-      <updated>1743277663439</updated>
-    </task>
-    <task id="LOCAL-00570" summary="confiug files">
-      <option name="closed" value="true" />
-      <created>1743277817688</created>
-      <option name="number" value="00570" />
-      <option name="presentableId" value="LOCAL-00570" />
-      <option name="project" value="LOCAL" />
-      <updated>1743277817688</updated>
-    </task>
-    <task id="LOCAL-00571" summary="config files">
-      <option name="closed" value="true" />
-      <created>1743346303186</created>
-      <option name="number" value="00571" />
-      <option name="presentableId" value="LOCAL-00571" />
-      <option name="project" value="LOCAL" />
-      <updated>1743346303186</updated>
-    </task>
-    <task id="LOCAL-00572" summary="added todo">
-      <option name="closed" value="true" />
-      <created>1743351142106</created>
-      <option name="number" value="00572" />
-      <option name="presentableId" value="LOCAL-00572" />
-      <option name="project" value="LOCAL" />
-      <updated>1743351142106</updated>
-    </task>
-    <task id="LOCAL-00573" summary="config files">
-      <option name="closed" value="true" />
-      <created>1743351349575</created>
-      <option name="number" value="00573" />
-      <option name="presentableId" value="LOCAL-00573" />
-      <option name="project" value="LOCAL" />
-      <updated>1743351349575</updated>
-    </task>
-    <task id="LOCAL-00574" summary="fixed error raised when DL outputs contains too large numbers">
-      <option name="closed" value="true" />
-      <created>1743406624997</created>
-      <option name="number" value="00574" />
-      <option name="presentableId" value="LOCAL-00574" />
-      <option name="project" value="LOCAL" />
-      <updated>1743406624997</updated>
-    </task>
-    <task id="LOCAL-00575" summary="improved tests">
-      <option name="closed" value="true" />
-      <created>1743407252775</created>
-      <option name="number" value="00575" />
-      <option name="presentableId" value="LOCAL-00575" />
-      <option name="project" value="LOCAL" />
-      <updated>1743407252776</updated>
-    </task>
-    <task id="LOCAL-00576" summary="test improvements">
-      <option name="closed" value="true" />
-      <created>1743407517714</created>
-      <option name="number" value="00576" />
-      <option name="presentableId" value="LOCAL-00576" />
-      <option name="project" value="LOCAL" />
-      <updated>1743407517714</updated>
-    </task>
-    <task id="LOCAL-00577" summary="improvements for switching targets and added tests">
-      <option name="closed" value="true" />
-      <created>1743416112577</created>
-      <option name="number" value="00577" />
-      <option name="presentableId" value="LOCAL-00577" />
-      <option name="project" value="LOCAL" />
-      <updated>1743416112577</updated>
-    </task>
-    <task id="LOCAL-00578" summary="improvements for switching and deleting targets">
-      <option name="closed" value="true" />
-      <created>1743418500589</created>
-      <option name="number" value="00578" />
-      <option name="presentableId" value="LOCAL-00578" />
-      <option name="project" value="LOCAL" />
-      <updated>1743418500589</updated>
     </task>
     <task id="LOCAL-00579" summary="improvements for loading data using config file">
       <option name="closed" value="true" />
@@ -822,7 +685,135 @@
       <option name="project" value="LOCAL" />
       <updated>1744202618698</updated>
     </task>
-    <option name="localTasksCounter" value="612" />
+    <task id="LOCAL-00612" summary="config files">
+      <option name="closed" value="true" />
+      <created>1744203602126</created>
+      <option name="number" value="00612" />
+      <option name="presentableId" value="LOCAL-00612" />
+      <option name="project" value="LOCAL" />
+      <updated>1744203602126</updated>
+    </task>
+    <task id="LOCAL-00613" summary="config files">
+      <option name="closed" value="true" />
+      <created>1744205815485</created>
+      <option name="number" value="00613" />
+      <option name="presentableId" value="LOCAL-00613" />
+      <option name="project" value="LOCAL" />
+      <updated>1744205815485</updated>
+    </task>
+    <task id="LOCAL-00614" summary="added basic channel systems to getter function">
+      <option name="closed" value="true" />
+      <created>1744210032973</created>
+      <option name="number" value="00614" />
+      <option name="presentableId" value="LOCAL-00614" />
+      <option name="project" value="LOCAL" />
+      <updated>1744210032973</updated>
+    </task>
+    <task id="LOCAL-00615" summary="added comments">
+      <option name="closed" value="true" />
+      <created>1744210111241</created>
+      <option name="number" value="00615" />
+      <option name="presentableId" value="LOCAL-00615" />
+      <option name="project" value="LOCAL" />
+      <updated>1744210111241</updated>
+    </task>
+    <task id="LOCAL-00616" summary="updates for improved interpolation">
+      <option name="closed" value="true" />
+      <created>1744210470275</created>
+      <option name="number" value="00616" />
+      <option name="presentableId" value="LOCAL-00616" />
+      <option name="project" value="LOCAL" />
+      <updated>1744210470275</updated>
+    </task>
+    <task id="LOCAL-00617" summary="updates for improved interpolation structure">
+      <option name="closed" value="true" />
+      <created>1744210575333</created>
+      <option name="number" value="00617" />
+      <option name="presentableId" value="LOCAL-00617" />
+      <option name="project" value="LOCAL" />
+      <updated>1744210575334</updated>
+    </task>
+    <task id="LOCAL-00618" summary="flake8 fixes">
+      <option name="closed" value="true" />
+      <created>1744210792723</created>
+      <option name="number" value="00618" />
+      <option name="presentableId" value="LOCAL-00618" />
+      <option name="project" value="LOCAL" />
+      <updated>1744210792723</updated>
+    </task>
+    <task id="LOCAL-00619" summary="added saving metadata">
+      <option name="closed" value="true" />
+      <created>1746017765549</created>
+      <option name="number" value="00619" />
+      <option name="presentableId" value="LOCAL-00619" />
+      <option name="project" value="LOCAL" />
+      <updated>1746017765549</updated>
+    </task>
+    <task id="LOCAL-00620" summary="added script for TSD">
+      <option name="closed" value="true" />
+      <created>1746026038063</created>
+      <option name="number" value="00620" />
+      <option name="presentableId" value="LOCAL-00620" />
+      <option name="project" value="LOCAL" />
+      <updated>1746026038063</updated>
+    </task>
+    <task id="LOCAL-00621" summary="flake8 fix">
+      <option name="closed" value="true" />
+      <created>1746026111488</created>
+      <option name="number" value="00621" />
+      <option name="presentableId" value="LOCAL-00621" />
+      <option name="project" value="LOCAL" />
+      <updated>1746026111488</updated>
+    </task>
+    <task id="LOCAL-00622" summary="configs">
+      <option name="closed" value="true" />
+      <created>1746026741707</created>
+      <option name="number" value="00622" />
+      <option name="presentableId" value="LOCAL-00622" />
+      <option name="project" value="LOCAL" />
+      <updated>1746026741707</updated>
+    </task>
+    <task id="LOCAL-00623" summary="added test for channel consistency">
+      <option name="closed" value="true" />
+      <created>1746090540742</created>
+      <option name="number" value="00623" />
+      <option name="presentableId" value="LOCAL-00623" />
+      <option name="project" value="LOCAL" />
+      <updated>1746090540743</updated>
+    </task>
+    <task id="LOCAL-00624" summary="reordered channels for consistency">
+      <option name="closed" value="true" />
+      <created>1746090552154</created>
+      <option name="number" value="00624" />
+      <option name="presentableId" value="LOCAL-00624" />
+      <option name="project" value="LOCAL" />
+      <updated>1746090552154</updated>
+    </task>
+    <task id="LOCAL-00625" summary="added fake AI-Mind path">
+      <option name="closed" value="true" />
+      <created>1746090587119</created>
+      <option name="number" value="00625" />
+      <option name="presentableId" value="LOCAL-00625" />
+      <option name="project" value="LOCAL" />
+      <updated>1746090587119</updated>
+    </task>
+    <task id="LOCAL-00626" summary="removed AI-Mind doctest">
+      <option name="closed" value="true" />
+      <created>1746090903319</created>
+      <option name="number" value="00626" />
+      <option name="presentableId" value="LOCAL-00626" />
+      <option name="project" value="LOCAL" />
+      <updated>1746090903319</updated>
+    </task>
+    <task id="LOCAL-00627" summary="removed skipping pytest">
+      <option name="closed" value="true" />
+      <created>1746090958515</created>
+      <option name="number" value="00627" />
+      <option name="presentableId" value="LOCAL-00627" />
+      <option name="project" value="LOCAL" />
+      <updated>1746090958516</updated>
+    </task>
+    <option name="localTasksCounter" value="628" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -837,42 +828,31 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed interpolation at runtime" />
-    <MESSAGE value="bugfix for interpolation" />
-    <MESSAGE value="added property in subject split class" />
-    <MESSAGE value="added property and doctest in subject split class" />
-    <MESSAGE value="updates for using the safe subject splitting" />
-    <MESSAGE value="removed unused keys in yml file" />
-    <MESSAGE value="mypy fixes" />
-    <MESSAGE value="fixed keyerror" />
-    <MESSAGE value="bugfix" />
-    <MESSAGE value="avoided plotting" />
-    <MESSAGE value="improvedment" />
-    <MESSAGE value="fixed bug in autoreject-related function" />
-    <MESSAGE value="removed print statement" />
-    <MESSAGE value="removed default argument" />
     <MESSAGE value="fixes for loading interpolated data and improved data loading for feature extraction + ML" />
     <MESSAGE value="improvements to plot script" />
     <MESSAGE value="updated failing tests" />
     <MESSAGE value="added re-using the best individual biomarkers" />
     <MESSAGE value="added score-based sampling strategy for re-using simple elecssl biomarkers" />
-    <MESSAGE value="config files" />
     <MESSAGE value="removed computing band power of EC" />
     <MESSAGE value="added long compatibility for concordance correlation" />
     <MESSAGE value="added user attributes" />
     <MESSAGE value="(1) fixed bug when loading existing HPOExperiment, (2) fixed score-based sampling, (3) added user_attr to tell which sampling was used when re-using simple elecssl for multivariable, (4) added main method for resuming experiments (5) improvement to logging the sampler for optuna, (6) fixes to computing softmax probabilities" />
     <MESSAGE value="doctest fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="doctest fixes" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py</url>
-          <line>837</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="config files" />
+    <MESSAGE value="added basic channel systems to getter function" />
+    <MESSAGE value="added comments" />
+    <MESSAGE value="updates for improved interpolation" />
+    <MESSAGE value="updates for improved interpolation structure" />
+    <MESSAGE value="flake8 fixes" />
+    <MESSAGE value="added saving metadata" />
+    <MESSAGE value="added script for TSD" />
+    <MESSAGE value="flake8 fix" />
+    <MESSAGE value="configs" />
+    <MESSAGE value="added test for channel consistency" />
+    <MESSAGE value="reordered channels for consistency" />
+    <MESSAGE value="added fake AI-Mind path" />
+    <MESSAGE value="removed AI-Mind doctest" />
+    <MESSAGE value="removed skipping pytest" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed skipping pytest" />
   </component>
 </project>
