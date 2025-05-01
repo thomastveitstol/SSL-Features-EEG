@@ -32,7 +32,6 @@ def _generate_dataset_params(datasets_to_test):
 # -----------
 # Tests
 # -----------
-@pytest.mark.skipif("TOX_ENV_NAME" in os.environ, reason="Too time consuming to run this test")
 @pytest.mark.parametrize("dataset, multiple_kwargs", _generate_dataset_params([
     (DortmundVital(), ({"derivatives": False, "acquisition": "pre", "ocular_state": OcularState.EO, "session": 1},
                        {"derivatives": False, "acquisition": "pre", "ocular_state": OcularState.EC, "session": 1})),
