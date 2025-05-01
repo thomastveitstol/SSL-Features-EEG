@@ -92,6 +92,10 @@ class ChannelSystem:
     electrode_positions: ELECTRODES_3D
     montage_name: Optional[str] = None
 
+    @property
+    def num_channels(self):
+        return len(self.channel_name_to_index)
+
 
 class EEGDatasetBase(abc.ABC):
     """
