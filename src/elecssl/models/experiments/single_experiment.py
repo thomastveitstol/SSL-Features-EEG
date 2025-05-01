@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 
 from elecssl.data.combined_datasets import CombinedDatasets
 from elecssl.data.data_generators.data_generator import InterpolationDataGenerator, RBPDataGenerator
-from elecssl.data.datasets.getter import get_dataset, get_channel_system
+from elecssl.data.datasets.getter import get_channel_system
 from elecssl.data.scalers.target_scalers import get_target_scaler
 from elecssl.data.subject_split import get_data_split, DataSplitBase
 from elecssl.models.losses import CustomWeightedLoss, get_activation_function
