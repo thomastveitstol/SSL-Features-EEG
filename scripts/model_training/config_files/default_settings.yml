@@ -29,9 +29,9 @@ Saving:
 HPO:
   HPOStudy:
     sampler: TPESampler
-    sampler_kwargs: { n_startup_trials: 50 }
+    sampler_kwargs: { n_startup_trials: 5, multivariate: true, group: true }
     direction: UNAVAILABLE  # this will be added at runtime. Inferred from the selected downstream main metric
-  num_trials: 70
+  num_trials: 15
   num_jobs: 1
 
 EarlyStopping:
@@ -43,7 +43,6 @@ EarlyStopping:
 # -----------------
 PredictionErrorAssociations:
   LEMON: [ ]
-  Wang: [ ]
   DortmundVital: [ ]
 
 VariablesMetrics: null

@@ -10,11 +10,6 @@ _LEMON: &LEMON
   num_time_steps: null
   time_series_start: null
   channels: null
-_Wang: &Wang
-  num_subjects: all
-  num_time_steps: null
-  time_series_start: null
-  channels: null
 _DortmundVital: &DortmundVital
   num_subjects: all
   num_time_steps: null
@@ -25,7 +20,6 @@ DownstreamDatasets: &DownstreamDatasets
   DortmundVital: *DortmundVital
 PretextDatasets: &PretextDatasets
   LEMON: *LEMON
-  Wang: *Wang
   DortmundVital: *DortmundVital
 
 # -----------------
