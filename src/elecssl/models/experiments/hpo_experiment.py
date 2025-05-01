@@ -3410,6 +3410,15 @@ def _softmax_with_target_mass(scores, *, k_percent, target_mass, temp_bounds, to
     >>> my_probs  # doctest: +ELLIPSIS
     [0.0216..., 0.0479..., 0.0289..., 0.218..., 0.599..., 0.0233..., 0.0595...]
 
+    The top 'k_percent' are given 'target_mass' probability
+
+    >>> numpy.random.seed(2)
+    >>> my_scores = numpy.random.uniform(0, 1, 1000)
+    >>> my_probs = _softmax_with_target_mass(my_scores, k_percent=0.25, target_mass=0.75, temp_bounds=(1e-3, 1e3),
+    ...                                      tol=1e-5)
+    >>> round(float(sum(numpy.partition(my_probs, -250)[-250:])), 5)  # doctest: +ELLIPSIS
+    0.75
+
     If the temperature bounds are 'bad', ValueError is raised
 
     >>> my_scores = [0.01, 0.12, 0.05, 0.33, 0.47, 0.02, 0.15]
