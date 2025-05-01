@@ -1,18 +1,18 @@
-Autoreject: null
-  # seed: 1
-  # default_num_splits: 10
-  # autoreject_resample: 180
+Autoreject:
+  seed: 1
+  default_num_splits: 10
+  autoreject_resample: 180
 OcularStates:
   EC:
     Datasets:
       DortmundVital: &DortmundVital
-        num_subjects: 10
+        num_subjects: all
         kwargs:
           derivatives: false
           session: 1
           acquisition: pre
       LEMON: &LEMON
-        num_subjects: 10
+        num_subjects: all
         kwargs:
           derivatives: false
           interpolation_method: MNE
