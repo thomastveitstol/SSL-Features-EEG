@@ -388,7 +388,6 @@ class Histories:
         # (Maybe) update all metrics of all subgroups
         # -------------
         if self._subgroup_histories is not None:
-            # todo: I should be able to just use what was calculated above
             # Make dictionary containing subjects combined with the prediction and target. The prediction is the average
             # of all EEG epochs/segments
             subjects_predictions: Dict[Subject, List[YYhat]] = dict()
@@ -400,8 +399,8 @@ class Histories:
 
             subjects_pred_and_true: Dict[Subject, YYhat] = dict()
             for subject, predictions_and_truths in subjects_predictions.items():
-                # Verify that the ground truth is the same
-                # todo: not necessarily true in self-supervised learning
+                # Verify that the ground truth is the same (this is not necessarily true for all DL + EEG projects, but
+                # true for its currently intended use)
                 all_ground_truths = tuple(yyhat.y_true for yyhat in predictions_and_truths)
                 if not all(torch.equal(all_ground_truths[0], ground_truth) for ground_truth in all_ground_truths):
                     raise ValueError("Expected all ground truths to be the same per subject, but that was not the case")
@@ -452,7 +451,6 @@ class Histories:
                 y_pred_per_subject=y_pred_per_subject, y_true_per_subject=y_true_per_subject, subjects=subjects,
                 subjects_info=subjects_info
             )
-            # todo: such a quick fix, maybe this can be improved
             for var_name, epoch_history in data_matrices.items():
                 for dataset_name, tensor_list in epoch_history.items():
                     for metric in self._variable_metrics[var_name]:  # type: ignore[index]
@@ -1405,8 +1403,8 @@ def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true):
 
     subjects_pred_and_true: Dict[Subject, YYhat] = dict()
     for subject, predictions_and_truths in subjects_predictions.items():
-        # Verify that the ground truth is the same
-        # todo: not necessarily true in self-supervised learning
+        # Verify that the ground truth is the same (this is not necessarily true for all DL + EEG projects, but true for
+        # its currently intended use)
         all_ground_truths = tuple(yyhat.y_true for yyhat in predictions_and_truths)
         if not all(torch.equal(all_ground_truths[0], ground_truth) for ground_truth in all_ground_truths):
             raise ValueError("Expected all ground truths to be the same per subject, but that was not the case")
