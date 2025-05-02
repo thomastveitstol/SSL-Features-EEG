@@ -331,7 +331,6 @@ class HPOExperiment(MainExperiment):
             raise NotImplementedError(
                 "Hyperparameter sampling with domain discriminator has not been implemented yet...")
         else:
-            # todo: not a fan of having to specify training method, especially now that the name is somewhat misleading
             if not skip_training:
                 suggested_hps["Training"]["method"] = "downstream_training"
             suggested_hps["DomainDiscriminator"] = None
@@ -360,9 +359,6 @@ class HPOExperiment(MainExperiment):
         Method for generate a dataframe which summarises the performance scores of an HPO run, such that it can be
         analysed
 
-        todo: How to aggregate results when model selection gives multiple models? Current implementation aggregates
-            performance scores, but could aggregate predictions too...
-
         Parameters
         ----------
         path : Path
@@ -388,7 +384,7 @@ class HPOExperiment(MainExperiment):
         # --------------
         # Loop through all iterations in the HPO
         # --------------
-        # Initialisation  todo: must implement _refit metrics
+        # Initialisation
         scores: Dict[str, List[float]] = {
             "run": [], "trial_number": [], **{f"val_{metric}": [] for metric in target_metrics},
             **{f"test_{metric}": [] for metric in target_metrics}
@@ -413,7 +409,7 @@ class HPOExperiment(MainExperiment):
                         trial_path / fold, selection_metric=selection_metric, target_metrics=target_metrics
                     )
                 except FileNotFoundError:
-                    continue  # todo: should I skip the fold or the entire trial?
+                    continue
 
                 # Add them to trial scores
                 for metric, val_score in fold_val_scores.items():
@@ -462,7 +458,6 @@ class HPOExperiment(MainExperiment):
         test_df = pandas.read_csv(os.path.join(path, "test_history_metrics.csv"))
         test_scores = {target_metric: test_df[target_metric].iat[epoch] for target_metric in target_metrics}
 
-        # Todo: get refit performance scores and add to results
         return val_scores, test_scores
 
     @staticmethod
@@ -818,7 +813,6 @@ class MLFeatureExtraction(MainExperiment):
         # -------------
         # Compute predictive value
         # -------------
-        # todo: I should store the validation score too...
         assert isinstance(self._downstream_subject_split, RandomSplitsTVTestHoldout)  # make mypy stop complaining
         score = _compute_biomarker_predictive_value(
             df=df, subject_split=self._downstream_subject_split, ml_model_hp_config=self._sampling_config["MLModel"],
@@ -995,7 +989,6 @@ class PretrainHPO(HPOExperiment):
         def _objective(trial: optuna.Trial):
             _log_sampler_state(trial)
 
-            # todo: should I also add these as HPs?
             in_ocular_state = self._experiments_config["in_ocular_state"]
             in_freq_band = self._experiments_config["in_freq_band"]
             out_ocular_state = self._experiments_config["out_ocular_state"]
@@ -1178,7 +1171,6 @@ class PretrainHPO(HPOExperiment):
             raise NotImplementedError(
                 "Hyperparameter sampling with domain discriminator has not been implemented yet...")
         else:
-            # todo: not a fan of having to specify training method, especially now that the name is somewhat misleading
             suggested_hps["Training"]["method"] = "downstream_training"
             suggested_hps["DomainDiscriminator"] = None
 
@@ -1195,7 +1187,6 @@ class PretrainHPO(HPOExperiment):
             raise NotImplementedError(
                 "Hyperparameter sampling with domain discriminator has not been implemented yet...")
         else:
-            # todo: not a fan of having to specify training method, especially now that the name is somewhat misleading
             suggested_hps["Training"]["method"] = "downstream_training"
             suggested_hps["DomainDiscriminator"] = None
 
@@ -1681,7 +1672,7 @@ class MultivariableElecsslHPO(HPOExperiment):
                 # ---------------
                 # Just a bit of preparation...
                 # ---------------
-                # Get the number of EEG epochs per experiment  todo: a little hard-coded?
+                # Get the number of EEG epochs per experiment
                 preprocessing_config_path = _get_preprocessing_config_path(ocular_state=in_ocular_state)
                 with open(preprocessing_config_path) as file:
                     preprocessing_config = yaml.safe_load(file)
@@ -2575,7 +2566,7 @@ class AllHPOExperiments:
             raise ValueError(f"Unrecognised autoreject distribution {hp_type!r}")
 
     def _get_required_datasets(self) -> Set[str]:
-        # todo: this is somewhat conservative, but currently ok for our purposes
+        # This implentation is somewhat conservative, but currently ok for our purposes
         in_datasets = set(self.pretext_experiments_config["Datasets"]).union(
             self.downstream_experiments_config["Datasets"])
         interpolation_datasets = self.shared_hpds["Interpolation"]["main_channel_system"]["choices"]
@@ -2865,8 +2856,8 @@ def _get_best_trial_and_folder_path(trials_and_folder_paths: Tuple[Tuple[FrozenT
             best_folder = folder
             continue
 
-        # Update trial and folder if this one is best (todo: why does mypy complain?)
-        if study_direction == optuna.study.StudyDirection.MAXIMIZE:  # type: ignore[unreachable]
+        # Update trial and folder if this one is best
+        if study_direction == optuna.study.StudyDirection.MAXIMIZE:
             if trial.value > best_trial.value:
                 best_trial = trial
                 best_folder = folder
@@ -3156,7 +3147,6 @@ def _get_delta_and_variable(path, *, target, downstream_target, deviation_method
     # ----------------
     # Select epoch
     # ----------------
-    # todo: not really 'fold' anymore...
     if verify_type(continuous_testing, bool):
         epoch = _get_best_val_epoch(path=path, pretext_main_metric=pretext_main_metric, experiment_name=experiment_name)
     else:
