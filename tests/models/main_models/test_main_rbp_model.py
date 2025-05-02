@@ -134,7 +134,7 @@ def test_forward_manipulation(input_data, rbp_main_models, dummy_eeg_dataset, du
             # Make a change to the input data. The keys should ("DummyDataset", "DummyDataset2"), in that order
             new_input_data = {"DummyDataset": input_data["DummyDataset"].clone(),
                               "DummyDataset2": input_data["DummyDataset2"].clone()}
-            new_input_data["DummyDataset2"][-3] = torch.rand(size=(new_input_data["DummyDataset2"][-3].size()))
+            new_input_data["DummyDataset2"][-3] = 10 * torch.rand(size=(new_input_data["DummyDataset2"][-3].size()))
 
             outputs_2 = model(new_input_data, pre_computed=pre_computed, channel_name_to_index=channel_name_to_index,
                               use_domain_discriminator=False)
