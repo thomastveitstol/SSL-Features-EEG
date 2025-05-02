@@ -26,7 +26,7 @@ MultivariableElecsslHPO:
   score_based_kwargs:
     k_percent: 0.25
     target_mass: 0.75
-    temp_bounds: [ 0.0001, 10000]
+    temp_bounds: [ 0.000001, 1000000 ]
     tol: 0.00001
   num_additional_trials: 5
   include_pseudo_targets: true
