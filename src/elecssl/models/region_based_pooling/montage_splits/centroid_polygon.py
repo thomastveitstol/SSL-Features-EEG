@@ -250,8 +250,6 @@ class PolygonGraph:
         """
         Method for splitting a PolygonGraph into multiple PolygonGraphs, given a set of rays
 
-        todo: I basically copied this from RBP
-
         Parameters
         ----------
         point : Point2D
@@ -431,7 +429,7 @@ class CentroidPolygons(MontageSplitBase):
 
         # -----------------------
         # Compute the centroid and angles of
-        # separating lines todo: is this really the best approach?
+        # separating lines
         # -----------------------
         # Compute separately for the channel systems. Then, use the midpoint of midpoints (to weight the channel systems
         # equally)
@@ -919,7 +917,7 @@ def _place_nodes_in_polygons(nodes, polygons):
                     # Place node
                     placed_nodes[i][ch_system_name].append(node)
 
-                    # No need to check the other polygons. TODO: what to do if a node is not contained in any polygon?
+                    # No need to check the other polygons
                     break
     return {polygon_number: {ch_system_name: tuple(positions)
                              for ch_system_name, positions in polygon_contained.items()}
