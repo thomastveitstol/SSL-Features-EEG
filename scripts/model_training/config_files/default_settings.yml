@@ -3,8 +3,6 @@ debugging: false
 save_test_predictions: true
 raise_upon_nan_predictions: TrialPruned
 
-# todo: have to come back to this
-log_transform_clinical_target: false  # todo: this should be removed now, as one can just do log_{target} instead
 enable_domain_discriminator: false
 enable_cmmn: false
 
@@ -39,7 +37,7 @@ EarlyStopping:
 
 # -----------------
 # Configurations for associating prediction errors with
-# other variables  todo: should remove this, as it's old code and not actually part of the pipeline
+# other variables
 # -----------------
 PredictionErrorAssociations:
   LEMON: [ ]
