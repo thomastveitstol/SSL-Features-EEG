@@ -152,8 +152,8 @@ class MultiMSSharedRocket(MultiMontageSplitsPoolingBase):
             selected within this method, and the EEG data should be the full data matrix (such that
             channel_name_to_index maps correctly)
         pre_computed : dict[str, torch.Tensor]
-            Pre-computed features of all channels (as in the input 'x') todo: can this be improved memory-wise?
-        channel_splits : dict[str, tuple[cdl_eeg.models.region_based_pooling.utils.CHANNELS_IN_MONTAGE_SPLIT, ...]]
+            Pre-computed features of all channels (as in the input 'x')
+        channel_splits : dict[str, tuple[elecssl.models.region_based_pooling.utils.CHANNELS_IN_MONTAGE_SPLIT, ...]]
         channel_name_to_index : dict[str, dict[str, int]]
 
         Returns
@@ -161,7 +161,7 @@ class MultiMSSharedRocket(MultiMontageSplitsPoolingBase):
         tuple[torch.Tensor, ...]
         """
         # --------------
-        # Input check  todo: consider more input checks
+        # Input check
         # --------------
         assert all(len(ch_splits) == self.num_channel_splits for ch_splits in channel_splits.values()),  \
             (f"Expected {self.num_channel_splits} number of channel/region splits, but inputs suggests "
@@ -169,8 +169,6 @@ class MultiMSSharedRocket(MultiMontageSplitsPoolingBase):
 
         # --------------
         # Loop through all datasets
-        #
-        # todo: not sure if this is the best approach (triple for-loop!!)... maybe padding+masking is better?
         # --------------
         dataset_region_representations = []
         for dataset_name, x in input_tensors.items():
@@ -184,7 +182,7 @@ class MultiMSSharedRocket(MultiMontageSplitsPoolingBase):
                 self._forward_single_dataset(x, pre_computed=dataset_pre_computed, channel_splits=ch_splits,
                                              channel_name_to_index=dataset_ch_name_to_idx))
 
-        # Concatenate the data together TODO: it is VERY important that the i-th subject corresponds to the i-th target
+        # Concatenate the data together
         return tuple(torch.cat(tensor, dim=0) for tensor in list(zip(*dataset_region_representations)))
 
     # -------------
