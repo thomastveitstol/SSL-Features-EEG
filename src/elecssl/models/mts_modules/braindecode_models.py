@@ -8,6 +8,7 @@ Braindecode citation:
 """
 import warnings
 
+import optuna
 import torch
 import torch.nn as nn
 from braindecode.models import Deep4Net, ShallowFBCSPNet, TCN
@@ -555,8 +556,7 @@ class _ModifiedTCN(TCN):
 
         # Dimension check
         if x.size()[2] < self.min_len:
-            # todo: consider raising optuna.TrialPruned instead
-            raise RuntimeError(f"Number of time steps {x.size()[2]} was smaller than allowed {self.min_len}")
+            raise optuna.TrialPruned(f"Number of time steps {x.size()[2]} was smaller than allowed {self.min_len}")
 
         # Pass through the temporal blocks
         x = self.temporal_blocks(x)
