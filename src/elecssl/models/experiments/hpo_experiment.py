@@ -2861,7 +2861,7 @@ def _get_best_trial_and_folder_path(trials_and_folder_paths: Tuple[Tuple[FrozenT
             continue
 
         # Update trial and folder if this one is best
-        if study_direction == optuna.study.StudyDirection.MAXIMIZE:
+        if study_direction == optuna.study.StudyDirection.MAXIMIZE:  # type: ignore[unreachable]
             if trial.value > best_trial.value:
                 best_trial = trial
                 best_folder = folder
