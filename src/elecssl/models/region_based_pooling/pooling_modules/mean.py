@@ -47,7 +47,6 @@ class MultiMSMean(MultiMontageSplitsPoolingBase):
         -------
         tuple[torch.Tensor, ...]
         """
-        # TODO: I think this may be move to base class?
         # Loop through all datasets
         dataset_region_representations = []
         for dataset_name, x in input_tensors.items():
