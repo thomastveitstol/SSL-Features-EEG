@@ -1817,7 +1817,11 @@ class MultivariableElecsslHPO(HPOExperiment):
 
     def _score_based_simple_elecssl_reuse(self, study, simple_elecssl_hpo):
         for _ in range(self._experiments_config["num_score_based_reuse"]):
-            self._single_score_based_simple_elecssl_reuse(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
+            try:
+                self._single_score_based_simple_elecssl_reuse(study=study, simple_elecssl_hpo=simple_elecssl_hpo)
+            except ValueError:
+                # Can happen if brent's method has poor starting values
+                pass
 
     def _single_score_based_simple_elecssl_reuse(self, study: optuna.Study, simple_elecssl_hpo: SimpleElecsslHPO):
         # --------------
