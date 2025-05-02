@@ -281,8 +281,6 @@ class MainFixedChannelsModel(MainModuleBase):
         """
         Method for normal downstream training
 
-        todo: a lot is copied from RBP
-
         Parameters
         ----------
         train_loader : torch.utils.data.DataLoader
