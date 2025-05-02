@@ -170,7 +170,7 @@ class TDBRAIN(EEGDatasetBase):
         if status in mapping:
             return mapping[status]
 
-        return len(mapping)  # todo: this must be changed in the future
+        return len(mapping)
 
     # ----------------
     # Channel system

@@ -37,7 +37,6 @@ class AIMind(EEGDatasetBase):
     __slots__ = ()
 
     # Note that we are here only interested in the EEG channels
-    # todo: not very elegant. At least make tests
     _channel_names = ("Fp1", "Fpz", "Fp2", "F7", "F3", "Fz", "F4", "F8", "FC5", "FC1", "FC2", "FC6", "M1", "T7", "C3",
                       "Cz", "C4", "T8", "M2", "CP5", "CP1", "CP2", "CP6", "P7", "P3", "Pz", "P4", "P8", "POz", "O1",
                       "O2", "AF7", "AF3", "AF4", "AF8", "F5", "F1", "F2", "F6", "FC3", "FCz", "FC4", "C5", "C1", "C2",
@@ -69,8 +68,6 @@ class AIMind(EEGDatasetBase):
     # Loading methods
     # ----------------
     def _get_subject_ids(self) -> Tuple[str, ...]:
-        # As ctad is approaching, I'm just hard-coding up this...
-        # todo
         # Get path to all the pickle files
         path_to_pickle_files = self.get_mne_path() / "1-continuous"
 
@@ -107,7 +104,6 @@ class AIMind(EEGDatasetBase):
         # Load object
         # -------------
         # Create path
-        # todo: check the difference between subject id and visit id. I'll need the safety character
         path = self._get_subject_path(set_name=set_name, subject_id=subject_id, visit=visit, recording=recording,
                                       ocular_state=ocular_state)
 
@@ -145,7 +141,6 @@ class AIMind(EEGDatasetBase):
 
     # ----------------
     # Target methods
-    # todo: about time to make reading from .csv/.tsv file the standard
     # ----------------
     @target_method
     def age(self, subject_ids):
@@ -197,8 +192,7 @@ class AIMind(EEGDatasetBase):
         return numpy.array([dict_[sub_id] for sub_id in subject_ids])
 
     # ----------------
-    # Target methods which is meant to be used with groups metrics in Histories class.
-    # todo: stop using target_method decorator for this...
+    # Target methods which is meant to be used with groups metrics in Histories class
     # ----------------
     def apoe_group(self, subject_ids):
         # Read the .csv file

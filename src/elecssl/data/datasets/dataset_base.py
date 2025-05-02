@@ -511,7 +511,7 @@ class EEGDatasetBase(abc.ABC):
         return os.path.join(cls.get_mne_path(), "participants.tsv")
 
     # ----------------
-    # Channel system  TODO: consider changing to classmethods
+    # Channel system
     # ----------------
     def get_electrode_positions(self, subject_id=None):
         """

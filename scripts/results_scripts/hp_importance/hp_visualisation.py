@@ -51,7 +51,7 @@ def main():
     study = optuna.load_study(study_name=f"{study_name}-study", storage=study_storage)
     trials_df: pandas.DataFrame = study.trials_dataframe()
 
-    if random_only:  # todo: what to do with re-used runs
+    if random_only:
         trials_df = trials_df[trials_df["user_attrs_trial_sampler"] != "TPESampler"]
 
     # Remove annoying prefix

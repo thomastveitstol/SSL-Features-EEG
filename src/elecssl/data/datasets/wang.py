@@ -153,7 +153,7 @@ class Wang(EEGDatasetBase):
 
         # Download from OpenNeuro
         import openneuro
-        openneuro.download(dataset="ds004148", target_dir=path)  # todo: downloading more than resting state now...
+        openneuro.download(dataset="ds004148", target_dir=path)
 
     # ----------------
     # Targets
@@ -189,9 +189,7 @@ class Wang(EEGDatasetBase):
     # Methods for channel system
     # ----------------
     def _get_electrode_positions(self, subject_id=None):
-        # todo: does not contain CPz
-
-        # Create path to .tsv file  todo: hard-coding session 1 and recording
+        # Create path to .tsv file
         subject_path = f"{subject_id}/ses-session1/eeg/{subject_id}_ses-session1_electrodes.tsv"
         path = os.path.join(self.get_mne_path(), subject_path)
 
