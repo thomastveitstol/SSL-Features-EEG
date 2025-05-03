@@ -26,10 +26,10 @@ PretextDatasets: &PretextDatasets
 # Configuration for subject splitting
 # -----------------
 _split_seed: &split_seed 42
-_test_set_percentage: &test_set_percentage 0.3
+_test_set_percentage: &test_set_percentage 0.2
 
 DownstreamSubjectSplit:
-  val_split: 0.2
+  val_split: 0.2  # This percentage operates on the subjects AFTER separating out the test set
   test_split: *test_set_percentage
   seed: *split_seed
   normal_num_random_splits: &num_random_splits 1
@@ -66,8 +66,8 @@ PretextScalers: *Scaler
 # Training configurations
 # -----------------
 _Training: &Training
-  batch_size: 16
-  num_epochs: 50
+  batch_size: 64
+  num_epochs: 100
   verbose: true
   verbose_variables: false
   continuous_testing: false  # too time-consuming I think, not worth it

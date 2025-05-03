@@ -4,7 +4,7 @@
 Preprocessing:
   autoreject: !NotAHyperparameterScalar true
   input_length: !Categorical { choices: [ 5, 10, 20, 30 ] }
-  sfreq_multiple: !Categorical { choices: [ 2, 3 ] }
+  sfreq_multiple: !Categorical { choices: [ 2, 3, 4 ] }
 
 # -----------------
 # Domain adaptation
@@ -27,7 +27,7 @@ Discriminators:
 # Training
 # -----------------
 Training:
-  learning_rate: !Float { low: 0.000001, high: 0.01, step: null, log: true }
+  learning_rate: !Float { low: 0.00001, high: 0.01, step: null, log: true }
   beta_1: !Float { low: 0.7, high: 1.0, step: null, log: false }
   beta_2: !Float { low: 0.7, high: 1.0, step: null, log: false }
   eps: !Float { low: 0.0000000001, high: 0.000001, step: null, log: true }
@@ -44,7 +44,7 @@ DLArchitectures:
   InceptionNetwork:
     num_classes: 1
     cnn_units: { low: 4, high: 64, log: true }  # { low: 8, high: 64, log: true }
-    num_res_blocks: { low: 1, high: 12, log: true }
+    num_res_blocks: { low: 1, high: 27, log: true }
   ShallowFBCSPNetMTS:
     num_classes: 1
     num_time_steps: UNAVAILABLE
@@ -109,7 +109,7 @@ Interpolation:
   methods: { choices: [ MNE, spline ] }
 
 _num_kernels: &num_kernels !Int { low: 10, high: 1000, log: true }
-_max_receptive_field: &max_receptive_field !Int { low: 15, high: 50, log: true }  # { low: 15, high: 100, log: true }
+_max_receptive_field: &max_receptive_field !Int { low: 15, high: 100, log: true }  # { low: 15, high: 100, log: true }
 RegionBasedPooling:
   num_montage_splits: { low: 1, high: 25, log: true }
   share_all_pooling_modules: { choices: [ true, false ] }
