@@ -71,7 +71,7 @@ DLArchitectures:
     # Parameterised convolutions
     # n_freqs: { low: 1, high: 32, step: 1, log: true }
     n_freqs: { low: 1, high: 15, step: 1, log: true }
-    kernel_width_s: { low: 2, high: 4, step: null, log: false }  # todo: how to sample this?
+    kernel_width_s: { low: 2, high: 4, step: null, log: false }
     conv_stride: { low: 1, high: 5, step: 1, log: false }
     oct_min: 0.0  # { low: 0.0, high: 0.2, step: null, log: false }
     oct_max_addition: 5.5  # { low: 5.5, high: 5.7, step: null, log: false }

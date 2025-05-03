@@ -38,7 +38,7 @@ DOWNSTREAMval_scores_aggregation: median  # To use median or average of folds pe
 # However, as we are using one fold only, mean and median are the same
 
 
-PretextMLModelSettings:  # todo: this is Elecssl only, not pretraining. Better to make a separate one I think
+PretextMLModelSettings:  # this is Elecssl only, not pretraining
   aggregation_method: median
   evaluation_metric: *main_metric
   metrics: regression
