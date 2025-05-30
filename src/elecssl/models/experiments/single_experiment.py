@@ -540,7 +540,7 @@ class SingleExperiment:
 
         # Save some metadata
         prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
-        model.save_metadata(name=f"{prefix_name}metadata_before", path=self._results_path)
+        model.save_metadata(name=f"{prefix_name}metadata_before", path=results_path)
 
         # -----------------
         # Create data loaders (and target scaler)
@@ -601,7 +601,7 @@ class SingleExperiment:
                 raise selected_error("Error raised due to NaN values, most likely in the predictions")
 
         # Save some metadata
-        model.save_metadata(name=f"{prefix_name}metadata_after", path=self._results_path)
+        model.save_metadata(name=f"{prefix_name}metadata_after", path=results_path)
 
         # -----------------
         # Test model (but only if continuous testing was not used)
