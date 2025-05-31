@@ -163,8 +163,11 @@ def test_pcgrad_preserves_frozen_layers_and_updates_others(in_features, loss, le
     criterion = get_pytorch_loss_function(loss).to(device)
 
     # ---------------
-    # Forward passes
+    # Training
     # ---------------
+    # Optimizer and PCGrad
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    pcgrad = PCGrad(optimizer)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -174,10 +177,6 @@ def test_pcgrad_preserves_frozen_layers_and_updates_others(in_features, loss, le
         pretext_yhat, downstream_yhat = model(x, pretext_y=pretext_y)
         loss1 = criterion(pretext_yhat, pretext_y)
         loss2 = criterion(downstream_yhat, downstream_y)
-
-        # Optimizer and PCGrad
-        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-        pcgrad = PCGrad(optimizer)
 
         pcgrad.zero_grad()
         pcgrad.backward(losses=[loss1, loss2], model=model)
@@ -210,7 +209,7 @@ def test_pcgrad_equivalent_to_adam_on_identical_losses(seed, loss_name, learning
     batch_size = 10
     num_dummy_epochs = 30
 
-    # Skip if device does not exist
+    # Skip if the device does not exist
     device = torch.device(device_name)
     try:
         torch.tensor([0.0]).to(device)
