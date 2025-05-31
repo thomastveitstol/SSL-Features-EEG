@@ -1,9 +1,7 @@
 import abc
-import random
 from typing import Sequence
 
 import torch
-from mypyc.irbuild.classdef import generate_attr_defaults_init
 
 
 # ---------------
