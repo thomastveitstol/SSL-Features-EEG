@@ -5,7 +5,7 @@ import torch
 from torch import nn, optim
 
 from elecssl.models.losses import get_pytorch_loss_function
-from elecssl.models.multi_task_strategies import PCGrad
+from elecssl.models.multi_task_strategies import PCGrad, GradNorm
 
 
 class _Model(nn.Module):
@@ -25,6 +25,10 @@ class _Model(nn.Module):
       )
       (_residual_model): Linear(in_features=1, out_features=1, bias=True)
     )
+    >>> for my_param in _Model(10).gradnorm_parameters():
+    ...     my_param
+    Parameter containing:
+    tensor([[...]], requires_grad=True)
     """
 
     def __init__(self, in_features: int):
@@ -47,6 +51,12 @@ class _Model(nn.Module):
 
         return pretext_prediction, downstream_prediction
 
+    # ------------
+    # Additional requirements
+    # ------------
+    def gradnorm_parameters(self):
+        """This is required for GradNorm"""
+        yield next(self._main_model[-1].parameters())
 
 def _create_model(in_features, device):
     model = _Model(in_features=in_features)
@@ -90,6 +100,9 @@ def test_pcgrad(in_features, loss, learning_rate, device_name):
     # ---------------
     # Forward passes for two tasks
     # ---------------
+    # PCGrad setup
+    base_optim = optim.Adam(model.parameters(), lr=learning_rate)
+    strategy = PCGrad(base_optim)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -99,10 +112,6 @@ def test_pcgrad(in_features, loss, learning_rate, device_name):
         pretext_yhat, downstream_yhat = model(x, pretext_y=pretext_y)
         loss1 = criterion(pretext_yhat, pretext_y)
         loss2 = criterion(downstream_yhat, downstream_y)
-
-        # PCGrad setup
-        base_optim = optim.Adam(model.parameters(), lr=learning_rate)
-        strategy = PCGrad(base_optim)
 
         # Backward using PCGrad
         strategy.zero_grad()
@@ -117,7 +126,7 @@ def test_pcgrad(in_features, loss, learning_rate, device_name):
 
 
 @pytest.mark.parametrize("in_features,loss,learning_rate,device_name", [
-    (1, "L1Loss", 1e-5, "cuda"), (12, "MSELoss", 2.3e-3, "cpu"), (10, "L1Loss", 1e1, "cuda"),
+    (1, "L1Loss", 1e-5, "cuda"), (12, "MSELoss", 2.3e-3, "cpu"), (10, "L1Loss", 1e-1, "cuda"),
     (1, "L1Loss", 1e-2, "cpu"), (1, "MSELoss", 1e-5, "cpu")
 ])
 def test_pcgrad_preserves_frozen_layers_and_updates_others(in_features, loss, learning_rate, device_name):
@@ -272,3 +281,65 @@ def test_pcgrad_equivalent_to_adam_on_identical_losses(seed, loss_name, learning
     for p1, p2 in zip(model_1.parameters(), model_2.parameters()):
         assert torch.allclose(p1.data, p2.data), f"Parameters are not the same\n{p1.data}\n{p2.data}"
         assert torch.allclose(p1.grad, p2.grad), f"Gradients are not the same\n{p1.grad}\n{p2.grad}"
+
+
+# ------------
+# Tests for GradNorm
+# ------------
+@pytest.mark.parametrize("alpha,gradnorm_lr,in_features,loss,learning_rate,device_name", [
+    (1.5, 0.9, 1, "L1Loss", 1e-5, "cuda"), (1.2, 0.1, 12, "MSELoss", 2.3e-3, "cpu"),
+    (0, 0.04, 10, "L1Loss", 1e1, "cuda"), (0.771, 0.05, 1, "L1Loss", 1e-2, "cpu"),
+    (3, 0.0001, 1, "MSELoss", 1e-5, "cpu")
+])
+def test_grad_norm(alpha, gradnorm_lr, in_features, loss, learning_rate, device_name):
+    """Test if using GradNorm works"""
+    batch_size = 10
+    num_dummy_epochs = 7
+
+    # Skip if device does not exist
+    device = torch.device(device_name)
+    try:
+        torch.tensor([0.0]).to(device)
+    except (AssertionError, RuntimeError, ValueError) as e:
+        pytest.skip(f"Skipping test on {device_name!r}: {str(e)}")
+
+    # ---------------
+    # Fix dummy model, data, and loss
+    # ---------------
+    # Dummy model
+    model = _create_model(in_features, device)
+
+    # Dummy data
+    x_batches = (torch.rand(batch_size, in_features) for _ in range(num_dummy_epochs))
+    pretext_y_batches = (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
+    downstream_y_batches = (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
+
+    # Loss function
+    criterion = get_pytorch_loss_function(loss).to(device)
+
+    # ---------------
+    # Training with GradNorm
+    # ---------------
+    # PCGrad setup
+    base_optim = optim.Adam(model.parameters(), lr=learning_rate)
+    strategy = GradNorm(base_optim, alpha=alpha, learning_rate=gradnorm_lr)
+    for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
+        x = x.to(device)
+        pretext_y = pretext_y.to(device)
+        downstream_y = downstream_y.to(device)
+
+        # Compute losses
+        pretext_yhat, downstream_yhat = model(x, pretext_y=pretext_y)
+        loss1 = criterion(pretext_yhat, pretext_y)
+        loss2 = criterion(downstream_yhat, downstream_y)
+
+        # Backward
+        strategy.zero_grad()
+        strategy.backward(losses=[loss1, loss2], model=model)
+
+        # Check gradients have been populated
+        grads_present = [p.grad is not None for p in model.parameters() if p.requires_grad]
+        assert all(grads_present), "Some parameters are missing gradients after PCGrad backward."
+
+        # Step
+        strategy.step()
