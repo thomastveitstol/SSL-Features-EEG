@@ -342,3 +342,60 @@ def test_grad_norm(alpha, gradnorm_lr, in_features, loss, learning_rate, device_
 
         # Step
         strategy.step()
+
+@pytest.mark.parametrize("alpha,gradnorm_lr,in_features,loss,learning_rate,device_name", [
+    (1.5, 0.9, 1, "L1Loss", 1e-5, "cuda"), (1.2, 0.1, 12, "MSELoss", 2.3e-3, "cpu"),
+    (0, 0.04, 10, "L1Loss", 1e1, "cuda"), (0.771, 0.05, 1, "L1Loss", 1e-2, "cpu"),
+    (3, 0.0001, 1, "MSELoss", 1e-5, "cpu")
+])
+def test_gradnorm_weights_sign_and_sum(alpha, gradnorm_lr, in_features, loss, learning_rate, device_name):
+    """Test if the weights are always positive and that they sum to the number of tasks"""
+    batch_size = 10
+    num_dummy_epochs = 7
+
+    # Skip if device does not exist
+    device = torch.device(device_name)
+    try:
+        torch.tensor([0.0]).to(device)
+    except (AssertionError, RuntimeError, ValueError) as e:
+        pytest.skip(f"Skipping test on {device_name!r}: {str(e)}")
+
+    # ---------------
+    # Fix dummy model, data, and loss
+    # ---------------
+    # Dummy model
+    model = _create_model(in_features, device)
+
+    # Dummy data
+    x_batches = (torch.rand(batch_size, in_features) for _ in range(num_dummy_epochs))
+    pretext_y_batches = (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
+    downstream_y_batches = (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
+
+    # Loss function
+    criterion = get_pytorch_loss_function(loss).to(device)
+
+    # ---------------
+     #Training
+    # ---------------
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    strategy = GradNorm(optimizer, alpha=alpha, learning_rate=gradnorm_lr)
+    for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
+        x = x.to(device)
+        pretext_y = pretext_y.to(device)
+        downstream_y = downstream_y.to(device)
+
+        # Compute losses
+        pretext_yhat, downstream_yhat = model(x, pretext_y=pretext_y)
+        loss1 = criterion(pretext_yhat, pretext_y)
+        loss2 = criterion(downstream_yhat, downstream_y)
+        losses = [loss1, loss2]
+
+        # Backward and update
+        strategy.zero_grad()
+        strategy.backward(losses=losses, model=model)
+        strategy.step()
+
+        # Test
+        assert (strategy._loss_weights.data > 0).all(), "Loss weights should remain positive"
+        assert abs(strategy._loss_weights.data.sum().item() - len(losses)) < 1e-4, \
+            "Loss weights should sum to number of tasks"
