@@ -37,6 +37,13 @@ class MultiTaskStrategy(abc.ABC):
 # Implementations
 # ---------------
 class PCGrad(MultiTaskStrategy):
+    """
+    Implementation of PCGrad
+
+    Paper:
+        Yu, T., Kumar, S., Gupta, A., Levine, S., Hausman, K., & Finn, C. (2020). Gradient surgery for multi-task
+        learning. Advances in neural information processing systems, 33, 5824-5836.
+    """
 
     def backward(self, *, losses: Sequence[torch.Tensor], model: torch.nn.Module):
         """Following 'Algorithm 1: PCGrad Update Rule' in the paper"""
