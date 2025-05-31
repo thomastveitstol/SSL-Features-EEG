@@ -197,11 +197,18 @@ class GradNorm(MultiTaskStrategy):
         with (torch.no_grad()):
             self._loss_weights.data -= self._learning_rate * self._loss_weights.grad
             self._loss_weights.grad.zero_()
-            self._loss_weights.data.clamp(min=1e-6)  # Weights should be positive
+            self._loss_weights.data.clamp_(min=1e-6)  # Weights should be positive
 
             # Re-normalisation
             self._loss_weights.data *= num_tasks / self._loss_weights.data.sum()
 
 
 class UncertaintyWeighting(MultiTaskStrategy):
-    ...
+    """
+    Implementation of Uncertainty Weighting for multi-task learning
+
+    Paper:
+        Kendall, A., Gal, Y., & Cipolla, R. (2018). Multi-task learning using uncertainty to weigh losses for scene
+        geometry and semantics. In Proceedings of the IEEE conference on computer vision and pattern recognition
+        (pp. 7482-7491).
+    """
