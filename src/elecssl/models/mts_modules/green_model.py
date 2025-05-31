@@ -271,7 +271,7 @@ class GreenModel(MTSModuleBase):
         dropout = trial.suggest_float(f"{name}_drop_prob", **config["drop_prob"])
         num_fc_layers = trial.suggest_int(f"{name}_num_fc_layers", **config["num_fc_layers"])
         num_first_fc_filters = trial.suggest_int(f"{name}_num_first_fc_filters", **config["num_first_fc_filters"])
-        hidden_dim = tuple(num_first_fc_filters // 2 for _ in range(num_fc_layers))
+        hidden_dim = tuple(num_first_fc_filters // (2 ** i) for i in range(num_fc_layers))
 
         return {"num_classes": config["num_classes"],
                 "n_freqs": n_freqs,
