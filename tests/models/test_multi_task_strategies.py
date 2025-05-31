@@ -81,7 +81,7 @@ def test_pcgrad(in_features, loss, learning_rate, device_name):
 
     # Dummy data
     x_batches = (torch.rand(batch_size, in_features) for _ in range(num_dummy_epochs))
-    pretext_y_batches= (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
+    pretext_y_batches = (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
     downstream_y_batches = (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
 
     # Loss function
