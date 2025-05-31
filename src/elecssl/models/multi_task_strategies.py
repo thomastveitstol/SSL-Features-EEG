@@ -145,8 +145,8 @@ class GradNorm(MultiTaskStrategy):
         if self._loss_weights is None:
             self._loss_weights = torch.nn.Parameter(torch.ones(num_tasks, device=device), requires_grad=True)
 
-        # Compute weighted losses
-        weighted_losses = tuple(weight * loss for weight, loss in zip(self._loss_weights, losses))
+        # Compute weighted losses as a generator
+        weighted_losses = (weight * loss for weight, loss in zip(self._loss_weights, losses))
 
         # --------------
         # Compute gradient norms and everything required for updating loss weights
@@ -156,9 +156,10 @@ class GradNorm(MultiTaskStrategy):
         for loss in weighted_losses:
             self.zero_grad()
             loss.backward(retain_graph=True)
-            grads = torch.cat([params.grad.view(-1) if params.grad is not None else torch.zeros_like(params).view(-1)
-                               for params in model.gradnorm_parameters()])
-            gradient_norms.append(torch.norm(grads.detach()))
+            grads = torch.autograd.grad(outputs=loss,inputs=model.gradnorm_parameters(), retain_graph=True,
+                                        create_graph=True)  # Needed to allow backprop through gradnorm_loss
+            grads = torch.cat([grad.view(-1) for grad in grads])
+            gradient_norms.append(torch.norm(grads))
         gradient_norms = torch.stack(gradient_norms)
 
         # Average gradient norm
@@ -181,7 +182,7 @@ class GradNorm(MultiTaskStrategy):
 
         # Compute GradNorm gradients
         self.zero_grad()
-        gradnorm_loss.backward()
+        gradnorm_loss.backward(retain_graph=True)
 
         # --------------
         # Gradients for the model parameters and loss weights
@@ -189,7 +190,7 @@ class GradNorm(MultiTaskStrategy):
         # Model parameters
         self.zero_grad()
         total_model_loss = torch.stack(
-            tuple(weights * loss for weights, loss in zip(self._loss_weights.detach(), losses))).sum()
+            [weights * loss for weights, loss in zip(self._loss_weights.detach(), losses)]).sum()
         total_model_loss.backward()
 
         # Loss weights. Must do this manually as the parameters are not part of the optimiser
