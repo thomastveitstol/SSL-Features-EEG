@@ -124,7 +124,7 @@ def test_equal_weighting(in_features, loss, learning_rate, device_name):
     # ---------------
     # EqualWeighting setup
     base_optim = optim.Adam(model.parameters(), lr=learning_rate)
-    strategy = EqualWeighting(base_optim)
+    strategy = EqualWeighting(base_optim, model=model)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -137,7 +137,7 @@ def test_equal_weighting(in_features, loss, learning_rate, device_name):
 
         # Backward
         strategy.zero_grad()
-        strategy.backward(losses=[loss1, loss2], model=model)
+        strategy.backward(losses=(loss1, loss2))
 
         # Check gradients have been populated
         grads_present = [p.grad is not None for p in model.parameters() if p.requires_grad]
@@ -188,7 +188,7 @@ def test_equal_weighting_preserves_frozen_layers_and_updates_others(in_features,
     # Training
     # ---------------
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    strategy = EqualWeighting(optimizer)
+    strategy = EqualWeighting(optimizer, model=model)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -200,7 +200,7 @@ def test_equal_weighting_preserves_frozen_layers_and_updates_others(in_features,
         loss2 = criterion(downstream_yhat, downstream_y)
 
         strategy.zero_grad()
-        strategy.backward(losses=[loss1, loss2], model=model)
+        strategy.backward(losses=(loss1, loss2))
         strategy.step()
 
         # Check frozen layer gradients are None
@@ -257,7 +257,7 @@ def test_pcgrad(in_features, loss, learning_rate, device_name):
     # ---------------
     # PCGrad setup
     base_optim = optim.Adam(model.parameters(), lr=learning_rate)
-    strategy = PCGrad(base_optim)
+    strategy = PCGrad(base_optim, model=model)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -270,7 +270,7 @@ def test_pcgrad(in_features, loss, learning_rate, device_name):
 
         # Backward using PCGrad
         strategy.zero_grad()
-        strategy.backward(losses=[loss1, loss2], model=model)
+        strategy.backward(losses=(loss1, loss2))
 
         # Check gradients have been populated
         grads_present = [p.grad is not None for p in model.parameters() if p.requires_grad]
@@ -322,7 +322,7 @@ def test_pcgrad_preserves_frozen_layers_and_updates_others(in_features, loss, le
     # ---------------
     # Optimizer and PCGrad
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    pcgrad = PCGrad(optimizer)
+    pcgrad = PCGrad(optimizer, model=model)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -334,7 +334,7 @@ def test_pcgrad_preserves_frozen_layers_and_updates_others(in_features, loss, le
         loss2 = criterion(downstream_yhat, downstream_y)
 
         pcgrad.zero_grad()
-        pcgrad.backward(losses=[loss1, loss2], model=model)
+        pcgrad.backward(losses=(loss1, loss2))
         pcgrad.step()
 
         # Check frozen layer gradients are None
@@ -414,7 +414,7 @@ def test_pcgrad_equivalent_to_adam_on_identical_losses(seed, loss_name, learning
     # Create MTL strategy
     criterion = get_pytorch_loss_function(loss_name).to(device)
     opt_pc = optim.Adam(model_2.parameters(), lr=learning_rate)
-    pcgrad = PCGrad(opt_pc)
+    pcgrad = PCGrad(opt_pc, model=model_2)
 
     # Training
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
@@ -428,7 +428,7 @@ def test_pcgrad_equivalent_to_adam_on_identical_losses(seed, loss_name, learning
 
         # PCGrad
         pcgrad.zero_grad()
-        pcgrad.backward(losses=[loss, loss], model=model_2)
+        pcgrad.backward(losses=[loss, loss])
         pcgrad.step()
 
     # Compare weights and gradients
@@ -476,7 +476,7 @@ def test_grad_norm(alpha, gradnorm_lr, in_features, loss, learning_rate, device_
     # ---------------
     # GradNorm setup
     base_optim = optim.Adam(model.parameters(), lr=learning_rate)
-    strategy = GradNorm(base_optim, alpha=alpha, learning_rate=gradnorm_lr)
+    strategy = GradNorm(base_optim, model=model, alpha=alpha, learning_rate=gradnorm_lr)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -489,7 +489,7 @@ def test_grad_norm(alpha, gradnorm_lr, in_features, loss, learning_rate, device_
 
         # Backward
         strategy.zero_grad()
-        strategy.backward(losses=[loss1, loss2], model=model)
+        strategy.backward(losses=(loss1, loss2))
 
         # Check gradients have been populated
         grads_present = [p.grad is not None for p in model.parameters() if p.requires_grad]
@@ -534,7 +534,7 @@ def test_gradnorm_weights_sign_and_sum(alpha, gradnorm_lr, in_features, loss, le
     # Training
     # ---------------
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    strategy = GradNorm(optimizer, alpha=alpha, learning_rate=gradnorm_lr)
+    strategy = GradNorm(optimizer, model=model, alpha=alpha, learning_rate=gradnorm_lr)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -544,11 +544,11 @@ def test_gradnorm_weights_sign_and_sum(alpha, gradnorm_lr, in_features, loss, le
         pretext_yhat, downstream_yhat = model(x, pretext_y=pretext_y)
         loss1 = criterion(pretext_yhat, pretext_y)
         loss2 = criterion(downstream_yhat, downstream_y)
-        losses = [loss1, loss2]
+        losses = (loss1, loss2)
 
         # Backward and update
         strategy.zero_grad()
-        strategy.backward(losses=losses, model=model)
+        strategy.backward(losses=losses)
         strategy.step()
 
         # Test
@@ -600,7 +600,7 @@ def test_gradnorm_preserves_frozen_layers_and_updates_others(alpha, gradnorm_lr,
     # Training
     # ---------------
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    strategy = GradNorm(optimizer, alpha=alpha, learning_rate=gradnorm_lr)
+    strategy = GradNorm(optimizer, model=model, alpha=alpha, learning_rate=gradnorm_lr)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -612,7 +612,7 @@ def test_gradnorm_preserves_frozen_layers_and_updates_others(alpha, gradnorm_lr,
         loss2 = criterion(downstream_yhat, downstream_y)
 
         strategy.zero_grad()
-        strategy.backward(losses=[loss1, loss2], model=model)
+        strategy.backward(losses=(loss1, loss2))
         strategy.step()
 
         # Check frozen layer gradients are None
@@ -669,7 +669,7 @@ def test_uncertainty_weighting(in_features, loss, learning_rate, device_name):
     # ---------------
     # Uncertainty Weighting setup
     base_optim = optim.Adam(model.parameters(), lr=learning_rate)
-    strategy = UncertaintyWeighting(base_optim)
+    strategy = UncertaintyWeighting(base_optim, model=model)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -682,7 +682,7 @@ def test_uncertainty_weighting(in_features, loss, learning_rate, device_name):
 
         # Backward
         strategy.zero_grad()
-        strategy.backward(losses=[loss1, loss2], model=model)
+        strategy.backward(losses=(loss1, loss2))
 
         # Check gradients have been populated
         grads_present = [p.grad is not None for p in model.parameters() if p.requires_grad]
@@ -738,7 +738,7 @@ def test_uncertainty_weighting_preserves_frozen_layers_and_updates_others(in_fea
     # Training
     # ---------------
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    strategy = UncertaintyWeighting(optimizer)
+    strategy = UncertaintyWeighting(optimizer, model=model)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -750,7 +750,7 @@ def test_uncertainty_weighting_preserves_frozen_layers_and_updates_others(in_fea
         loss2 = criterion(downstream_yhat, downstream_y)
 
         strategy.zero_grad()
-        strategy.backward(losses=[loss1, loss2], model=model)
+        strategy.backward(losses=(loss1, loss2))
         strategy.step()
 
         # Check frozen layer gradients are None
@@ -807,7 +807,7 @@ def test_mgda(in_features, loss, learning_rate, device_name):
     # ---------------
     # MGDA setup
     base_optim = optim.Adam(model.parameters(), lr=learning_rate)
-    strategy = MGDA(base_optim)
+    strategy = MGDA(base_optim, model=model)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -820,7 +820,7 @@ def test_mgda(in_features, loss, learning_rate, device_name):
 
         # Backward
         strategy.zero_grad()
-        strategy.backward(losses=[loss1, loss2], model=model)
+        strategy.backward(losses=(loss1, loss2))
 
         # Check gradients have been populated
         grads_present = [p.grad is not None for p in model.parameters() if p.requires_grad]
@@ -871,7 +871,7 @@ def test_mgda_preserves_frozen_layers_and_updates_others(in_features, loss, lear
     # Training
     # ---------------
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    strategy = MGDA(optimizer)
+    strategy = MGDA(optimizer, model=model)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
@@ -883,7 +883,7 @@ def test_mgda_preserves_frozen_layers_and_updates_others(in_features, loss, lear
         loss2 = criterion(downstream_yhat, downstream_y)
 
         strategy.zero_grad()
-        strategy.backward(losses=[loss1, loss2], model=model)
+        strategy.backward(losses=(loss1, loss2))
         strategy.step()
 
         # Check frozen layer gradients are None

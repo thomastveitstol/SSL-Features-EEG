@@ -17,16 +17,17 @@ class MultiTaskStrategy(abc.ABC):
     This class is meant to 'hide' a lot of code for computing gradients and apply them with an optimiser
     """
 
-    __slots__ = ("_optimiser",)
+    __slots__ = ("_optimiser", "_model")
 
-    def __init__(self, optimiser: optim.Optimizer):
+    def __init__(self, optimiser: optim.Optimizer, model: nn.Module):
         self._optimiser = optimiser
+        self._model = model
 
     # --------------
     # Common steps
     # --------------
     @abc.abstractmethod
-    def backward(self, *, losses: Sequence[torch.Tensor], model: nn.Module):
+    def backward(self, *, losses: Sequence[torch.Tensor]):
         """Method for computing gradients. Replaces loss.backwards()"""
 
     def step(self):
@@ -47,7 +48,7 @@ class EqualWeighting(MultiTaskStrategy):
     """
     __slots__ = ()
 
-    def backward(self, *, losses: Sequence[torch.Tensor], model: nn.Module):
+    def backward(self, *, losses: Sequence[torch.Tensor]):
         total_loss = torch.stack(tuple(losses)).sum()
         total_loss.backward()
 
@@ -63,10 +64,10 @@ class PCGrad(MultiTaskStrategy):
 
     __slots__ = ()
 
-    def backward(self, *, losses: Sequence[torch.Tensor], model: nn.Module):
+    def backward(self, *, losses: Sequence[torch.Tensor]):
         """Following 'Algorithm 1: PCGrad Update Rule' in the paper"""
         num_tasks = len(losses)
-        trainable_params = [params for params in model.parameters() if params.requires_grad]
+        trainable_params = [params for params in self._model.parameters() if params.requires_grad]
 
         # --------------
         # Compute gradients for all tasks (steps 1-2)
@@ -129,7 +130,7 @@ class GradNorm(MultiTaskStrategy):
 
     __slots__ = ("_alpha", "_initial_losses", "_loss_weights", "_learning_rate")
 
-    def __init__(self, optimiser, *, alpha, learning_rate):
+    def __init__(self, optimiser, model, *, alpha, learning_rate):
         """
         Initialise
 
@@ -142,7 +143,7 @@ class GradNorm(MultiTaskStrategy):
         learning_rate : float
             The loss weights are updated with SGD, using this learning rate. ChatGPT suggested 0.025
         """
-        super().__init__(optimiser)
+        super().__init__(optimiser=optimiser, model=model)
 
         self._alpha = alpha
         self._learning_rate = learning_rate
@@ -153,7 +154,7 @@ class GradNorm(MultiTaskStrategy):
         if self._loss_weights is not None:
             self._loss_weights = self._loss_weights.to(device)
 
-    def backward(self, losses: Sequence[torch.Tensor], model: nn.Module):
+    def backward(self, losses: Sequence[torch.Tensor]):
         """Following 'Algorithm 1 Training with GradNorm' in the paper."""
         device = losses[0].device
         num_tasks = len(losses)
@@ -173,7 +174,7 @@ class GradNorm(MultiTaskStrategy):
         for loss in weighted_losses:
             self.zero_grad()
             loss.backward(retain_graph=True)
-            _grads = torch.autograd.grad(outputs=loss, inputs=model.gradnorm_parameters(), retain_graph=True,
+            _grads = torch.autograd.grad(outputs=loss, inputs=self._model.gradnorm_parameters(), retain_graph=True,
                                          create_graph=True)  # Needed to allow backprop through gradnorm_loss
             grads = torch.cat([grad.view(-1) for grad in _grads])
             _gradient_norms.append(torch.norm(grads))
@@ -232,13 +233,13 @@ class UncertaintyWeighting(MultiTaskStrategy):
 
     __slots__ = ("_log_vars",)
 
-    def __init__(self, optimiser: optim.Optimizer):
-        super().__init__(optimiser)
+    def __init__(self, optimiser: optim.Optimizer, model: nn.Module):
+        super().__init__(optimiser=optimiser, model=model)
 
         # Create a learnable log sigma^2 per task. These will be added to optimiser at first backpropagation
         self._log_vars: Optional[nn.Parameter] = None
 
-    def backward(self, *, losses: Sequence[torch.Tensor], model: nn.Module):
+    def backward(self, *, losses: Sequence[torch.Tensor]):
         device = losses[0].device
         num_tasks = len(losses)
 
@@ -274,7 +275,7 @@ class MGDA(MultiTaskStrategy):
 
     __slots__ = ()
 
-    def backward(self, *, losses: Sequence[torch.Tensor], model: nn.Module):
+    def backward(self, *, losses: Sequence[torch.Tensor]):
         """Using 'Algorithm 2 Update Equations for MTL') in the paper. Note that the model must implement
         .shared_parameters() which provides the parameters which are shared across the tasks"""
         # -------------
@@ -284,7 +285,8 @@ class MGDA(MultiTaskStrategy):
         for loss in losses:
             self.zero_grad()
             loss.backward(retain_graph=True)
-            grads = torch.cat([params.grad.view(-1) for params in model.shared_parameters() if params.grad is not None])
+            grads = torch.cat([params.grad.view(-1) for params in self._model.shared_parameters()
+                               if params.grad is not None])
             shared_gradients.append(grads.detach().clone())
 
         # --------------
