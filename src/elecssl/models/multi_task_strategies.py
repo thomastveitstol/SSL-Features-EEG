@@ -152,15 +152,15 @@ class GradNorm(MultiTaskStrategy):
         # Compute gradient norms and everything required for updating loss weights
         # --------------
         # Gradient norms for all tasks
-        gradient_norms = []  # G_W^{(i)} in the algorithm
+        _gradient_norms = []  # G_W^{(i)} in the algorithm
         for loss in weighted_losses:
             self.zero_grad()
             loss.backward(retain_graph=True)
-            grads = torch.autograd.grad(outputs=loss,inputs=model.gradnorm_parameters(), retain_graph=True,
+            grads = torch.autograd.grad(outputs=loss, inputs=model.gradnorm_parameters(), retain_graph=True,
                                         create_graph=True)  # Needed to allow backprop through gradnorm_loss
             grads = torch.cat([grad.view(-1) for grad in grads])
-            gradient_norms.append(torch.norm(grads))
-        gradient_norms = torch.stack(gradient_norms)
+            _gradient_norms.append(torch.norm(grads))
+        gradient_norms = torch.stack(_gradient_norms)
 
         # Average gradient norm
         avg_grad_norm = gradient_norms.mean()  # \overline{G}_W in the algorithm
