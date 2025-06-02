@@ -5,12 +5,12 @@ import torch
 from torch import nn, optim
 
 from elecssl.models.losses import get_pytorch_loss_function
-from elecssl.models.multi_task_strategies import PCGrad, GradNorm, UncertaintyWeighting
+from elecssl.models.mtl_strategies.multi_task_strategies import PCGrad, GradNorm, UncertaintyWeighting, MGDA
 
 
 class _Model(nn.Module):
     """
-    Dummy model which uses the residual of one task as the input to the second.
+    A dummy model which uses the residual of one task as the input to the second.
 
     Would be cool to try this for age prediction too. Finding the maximally relevant brain age prediction models
 
@@ -29,6 +29,21 @@ class _Model(nn.Module):
     ...     my_param
     Parameter containing:
     tensor([[...]], requires_grad=True)
+    >>> for my_param in _Model(10).shared_parameters():
+    ...     my_param
+    ...     my_param.data.size()
+    Parameter containing:
+    tensor([[...]], requires_grad=True)
+    torch.Size([5, 10])
+    Parameter containing:
+    tensor([...], requires_grad=True)
+    torch.Size([5])
+    Parameter containing:
+    tensor([...], requires_grad=True)
+    torch.Size([1, 5])
+    Parameter containing:
+    tensor([...], requires_grad=True)
+    torch.Size([1])
     """
 
     def __init__(self, in_features: int):
@@ -57,6 +72,11 @@ class _Model(nn.Module):
     def gradnorm_parameters(self):
         """This is required for GradNorm"""
         yield next(self._main_model[-1].parameters())
+
+    def shared_parameters(self):
+        """This is required for MGDA"""
+        for param in self._main_model.parameters():
+            yield param
 
 
 def _create_model(in_features, device):
@@ -585,6 +605,139 @@ def test_uncertainty_weighting_preserves_frozen_layers_and_updates_others(in_fea
     # ---------------
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     strategy = UncertaintyWeighting(optimizer)
+    for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
+        x = x.to(device)
+        pretext_y = pretext_y.to(device)
+        downstream_y = downstream_y.to(device)
+
+        # Compute losses
+        pretext_yhat, downstream_yhat = model(x, pretext_y=pretext_y)
+        loss1 = criterion(pretext_yhat, pretext_y)
+        loss2 = criterion(downstream_yhat, downstream_y)
+
+        strategy.zero_grad()
+        strategy.backward(losses=[loss1, loss2], model=model)
+        strategy.step()
+
+        # Check frozen layer gradients are None
+        assert model._main_model[0].weight.grad is None, "Frozen weight has a gradient!"
+        assert model._main_model[0].bias.grad is None, "Frozen bias has a gradient!"
+
+    # ---------------
+    # Tests
+    # ---------------
+    # Check that frozen parameters are the same, and that non-frozen parameters changed
+    for name, param in model.named_parameters():
+        if param.requires_grad:
+            assert not torch.allclose(param.data, original_state[name]), \
+                f"Trainable parameters ({name!r}) were not updated!"
+        else:
+            assert torch.allclose(param.data, original_state[name]), f"Frozen parameters ({name!r}) were updated!"
+
+
+# ------------
+# Tests for MGDA
+# ------------
+@pytest.mark.parametrize("in_features,loss,learning_rate,device_name", [
+    (1, "L1Loss", 1e-5, "cuda"), (12, "MSELoss", 2.3e-3, "cpu"), (10, "L1Loss", 1e1, "cuda"),
+    (1, "L1Loss", 1e-2, "cpu"), (1, "MSELoss", 1e-5, "cpu")
+])
+def test_mgda(in_features, loss, learning_rate, device_name):
+    """Test if using MGDA works"""
+    batch_size = 10
+    num_dummy_epochs = 7
+
+    # Skip if device does not exist
+    device = torch.device(device_name)
+    try:
+        torch.tensor([0.0]).to(device)
+    except (AssertionError, RuntimeError, ValueError) as e:
+        pytest.skip(f"Skipping test on {device_name!r}: {str(e)}")
+
+    # ---------------
+    # Fix dummy model, data, and loss
+    # ---------------
+    # Dummy model
+    model = _create_model(in_features, device)
+
+    # Dummy data
+    x_batches = (torch.rand(batch_size, in_features) for _ in range(num_dummy_epochs))
+    pretext_y_batches = (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
+    downstream_y_batches = (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
+
+    # Loss function
+    criterion = get_pytorch_loss_function(loss).to(device)
+
+    # ---------------
+    # Training with GradNorm
+    # ---------------
+    # MGDA setup
+    base_optim = optim.Adam(model.parameters(), lr=learning_rate)
+    strategy = MGDA(base_optim)
+    for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
+        x = x.to(device)
+        pretext_y = pretext_y.to(device)
+        downstream_y = downstream_y.to(device)
+
+        # Compute losses
+        pretext_yhat, downstream_yhat = model(x, pretext_y=pretext_y)
+        loss1 = criterion(pretext_yhat, pretext_y)
+        loss2 = criterion(downstream_yhat, downstream_y)
+
+        # Backward
+        strategy.zero_grad()
+        strategy.backward(losses=[loss1, loss2], model=model)
+
+        # Check gradients have been populated
+        grads_present = [p.grad is not None for p in model.parameters() if p.requires_grad]
+        assert all(grads_present), "Some parameters are missing gradients after backpropagation."
+
+        # Step
+        strategy.step()
+
+
+@pytest.mark.parametrize("in_features,loss,learning_rate,device_name", [
+    (1, "L1Loss", 1e-5, "cuda"), (12, "MSELoss", 2.3e-3, "cpu"), (10, "L1Loss", 1e1, "cuda"),
+    (1, "L1Loss", 1e-2, "cpu"), (1, "MSELoss", 1e-5, "cpu")
+])
+def test_mgda_preserves_frozen_layers_and_updates_others(in_features, loss, learning_rate, device_name):
+    """Test if MGDA implementation preserves the frozen layers and updates the others"""
+    batch_size = 10
+    num_dummy_epochs = 30
+
+    # Skip if device does not exist
+    device = torch.device(device_name)
+    try:
+        torch.tensor([0.0]).to(device)
+    except (AssertionError, RuntimeError, ValueError) as e:
+        pytest.skip(f"Skipping test on {device_name!r}: {str(e)}")
+
+    # ---------------
+    # Fix dummy model, data, and loss
+    # ---------------
+    # Dummy model
+    model = _create_model(in_features, device)
+
+    # Freeze the first layer
+    model._main_model[0].weight.requires_grad = False
+    model._main_model[0].bias.requires_grad = False
+
+    # Save the original state
+    original_state = copy.deepcopy({k: v.clone() for k, v in model.state_dict().items()})
+
+    # Dummy data
+    x_batches = (torch.rand(batch_size, in_features) for _ in range(num_dummy_epochs))
+    pretext_y_batches = (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
+    downstream_y_batches = (torch.rand(batch_size, 1) for _ in range(num_dummy_epochs))
+
+    # Loss function
+    criterion = get_pytorch_loss_function(loss).to(device)
+
+    # ---------------
+    # Training
+    # ---------------
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    strategy = MGDA(optimizer)
     for x, pretext_y, downstream_y in zip(x_batches, pretext_y_batches, downstream_y_batches):
         x = x.to(device)
         pretext_y = pretext_y.to(device)
