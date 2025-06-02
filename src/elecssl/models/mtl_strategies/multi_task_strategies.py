@@ -4,6 +4,8 @@ from typing import Sequence, Optional
 import torch
 from torch import nn, optim
 
+from elecssl.models.mtl_strategies.minimum_norm_solver import MinNormSolver
+
 
 # ---------------
 # Base class
@@ -236,5 +238,50 @@ class UncertaintyWeighting(MultiTaskStrategy):
         ).sum()
 
         # Compute gradients
+        self.zero_grad()
+        total_loss.backward()
+
+
+class MGDA(MultiTaskStrategy):
+    """
+    Implementation of MGDA algorithm for multi-task learning.
+
+    Paper:
+        Sener, O., & Koltun, V. (2018). Multi-task learning as multi-objective optimization. Advances in neural
+        information processing systems, 31.
+
+    Notes:
+        This implementation uses the approach described in Algorithm 2 (Section 3.2) of the paper, but follows the
+        original GitHub implementation which uses projected gradient descent instead of the Frank-Wolfe algorithm.
+
+        The model must implement .shared_parameters(), which returns an iterator over the shared parameters across tasks
+    """
+
+    def backward(self, *, losses: Sequence[torch.Tensor], model: torch.nn.Module):
+        """Using 'Algorithm 2 Update Equations for MTL') in the paper. Note that the model must implement
+        .shared_parameters() which provides the parameters which are shared across the tasks"""
+        # -------------
+        # Compute gradients for all tasks (steps)
+        # -------------
+        shared_gradients = []
+        for loss in losses:
+            self.zero_grad()
+            loss.backward(retain_graph=True)
+            grads = torch.cat([params.grad.view(-1) for params in model.shared_parameters() if params.grad is not None])
+            shared_gradients.append(grads.detach().clone())
+
+        # --------------
+        # Solve the minimum-norm problem
+        # --------------
+        # The algorithm as described in the paper, says Frank-Wolfe, but the original GitHub repo does not use it. Here,
+        # we stay consistent with the GitHub repo
+        alphas = MinNormSolver.find_min_norm_element(shared_gradients)[0]
+
+        # --------------
+        # Compute loss and gradients
+        # --------------
+        total_loss = torch.stack([alpha * loss for alpha, loss in zip(alphas, losses)]).sum()
+
+        # Backpropagation with combined loss
         self.zero_grad()
         total_loss.backward()
