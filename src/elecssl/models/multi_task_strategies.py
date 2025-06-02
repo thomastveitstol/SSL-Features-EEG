@@ -1,5 +1,5 @@
 import abc
-from typing import Sequence
+from typing import Sequence, Optional
 
 import torch
 from torch import nn, optim
@@ -156,9 +156,9 @@ class GradNorm(MultiTaskStrategy):
         for loss in weighted_losses:
             self.zero_grad()
             loss.backward(retain_graph=True)
-            grads = torch.autograd.grad(outputs=loss, inputs=model.gradnorm_parameters(), retain_graph=True,
-                                        create_graph=True)  # Needed to allow backprop through gradnorm_loss
-            grads = torch.cat([grad.view(-1) for grad in grads])
+            _grads = torch.autograd.grad(outputs=loss, inputs=model.gradnorm_parameters(), retain_graph=True,
+                                         create_graph=True)  # Needed to allow backprop through gradnorm_loss
+            grads = torch.cat([grad.view(-1) for grad in _grads])
             _gradient_norms.append(torch.norm(grads))
         gradient_norms = torch.stack(_gradient_norms)
 
@@ -219,7 +219,7 @@ class UncertaintyWeighting(MultiTaskStrategy):
         super().__init__(optimiser)
 
         # Create a learnable log sigma^2 per task. These will be added to optimiser at first backpropagation
-        self._log_vars = None
+        self._log_vars: Optional[nn.Parameter] = None
 
     def backward(self, *, losses: Sequence[torch.Tensor], model: torch.nn.Module):
         device = losses[0].device
