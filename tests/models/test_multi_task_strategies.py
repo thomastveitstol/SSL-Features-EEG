@@ -475,3 +475,10 @@ def test_gradnorm_preserves_frozen_layers_and_updates_others(alpha, gradnorm_lr,
                 f"Trainable parameters ({name!r}) were not updated!"
         else:
             assert torch.allclose(param.data, original_state[name]), f"Frozen parameters ({name!r}) were updated!"
+
+
+# ------------
+# Tests for Uncertainty Weighting
+# ------------
+def test_uncertainty_weighting():
+    assert False
