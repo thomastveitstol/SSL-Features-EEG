@@ -212,3 +212,29 @@ class UncertaintyWeighting(MultiTaskStrategy):
         geometry and semantics. In Proceedings of the IEEE conference on computer vision and pattern recognition
         (pp. 7482-7491).
     """
+
+    __slots__ = ("_log_vars",)
+
+    def __init__(self, optimiser: optim.Optimizer):
+        super().__init__(optimiser)
+
+        # Create a learnable log sigma^2 per task. These will be added to optimiser at first backpropagation
+        self._log_vars = None
+
+    def backward(self, *, losses: Sequence[torch.Tensor], model: torch.nn.Module):
+        device = losses[0].device
+        num_tasks = len(losses)
+
+        # Maybe initialise uncertainty parameters and add to optimiser
+        if self._log_vars is None:
+            self._log_vars = torch.nn.Parameter(torch.zeros(num_tasks, device=device), requires_grad=True)
+            self._optimiser.add_param_group({"params": [self._log_vars]})
+
+        # Compute loss
+        total_loss = torch.stack(
+            [0.5 * torch.exp(-log_var) * loss + 0.5 * log_var for log_var, loss in zip(self._log_vars, losses)]
+        ).sum()
+
+        # Compute gradients
+        self.zero_grad()
+        total_loss.backward()
