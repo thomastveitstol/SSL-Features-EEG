@@ -26,7 +26,7 @@ class MultiTaskStrategy(abc.ABC):
     # Common steps
     # --------------
     @abc.abstractmethod
-    def backward(self, *, losses: Sequence[torch.Tensor], model: torch.nn.Module):
+    def backward(self, *, losses: Sequence[torch.Tensor], model: nn.Module):
         """Method for computing gradients. Replaces loss.backwards()"""
 
     def step(self):
@@ -39,6 +39,19 @@ class MultiTaskStrategy(abc.ABC):
 # ---------------
 # Implementations
 # ---------------
+class EqualWeighting(MultiTaskStrategy):
+    """
+    Implementation of equal weighting for multi-task learning.
+
+    Each task contributes equally to the total loss.
+    """
+    __slots__ = ()
+
+    def backward(self, *, losses: Sequence[torch.Tensor], model: nn.Module):
+        total_loss = torch.stack(tuple(losses)).sum()
+        total_loss.backward()
+
+
 class PCGrad(MultiTaskStrategy):
     """
     Implementation of PCGrad
@@ -48,7 +61,9 @@ class PCGrad(MultiTaskStrategy):
         learning. Advances in neural information processing systems, 33, 5824-5836.
     """
 
-    def backward(self, *, losses: Sequence[torch.Tensor], model: torch.nn.Module):
+    __slots__ = ()
+
+    def backward(self, *, losses: Sequence[torch.Tensor], model: nn.Module):
         """Following 'Algorithm 1: PCGrad Update Rule' in the paper"""
         num_tasks = len(losses)
         trainable_params = [params for params in model.parameters() if params.requires_grad]
@@ -223,7 +238,7 @@ class UncertaintyWeighting(MultiTaskStrategy):
         # Create a learnable log sigma^2 per task. These will be added to optimiser at first backpropagation
         self._log_vars: Optional[nn.Parameter] = None
 
-    def backward(self, *, losses: Sequence[torch.Tensor], model: torch.nn.Module):
+    def backward(self, *, losses: Sequence[torch.Tensor], model: nn.Module):
         device = losses[0].device
         num_tasks = len(losses)
 
@@ -257,7 +272,9 @@ class MGDA(MultiTaskStrategy):
         The model must implement .shared_parameters(), which returns an iterator over the shared parameters across tasks
     """
 
-    def backward(self, *, losses: Sequence[torch.Tensor], model: torch.nn.Module):
+    __slots__ = ()
+
+    def backward(self, *, losses: Sequence[torch.Tensor], model: nn.Module):
         """Using 'Algorithm 2 Update Equations for MTL') in the paper. Note that the model must implement
         .shared_parameters() which provides the parameters which are shared across the tasks"""
         # -------------
