@@ -26,11 +26,11 @@ class _Model(nn.Module):
       )
       (_residual_model): Linear(in_features=1, out_features=1, bias=True)
     )
-    >>> for my_param in _Model(10).gradnorm_parameters():
+    >>> for my_param in _Model(10).gradnorm_parameters():  # doctest: +ELLIPSIS
     ...     my_param
     Parameter containing:
     tensor([[...]], requires_grad=True)
-    >>> for my_param in _Model(10).shared_parameters():
+    >>> for my_param in _Model(10).shared_parameters():  # doctest: +ELLIPSIS
     ...     my_param
     ...     my_param.data.size()
     Parameter containing:
