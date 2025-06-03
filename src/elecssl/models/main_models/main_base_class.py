@@ -1,9 +1,10 @@
 import abc
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Iterator
 
 import torch
 import torch.nn as nn
+from torch.nn.parameter import Parameter
 
 from elecssl.data.subject_split import Subject
 from elecssl.models.metrics import Histories
@@ -28,6 +29,17 @@ class MainModuleBase(nn.Module, abc.ABC):
     @abc.abstractmethod
     def save_metadata(self, *, name, path):
         """Method for saving metadata, such as the frequencies in GREEN architecture"""
+
+    # ------------
+    # Required methods for multi-task learning
+    # ------------
+    @abc.abstractmethod
+    def gradnorm_parameters(self) -> Iterator[Parameter]:
+        """The parameters to loop over when using GradNorm. To create an iterator, use yield"""
+
+    @abc.abstractmethod
+    def shared_parameters(self) -> Iterator[Parameter]:
+        """The shared parameters across the tasks when using MGDA. To create an iterator, use yield"""
 
     # ------------
     # Model saving and loading
