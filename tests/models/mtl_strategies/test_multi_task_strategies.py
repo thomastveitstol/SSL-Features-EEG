@@ -26,25 +26,15 @@ class _Model(nn.Module):
       )
       (_residual_model): Linear(in_features=1, out_features=1, bias=True)
     )
-    >>> for my_param in _Model(10).gradnorm_parameters():  # doctest: +ELLIPSIS
-    ...     my_param
-    Parameter containing:
-    tensor([[...]], requires_grad=True)
-    >>> for my_param in _Model(10).shared_parameters():  # doctest: +ELLIPSIS
-    ...     my_param
-    ...     my_param.data.size()
-    Parameter containing:
-    tensor([[...]], requires_grad=True)
-    torch.Size([5, 10])
-    Parameter containing:
-    tensor([...], requires_grad=True)
-    torch.Size([5])
-    Parameter containing:
-    tensor([...], requires_grad=True)
-    torch.Size([1, 5])
-    Parameter containing:
-    tensor([...], requires_grad=True)
-    torch.Size([1])
+    >>> for my_param in _Model(10).gradnorm_parameters():
+    ...     (type(my_param), my_param.requires_grad, my_param.data.size())
+    (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([1, 5]))
+    >>> for my_param in _Model(10).shared_parameters():
+    ...     (type(my_param), my_param.requires_grad, my_param.data.size())
+    (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([5, 10]))
+    (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([5]))
+    (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([1, 5]))
+    (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([1]))
     """
 
     def __init__(self, in_features: int):
