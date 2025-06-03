@@ -1,17 +1,20 @@
 import copy
-from typing import Dict, Optional
+from typing import Dict, Optional, Iterator
 
 import torch
 from progressbar import progressbar
+from torch import optim
+from torch.nn import Parameter
 
 from elecssl.data.data_generators.data_generator import strip_tensors
 from elecssl.data.datasets.dataset_base import ChannelSystem
 from elecssl.models.domain_adaptation.domain_discriminators.getter import get_domain_discriminator
+from elecssl.models.losses import CustomWeightedLoss
 from elecssl.models.main_models.main_base_class import MainModuleBase, reorder_subjects
 from elecssl.models.metrics import Histories, is_improved_model
 from elecssl.models.mts_modules.getter import get_mts_module
 from elecssl.models.region_based_pooling.region_based_pooling import RegionBasedPooling, RBPDesign, RBPPoolType
-from elecssl.models.utils import tensor_dict_to_device, flatten_targets, ReverseLayerF
+from elecssl.models.utils import tensor_dict_to_device, flatten_targets, ReverseLayerF, verify_type
 
 
 class MainRBPModel(MainModuleBase):
@@ -520,147 +523,38 @@ class MainRBPModel(MainModuleBase):
             # ----------------
             # Training
             # ----------------
-            self.train()
-            _prefix = f"Epoch {epoch + 1}/{num_epochs} "
-            for x_train, train_pre_computed, y_train, subject_indices in progressbar(train_loader, redirect_stdout=True,
-                                                                                     prefix=_prefix):
-                # Strip the dictionaries for 'ghost tensors'
-                x_train = strip_tensors(x_train)
-                y_train = strip_tensors(y_train)
-
-                if isinstance(train_pre_computed, torch.Tensor) and torch.all(torch.isnan(train_pre_computed)):
-                    train_pre_computed = None
-                else:
-                    train_pre_computed = [strip_tensors(pre_comp) for pre_comp in train_pre_computed]
-
-                # Extract subjects and correct the ordering
-                subjects = reorder_subjects(order=tuple(x_train.keys()),
-                                            subjects=train_loader.dataset.get_subjects_from_indices(subject_indices))
-
-                # Send data to correct device
-                x_train = tensor_dict_to_device(x_train, device=device)
-                y_train = flatten_targets(y_train).to(device)
-                if train_pre_computed is not None:
-                    train_pre_computed = tuple(tensor_dict_to_device(pre_comp, device=device)
-                                               for pre_comp in train_pre_computed)
-
-                # Forward pass
-                output = self(x_train, pre_computed=train_pre_computed, channel_name_to_index=channel_name_to_index)
-
-                # Compute loss
-                optimiser.zero_grad()
-                loss = criterion(output, y_train, subjects=subjects)
-                loss.backward()
-                optimiser.step()
-
-                # Update train history
-                with torch.no_grad():
-                    y_pred = torch.clone(output)
-                    if prediction_activation_function is not None:
-                        y_pred = prediction_activation_function(y_pred)
-
-                    # (Maybe) re-scale targets and predictions before computing metrics
-                    if target_scaler is not None:
-                        y_pred = target_scaler.inv_transform(scaled_data=y_pred)
-                        y_train = target_scaler.inv_transform(scaled_data=y_train)
-                    train_history.store_batch_evaluation(y_pred=y_pred, y_true=y_train, subjects=subjects)
-
-            # Finalise epoch for train history object
-            train_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                       verbose_variables=verbose_variables,
-                                       subjects_info=train_loader.dataset.subjects_info)
+            pbar_prefix = f"Train epoch {epoch + 1}/{num_epochs} "
+            self._full_epoch_pass(
+                loader=train_loader, compute_loss=True, channel_name_to_index=channel_name_to_index,
+                pbar_prefix=pbar_prefix, device=device, optimiser=optimiser, criterion=criterion,
+                prediction_activation_function=prediction_activation_function, target_scaler=target_scaler,
+                history=train_history, verbose=verbose, verbose_variables=verbose_variables,
+                sub_groups_verbose=sub_groups_verbose
+            )
 
             # ----------------
             # Validation
             # ----------------
-            self.eval()
+            pbar_prefix = f"Val epoch {epoch + 1}/{num_epochs} "
             with torch.no_grad():
-                for x_val, val_pre_computed, y_val, val_subject_indices in val_loader:
-                    # Strip the dictionaries for 'ghost tensors'
-                    x_val = strip_tensors(x_val)
-                    y_val = strip_tensors(y_val)
-                    if isinstance(val_pre_computed, torch.Tensor) and torch.all(torch.isnan(val_pre_computed)):
-                        val_pre_computed = None
-                    else:
-                        val_pre_computed = tuple(strip_tensors(pre_comp) for pre_comp in val_pre_computed)
-
-                    # Extract subjects and correct the ordering
-                    val_subjects = reorder_subjects(
-                        order=tuple(x_val.keys()),
-                        subjects=val_loader.dataset.get_subjects_from_indices(val_subject_indices)
-                    )
-
-                    # Send data to correct device
-                    x_val = tensor_dict_to_device(x_val, device=device)
-                    y_val = flatten_targets(y_val).to(device)
-                    if val_pre_computed is not None:
-                        val_pre_computed = tuple(tensor_dict_to_device(pre_comp, device=device)
-                                                 for pre_comp in val_pre_computed)
-
-                    # Forward pass
-                    y_pred = self(x_val, pre_computed=val_pre_computed, channel_name_to_index=channel_name_to_index)
-
-                    # Update validation history
-                    if prediction_activation_function is not None:
-                        y_pred = prediction_activation_function(y_pred)
-
-                    # (Maybe) re-scale targets and predictions before computing metrics
-                    if target_scaler is not None:
-                        y_pred = target_scaler.inv_transform(scaled_data=y_pred)
-                        y_val = target_scaler.inv_transform(scaled_data=y_val)
-                    val_history.store_batch_evaluation(y_pred=y_pred, y_true=y_val, subjects=val_subjects)
-
-                # Finalise epoch for validation history object
-                val_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                         verbose_variables=verbose_variables,
-                                         subjects_info=val_loader.dataset.subjects_info)
+                self._full_epoch_pass(
+                    loader=val_loader, compute_loss=False, optimiser=None, criterion=None, history=val_history,
+                    channel_name_to_index=channel_name_to_index, pbar_prefix=pbar_prefix, device=device,
+                    target_scaler=target_scaler, prediction_activation_function=prediction_activation_function,
+                    verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
+                )
 
             # ----------------
             # (Maybe) testing
             # ----------------
             if test_loader is not None:
+                pbar_prefix = f"Test epoch {epoch + 1}/{num_epochs} "
                 with torch.no_grad():
-                    for x_test, test_pre_computed, y_test, test_subject_indices in test_loader:
-                        # Strip the dictionaries for 'ghost tensors'
-                        x_test = strip_tensors(x_test)
-                        y_test = strip_tensors(y_test)
-                        if isinstance(test_pre_computed, torch.Tensor) and torch.all(torch.isnan(test_pre_computed)):
-                            test_pre_computed = None
-                        else:
-                            test_pre_computed = tuple(strip_tensors(pre_comp) for pre_comp in test_pre_computed)
-
-                        # Extract subjects and correct the ordering
-                        test_subjects = reorder_subjects(
-                            order=tuple(x_test.keys()),
-                            subjects=test_loader.dataset.get_subjects_from_indices(test_subject_indices)
-                        )
-
-                        # Send data to correct device
-                        x_test = tensor_dict_to_device(x_test, device=device)
-                        y_test = flatten_targets(y_test).to(device)
-                        if test_pre_computed is not None:
-                            test_pre_computed = tuple(tensor_dict_to_device(pre_comp, device=device)
-                                                      for pre_comp in test_pre_computed)
-
-                        # Forward pass
-                        y_pred = self(x_test, pre_computed=test_pre_computed,
-                                      channel_name_to_index=channel_name_to_index)
-
-                        # Update validation history
-                        if prediction_activation_function is not None:
-                            y_pred = prediction_activation_function(y_pred)
-
-                        # (Maybe) re-scale targets and predictions before computing metrics
-                        if target_scaler is not None:
-                            y_pred = target_scaler.inv_transform(scaled_data=y_pred)
-                            y_test = target_scaler.inv_transform(scaled_data=y_test)
-                        test_history.store_batch_evaluation(y_pred=y_pred, y_true=y_test,  # type: ignore[union-attr]
-                                                            subjects=test_subjects)
-
-                    # Finalise epoch for test history object
-                    test_history.on_epoch_end(  # type: ignore[union-attr]
-                        verbose=verbose, verbose_sub_groups=sub_groups_verbose, verbose_variables=verbose_variables,
-                        subjects_info=test_loader.dataset.subjects_info
+                    self._full_epoch_pass(
+                        loader=test_loader, compute_loss=False, optimiser=None, criterion=None, history=test_history,
+                        channel_name_to_index=channel_name_to_index, pbar_prefix=pbar_prefix, device=device,
+                        target_scaler=target_scaler, prediction_activation_function=prediction_activation_function,
+                        verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
                     )
 
             # ----------------
@@ -704,27 +598,65 @@ class MainRBPModel(MainModuleBase):
                             expected_variables=data_loader.dataset.expected_variables)
 
         # No gradients needed
-        self.eval()
+        pbar_prefix = "Testing "
         with torch.no_grad():
-            for x, pre_computed, y, subject_indices in data_loader:
-                # Strip the dictionaries for 'ghost tensors'
-                x = strip_tensors(x)
-                y = strip_tensors(y)
-                if isinstance(pre_computed, torch.Tensor) and torch.all(torch.isnan(pre_computed)):
-                    pre_computed = None
-                else:
-                    pre_computed = tuple(strip_tensors(pre_comp) for pre_comp in pre_computed)
+            self._full_epoch_pass(
+                loader=data_loader, compute_loss=False, optimiser=None, criterion=None, history=history, device=device,
+                channel_name_to_index=channel_name_to_index, pbar_prefix=pbar_prefix, target_scaler=target_scaler,
+                prediction_activation_function=prediction_activation_function, verbose=verbose,
+                sub_groups_verbose=sub_groups_verbose, verbose_variables=verbose_variables
+            )
 
-                # Send data to correct device
-                x = tensor_dict_to_device(x, device=device)
-                y = flatten_targets(y).to(device)
-                if pre_computed is not None:
-                    pre_computed = tuple(tensor_dict_to_device(pre_comp, device=device) for pre_comp in pre_computed)
+        return history
 
-                # Forward pass
-                y_pred = self(x, pre_computed=pre_computed, channel_name_to_index=channel_name_to_index)
+    def _full_epoch_pass(self, *, loader, compute_loss, channel_name_to_index, device, pbar_prefix, history,
+                         optimiser: Optional[optim.Optimizer], criterion: Optional[CustomWeightedLoss],
+                         prediction_activation_function, target_scaler, verbose, sub_groups_verbose, verbose_variables):
+        # Set training/evaluation mode
+        if verify_type(compute_loss, bool):
+            self.train()
+        else:
+            self.eval()
 
-                # Update validation history
+        # -------------
+        # Run for a full epoch
+        # -------------
+        for x, pre_computed, y, subject_indices in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
+            # Strip the dictionaries for 'ghost tensors'
+            x = strip_tensors(x)
+            y = strip_tensors(y)
+
+            if isinstance(pre_computed, torch.Tensor) and torch.all(torch.isnan(pre_computed)):
+                pre_computed = None
+            else:
+                pre_computed = [strip_tensors(pre_comp) for pre_comp in pre_computed]
+
+            # Extract subjects and correct the ordering
+            subjects = reorder_subjects(
+                order=tuple(x.keys()), subjects=loader.dataset.get_subjects_from_indices(subject_indices))
+
+            # Send data to the correct device
+            x = tensor_dict_to_device(x, device=device)
+            y = flatten_targets(y).to(device)
+            if pre_computed is not None:
+                pre_computed = tuple(tensor_dict_to_device(pre_comp, device=device) for pre_comp in pre_computed)
+
+            # Forward pass
+            output = self(x, pre_computed=pre_computed, channel_name_to_index=channel_name_to_index)
+
+            # Maybe compute loss and apply optimiser
+            if compute_loss:
+                assert optimiser is not None, "When computing loss, an optimiser must be passed, but received None"
+                assert criterion is not None, "When computing loss, a criterion must be passed, but received None"
+
+                optimiser.zero_grad()
+                loss = criterion(output, y, subjects=subjects)
+                loss.backward()
+                optimiser.step()
+
+            # Update history object
+            with torch.no_grad():
+                y_pred = torch.clone(output)
                 if prediction_activation_function is not None:
                     y_pred = prediction_activation_function(y_pred)
 
@@ -732,24 +664,28 @@ class MainRBPModel(MainModuleBase):
                 if target_scaler is not None:
                     y_pred = target_scaler.inv_transform(scaled_data=y_pred)
                     y = target_scaler.inv_transform(scaled_data=y)
-                history.store_batch_evaluation(
-                    y_pred=y_pred, y_true=y,
-                    subjects=reorder_subjects(order=tuple(x.keys()),
-                                              subjects=data_loader.dataset.get_subjects_from_indices(subject_indices))
-                )
+                history.store_batch_evaluation(y_pred=y_pred, y_true=y, subjects=subjects)
 
-            # Finalise epoch for validation history object
-            history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                 verbose_variables=verbose_variables,
-                                 subjects_info=data_loader.dataset.subjects_info)
-
-        return history
+        # Finalise epoch for history object
+        history.on_epoch_end(
+            verbose=verbose, verbose_sub_groups=sub_groups_verbose, verbose_variables=verbose_variables,
+            subjects_info=loader.dataset.subjects_info)
 
     # ----------------
     # Some additional abstract methods
     # ----------------
     def save_metadata(self, *, name, path):
         self._mts_module.save_metadata(name=name, path=path)
+
+    # ----------------
+    # Required methods for multi-task learning and
+    # multi-objective optimisation
+    # ----------------
+    def gradnorm_parameters(self) -> Iterator[Parameter]:
+        raise NotImplementedError
+
+    def shared_parameters(self) -> Iterator[Parameter]:
+        raise NotImplementedError
 
     # ----------------
     # Properties
