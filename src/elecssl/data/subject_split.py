@@ -640,8 +640,7 @@ class CombinedSplits(DataSplitBase):
     This class can be used for multi-task learning when the data (and data splitting) can be different from task to
     task
 
-    Examples  todo: Make tests!
-    --------
+    (unittest in test folder)
     """
 
     __slots__ = ("_split_objects", "_num_splits")
