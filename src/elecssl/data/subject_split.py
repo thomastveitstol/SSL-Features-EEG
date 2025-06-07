@@ -106,7 +106,7 @@ class DataSplitBase(abc.ABC):
 
 
 # -----------------
-# Classes
+# 'Normal' classes
 # -----------------
 class RandomSplitsTVTestHoldout(DataSplitBase):
     """
@@ -632,6 +632,48 @@ class KeepDatasetsOutRandomSplits(DataSplitBase):
     def splits(self):
         return self._splits
 
+# -----------------
+# Classes for combining splits classes
+# -----------------
+class CombinedSplits(DataSplitBase):
+    """
+    This class can be used for multi-task learning when the data (and data splitting) can be different from task to
+    task
+
+    Examples  todo: Make tests!
+    --------
+    """
+
+    __slots__ = ("_split_objects", "_num_splits")
+
+    def __init__(self, *splits: DataSplitBase):
+        # Input checks
+        if not all(isinstance(split, DataSplitBase) for split in splits):
+            _types = tuple(type(split) for split in splits)
+            raise TypeError(f"Expected all splits to inherit from DataSplitBase, but received {_types}")
+
+        num_splits = {len(split.splits) for split in splits}
+        if len(num_splits) != 1:
+            raise ValueError(f"Expected the number of splits to be consistent, but found (N={len(num_splits)}) "
+                             f"{num_splits}")
+
+        # Set attribute
+        self._split_objects: Tuple[DataSplitBase, ...] = splits
+        self._num_splits = next(iter(num_splits))
+
+    # ---------------
+    # Properties
+    # ---------------
+    @property
+    def splits(self) -> Sequence[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]]:
+        all_splits = [([], [], []) for _ in range(self._num_splits)]
+        for splits_object in self._split_objects:
+            for i, split in enumerate(splits_object.splits):
+                train, val, test = split
+                all_splits[i][0].extend(train)
+                all_splits[i][1].extend(val)
+                all_splits[i][2].extend(test)
+        return tuple((tuple(train), tuple(val), tuple(test)) for train, val, test in all_splits)
 
 # -----------------
 # Functions

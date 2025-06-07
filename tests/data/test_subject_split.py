@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from elecssl.data.subject_split import simple_random_split, RandomSplitsTVTestHoldout, Subject
+from elecssl.data.subject_split import simple_random_split, RandomSplitsTVTestHoldout, Subject, CombinedSplits
 
 
 # --------------
@@ -101,6 +101,36 @@ def test_order_non_invariance(splits_and_kwargs):
 
         # All splits should not be the same
         assert not all(split == splits[0] for split in splits)
+
+
+def test_two_combined_subject_splits(dummy_dataset_subjects, dummy_dataset_subjects_2):
+    """Test properties of CombinedSplits, and that looping over combinedSplits is the same as looping over the provided
+    splits"""
+    # ------------
+    # Create objects
+    # ------------
+    splits_1 = RandomSplitsTVTestHoldout(dataset_subjects=dummy_dataset_subjects, val_split=0.2, test_split=0.3,
+                                        num_random_splits=7, seed=42, sort_first=True)
+    splits_2 = RandomSplitsTVTestHoldout(dataset_subjects=dummy_dataset_subjects_2, val_split=0.3, test_split=0.25,
+                                        num_random_splits=7, seed=42, sort_first=True)
+
+    combined_splits = CombinedSplits(splits_1, splits_2)
+
+    # ------------
+    # Tests
+    # ------------
+    print((combined_splits.splits[0][0]))
+    # Properties
+    assert (splits_1.all_datasets.union(splits_2.all_datasets)) == combined_splits.all_datasets
+    assert (splits_1.all_subjects.union(splits_2.all_subjects)) == combined_splits.all_subjects
+
+    # Check that the looping works as expected. Order does not matter, as long as the train, val and test sets are
+    # similar for all splits
+    for ((train_1, val_1, test_1), (train_2, val_2, test_2),
+         (train_comb, val_comb, test_comb)) in zip(splits_1.splits, splits_2.splits, combined_splits.splits):
+        assert set(train_1).union(set(train_2)) == set(train_comb), "Training set was incorrect"
+        assert set(val_1).union(set(val_2)) == set(val_comb), "Validation set was incorrect"
+        assert set(test_1).union(set(test_2)) == set(test_comb), "Test set was incorrect"
 
 
 @pytest.mark.parametrize("func_kwargs,class_kwargs", [
