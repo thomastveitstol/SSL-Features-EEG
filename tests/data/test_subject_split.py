@@ -103,16 +103,26 @@ def test_order_non_invariance(splits_and_kwargs):
         assert not all(split == splits[0] for split in splits)
 
 
-def test_two_combined_subject_splits(dummy_dataset_subjects, dummy_dataset_subjects_2):
+@pytest.mark.parametrize("val_split_1,test_split_1,val_split_2,test_split_2,seed_1,seed_2,num_random_splits", (
+    (0.3, 0.3, 0.4, 0.3, 42, 13, 7),
+    (0.5, 0.2, 0.1, 0.3, 35, 54, 1),
+    (0.5, 0.1, 0.3, 0.2, 78, 67, 20),
+    (0.1, 0.4, 0.2, 0.1, 24, 10, 6),
+    (0.2, 0.3, 0.4, 0.1, 90, 15, 9)
+))
+def test_two_combined_subject_splits(dummy_dataset_subjects, dummy_dataset_subjects_2, val_split_1, val_split_2,
+                                     test_split_1, test_split_2, seed_1, seed_2, num_random_splits):
     """Test properties of CombinedSplits, and that looping over combinedSplits is the same as looping over the provided
     splits"""
     # ------------
     # Create objects
     # ------------
-    splits_1 = RandomSplitsTVTestHoldout(dataset_subjects=dummy_dataset_subjects, val_split=0.2, test_split=0.3,
-                                        num_random_splits=7, seed=42, sort_first=True)
-    splits_2 = RandomSplitsTVTestHoldout(dataset_subjects=dummy_dataset_subjects_2, val_split=0.3, test_split=0.25,
-                                        num_random_splits=7, seed=42, sort_first=True)
+    splits_1 = RandomSplitsTVTestHoldout(
+        dataset_subjects=dummy_dataset_subjects, val_split=val_split_1, test_split=test_split_1,
+        num_random_splits=num_random_splits, seed=seed_1, sort_first=True)
+    splits_2 = RandomSplitsTVTestHoldout(
+        dataset_subjects=dummy_dataset_subjects_2, val_split=val_split_2, test_split=test_split_2,
+        num_random_splits=num_random_splits, seed=seed_2, sort_first=True)
 
     combined_splits = CombinedSplits(splits_1, splits_2)
 
