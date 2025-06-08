@@ -570,6 +570,7 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
                 sizes[dataset_name] = sample_size
         return sizes
 
+
 # ----------------
 # Functions
 # ----------------
