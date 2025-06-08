@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 import numpy
 import torch
@@ -7,13 +7,10 @@ from torch.utils.data import Dataset
 from elecssl.data.subject_split import Subject
 
 
-class RBPDataGenerator(Dataset):  # type: ignore[type-arg]
-    """
-    Pytorch dataset class for downstream training and testing of RBP models of type MainRBPModel
-    """
-
-    # Remember to remove the yielded -1 tensors!
-    strip_outputs = True  # I don't think this is actually used anywhere?
+# ----------------
+# Data generators for RBP
+# ----------------
+class RBPDataGenBase(Dataset):  # type: ignore[type-arg]
 
     # --------------
     # Magic/dunder methods
@@ -48,41 +45,6 @@ class RBPDataGenerator(Dataset):  # type: ignore[type-arg]
 
     def __len__(self):
         return sum(x.shape[0] * x.shape[1] for x in self._data.values())
-
-    def __getitem__(self, item):
-        # Varying keys in the returned dictionary is not possible with the DataLoader of PyTorch. This solution to the
-        # problem is to simply return a tensor of -1s for the datasets not used
-        data = {dataset_name: torch.ones(size=x.shape[2:]) * (-1) for dataset_name, x in self._data.items()}
-        targets = {dataset_name: torch.unsqueeze(torch.ones(size=y.shape[1:]) * (-1), dim=-1)
-                   for dataset_name, y in self._targets.items()}
-
-        # Select dataset and subject in the dataset
-        dataset_name, subject_idx, epoch_idx = _select_dataset_and_index(item, dataset_shapes=self.dataset_shapes)
-
-        # Add the data which should be used
-        data[dataset_name] = torch.tensor(self._data[dataset_name][subject_idx][epoch_idx], dtype=torch.float)
-        targets[dataset_name] = torch.unsqueeze(torch.tensor(self._targets[dataset_name][subject_idx],
-                                                             dtype=torch.float, requires_grad=False),
-                                                dim=-1)
-
-        # Return
-        if self._pre_computed is None:
-            return data, torch.tensor(float("nan")), targets, item
-        else:
-            # assert False, {type(pre_comp) for pre_comp in self._pre_computed}
-            pre_computed = []
-            for pre_comp in self._pre_computed:
-                if pre_comp is None:
-                    my_dict = {data_name: torch.tensor(float("nan")) for data_name in self.dataset_names}
-                else:
-                    my_dict = {data_name: torch.ones(tensor.size()[2:]) * (-1)
-                               for data_name, tensor in pre_comp.items()}
-                    my_dict[dataset_name] = pre_comp[dataset_name][subject_idx][epoch_idx]
-
-                pre_computed.append(my_dict)
-
-            # Don't think I should convert pre_computed to tuple, as I must strip it anyway
-            return data, pre_computed, targets, item
 
     # --------------
     # Convenient methods
@@ -172,39 +134,193 @@ class RBPDataGenerator(Dataset):  # type: ignore[type-arg]
         return self._expected_variables
 
 
-class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
+class RBPDataGenerator(RBPDataGenBase):
     """
-    Pytorch dataset for downstream training of models which require interpolation for spatial dimension consistency
+    Pytorch dataset class for downstream training and testing of RBP models of type MainRBPModel
 
-    Examples
-    --------
-    >>> import numpy
-    >>> my_data = {"d1": numpy.random.rand(3, 7, 300), "d2": numpy.random.rand(4, 7, 300),
-    ...            "d3": numpy.random.rand(1, 7, 300)}
-    >>> my_targets = {"d1": numpy.random.rand(3), "d2": numpy.random.rand(4), "d3": numpy.random.rand(1)}
-    >>> my_subjects = {"d1": (Subject("P1", "d1"), Subject("P2", "d1"), Subject("P3", "d1")),
-    ...                "d2": (Subject("P1", "d2"), Subject("P2", "d2"), Subject("P3", "d2"), Subject("P4", "d2")),
-    ...                "d3": (Subject("P1", "d2"),)}
-    >>> my_subjects_info = {subject_: {} for subjects_ in my_subjects.values()  # type: ignore[attr-defined]
-    ...                     for subject_ in subjects_}  # type: ignore[attr-defined]
-    >>> _ = InterpolationDataGenerator(my_data, my_targets, my_subjects, subjects_info=my_subjects_info,
-    ...                                expected_variables={})
-
-    A ValueError is raise if spatial dimension is inconsistent
-
-    >>> my_data["d2"] = numpy.random.rand(4, 77, 300)
-    >>> InterpolationDataGenerator(my_data, my_targets, my_subjects,subjects_info=my_subjects_info,
-    ...                            expected_variables={})  # doctest: +NORMALIZE_WHITESPACE
-    Traceback (most recent call last):
-    ...
-    ValueError: Expected spatial dimension consistency of all EEG data passed, as the data should already be
-    interpolated. Instead, the following shapes were found {'d1': (3, 7, 300), 'd2': (4, 77, 300), 'd3': (1, 7, 300)}
+    (unittest in tests folder)
     """
+
+    # Remember to remove the yielded -1 tensors!
+    strip_outputs = True  # I don't think this is actually used anywhere?
+
+    def __getitem__(self, item):
+        # Varying keys in the returned dictionary is not possible with the DataLoader of PyTorch. This solution to the
+        # problem is to simply return a tensor of -1s for the datasets not used
+        data = {dataset_name: torch.ones(size=x.shape[2:]) * (-1) for dataset_name, x in self._data.items()}
+        targets = {dataset_name: torch.unsqueeze(torch.ones(size=y.shape[1:]) * (-1), dim=-1)
+                   for dataset_name, y in self._targets.items()}
+
+        # Select dataset and subject in the dataset
+        dataset_name, subject_idx, epoch_idx = _select_dataset_and_index(item, dataset_shapes=self.dataset_shapes)
+
+        # Add the data which should be used
+        data[dataset_name] = torch.tensor(self._data[dataset_name][subject_idx][epoch_idx], dtype=torch.float)
+        targets[dataset_name] = torch.unsqueeze(torch.tensor(self._targets[dataset_name][subject_idx],
+                                                             dtype=torch.float, requires_grad=False),
+                                                dim=-1)
+
+        # Return
+        if self._pre_computed is None:
+            return data, torch.tensor(float("nan")), targets, item
+        else:
+            # assert False, {type(pre_comp) for pre_comp in self._pre_computed}
+            pre_computed = []
+            for pre_comp in self._pre_computed:
+                if pre_comp is None:
+                    my_dict = {data_name: torch.tensor(float("nan")) for data_name in self.dataset_names}
+                else:
+                    my_dict = {data_name: torch.ones(tensor.size()[2:]) * (-1)
+                               for data_name, tensor in pre_comp.items()}
+                    my_dict[dataset_name] = pre_comp[dataset_name][subject_idx][epoch_idx]
+
+                pre_computed.append(my_dict)
+
+            # Don't think I should convert pre_computed to tuple, as I must strip it anyway
+            return data, pre_computed, targets, item
+
+
+class MultiTaskRBPdataGenerator(RBPDataGenBase):
+    """
+    Pytorch dataset class for training with the multi-task learning approach, where the first task is to predict some
+    (pseudo) target the second task is to predict some downstream target from the residual of the first task. Should be
+    used with RBP models of type MultiTaskRBPmodel
+
+    (unittest in tests folder)
+    """
+
+    strip_outputs = True  # I don't think this is actually used anywhere?
+
+    def __init__(self, *, data, downstream_targets, pretext_targets, subjects, pre_computed, subjects_info,
+                 expected_variables, downstream_mask, pretext_mask):
+        """
+        Initialise
+
+        Parameters
+        ----------
+        data : dict[str, numpy.ndarray]
+        downstream_targets : dict[str, numpy.ndarray]
+        pretext_targets : dict[str, numpy.ndarray]
+        subjects : dict[str, tuple[str, ...]]
+        pre_computed : tuple[dict[str, typing.Any], ...]
+        subjects_info : dict[Subject, dict[str, typing.Any]]
+            To be passed into .on_epoch_end method of Histories class
+        downstream_mask : dict[str, numpy.ndarray] | None
+            Boolean masks indicating which should be included in calculations of loss. If None, all data is used
+        pretext_mask : dict[str, numpy.ndarray] | None
+            Boolean masks indicating which should be included in calculations of loss. If None, all data is used
+        """
+        # Input check
+        if not all(x.ndim == 4 for x in data.values()):
+            _all_sizes = set(x.ndim for x in data.values())
+            raise ValueError(f"Expected all input arrays to be 4D with dimensions (subjects, EEG epochs, channels, "
+                             f"time_steps), but found {_all_sizes}")
+
+        # self._targets will be the downstream targets
+        super().__init__(data=data, targets=downstream_targets, subjects=subjects, pre_computed=pre_computed,
+                         subjects_info=subjects_info, expected_variables=expected_variables)
+
+        self._pretext_targets = pretext_targets
+
+        # Fix masking if they are None
+        if downstream_mask is None:
+            self._downstream_mask = create_mask(
+                sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
+        else:
+            self._downstream_mask = downstream_mask
+
+        if pretext_mask is None:
+            self._pretext_mask = create_mask(
+                sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
+        else:
+            self._pretext_mask = pretext_mask
+
+    def __len__(self):
+        return sum(x.shape[0] * x.shape[1] for x in self._data.values())
+
+    def __getitem__(self, item):
+        # Varying keys in the returned dictionary is not possible with the DataLoader of PyTorch. This solution to the
+        # problem is to simply return a tensor of -1s for the datasets not used
+        data = {dataset_name: torch.ones(size=x.shape[2:]) * (-1) for dataset_name, x in self._data.items()}
+        targets = {dataset_name: torch.unsqueeze(torch.ones(size=y.shape[1:]) * (-1), dim=-1)
+                   for dataset_name, y in self._targets.items()}
+        pretext_targets = {dataset_name: torch.unsqueeze(torch.ones(size=y.shape[1:]) * (-1), dim=-1)
+                           for dataset_name, y in self._pretext_targets.items()}
+
+        mask = {dataset_name: torch.ones(size=y.shape[1:], dtype=torch.int) * (-1)
+                for dataset_name, y in self._downstream_mask.items()}
+        pretext_mask = {dataset_name: torch.ones(size=y.shape[1:], dtype=torch.int) * (-1)
+                        for dataset_name, y in self._pretext_mask.items()}
+
+        # Select dataset and subject in the dataset
+        dataset_name, subject_idx, epoch_idx = _select_dataset_and_index(item, dataset_shapes=self.dataset_shapes)
+
+        # Add the data which should be used. And the masks
+        data[dataset_name] = torch.tensor(self._data[dataset_name][subject_idx][epoch_idx], dtype=torch.float)
+        targets[dataset_name] = torch.unsqueeze(torch.tensor(self._targets[dataset_name][subject_idx],
+                                                             dtype=torch.float, requires_grad=False),
+                                                dim=-1)
+        pretext_targets[dataset_name] = torch.unsqueeze(torch.tensor(self._pretext_targets[dataset_name][subject_idx],
+                                                                     dtype=torch.float, requires_grad=False),
+                                                        dim=-1)
+
+        mask[dataset_name] = torch.tensor(self._downstream_mask[dataset_name][subject_idx], dtype=torch.bool)
+        pretext_mask[dataset_name] = torch.tensor(self._pretext_mask[dataset_name][subject_idx], dtype=torch.bool)
+
+        # Return
+        if self._pre_computed is None:
+            return data, torch.tensor(float("nan")), (pretext_targets, pretext_mask), (targets, mask), item
+        else:
+            # assert False, {type(pre_comp) for pre_comp in self._pre_computed}
+            pre_computed = []
+            for pre_comp in self._pre_computed:
+                if pre_comp is None:
+                    my_dict = {data_name: torch.tensor(float("nan")) for data_name in self.dataset_names}
+                else:
+                    my_dict = {data_name: torch.ones(tensor.size()[2:]) * (-1)
+                               for data_name, tensor in pre_comp.items()}
+                    my_dict[dataset_name] = pre_comp[dataset_name][subject_idx][epoch_idx]
+
+                pre_computed.append(my_dict)
+
+            # Don't think I should convert pre_computed to tuple, as I must strip it anyway
+            return data, pre_computed, (pretext_targets, pretext_mask), (targets, mask), item
+
+    # --------------
+    # Properties
+    # --------------
+    @property
+    def downstream_dataset_size(self):
+        """Sample sizes for downstream training. Inferred from the downstream mask. Datasets with N=0 will be removed
+        from the dictionary"""
+        sizes: Dict[str, int] = {}
+        for dataset_name, mask in self._downstream_mask.items():
+            sample_size = mask.sum()
+            if sample_size > 0:
+                sizes[dataset_name] = sample_size
+        return sizes
+
+    @property
+    def pretext_dataset_size(self):
+        """Sample sizes for pretext training. Inferred from the pretext mask. Datasets with N=0 will be removed
+        from the dictionary"""
+        sizes: Dict[str, int] = {}
+        for dataset_name, mask in self._pretext_mask.items():
+            sample_size = mask.sum()
+            if sample_size > 0:
+                sizes[dataset_name] = sample_size
+        return sizes
+
+
+# ----------------
+# Data generators for interpolation
+# ----------------
+class InterpolationDataGenBase(Dataset):  # type: ignore[type-arg]
 
     # --------------
     # Magic/dunder methods
     # --------------
-    def __init__(self, data, targets, subjects, subjects_info, expected_variables):
+    def __init__(self, data, targets, subjects, *, subjects_info, expected_variables):
         """
         Initialise
 
@@ -232,25 +348,6 @@ class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
 
     def __len__(self):
         return sum(x.shape[0] * x.shape[1] for x in self._data.values())
-
-    def __getitem__(self, item):
-        # Varying keys in the returned dictionary is not possible with the DataLoader of PyTorch. This solution to the
-        # problem is to simply return a tensor of -1s for the datasets not used
-        data = {dataset_name: torch.ones(size=x.shape[2:]) * (-1) for dataset_name, x in self._data.items()}
-        targets = {dataset_name: torch.unsqueeze(torch.ones(size=y.shape[1:]) * (-1), dim=-1)
-                   for dataset_name, y in self._targets.items()}
-
-        # Select dataset and subject in the dataset
-        dataset_name, subject_idx, epoch_idx = _select_dataset_and_index(item, dataset_shapes=self.dataset_shapes)
-
-        # Add the data which should be used
-        data[dataset_name] = torch.tensor(self._data[dataset_name][subject_idx][epoch_idx], dtype=torch.float)
-        targets[dataset_name] = torch.unsqueeze(torch.tensor(self._targets[dataset_name][subject_idx],
-                                                             dtype=torch.float, requires_grad=False),
-                                                dim=-1)
-
-        # Return input data, targets, and the item (will be converted to Subject later)
-        return data, targets, item
 
     # --------------
     # Convenient methods
@@ -334,6 +431,144 @@ class InterpolationDataGenerator(Dataset):  # type: ignore[type-arg]
     def expected_variables(self):
         return self._expected_variables
 
+
+class InterpolationDataGenerator(InterpolationDataGenBase):  # type: ignore[type-arg]
+    """
+    Pytorch dataset for downstream training of models which require interpolation for spatial dimension consistency
+
+    (additional tests in tests folder)
+
+    Examples
+    --------
+    >>> import numpy
+    >>> my_data = {"d1": numpy.random.rand(3, 7, 300), "d2": numpy.random.rand(4, 7, 300),
+    ...            "d3": numpy.random.rand(1, 7, 300)}
+    >>> my_targets = {"d1": numpy.random.rand(3), "d2": numpy.random.rand(4), "d3": numpy.random.rand(1)}
+    >>> my_subjects = {"d1": (Subject("P1", "d1"), Subject("P2", "d1"), Subject("P3", "d1")),
+    ...                "d2": (Subject("P1", "d2"), Subject("P2", "d2"), Subject("P3", "d2"), Subject("P4", "d2")),
+    ...                "d3": (Subject("P1", "d2"),)}
+    >>> my_subjects_info = {subject_: {} for subjects_ in my_subjects.values()  # type: ignore[attr-defined]
+    ...                     for subject_ in subjects_}  # type: ignore[attr-defined]
+    >>> _ = InterpolationDataGenerator(my_data, my_targets, my_subjects, subjects_info=my_subjects_info,
+    ...                                expected_variables={})
+
+    A ValueError is raise if spatial dimension is inconsistent
+
+    >>> my_data["d2"] = numpy.random.rand(4, 77, 300)
+    >>> InterpolationDataGenerator(my_data, my_targets, my_subjects,subjects_info=my_subjects_info,
+    ...                            expected_variables={})  # doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    ValueError: Expected spatial dimension consistency of all EEG data passed, as the data should already be
+    interpolated. Instead, the following shapes were found {'d1': (3, 7, 300), 'd2': (4, 77, 300), 'd3': (1, 7, 300)}
+    """
+
+    def __getitem__(self, item):
+        # Varying keys in the returned dictionary is not possible with the DataLoader of PyTorch. This solution to the
+        # problem is to simply return a tensor of -1s for the datasets not used
+        data = {dataset_name: torch.ones(size=x.shape[2:]) * (-1) for dataset_name, x in self._data.items()}
+        targets = {dataset_name: torch.unsqueeze(torch.ones(size=y.shape[1:]) * (-1), dim=-1)
+                   for dataset_name, y in self._targets.items()}
+
+        # Select dataset and subject in the dataset
+        dataset_name, subject_idx, epoch_idx = _select_dataset_and_index(item, dataset_shapes=self.dataset_shapes)
+
+        # Add the data which should be used
+        data[dataset_name] = torch.tensor(self._data[dataset_name][subject_idx][epoch_idx], dtype=torch.float)
+        targets[dataset_name] = torch.unsqueeze(torch.tensor(self._targets[dataset_name][subject_idx],
+                                                             dtype=torch.float, requires_grad=False),
+                                                dim=-1)
+
+        # Return input data, targets, and the item (will be converted to Subject later)
+        return data, targets, item
+
+
+class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
+    """
+    Data generator for multi-task learning when the EEG datasets have the same number of channels (when using
+    interpolation to handle varied electrode configurations)
+
+    (unittests in tests folder)
+    """
+
+    def __init__(self, *, data, downstream_targets, subjects, subjects_info, expected_variables, downstream_mask,
+                 pretext_mask, pretext_targets):
+        # self._targets will be the downstream targets
+        super().__init__(data=data, targets=downstream_targets, subjects=subjects, subjects_info=subjects_info,
+                         expected_variables=expected_variables)
+
+        # -------------
+        # Set MTL-specific attributes
+        # -------------
+        self._pretext_targets = pretext_targets
+
+        # Fix masking if they are None
+        if downstream_mask is None:
+            self._downstream_mask = create_mask(
+                sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
+        else:
+            self._downstream_mask = downstream_mask
+
+        if pretext_mask is None:
+            self._pretext_mask = create_mask(
+                sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
+        else:
+            self._pretext_mask = pretext_mask
+
+    def __getitem__(self, item):
+        # Varying keys in the returned dictionary is not possible with the DataLoader of PyTorch. This solution to the
+        # problem is to simply return a tensor of -1s for the datasets not used
+        data = {dataset_name: torch.ones(size=x.shape[2:]) * (-1) for dataset_name, x in self._data.items()}
+        targets = {dataset_name: torch.unsqueeze(torch.ones(size=y.shape[1:]) * (-1), dim=-1)
+                   for dataset_name, y in self._targets.items()}
+        pretext_targets = {dataset_name: torch.unsqueeze(torch.ones(size=y.shape[1:]) * (-1), dim=-1)
+                           for dataset_name, y in self._pretext_targets.items()}
+        mask = {dataset_name: torch.ones(size=y.shape[1:], dtype=torch.int) * (-1)
+                for dataset_name, y in self._downstream_mask.items()}
+        pretext_mask = {dataset_name: torch.ones(size=y.shape[1:], dtype=torch.int) * (-1)
+                        for dataset_name, y in self._pretext_mask.items()}
+
+        # Select dataset and subject in the dataset
+        dataset_name, subject_idx, epoch_idx = _select_dataset_and_index(item, dataset_shapes=self.dataset_shapes)
+
+        # Add the data which should be used
+        data[dataset_name] = torch.tensor(self._data[dataset_name][subject_idx][epoch_idx], dtype=torch.float)
+        targets[dataset_name] = torch.unsqueeze(torch.tensor(self._targets[dataset_name][subject_idx],
+                                                             dtype=torch.float, requires_grad=False),
+                                                dim=-1)
+        pretext_targets[dataset_name] = torch.unsqueeze(torch.tensor(self._pretext_targets[dataset_name][subject_idx],
+                                                                     dtype=torch.float, requires_grad=False),
+                                                        dim=-1)
+        mask[dataset_name] = torch.tensor(self._downstream_mask[dataset_name][subject_idx], dtype=torch.bool)
+        pretext_mask[dataset_name] = torch.tensor(self._pretext_mask[dataset_name][subject_idx], dtype=torch.bool)
+
+        # Return
+        return data, (pretext_targets, pretext_mask), (targets, mask), item
+
+    # --------------
+    # Properties
+    # --------------
+    @property
+    def downstream_dataset_size(self):
+        """Sample sizes for downstream training. Inferred from the downstream mask. Datasets with N=0 will be removed
+        from the dictionary"""
+        sizes: Dict[str, int] = {}
+        for dataset_name, mask in self._downstream_mask.items():
+            sample_size = mask.sum()
+            if sample_size > 0:
+                sizes[dataset_name] = sample_size
+        return sizes
+
+    @property
+    def pretext_dataset_size(self):
+        """Sample sizes for pretext training. Inferred from the pretext mask. Datasets with N=0 will be removed
+        from the dictionary"""
+        sizes: Dict[str, int] = {}
+        for dataset_name, mask in self._pretext_mask.items():
+            sample_size = mask.sum()
+            if sample_size > 0:
+                sizes[dataset_name] = sample_size
+        return sizes
 
 # ----------------
 # Functions
@@ -484,3 +719,27 @@ def strip_tensors(tensors, fill_val=-1):
 
     # Return the dictionary of tensors (although the operations also happen in-place)
     return tensors
+
+
+def create_mask(*, sample_sizes, to_include):
+    """
+    Function for creating boolean masks based on a dict of sample sizes and which keys to include
+
+    Parameters
+    ----------
+    sample_sizes : dict[str, int]
+    to_include
+
+    Returns
+    -------
+    dict[str, numpy.ndarray]
+
+    Examples
+    --------
+    >>> my_sizes = {"Ferrari": 7, "Mercedes": 9, "Red Bull": 2}
+    >>> create_mask(sample_sizes=my_sizes, to_include=("Red Bull", "Ferrari"))  # doctest: +NORMALIZE_WHITESPACE
+    {'Ferrari': array([ True,  True,  True,  True,  True,  True,  True]),
+     'Mercedes': array([False, False, False, False, False, False, False, False, False]),
+     'Red Bull': array([ True,  True])}
+    """
+    return {name: numpy.array([(name in to_include)] * size) for name, size in sample_sizes.items()}
