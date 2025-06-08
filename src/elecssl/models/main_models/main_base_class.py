@@ -64,6 +64,22 @@ class MainModuleBase(nn.Module, abc.ABC):
         # todo: Sub-optimal to use this saving
         torch.save(self, (path / name).with_suffix(".pt"))
 
+    # ----------------
+    # Convenient metrics methods
+    # ----------------
+    @staticmethod
+    def _updated_history_object(*, output, y, target_scaler, subjects, history, prediction_activation_function):
+        with torch.no_grad():
+            y_pred = torch.clone(output)
+            if prediction_activation_function is not None:
+                y_pred = prediction_activation_function(y_pred)
+
+            # (Maybe) re-scale targets and predictions before computing metrics
+            if target_scaler is not None:
+                y_pred = target_scaler.inv_transform(scaled_data=y_pred)
+                y = target_scaler.inv_transform(scaled_data=y)
+            history.store_batch_evaluation(y_pred=y_pred, y_true=y, subjects=subjects)
+
 
 # ----------
 # Errors
