@@ -632,6 +632,7 @@ class KeepDatasetsOutRandomSplits(DataSplitBase):
     def splits(self):
         return self._splits
 
+
 # -----------------
 # Classes for combining splits classes
 # -----------------
@@ -665,7 +666,8 @@ class CombinedSplits(DataSplitBase):
     # ---------------
     @property
     def splits(self) -> Sequence[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]]:
-        all_splits = [([], [], []) for _ in range(self._num_splits)]
+        all_splits: List[Tuple[List[Subject], List[Subject], List[Subject]]] = [
+            ([], [], []) for _ in range(self._num_splits)]
         for splits_object in self._split_objects:
             for i, split in enumerate(splits_object.splits):
                 train, val, test = split
@@ -673,6 +675,7 @@ class CombinedSplits(DataSplitBase):
                 all_splits[i][1].extend(val)
                 all_splits[i][2].extend(test)
         return tuple((tuple(train), tuple(val), tuple(test)) for train, val, test in all_splits)
+
 
 # -----------------
 # Functions

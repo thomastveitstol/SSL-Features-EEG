@@ -244,6 +244,7 @@ class GradNorm(MultiTaskStrategy):
         return {"alpha": trial.suggest_float(f"{name}_alpha", **config["alpha"]),
                 "learning_rate": trial.suggest_float(f"{name}_learning_rate", **config["learning_rate"])}
 
+
 class UncertaintyWeighting(MultiTaskStrategy):
     """
     Implementation of Uncertainty Weighting for multi-task learning
@@ -283,6 +284,7 @@ class UncertaintyWeighting(MultiTaskStrategy):
     @staticmethod
     def suggest_hyperparameters(name, trial, config):
         return dict()
+
 
 class MGDA(MultiTaskStrategy):
     """
@@ -334,6 +336,7 @@ class MGDA(MultiTaskStrategy):
     @staticmethod
     def suggest_hyperparameters(name, trial, config):
         return dict()
+
 
 # ---------------
 # Functions
