@@ -169,11 +169,6 @@ class MainFixedChannelsModelBase(MainModuleBase, abc.ABC):
     # Properties
     # ---------------
     @property
-    def has_domain_discriminator(self) -> bool:
-        """Indicates if the model has a domain discriminator for domain adversarial learning (True) or not (False)"""
-        return self._domain_discriminator is not None
-
-    @property
     def has_cmmn_layer(self) -> bool:  # inconsistent property name with respect to the RBP version
         """Boolean indicating if the model uses a CMMN layer (True) or not (False)"""
         return self._cmmn_layer is not None
