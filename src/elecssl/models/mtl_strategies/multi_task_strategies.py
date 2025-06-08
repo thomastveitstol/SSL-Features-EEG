@@ -1,5 +1,5 @@
 import abc
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Union, Tuple, Type, Any, Dict
 
 import torch
 from torch import nn, optim
@@ -19,7 +19,7 @@ class MultiTaskStrategy(abc.ABC):
 
     __slots__ = ("_optimiser", "_model")
 
-    def __init__(self, optimiser: optim.Optimizer, model: nn.Module):
+    def __init__(self, optimiser: optim.Optimizer, model: nn.Module, **kwargs):
         self._optimiser = optimiser
         self._model = model
 
@@ -36,21 +36,36 @@ class MultiTaskStrategy(abc.ABC):
     def zero_grad(self):
         self._optimiser.zero_grad()
 
+    # --------------
+    # For hyperparameter optimisation
+    # --------------
+    @staticmethod
+    @abc.abstractmethod
+    def suggest_hyperparameters(name, trial, config) -> Dict[str, Any]:
+        """Method for sampling hyperparameter configurations, given distributions"""
+
 
 # ---------------
 # Implementations
 # ---------------
 class EqualWeighting(MultiTaskStrategy):
     """
-    Implementation of equal weighting for multi-task learning.
+    Implementation of equal weighting for multi-task learning. This can also be used for single-task learning.
 
     Each task contributes equally to the total loss.
     """
     __slots__ = ()
 
-    def backward(self, *, losses: Sequence[torch.Tensor]):
-        total_loss = torch.stack(tuple(losses)).sum()
+    def backward(self, *, losses: Union[Sequence[torch.Tensor], torch.Tensor]):
+        if isinstance(losses, torch.Tensor):
+            total_loss = losses
+        else:
+            total_loss = torch.stack(tuple(losses)).sum()
         total_loss.backward()
+
+    @staticmethod
+    def suggest_hyperparameters(name, trial, config):
+        return dict()
 
 
 class PCGrad(MultiTaskStrategy):
@@ -113,6 +128,10 @@ class PCGrad(MultiTaskStrategy):
             num_elements = params.numel()
             params.grad = final_gradients[offset:(offset + num_elements)].view_as(params).clone()
             offset += num_elements
+
+    @staticmethod
+    def suggest_hyperparameters(name, trial, config):
+        return dict()
 
 
 class GradNorm(MultiTaskStrategy):
@@ -220,6 +239,10 @@ class GradNorm(MultiTaskStrategy):
             # Re-normalisation
             self._loss_weights.data *= num_tasks / self._loss_weights.data.sum()
 
+    @staticmethod
+    def suggest_hyperparameters(name, trial, config):
+        return {"alpha": trial.suggest_float(f"{name}_alpha", **config["alpha"]),
+                "learning_rate": trial.suggest_float(f"{name}_learning_rate", **config["learning_rate"])}
 
 class UncertaintyWeighting(MultiTaskStrategy):
     """
@@ -257,6 +280,9 @@ class UncertaintyWeighting(MultiTaskStrategy):
         self.zero_grad()
         total_loss.backward()
 
+    @staticmethod
+    def suggest_hyperparameters(name, trial, config):
+        return dict()
 
 class MGDA(MultiTaskStrategy):
     """
@@ -304,3 +330,103 @@ class MGDA(MultiTaskStrategy):
         # Backpropagation with combined loss
         self.zero_grad()
         total_loss.backward()
+
+    @staticmethod
+    def suggest_hyperparameters(name, trial, config):
+        return dict()
+
+# ---------------
+# Functions
+# ---------------
+def get_available_mtl_strategies() -> Tuple[Type[MultiTaskStrategy], ...]:
+    """All MTL strategies should be available from here"""
+    return EqualWeighting, PCGrad, GradNorm, UncertaintyWeighting, MGDA
+
+
+def get_mtl_strategy_type(name):
+    """
+    Function for getting a specified MTL strategy class
+
+    Parameters
+    ----------
+    name : str
+
+    Returns
+    -------
+    MultiTaskStrategy
+
+    Examples
+    --------
+    >>> _ = get_mtl_strategy_type("GradNorm")
+    >>> _ = get_mtl_strategy_type("PCGrad")
+    >>> _ = get_mtl_strategy_type("EqualWeighting")
+    >>> _ = get_mtl_strategy_type("UncertaintyWeighting")
+    >>> _ = get_mtl_strategy_type("MGDA")
+    >>> _ = get_mtl_strategy_type("NotAnMTLStrategy")  # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    ValueError: The MTL strategy 'NotAnMTLStrategy' was not recognised. Please select among the following: (...)
+    """
+    # Get all available strategies
+    available_strategies = get_available_mtl_strategies()
+
+    # Loop through and select the correct one
+    for strategy in available_strategies:
+        if name == strategy.__name__:
+            return strategy
+
+    # If no match, an error is raised
+    raise ValueError(f"The MTL strategy {name!r} was not recognised. Please select among the following: "
+                     f"{tuple(strategy.__name__ for strategy in available_strategies)}")
+
+
+def suggest_multi_task_strategy(name, trial, config):
+    name_prefix = "" if name is None else f"{name}_"
+
+    strategy = trial.suggest_categorical(f"{name_prefix}strategy", choices=config.keys())
+
+    strategy_name = name if name is None else f"{name}_{strategy}"
+    hpcs = get_mtl_strategy_type(strategy).suggest_hyperparameters(strategy_name, trial=trial, config=config[strategy])
+    return {"name": strategy, "kwargs": hpcs}
+
+
+def get_mtl_strategy(name, *, optimiser, model, **kwargs):
+    """
+    Function for getting a specified MTL strategy
+
+    Parameters
+    ----------
+    name : str
+    optimiser : optim.Optimizer
+    model : nn.Module
+    kwargs
+
+    Returns
+    -------
+    MultiTaskStrategy
+
+    Examples
+    --------
+    >>> my_model = nn.Sequential(nn.Linear(10, 5), nn.ReLU(), nn.Linear(5, 1))
+    >>> my_optimiser = optim.Adam(my_model.parameters(), lr=1e-4, betas=(0.6, 0.7))
+    >>> _ = get_mtl_strategy("GradNorm", optimiser=my_optimiser, model=my_model, alpha=1.5, learning_rate=0.025)
+    >>> _ = get_mtl_strategy("PCGrad", optimiser=my_optimiser, model=my_model)
+    >>> _ = get_mtl_strategy("EqualWeighting", optimiser=my_optimiser, model=my_model)
+    >>> _ = get_mtl_strategy("UncertaintyWeighting", optimiser=my_optimiser, model=my_model)
+    >>> _ = get_mtl_strategy("MGDA", optimiser=my_optimiser, model=my_model)
+    >>> _ = get_mtl_strategy("NotAnMTLStrategy", optimiser=my_optimiser, model=my_model)  # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    ValueError: The MTL strategy 'NotAnMTLStrategy' was not recognised. Please select among the following: (...)
+    """
+    # Get all available strategies
+    available_strategies = get_available_mtl_strategies()
+
+    # Loop through and select the correct one
+    for strategy in available_strategies:
+        if name == strategy.__name__:
+            return strategy(optimiser=optimiser, model=model, **kwargs)
+
+    # If no match, an error is raised
+    raise ValueError(f"The MTL strategy {name!r} was not recognised. Please select among the following: "
+                     f"{tuple(strategy.__name__ for strategy in available_strategies)}")
