@@ -2,7 +2,7 @@
 This file has been modified from the original implementation at
 https://github.com/Roche/neuro-green/blob/main/green/research_code/pl_utils.py
 """
-# mypy: disable-error-code="assignment,unreachable,attr-defined"
+# mypy: disable-error-code="assignment,unreachable,attr-defined,arg-type"
 from typing import Optional, Tuple, Union, Any, Dict
 
 import geotorch
@@ -350,3 +350,5 @@ def vectorize_upper(X: Tensor) -> Tensor:
         return torch.cat([torch.diagonal(X, dim1=-2, dim2=-1),
                          X[triu_idx[0], triu_idx[1]] * np.sqrt(2)],
                          dim=-1)
+    else:
+        raise ValueError(f"Expected 3 or 4 dimensional tensor, but received {X.dim()}")

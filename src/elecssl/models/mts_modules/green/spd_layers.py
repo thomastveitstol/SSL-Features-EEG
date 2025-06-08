@@ -2,7 +2,7 @@
 This file has been modified from the original implementation at
 https://github.com/Roche/neuro-green/blob/main/green/spd_layers.py
 """
-# mypy: disable-error-code="unreachable,arg-type,type-arg,assignment"
+# mypy: disable-error-code="unreachable,arg-type,type-arg,assignment,attr-defined,no-any-return,call-overload"
 import numpy as np
 import optuna
 import torch
