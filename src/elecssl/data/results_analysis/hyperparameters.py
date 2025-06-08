@@ -5,14 +5,6 @@ from ConfigSpace import CategoricalHyperparameter, UniformFloatHyperparameter
 from ConfigSpace.hyperparameters import Hyperparameter
 
 
-@dataclasses.dataclass(frozen=True)
-class HP:
-    # How to find the HPC in the HPC config file
-    hpc: Union[Tuple[str, ...], Callable[[Dict[str, Any]], Any]]
-    # How to find the HPD in the HPD config file
-    hpd: Callable[[Dict[str, Any]], Hyperparameter]
-
-
 # --------------
 # Individual HPs
 # --------------
