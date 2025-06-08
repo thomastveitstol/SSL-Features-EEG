@@ -709,71 +709,71 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
         else:
             self.eval()
 
-            # -------------
-            # Run for a full epoch
-            # -------------
-            for (x, (pretext_y, pretext_mask), (downstream_y, downstream_mask),
-                 subject_indices) in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
-                # TODO: Should masks be required? If validation or test set?
+        # -------------
+        # Run for a full epoch
+        # -------------
+        for (x, (pretext_y, pretext_mask), (downstream_y, downstream_mask),
+             subject_indices) in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
+            # TODO: Should masks be required? If validation or test set?
 
-                # Strip the dictionaries for 'ghost tensors'
-                x = strip_tensors(x)
-                pretext_y = strip_tensors(pretext_y)
-                downstream_y = strip_tensors(downstream_y)  # todo: must skip input check for nans
-                pretext_mask = tensor_dict_to_boolean(strip_tensors(pretext_mask))
-                downstream_mask = tensor_dict_to_boolean(strip_tensors(downstream_mask))
+            # Strip the dictionaries for 'ghost tensors'
+            x = strip_tensors(x)
+            pretext_y = strip_tensors(pretext_y)
+            downstream_y = strip_tensors(downstream_y)  # todo: must skip input check for nans
+            pretext_mask = tensor_dict_to_boolean(strip_tensors(pretext_mask))
+            downstream_mask = tensor_dict_to_boolean(strip_tensors(downstream_mask))
 
-                # Extract subjects and correct the ordering
-                subjects = reorder_subjects(
-                    order=tuple(x.keys()), subjects=loader.dataset.get_subjects_from_indices(subject_indices))
+            # Extract subjects and correct the ordering
+            subjects = reorder_subjects(
+                order=tuple(x.keys()), subjects=loader.dataset.get_subjects_from_indices(subject_indices))
 
-                # Send data to the correct device
-                x = tensor_dict_to_device(x, device=device)
-                pretext_y = tensor_dict_to_device(pretext_y, device=device)
-                downstream_y = flatten_targets(downstream_y).to(device)
+            # Send data to the correct device
+            x = tensor_dict_to_device(x, device=device)
+            pretext_y = tensor_dict_to_device(pretext_y, device=device)
+            downstream_y = flatten_targets(downstream_y).to(device)
 
-                # Forward, loss, and maybe apply optimiser
-                with maybe_no_grad(apply_optimiser):
-                    # Forward pass
-                    pretext_yhat, downstream_yhat = self(x, pretext_y=pretext_y, downstream_mask=downstream_mask)
+            # Forward, loss, and maybe apply optimiser
+            with maybe_no_grad(apply_optimiser):
+                # Forward pass
+                pretext_yhat, downstream_yhat = self(x, pretext_y=pretext_y, downstream_mask=downstream_mask)
 
-                    # -------------
-                    # Compute losses
-                    # -------------
-                    # Flatten out mask (if some subjects should not count on the pretext loss)
-                    flattened_pretext_mask = torch.cat(list(pretext_mask.values()), dim=0)
-                    flattened_pretext_y = torch.cat(list(pretext_y.values()), dim=0)
-                    flattened_downstream_mask = torch.cat(list(downstream_mask.values()))
+                # -------------
+                # Compute losses
+                # -------------
+                # Flatten out mask (if some subjects should not count on the pretext loss)
+                flattened_pretext_mask = torch.cat(list(pretext_mask.values()), dim=0)
+                flattened_pretext_y = torch.cat(list(pretext_y.values()), dim=0)
+                flattened_downstream_mask = torch.cat(list(downstream_mask.values()))
 
-                    # Maybe compute gradients and apply a step
-                    if apply_optimiser:
-                        assert pretext_criterion is not None
-                        assert downstream_criterion is not None
-                        assert mtl_strategy is not None
+                # Maybe compute gradients and apply a step
+                if apply_optimiser:
+                    assert pretext_criterion is not None
+                    assert downstream_criterion is not None
+                    assert mtl_strategy is not None
 
-                        loss_1 = pretext_criterion(pretext_yhat[flattened_pretext_mask],
-                                                   flattened_pretext_y[flattened_pretext_mask])
-                        loss_2 = downstream_criterion(downstream_yhat, downstream_y[flattened_downstream_mask])
+                    loss_1 = pretext_criterion(pretext_yhat[flattened_pretext_mask],
+                                               flattened_pretext_y[flattened_pretext_mask])
+                    loss_2 = downstream_criterion(downstream_yhat, downstream_y[flattened_downstream_mask])
 
-                        mtl_strategy.zero_grad()
-                        mtl_strategy.backward(losses=(loss_1, loss_2))
-                        mtl_strategy.step()
+                    mtl_strategy.zero_grad()
+                    mtl_strategy.backward(losses=(loss_1, loss_2))
+                    mtl_strategy.step()
 
-                # Update history objects. Not masking pretext because it could be interesting to see for the downstream
-                # subjects too. Have to mask on the downstream because targets are not expected to be available for the
-                # masked ones
-                self._updated_history_object(
-                    history=pretext_history, subjects=subjects, output=pretext_yhat, y=flattened_pretext_y,
-                    target_scaler=pretext_target_scaler,
-                    prediction_activation_function=pretext_prediction_activation_function)
-                _downstream_subjects = tuple(
-                    subject for subject, mask in zip(subjects, flattened_downstream_mask) if mask)
-                self._updated_history_object(
-                    history=downstream_history, subjects=_downstream_subjects, output=downstream_yhat,
-                    y=downstream_y[flattened_downstream_mask], target_scaler=downstream_target_scaler,
-                    prediction_activation_function=downstream_prediction_activation_function)
+            # Update history objects. Not masking pretext because it could be interesting to see for the downstream
+            # subjects too. Have to mask on the downstream because targets are not expected to be available for the
+            # masked ones
+            self._updated_history_object(
+                history=pretext_history, subjects=subjects, output=pretext_yhat, y=flattened_pretext_y,
+                target_scaler=pretext_target_scaler,
+                prediction_activation_function=pretext_prediction_activation_function)
+            _downstream_subjects = tuple(
+                subject for subject, mask in zip(subjects, flattened_downstream_mask) if mask)
+            self._updated_history_object(
+                history=downstream_history, subjects=_downstream_subjects, output=downstream_yhat,
+                y=downstream_y[flattened_downstream_mask], target_scaler=downstream_target_scaler,
+                prediction_activation_function=downstream_prediction_activation_function)
 
-            # Finalise epoch for history objects. 'subjects_info' is no longer maintained
-            pretext_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
-                                         verbose_variables=verbose_variables)
-            downstream_history.on_epoch_end(verbose=verbose)
+        # Finalise epoch for history objects. 'subjects_info' is no longer maintained
+        pretext_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
+                                     verbose_variables=verbose_variables)
+        downstream_history.on_epoch_end(verbose=verbose)
