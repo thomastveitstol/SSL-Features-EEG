@@ -117,7 +117,7 @@ class MainFixedChannelsModelBase(MainModuleBase, abc.ABC):
     # ---------------
     # Methods for forward propagation
     # ---------------
-    def _first_forward(self, x: Dict[str, torch.Tensor]):
+    def _first_forward(self, x):
         # Maybe run CMMN
         if self._cmmn_layer is not None:
             x = self._cmmn_layer(x)
@@ -128,6 +128,7 @@ class MainFixedChannelsModelBase(MainModuleBase, abc.ABC):
             x = torch.cat(list(x.values()), dim=0)
 
         # Normalise
+        assert isinstance(x, torch.Tensor)
         if self._normalise:
             x = (x - torch.mean(x, dim=-1, keepdim=True)) / (torch.std(x, dim=-1, keepdim=True) + 1e-8)
 
