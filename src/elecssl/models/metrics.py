@@ -8,6 +8,8 @@ https://github.com/thomastveitstol/CrossDatasetLearningEEG/blob/master/src/cdl_e
 Author: Thomas Tveitstøl (Oslo University Hospital)
 """
 # mypy: disable-error-code="index,union-attr"
+import dataclasses
+import enum
 import itertools
 import os
 import warnings
@@ -1531,3 +1533,132 @@ def is_improved_model(old_metrics, new_metrics, main_metric):
         return old_metrics[main_metric] < new_metrics[main_metric]
     else:
         return old_metrics[main_metric] > new_metrics[main_metric]
+
+
+# ----------------
+# Classes and function for Pareto optimality
+# ----------------
+@dataclasses.dataclass(frozen=True)
+class PScore:
+    """Performance score. Contains the metric and the score"""
+    metric: str
+    score: float
+
+
+class ParetoDominates(enum.Enum):
+    LHS = "lhs"
+    RHS = "rhs"
+    NO = "no"
+
+
+def is_pareto_optimal(*, pareto_frontier,  new_scores) -> Tuple[bool, Tuple[int, ...]]:
+    """
+    Check if a new set of scores is pareto optimal, given the current Pareto frontier.
+
+    Notes
+    -----
+    This function assumes that the pareto frontier is a valid pareto frontier (all solutions are pareto optimal), and
+    makes no checks to verify that it is true.
+
+    Parameters
+    ----------
+    pareto_frontier : typing.Sequence[typing.Sequence[PScore]]
+    new_scores : typing.Sequence[PScore]
+
+    Returns
+    -------
+    tuple[bool, tuple[int, ...]]
+        First element indicates if the new scores represent a pareto optimal solution. The second element is a tuple of
+        integers which are indices of former solutions which are no longer pareto optimal. The indices are ordered
+    """
+    to_remove: List[int] = []
+    for i, existing_scores in enumerate(pareto_frontier):
+        # Check for pareto dominance
+        dominance = _pareto_dominates(lhs_scores=existing_scores, rhs_scores=new_scores)
+
+        if dominance == ParetoDominates.RHS:
+            # If the new scores dominate a current one, the current should be removed
+            to_remove.append(i)
+
+        elif dominance == ParetoDominates.LHS:
+            # If the new set of scores is dominated by at least one solution in pareto frontier, it can never dominate
+            # any other solution on the pareto frontier
+            assert not to_remove
+            return False, ()
+
+        elif dominance == ParetoDominates.NO:
+            pass
+
+        else:
+            raise ValueError(f"Unexpected value for pareto dominance: {dominance}")
+
+    # If it is not dominated by any solution, it is Pareto optimal
+    return True, tuple(to_remove)
+
+
+def _pareto_dominates(*, lhs_scores, rhs_scores):
+    """
+    Check if a vector of performance scores dominates another
+
+    Parameters
+    ----------
+    lhs_scores : typing.Sequence[PScore]
+    rhs_scores : typing.Sequence[PScore]
+
+    Returns
+    -------
+    ParetoDominates
+
+    Examples
+    --------
+    >>> my_score_1 = (PScore(metric="r2_score", score=0.3), PScore(metric="mae", score=4.8))
+    >>> my_score_2 = (PScore(metric="r2_score", score=0.4), PScore(metric="mae", score=2.1))
+    >>> _pareto_dominates(lhs_scores=my_score_1, rhs_scores=my_score_2)
+    <ParetoDominates.RHS: 'rhs'>
+    >>> _pareto_dominates(lhs_scores=my_score_2, rhs_scores=my_score_1)
+    <ParetoDominates.LHS: 'lhs'>
+    >>> my_score_2 = (PScore(metric="r2_score", score=0.4), PScore(metric="mae", score=5.1))
+    >>> _pareto_dominates(lhs_scores=my_score_2, rhs_scores=my_score_1)
+    <ParetoDominates.NO: 'no'>
+
+    The metrics must be the same
+
+    >>> my_score_2 = (PScore(metric="r2_score", score=0.4), PScore(metric="mse", score=5.1))
+    >>> _pareto_dominates(lhs_scores=my_score_2, rhs_scores=my_score_1)
+    Traceback (most recent call last):
+    ...
+    RuntimeError: The performance scores must always be passed in the same order, but received 'mse' and 'mae'
+    """
+    # Length check (can't use strict=True in zip for backward compatibility)
+    assert len(lhs_scores) == len(rhs_scores), \
+        (f"Expected lhs and rhs solutions to have the same number of scores, but received "
+         f"(N={len(lhs_scores)}) {lhs_scores} and (N={len(rhs_scores)}) {rhs_scores}")
+
+    # Loop through all performance scores (tasks) of the current pareto-optimal solution
+    possibilities = {ParetoDominates.LHS, ParetoDominates.RHS}
+    for score_lhs, score_rhs in zip(lhs_scores, rhs_scores):
+        # Quick input check
+        if score_lhs.metric != score_rhs.metric:
+            raise RuntimeError(f"The performance scores must always be passed in the same order, but received "
+                               f"{score_lhs.metric!r} and {score_rhs.metric!r}")
+        metric = score_lhs.metric
+
+        # Check for superiority on this score
+        if higher_is_better(metric):
+            if score_lhs.score > score_rhs.score:
+                possibilities.discard(ParetoDominates.RHS)  # RHS does not dominate LHS
+            else:
+                possibilities.discard(ParetoDominates.LHS)  # LHS does not dominate RHS
+        else:
+            if score_lhs.score < score_rhs.score:
+                possibilities.discard(ParetoDominates.RHS)  # RHS does not dominate LHS
+            else:
+                possibilities.discard(ParetoDominates.LHS)  # LHS does not dominate RHS
+
+        # If neither is dominant, return no dominance
+        if not possibilities:
+            return ParetoDominates.NO
+
+    assert len(possibilities) == 1, (f"Expected pareto dominance to be either LHS, RHS, or no dominance. Received "
+                                     f"{possibilities}")
+    return next(iter(possibilities))
