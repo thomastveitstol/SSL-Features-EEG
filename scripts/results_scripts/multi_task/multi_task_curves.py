@@ -55,7 +55,7 @@ def main():
         scores = pandas.DataFrame(
             {"Score": pretext_scores + downstream_scores,
              f"Metric": [f"Pretext {pretext_metric}"] * len(pretext_scores)
-                         + [f"Downstream {downstream_metric}"] * len(pretext_scores),
+                         + [f"Downstream {downstream_metric}"] * len(downstream_scores),
              f"Epoch": list(range(len(pretext_scores))) + list(range(len(downstream_scores)))})
 
         # Make plot
