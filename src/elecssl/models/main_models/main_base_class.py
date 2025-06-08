@@ -1,6 +1,6 @@
 import abc
 from pathlib import Path
-from typing import Dict, List, Iterator
+from typing import Dict, List, Iterator, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -18,12 +18,20 @@ class MainModuleBase(nn.Module, abc.ABC):
     # ------------
     # Abstract methods
     # ------------
+    @classmethod
     @abc.abstractmethod
-    def train_model(self, *args, **kwargs) -> Dict[str, Histories]:
-        """Method for training the model"""
+    def from_config(cls, **kwargs):
+        """Initialise from config files"""
 
     @abc.abstractmethod
-    def test_model(self, *args, **kwargs) -> Histories:
+    def train_model(
+            self, *args, **kwargs) -> Tuple[Dict[str, Histories], Tuple[Dict[str, torch.Tensor], ...], Tuple[int, ...]]:
+        """Method for training the model. Must return history objects, model state dicts of the best model(s), and the
+        corresponding epochs. The most common case is one, but in multi-objective optimisation, many solutions can be
+        pareto-optimal"""
+
+    @abc.abstractmethod
+    def test_model(self, *args, **kwargs) -> Union[Histories, Tuple[Histories, ...]]:
         """Method for testing the model"""
 
     @abc.abstractmethod
