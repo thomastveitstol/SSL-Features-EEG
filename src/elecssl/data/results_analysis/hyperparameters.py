@@ -1,8 +1,4 @@
-import dataclasses
-from typing import Callable, Tuple, Union, Any, Dict
-
 from ConfigSpace import CategoricalHyperparameter, UniformFloatHyperparameter
-from ConfigSpace.hyperparameters import Hyperparameter
 
 
 # --------------
