@@ -717,7 +717,7 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
             # -------------
             # Run for a full epoch
             # -------------
-            for (x, pre_computed, (pretext_y, pretext_mask), (downstream_y, downstream_mask),
+            for (x, (pretext_y, pretext_mask), (downstream_y, downstream_mask),
                  subject_indices) in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
                 # TODO: Should masks be required? If validation or test set?
 
