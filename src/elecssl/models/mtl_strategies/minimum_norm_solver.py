@@ -1,8 +1,9 @@
 """
 Minimum norm solver. This was copied from the original code, with minor modification. These modifications include adding
 @staticmethod decorators, disabling mypy, replacing backslash sum with just 'sum', flake8 muting, flake8 fixes
-(exceeding line limit and removing unused variable), removing the gradient_normalizers function, and returning the best
-known solution if convergence failed for .find_min_norm_element and .find_min_norm_element_FW methods
+(exceeding line limit and removing unused variable), removing the gradient_normalizers function, returning the best
+known solution if convergence failed for .find_min_norm_element and .find_min_norm_element_FW methods (which is actually
+unused), and added .find_min_norm_element_two_task() method, which is a lot faster for two tasks only.
 
 Link to original code:
     https://github.com/isl-org/MultiObjectiveOptimization/blob/master/multi_task/min_norm_solvers.py#L5
@@ -106,6 +107,23 @@ class MinNormSolver:
         next_point = proj_grad * t + cur_val
         next_point = MinNormSolver._projection2simplex(next_point)
         return next_point
+
+    @classmethod
+    def find_min_norm_element_two_task(cls, vecs):
+        """
+        Returns the optimal scalar weights (alphas) for 2-task gradients. Not in the original repo.
+
+        (unittest in test folder)
+        """
+        assert len(vecs) == 2, f"This solver is optimised for exactly 2 tasks, but received {len(vecs)}"
+
+        g1, g2 = vecs[0], vecs[1]
+        v1v1 = torch.dot(g1, g1).item()
+        v1v2 = torch.dot(g1, g2).item()
+        v2v2 = torch.dot(g2, g2).item()
+
+        gamma, cost = MinNormSolver._min_norm_element_from2(v1v1, v1v2, v2v2)
+        return torch.tensor([gamma, 1 - gamma], device=g1.device, dtype=torch.float), cost
 
     @staticmethod
     def find_min_norm_element(vecs):

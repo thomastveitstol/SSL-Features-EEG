@@ -322,7 +322,7 @@ class MGDA(MultiTaskStrategy):
         # --------------
         # The algorithm as described in the paper, says Frank-Wolfe, but the original GitHub repo does not use it. Here,
         # we stay consistent with the GitHub repo
-        alphas = MinNormSolver.find_min_norm_element(shared_gradients)[0]
+        alphas = MinNormSolver.find_min_norm_element_two_task(shared_gradients)[0]
 
         # --------------
         # Compute loss and gradients
