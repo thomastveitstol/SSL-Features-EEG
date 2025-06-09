@@ -14,7 +14,6 @@ from elecssl.models.losses import CustomWeightedLoss
 from elecssl.models.main_models.main_base_class import MainModuleBase, reorder_subjects
 from elecssl.models.metrics import Histories, is_improved_model, PScore, is_pareto_optimal
 from elecssl.models.mtl_strategies.multi_task_strategies import MultiTaskStrategy
-from elecssl.models.mtl_strategies.residual_modules import ResidualHead
 from elecssl.models.mts_modules.getter import get_mts_module
 from elecssl.models.region_based_pooling.region_based_pooling import RegionBasedPooling, RBPDesign, RBPPoolType
 from elecssl.models.utils import tensor_dict_to_device, flatten_targets, ReverseLayerF, verify_type, \
