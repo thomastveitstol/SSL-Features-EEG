@@ -345,17 +345,13 @@ def get_available_mtl_strategies() -> Tuple[Type[MultiTaskStrategy], ...]:
     return EqualWeighting, PCGrad, GradNorm, UncertaintyWeighting, MGDA
 
 
-def get_mtl_strategy_type(name):
+def get_mtl_strategy_type(name) -> Type[MultiTaskStrategy]:
     """
     Function for getting a specified MTL strategy class
 
     Parameters
     ----------
     name : str
-
-    Returns
-    -------
-    MultiTaskStrategy
 
     Examples
     --------
