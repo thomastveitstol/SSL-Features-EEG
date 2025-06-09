@@ -7,8 +7,9 @@ import torch
 from elecssl.data.subject_split import Subject
 # noinspection PyProtectedMember
 from elecssl.models.hp_suggesting import _suggest_rbp, suggest_dl_architecture
-from elecssl.models.main_models.main_fixed_channels_model import MainFixedChannelsModel
-from elecssl.models.main_models.main_rbp_model import MainRBPModel
+from elecssl.models.main_models.main_fixed_channels_model import DownstreamFixedChannelsModel, \
+    MultiTaskFixedChannelsModel
+from elecssl.models.main_models.main_rbp_model import DownstreamRBPModel, MultiTaskRBPModel
 
 
 @pytest.fixture
@@ -114,10 +115,10 @@ def dl_hpds(input_data):
 
 
 # --------------
-# Main models
+# RBP models
 # --------------
 @pytest.fixture
-def rbp_main_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
+def rbp_downstream_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
     num_models = 25
 
     # Fix HP distributions
@@ -170,7 +171,7 @@ def rbp_main_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
                                             freq_band=None)
 
         # Create and prepare model
-        model = MainRBPModel.from_config(rbp_config=rbp_config, discriminator_config=None, mts_config=dl_config)
+        model = DownstreamRBPModel.from_config(rbp_config=rbp_config, mts_config=dl_config)
         model.fit_channel_systems((dummy_eeg_dataset.channel_system, dummy_eeg_dataset_2.channel_system))
 
         models.append(model)
@@ -179,7 +180,72 @@ def rbp_main_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
 
 
 @pytest.fixture
-def interpolation_main_models(dl_hpds, interpolated_input_data):
+def rbp_multi_task_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
+    num_models = 25
+
+    # Fix HP distributions
+    num_kernels = ("int", {"low": 10, "high": 20, "log": True})
+    max_receptive_field = ("int", {"low": 15, "high": 30, "log": True})
+    rbp_hpds = {
+        "num_montage_splits": {"low": 1, "high": 4, "log": False},
+        "share_all_pooling_modules": {"choices": [True, False]},
+        "num_pooling_modules_percentage": {"low": 0.0, "high": 1.0, "step": None, "log": False},
+        "num_designs": 1,
+        "pooling_type": "multi_cs",
+        "PoolingMethods": {
+            "MultiMSMean": {},
+            "MultiMSSharedRocket": {
+                "num_kernels": num_kernels,
+                "max_receptive_field": max_receptive_field
+            },
+            "MultiMSSharedRocketHeadRegion": {
+                "num_kernels": num_kernels,
+                "max_receptive_field": max_receptive_field,
+                "latent_search_features": ("int", {"low": 2, "high": 16, "log": True}),
+                "share_search_receiver_modules": ("categorical", {"choices": [True, False]}),
+                "bias": ("categorical", {"choices": [False]})
+            },
+        },
+        "MontageSplits": {
+            "CentroidPolygons": {
+                "k": ("categorical_dict",
+                      {"k_1": [2, 2, 2, 2, 2, 2, 2],
+                       "k_2": [3, 3, 3, 3, 3, 3, 3, 3],
+                       "k_3": [2, 3, 2, 3, 2, 3, 2, 3, 2],
+                       "k_4": [4, 3, 2, 3, 4, 3, 2, 3, 4]}),
+                "min_nodes": ("int", {"low": 1, "high": 6, "step": 1, "log": False}),
+                "channel_positions": ("not_a_hyperparameter", ["Miltiadous", "LEMON"])
+            }
+        }
+    }
+
+    study = optuna.create_study()
+    trial = study.ask()
+
+    # Make many models
+    models = []
+    for _ in range(num_models):
+        # Make up some HPCs
+        rbp_config = _suggest_rbp(name="unimportant", config=rbp_hpds, normalisation=random.choice((True, False)),
+                                  cmmn={"kwargs": {}, "use_cmmn_layer": False}, trial=trial)["kwargs"]
+        dl_config = suggest_dl_architecture(name="unimportant", trial=trial, config=dl_hpds,
+                                            preprocessed_config_path=None, suggested_preprocessing_steps=None,
+                                            freq_band=None)
+
+        # Create and prepare model
+        model = MultiTaskRBPModel.from_config(rbp_config=rbp_config, mts_config=dl_config)
+        model.fit_channel_systems((dummy_eeg_dataset.channel_system, dummy_eeg_dataset_2.channel_system))
+
+        models.append(model)
+
+    return tuple(models)
+
+
+# ---------------
+# Interpolation models
+# ---------------
+@pytest.fixture
+def interpolation_downstream_models(dl_hpds, interpolated_input_data):
     num_models = 25
 
     # Create a fake trial
@@ -202,9 +268,42 @@ def interpolation_main_models(dl_hpds, interpolated_input_data):
         dl_config["kwargs"]["in_channels"] = num_channels
 
         # Create and prepare model
-        model = MainFixedChannelsModel.from_config(
-            mts_config=dl_config, discriminator_config=None, cmmn_config={"kwargs": {}, "use_cmmn_layer": False})
+        model = DownstreamFixedChannelsModel.from_config(
+            mts_config=dl_config, cmmn_config={"kwargs": {}, "use_cmmn_layer": False})
 
         models.append(model)
 
     return tuple(models)
+
+
+@pytest.fixture
+def interpolation_multi_task_models(dl_hpds, interpolated_input_data):
+    num_models = 25
+
+    # Create a fake trial
+    study = optuna.create_study()
+    trial = study.ask()
+
+    # Get number of channels
+    _num_channels = set(arr.shape[1] for arr in interpolated_input_data.values())
+    assert len(_num_channels) == 1
+    num_channels = next(iter(_num_channels))
+
+    # Make many models
+    models = []
+    for _ in range(num_models):
+        # Make up some HPCs
+        dl_config = suggest_dl_architecture(
+            name="unimportant", trial=trial, config=dl_hpds, preprocessed_config_path=None,
+            suggested_preprocessing_steps=None, freq_band=None)
+        dl_config["normalise"] = random.choice((True, False))
+        dl_config["kwargs"]["in_channels"] = num_channels
+
+        # Create and prepare model
+        model = MultiTaskFixedChannelsModel.from_config(
+            mts_config=dl_config, cmmn_config={"kwargs": {}, "use_cmmn_layer": False})
+
+        models.append(model)
+
+    return tuple(models)
+
