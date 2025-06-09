@@ -8,8 +8,8 @@ import torch
 from torch import optim
 from torch.utils.data import DataLoader
 
-from elecssl.data.data_generators.data_generator import InterpolationDataGenerator, MultiTaskInterpolationDataGenerator, \
-    create_mask
+from elecssl.data.data_generators.data_generator import InterpolationDataGenerator, create_mask, \
+    MultiTaskInterpolationDataGenerator
 from elecssl.models.losses import CustomWeightedLoss
 from elecssl.models.main_models.main_fixed_channels_model import DownstreamFixedChannelsModel, \
     MultiTaskFixedChannelsModel

@@ -281,6 +281,8 @@ _PARETO_FRONTIER = (
     (PScore(metric="r2_score", score=0.3), PScore(metric="auc", score=0.4), PScore(metric="mae", score=0.4)),
     (PScore(metric="r2_score", score=0.2), PScore(metric="auc", score=0.45), PScore(metric="mae", score=0.45))
 )
+
+
 @pytest.mark.parametrize("pareto_frontier,new_scores,expected", (
     (_PARETO_FRONTIER, (PScore(metric="r2_score", score=0.8), PScore(metric="auc", score=0.2),
                         PScore(metric="mae", score=0.05)), (True, (1,))),

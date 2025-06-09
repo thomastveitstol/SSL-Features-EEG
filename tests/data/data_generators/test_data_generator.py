@@ -18,7 +18,7 @@ def test_normal_rbp_data_gen(dummy_input_data, dummy_targets, dummy_pseudo_targe
     loader = DataLoader(
         RBPDataGenerator(
             data=dummy_input_data, targets=dummy_targets, expected_variables=dummy_expected_variables,
-            subjects=dummy_dataset_subjects, pre_computed=None,subjects_info=dummy_subjects_info
+            subjects=dummy_dataset_subjects, pre_computed=None, subjects_info=dummy_subjects_info
         )
     )
 
@@ -44,7 +44,7 @@ def test_normal_rbp_data_gen(dummy_input_data, dummy_targets, dummy_pseudo_targe
         for dataset_name, x_tensor in x.items():
             assert isinstance(x_tensor, torch.Tensor)
             assert x_tensor.size()[-2:] == torch.Size(dummy_input_data[dataset_name].shape[-2:])
-            assert (((x_tensor >= 100) & (x_tensor <= 150)) |((x_tensor > -1.1) & (x_tensor < -0.9))).all()
+            assert (((x_tensor >= 100) & (x_tensor <= 150)) | ((x_tensor > -1.1) & (x_tensor < -0.9))).all()
 
         # Targets
         for dataset_name, targets in y.items():
@@ -125,7 +125,7 @@ def test_multi_task_rbp_data_gen(dummy_input_data, dummy_targets, dummy_pseudo_t
         for dataset_name, x_tensor in x.items():
             assert isinstance(x_tensor, torch.Tensor)
             assert x_tensor.size()[-2:] == torch.Size(dummy_input_data[dataset_name].shape[-2:])
-            assert (((x_tensor >= 100) & (x_tensor <= 150)) |((x_tensor > -1.1) & (x_tensor < -0.9))).all()
+            assert (((x_tensor >= 100) & (x_tensor <= 150)) | ((x_tensor > -1.1) & (x_tensor < -0.9))).all()
 
         # Pretext targets
         for dataset_name, pseudo_targets in pretext_y.items():
@@ -269,7 +269,6 @@ def test_normal_interpolation_data_gen(dummy_input_data, dummy_targets, dummy_ps
 
             assert (((targets >= 0) & (targets <= 1)) | ((targets > -1.1) & (targets < -0.9))).all()
 
-
         # ------------
         # Tests after stripping the dictionaries for 'ghost tensors'
         # ------------
@@ -342,7 +341,7 @@ def test_multi_task_interpolation_data_gen(dummy_input_data, dummy_targets, dumm
         for dataset_name, x_tensor in x.items():
             assert isinstance(x_tensor, torch.Tensor)
             assert x_tensor.size()[-2:] == torch.Size(dummy_input_data[dataset_name].shape[-2:])
-            assert (((x_tensor >= 100) & (x_tensor <= 150)) |((x_tensor > -1.1) & (x_tensor < -0.9))).all()
+            assert (((x_tensor >= 100) & (x_tensor <= 150)) | ((x_tensor > -1.1) & (x_tensor < -0.9))).all()
 
         # Pretext targets
         for dataset_name, pseudo_targets in pretext_y.items():

@@ -267,7 +267,7 @@ def test_mtl_forward_reproducibility(input_data, rbp_multi_task_models, dummy_ee
             pretext_predictions_1, downstream_prediction_1 = model(
                 input_data, pre_computed=pre_computed, channel_name_to_index=channel_name_to_index,
                 pretext_y=pretext_target_data, downstream_mask=downstream_mask_tensor)
-            pretext_predictions_2, downstream_prediction_2  = model(
+            pretext_predictions_2, downstream_prediction_2 = model(
                 input_data, pre_computed=pre_computed, channel_name_to_index=channel_name_to_index,
                 pretext_y=pretext_target_data, downstream_mask=downstream_mask_tensor)
         except (optuna.TrialPruned, RuntimeError):

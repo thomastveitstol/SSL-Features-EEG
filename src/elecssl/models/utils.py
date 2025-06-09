@@ -7,7 +7,7 @@ from typing import Any, Dict, Type
 
 import numpy
 import torch
-import yaml
+import yaml  # type: ignore[import-untyped]
 from torch.autograd import Function
 
 from elecssl.models.hp_suggesting import get_optuna_sampler
