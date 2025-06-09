@@ -4,7 +4,7 @@ import random
 import pytest
 import torch
 
-from elecssl.models.metrics import Histories, NaNValueError, MismatchClassCountError
+from elecssl.models.metrics import Histories, NaNValueError, MismatchClassCountError, PScore, is_pareto_optimal
 
 
 # ----------------
@@ -270,3 +270,28 @@ def test_inf_predictions_error_multiclass_classification_metrics():
         except NaNValueError:
             # If NaNValueError is raised, it's expected behavior for many metrics
             pass
+
+
+# ----------------
+# Tests for pareto optimality
+# ----------------
+_PARETO_FRONTIER = (
+    (PScore(metric="r2_score", score=0.5), PScore(metric="auc", score=0.5), PScore(metric="mae", score=0.5)),
+    (PScore(metric="r2_score", score=0.7), PScore(metric="auc", score=0.1), PScore(metric="mae", score=0.1)),
+    (PScore(metric="r2_score", score=0.3), PScore(metric="auc", score=0.4), PScore(metric="mae", score=0.4)),
+    (PScore(metric="r2_score", score=0.2), PScore(metric="auc", score=0.45), PScore(metric="mae", score=0.45))
+)
+@pytest.mark.parametrize("pareto_frontier,new_scores,expected", (
+    (_PARETO_FRONTIER, (PScore(metric="r2_score", score=0.8), PScore(metric="auc", score=0.2),
+                        PScore(metric="mae", score=0.05)), (True, (1,))),
+    (_PARETO_FRONTIER, (PScore(metric="r2_score", score=0.6), PScore(metric="auc", score=0.05),
+                        PScore(metric="mae", score=0.2)), (False, ())),
+    (_PARETO_FRONTIER, (PScore(metric="r2_score", score=0.99), PScore(metric="auc", score=0.99),
+                        PScore(metric="mae", score=0.01)), (True, (0, 1, 2, 3))),
+    (_PARETO_FRONTIER, (PScore(metric="r2_score", score=0.01), PScore(metric="auc", score=0.01),
+                        PScore(metric="mae", score=10.8)), (False, ())),
+    (_PARETO_FRONTIER, (PScore(metric="r2_score", score=0.4), PScore(metric="auc", score=0.5),
+                        PScore(metric="mae", score=0.4)), (True, (2, 3)))
+))
+def test_is_pareto_optimal(pareto_frontier, new_scores, expected):
+    assert is_pareto_optimal(pareto_frontier=pareto_frontier, new_scores=new_scores) == expected
