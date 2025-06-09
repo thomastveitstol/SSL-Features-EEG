@@ -799,15 +799,14 @@ class SingleExperiment:
             if "test" in histories:
                 raise RuntimeError("Expected 'test' history not to be present with continuous test set to 'False', "
                                    "but that was not the case")
+            # Get test loader
+            test_loader = self._load_test_data_loader(
+                model=model, test_subjects=test_subjects, combined_dataset=combined_dataset,
+                target_scaler=target_scalers["target_scaler"],
+                pretext_target_scaler=target_scalers.get("pretext_target_scaler"))
 
             for best_model_state, epoch in zip(model_states, best_epochs):
                 model.load_state_dict({k: v.to(self._device) for k, v in best_model_state.items()})
-
-                # Get test loader
-                test_loader = self._load_test_data_loader(
-                    model=model, test_subjects=test_subjects, combined_dataset=combined_dataset,
-                    target_scaler=target_scalers["target_scaler"],
-                    pretext_target_scaler=target_scalers.get("pretext_target_scaler"))
 
                 # Test model on test data
                 metric_kwargs.pop("downstream_selection_metric", None)
