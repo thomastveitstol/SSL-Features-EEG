@@ -31,62 +31,6 @@ def train_method(func):
 # Classes
 # ----------------
 class MainFixedChannelsModelBase(MainModuleBase, abc.ABC):
-    """
-    Main model when the number of input channels is fixed
-
-    Examples
-    --------
-    >>> my_mts_kwargs = {"in_channels": 19, "num_classes": 7, "num_res_blocks": 1, "cnn_units": 32}
-    >>> my_dd_kwargs = {"hidden_units": (8, 4), "num_classes": 3, "activation_function": "relu"}
-    >>> my_cmmn_kwargs = {"kernel_size": 128}
-    >>> MainFixedChannelsModel("InceptionNetwork", mts_module_kwargs=my_mts_kwargs, domain_discriminator="FCModule",
-    ...                        domain_discriminator_kwargs=my_dd_kwargs, use_cmmn_layer=True,
-    ...                        cmmn_kwargs=my_cmmn_kwargs, normalise=True)
-    MainFixedChannelsModel(
-      (_mts_module): InceptionNetwork(
-        (_inception_modules): ModuleList(
-          (0): _InceptionModule(
-            (_input_conv): Conv1d(19, 32, kernel_size=(1,), stride=(1,), padding=same, bias=False)
-            (_conv_list): ModuleList(
-              (0): Conv1d(32, 32, kernel_size=(40,), stride=(1,), padding=same, bias=False)
-              (1): Conv1d(32, 32, kernel_size=(20,), stride=(1,), padding=same, bias=False)
-              (2): Conv1d(32, 32, kernel_size=(10,), stride=(1,), padding=same, bias=False)
-            )
-            (_max_pool): MaxPool1d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
-            (_conv_after_max_pool): Conv1d(19, 32, kernel_size=(1,), stride=(1,), padding=same, bias=False)
-            (_batch_norm): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          )
-          (1-2): 2 x _InceptionModule(
-            (_input_conv): Conv1d(128, 32, kernel_size=(1,), stride=(1,), padding=same, bias=False)
-            (_conv_list): ModuleList(
-              (0): Conv1d(32, 32, kernel_size=(40,), stride=(1,), padding=same, bias=False)
-              (1): Conv1d(32, 32, kernel_size=(20,), stride=(1,), padding=same, bias=False)
-              (2): Conv1d(32, 32, kernel_size=(10,), stride=(1,), padding=same, bias=False)
-            )
-            (_max_pool): MaxPool1d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
-            (_conv_after_max_pool): Conv1d(128, 32, kernel_size=(1,), stride=(1,), padding=same, bias=False)
-            (_batch_norm): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          )
-        )
-        (_shortcut_layers): ModuleList(
-          (0): _ShortcutLayer(
-            (_conv): Conv1d(19, 128, kernel_size=(1,), stride=(1,), padding=same)
-            (_batch_norm): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          )
-        )
-        (_fc_layer): Linear(in_features=128, out_features=7, bias=True)
-      )
-      (_domain_discriminator): FCModule(
-        (_model): ModuleList(
-          (0): Linear(in_features=128, out_features=8, bias=True)
-          (1): ReLU()
-          (2): Linear(in_features=8, out_features=4, bias=True)
-          (3): ReLU()
-          (4): Linear(in_features=4, out_features=3, bias=True)
-        )
-      )
-    )
-    """
 
     def __init__(self, *, mts_module, mts_module_kwargs, use_cmmn_layer, cmmn_kwargs, normalise):
         """
@@ -181,6 +125,62 @@ class MainFixedChannelsModelBase(MainModuleBase, abc.ABC):
 
 
 class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
+    """
+    Main model when the number of input channels is fixed
+
+    Examples
+    --------
+    >>> my_mts_kwargs = {"in_channels": 19, "num_classes": 7, "num_res_blocks": 1, "cnn_units": 32}
+    >>> my_dd_kwargs = {"hidden_units": (8, 4), "num_classes": 3, "activation_function": "relu"}
+    >>> my_cmmn_kwargs = {"kernel_size": 128}
+    >>> DownstreamFixedChannelsModel("InceptionNetwork", mts_module_kwargs=my_mts_kwargs,
+    ...                              domain_discriminator="FCModule", domain_discriminator_kwargs=my_dd_kwargs,
+    ...                              use_cmmn_layer=True, cmmn_kwargs=my_cmmn_kwargs, normalise=True)
+    MainFixedChannelsModel(
+      (_mts_module): InceptionNetwork(
+        (_inception_modules): ModuleList(
+          (0): _InceptionModule(
+            (_input_conv): Conv1d(19, 32, kernel_size=(1,), stride=(1,), padding=same, bias=False)
+            (_conv_list): ModuleList(
+              (0): Conv1d(32, 32, kernel_size=(40,), stride=(1,), padding=same, bias=False)
+              (1): Conv1d(32, 32, kernel_size=(20,), stride=(1,), padding=same, bias=False)
+              (2): Conv1d(32, 32, kernel_size=(10,), stride=(1,), padding=same, bias=False)
+            )
+            (_max_pool): MaxPool1d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+            (_conv_after_max_pool): Conv1d(19, 32, kernel_size=(1,), stride=(1,), padding=same, bias=False)
+            (_batch_norm): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+          (1-2): 2 x _InceptionModule(
+            (_input_conv): Conv1d(128, 32, kernel_size=(1,), stride=(1,), padding=same, bias=False)
+            (_conv_list): ModuleList(
+              (0): Conv1d(32, 32, kernel_size=(40,), stride=(1,), padding=same, bias=False)
+              (1): Conv1d(32, 32, kernel_size=(20,), stride=(1,), padding=same, bias=False)
+              (2): Conv1d(32, 32, kernel_size=(10,), stride=(1,), padding=same, bias=False)
+            )
+            (_max_pool): MaxPool1d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+            (_conv_after_max_pool): Conv1d(128, 32, kernel_size=(1,), stride=(1,), padding=same, bias=False)
+            (_batch_norm): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+        )
+        (_shortcut_layers): ModuleList(
+          (0): _ShortcutLayer(
+            (_conv): Conv1d(19, 128, kernel_size=(1,), stride=(1,), padding=same)
+            (_batch_norm): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+        )
+        (_fc_layer): Linear(in_features=128, out_features=7, bias=True)
+      )
+      (_domain_discriminator): FCModule(
+        (_model): ModuleList(
+          (0): Linear(in_features=128, out_features=8, bias=True)
+          (1): ReLU()
+          (2): Linear(in_features=8, out_features=4, bias=True)
+          (3): ReLU()
+          (4): Linear(in_features=4, out_features=3, bias=True)
+        )
+      )
+    )
+    """
 
     @classmethod
     def from_config(cls, mts_config, cmmn_config):
@@ -344,7 +344,7 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
             y = flatten_targets(y).to(device)
 
             # Forward pass
-            output = self(x, use_domain_discriminator=False)
+            output = self(x)
 
             # Maybe compute loss and apply optimiser
             if compute_loss:

@@ -369,9 +369,6 @@ class DownstreamRBPModel(MainRBPModelBase):
             subjects_info=loader.dataset.subjects_info)
 
 
-MainRBPModel = DownstreamRBPModel  # todo: remove this
-
-
 class DomainDiscriminatorRBPModel(MainRBPModelBase):
     """
     RBP with domain discriminator training
