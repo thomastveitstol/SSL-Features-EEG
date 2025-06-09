@@ -4,7 +4,7 @@ from typing import Optional, Iterator, Dict, Tuple, Union, List
 
 import torch
 from progressbar import progressbar
-from torch import optim
+from torch import optim, nn
 from torch.nn import Parameter
 
 from elecssl.data.data_generators.data_generator import strip_tensors
@@ -465,7 +465,7 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
                          cmmn_kwargs=cmmn_kwargs, normalise=normalise)
 
         # Module for making predictions from the residual
-        self._residual_model = ResidualHead()
+        self._residual_model = nn.Linear(1, 1, bias=True)
 
     @classmethod
     def from_config(cls, mts_config, cmmn_config):
@@ -483,11 +483,9 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
                    cmmn_kwargs=None if not use_cmmn_layer else cmmn_config["kwargs"])
 
     def shared_parameters(self) -> Iterator[Parameter]:
-        for module in self.modules():
-            if hasattr(module, "shared") and not module.shared:
-                continue
-            for params in module.parameters():
-                yield params
+        """This is required for MGDA"""
+        for param in self._mts_module.parameters():
+            yield param
 
     # --------------
     # Forward pass

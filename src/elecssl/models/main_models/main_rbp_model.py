@@ -4,7 +4,7 @@ from typing import Dict, Optional, Iterator, List, Tuple
 
 import torch
 from progressbar import progressbar
-from torch import optim
+from torch import optim, nn
 from torch.nn import Parameter
 
 from elecssl.data.data_generators.data_generator import strip_tensors
@@ -654,7 +654,7 @@ class MultiTaskRBPModel(MainRBPModelBase):
                          normalise_region_representations=normalise_region_representations)
 
         # Module for making predictions from the residual
-        self._residual_model = ResidualHead()
+        self._residual_model = nn.Linear(1, 1, bias=True)
 
     @classmethod
     def from_config(cls, *, rbp_config, mts_config):
@@ -676,11 +676,12 @@ class MultiTaskRBPModel(MainRBPModelBase):
                    normalise_region_representations=rbp_config["normalise_region_representations"])
 
     def shared_parameters(self) -> Iterator[Parameter]:
-        for module in self.modules():
-            if hasattr(module, "shared") and not module.shared:
-                continue
-            for params in module.parameters():
-                yield params
+        """This is required for MGDA"""
+        for param in self._region_based_pooling.parameters():
+            yield param
+
+        for param in self._mts_module.parameters():
+            yield param
 
     # --------------
     # Forward pass
