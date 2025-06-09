@@ -7,11 +7,13 @@ Braindecode citation:
     visualization. Hum. Brain Mapp., 38: 5391-5420. https://doi.org/10.1002/hbm.23730
 """
 import warnings
+from typing import Iterator
 
 import optuna
 import torch
 import torch.nn as nn
 from braindecode.models import Deep4Net, ShallowFBCSPNet, TCN
+from torch.nn import Parameter
 
 from elecssl.models.mts_modules.mts_module_base import MTSModuleBase
 
@@ -174,6 +176,24 @@ class ShallowFBCSPNetMTS(MTSModuleBase):
         latent_features = torch.squeeze(latent_features, dim=-1)  # Removing redundant dimension
         latent_features = torch.reshape(latent_features, shape=(latent_features.size()[0], -1))
         return latent_features
+
+    # ----------------
+    # Multi-task learning
+    # ----------------
+    def gradnorm_parameters(self) -> Iterator[Parameter]:
+        """
+        Parameters for GradNorm
+
+        Examples
+        --------
+        >>> my_model = ShallowFBCSPNetMTS(4, 7, 200)
+        >>> for my_params in my_model.gradnorm_parameters():
+        ...     type(my_params), my_params.requires_grad, my_params.data.size()
+        (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([7, 40, 7, 1]))
+        (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([7]))
+        """
+        for params in self._model.final_layer.parameters():
+            yield params
 
     # ----------------
     # Hyperparameter sampling
@@ -485,6 +505,24 @@ class Deep4NetMTS(MTSModuleBase):
         return latent_features
 
     # ----------------
+    # Multi-task learning
+    # ----------------
+    def gradnorm_parameters(self) -> Iterator[Parameter]:
+        """
+        Parameters for GradNorm
+
+        Examples
+        --------
+        >>> my_model = Deep4NetMTS(19, 3, 70, filter_time_length=10)
+        >>> for my_params in my_model.gradnorm_parameters():
+        ...     type(my_params), my_params.requires_grad, my_params.data.size()
+        (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([3, 100, 2, 1]))
+        (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([3]))
+        """
+        for params in self._model.final_layer.parameters():
+            yield params
+
+    # ----------------
     # Hyperparameter sampling
     # ----------------
     @classmethod
@@ -732,6 +770,25 @@ class TCNMTS(MTSModuleBase):
         True
         """
         return self._model.latent_features_to_prediction(input_tensor)
+
+    # ----------------
+    # Multi-task learning
+    # ----------------
+    def gradnorm_parameters(self) -> Iterator[Parameter]:
+        """
+        Parameters for GradNorm
+
+        Examples
+        --------
+        >>> my_model = TCNMTS(in_channels=19, num_classes=3, n_blocks=3, kernel_size=10, n_filters=16, drop_prob=0.42)
+        >>> for my_params in my_model.gradnorm_parameters():
+        ...     type(my_params), my_params.requires_grad, my_params.data.size()
+        (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([3, 16]))
+        (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([3]))
+        """
+        # noinspection PyProtectedMember
+        for params in self._model._final_fc_layer.parameters():  # type: ignore
+            yield params
 
     # ----------------
     # Methods used for HPO

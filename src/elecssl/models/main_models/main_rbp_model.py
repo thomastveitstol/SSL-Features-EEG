@@ -674,6 +674,9 @@ class MultiTaskRBPModel(MainRBPModelBase):
         return cls(mts_module=mts_design["model"], mts_module_kwargs=mts_design["kwargs"], rbp_designs=rbp_designs,
                    normalise_region_representations=rbp_config["normalise_region_representations"])
 
+    # --------------
+    # Required methods for multi-task learning
+    # --------------
     def shared_parameters(self) -> Iterator[Parameter]:
         """This is required for MGDA"""
         for param in self._region_based_pooling.parameters():
@@ -681,6 +684,9 @@ class MultiTaskRBPModel(MainRBPModelBase):
 
         for param in self._mts_module.parameters():
             yield param
+
+    def gradnorm_parameters(self) -> Iterator[Parameter]:
+        return self._mts_module.gradnorm_parameters()
 
     # --------------
     # Forward pass

@@ -481,10 +481,16 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
                    use_cmmn_layer=cmmn_config["use_cmmn_layer"], normalise=mts_config["normalise"],
                    cmmn_kwargs=None if not use_cmmn_layer else cmmn_config["kwargs"])
 
+    # --------------
+    # Required methods for multi-task learning
+    # --------------
     def shared_parameters(self) -> Iterator[Parameter]:
         """This is required for MGDA"""
         for param in self._mts_module.parameters():
             yield param
+
+    def gradnorm_parameters(self) -> Iterator[Parameter]:
+        return self._mts_module.gradnorm_parameters()
 
     # --------------
     # Forward pass

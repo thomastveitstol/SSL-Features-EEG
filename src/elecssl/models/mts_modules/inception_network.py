@@ -7,10 +7,11 @@ Original implementation in keras at https://github.com/hfawaz/InceptionTime
 This implementation was authored by Thomas Tveitstøl (Oslo University Hospital) in a different project of mine
 (https://github.com/thomastveitstol/RegionBasedPoolingEEG/), although some minor changes have been made
 """
-from typing import Optional
+from typing import Optional, Iterator
 
 import torch
 import torch.nn as nn
+from torch.nn import Parameter
 
 from elecssl.models.mts_modules.mts_module_base import MTSModuleBase
 
@@ -415,6 +416,23 @@ class InceptionNetwork(MTSModuleBase):
 
         # Pass through FC layer and return. No activation function used
         return self._fc_layer(x)
+
+    # ----------------
+    # Multi-task learning
+    # ----------------
+    def gradnorm_parameters(self) -> Iterator[Parameter]:
+        """
+        Parameters for GradNorm
+
+        Examples
+        --------
+        >>> for my_params in InceptionNetwork(64, 5, cnn_units=32, num_res_blocks=2).gradnorm_parameters():
+        ...     type(my_params), my_params.requires_grad, my_params.data.size()
+        (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([5, 128]))
+        (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([5]))
+        """
+        for params in self._fc_layer.parameters():
+            yield params
 
     # ----------------
     # Hyperparameter sampling

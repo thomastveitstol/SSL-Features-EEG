@@ -2,9 +2,11 @@
 The GREEN model implemented to suit the pipeline of this project
 """
 import os
+from typing import Iterator
 
 import pandas
 import torch.nn as nn
+from torch.nn import Parameter
 
 from elecssl.models.mts_modules.green.pl_utils import get_green
 from elecssl.models.mts_modules.green.wavelet_layers import get_pooling_layer_type
@@ -215,6 +217,25 @@ class GreenModel(MTSModuleBase):
         if not isinstance(pre_layer, nn.Dropout):
             raise RuntimeError(f"Expected the second last layer to be dropout layer, but found {pre_layer}")
         return pre_layer
+
+    # ----------------
+    # Multi-task learning
+    # ----------------
+    def gradnorm_parameters(self) -> Iterator[Parameter]:
+        """
+        Parameters for GradNorm
+
+        Examples
+        --------
+        >>> my_model = GreenModel(in_channels=20, num_classes=3, sampling_freq=128, hidden_dim=(123, 11, 67),
+        ...                       n_freqs=30, kernel_width_s=4, dropout=0.435, pool_layer="pw_plv", bi_out_perc=0.7)
+        >>> for my_params in my_model.gradnorm_parameters():
+        ...     type(my_params), my_params.requires_grad, my_params.data.size()
+        (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([3, 67]))
+        (<class 'torch.nn.parameter.Parameter'>, True, torch.Size([3]))
+        """
+        for params in self._model.head[-1].parameters():
+            yield params
 
     # ----------------
     # Methods used for HPO

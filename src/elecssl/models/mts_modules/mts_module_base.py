@@ -1,6 +1,8 @@
 import abc
+from typing import Iterator
 
 import torch.nn as nn
+from torch.nn import Parameter
 
 
 class MTSModuleBase(nn.Module, abc.ABC):
@@ -59,6 +61,13 @@ class MTSModuleBase(nn.Module, abc.ABC):
 
     def save_metadata(self, *, name, path):
         pass
+
+    # --------------
+    # Required methods for multi-task learning
+    # --------------
+    @abc.abstractmethod
+    def gradnorm_parameters(self) -> Iterator[Parameter]:
+        """The parameters to loop over when using GradNorm. To create an iterator, use yield"""
 
     # ----------------
     # Properties
