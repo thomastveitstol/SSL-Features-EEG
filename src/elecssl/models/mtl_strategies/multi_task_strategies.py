@@ -320,8 +320,7 @@ class MGDA(MultiTaskStrategy):
         # --------------
         # Solve the minimum-norm problem
         # --------------
-        # The algorithm as described in the paper, says Frank-Wolfe, but the original GitHub repo does not use it. Here,
-        # we stay consistent with the GitHub repo
+        # Only two tasks here
         alphas = MinNormSolver.find_min_norm_element_two_task(shared_gradients)[0]
 
         # --------------
