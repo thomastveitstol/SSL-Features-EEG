@@ -111,7 +111,8 @@ class MinNormSolver:
     @classmethod
     def find_min_norm_element_two_task(cls, vecs):
         """
-        Returns the optimal scalar weights (alphas) for 2-task gradients. Not in the original repo.
+        Returns the optimal scalar weights (alphas) for 2-task gradients. For two-task learning, this is a lot faster
+        than .find_min_norm_element() and yields the same results. Not in the original repo.
 
         (unittest in test folder)
         """
