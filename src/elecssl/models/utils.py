@@ -1,4 +1,5 @@
 import abc
+import contextlib
 import copy
 from collections.abc import Mapping
 from functools import reduce
@@ -38,6 +39,10 @@ class ReverseLayerF(Function):
 # ---------------
 # Functions for training
 # ---------------
+def maybe_no_grad(apply_optimiser):
+    return contextlib.nullcontext() if apply_optimiser else torch.no_grad()
+
+
 def tensor_dict_to_device(tensors, device):
     """
     Send a dictionary containing tensors to device
