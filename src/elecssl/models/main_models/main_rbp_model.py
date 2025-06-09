@@ -683,7 +683,7 @@ class MultiTaskRBPModel(MainRBPModelBase):
             yield param
 
     def gradnorm_parameters(self) -> Iterator[Parameter]:
-        return self._mts_module.gradnorm_parameters()
+        return self._mts_module.gradnorm_parameters()  # type: ignore[no-any-return]
 
     # --------------
     # Forward pass
