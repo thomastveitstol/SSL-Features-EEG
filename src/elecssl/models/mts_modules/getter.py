@@ -27,7 +27,7 @@ def get_mts_module(mts_module_name, **kwargs):
 
     Returns
     -------
-    cdl_eeg.models.mts_modules.mts_module_base.MTSModuleBase
+    elecssl.models.mts_modules.mts_module_base.MTSModuleBase
 
     Examples
     --------
