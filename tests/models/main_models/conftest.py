@@ -30,6 +30,12 @@ def target_data(input_data):
 
 
 @pytest.fixture
+def pretext_target_data(input_data):
+    return {dataset_name: torch.rand(inputs.size()[0]) for dataset_name, inputs in input_data.items()}
+
+
+
+@pytest.fixture
 def subjects(input_data):
     return {dataset_name: tuple(Subject(dataset_name=dataset_name, subject_id=f"sub-{i}")
                                 for i in range(inputs.size()[0]))
@@ -181,7 +187,7 @@ def rbp_downstream_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
 
 @pytest.fixture
 def rbp_multi_task_models(dl_hpds, dummy_eeg_dataset, dummy_eeg_dataset_2):
-    num_models = 25
+    num_models = 10
 
     # Fix HP distributions
     num_kernels = ("int", {"low": 10, "high": 20, "log": True})

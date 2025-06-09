@@ -3,14 +3,18 @@ from tempfile import TemporaryDirectory
 
 import numpy
 import optuna
+import pytest
 import torch
 from torch import optim
 from torch.utils.data import DataLoader
 
-from elecssl.data.data_generators.data_generator import InterpolationDataGenerator
+from elecssl.data.data_generators.data_generator import InterpolationDataGenerator, MultiTaskInterpolationDataGenerator, \
+    create_mask
 from elecssl.models.losses import CustomWeightedLoss
-from elecssl.models.main_models.main_fixed_channels_model import DownstreamFixedChannelsModel
+from elecssl.models.main_models.main_fixed_channels_model import DownstreamFixedChannelsModel, \
+    MultiTaskFixedChannelsModel
 from elecssl.models.metrics import NaNValueError
+from elecssl.models.mtl_strategies.multi_task_strategies import get_mtl_strategy_type
 
 
 # --------------
@@ -125,3 +129,157 @@ def test_forward_manipulation(interpolated_input_data, interpolation_downstream_
 # --------------
 # Tests for multi-task model
 # --------------
+@pytest.mark.parametrize("strategy_name,strategy_kwargs", (
+        ("EqualWeighting", dict()),
+        ("PCGrad", dict()),
+        ("GradNorm", {"alpha": 1.5, "learning_rate": 0.01}),
+        ("UncertaintyWeighting", dict()),
+        ("MGDA", dict()))
+)
+def test_mtl_save_load_model_reproducibility(interpolation_multi_task_models, interpolated_input_data, subjects,
+                                             target_data, pretext_target_data, strategy_name, strategy_kwargs):
+    """Test if the model produces the same output after saving and loading, as before the model was saved"""
+    for i, model in enumerate(interpolation_multi_task_models):
+        assert isinstance(model, MultiTaskFixedChannelsModel)
+
+        # -------------
+        # Training preparations
+        # -------------
+        # Create dummy dataloaders. The dataloaders have en EEG epochs dimension too
+        data = {name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in interpolated_input_data.items()}
+        train_loader = DataLoader(
+            MultiTaskInterpolationDataGenerator(
+                data=data, downstream_targets=target_data, subjects=subjects, subjects_info=dict(),
+                pretext_targets=pretext_target_data, downstream_mask=None, pretext_mask=None,
+                expected_variables=None
+            ), batch_size=4, shuffle=True
+        )
+        data = {name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in interpolated_input_data.items()}
+        val_loader = DataLoader(
+            MultiTaskInterpolationDataGenerator(
+                data=data, downstream_targets=target_data, subjects=subjects, subjects_info=dict(),
+                pretext_targets=pretext_target_data, downstream_mask=None, pretext_mask=None,
+                expected_variables=None
+            ), batch_size=4, shuffle=True
+        )
+
+        # Strategy and criterion
+        optimiser = optim.Adam(model.parameters(), lr=0.001, betas=(0.8, 0.9), eps=1e-8)
+        strategy = get_mtl_strategy_type(strategy_name)(optimiser=optimiser, model=model, **strategy_kwargs)
+        pretext_criterion = CustomWeightedLoss("MSELoss", weighter=None, weighter_kwargs={}, loss_kwargs={})
+        downstream_criterion = CustomWeightedLoss("MSELoss", weighter=None, weighter_kwargs={}, loss_kwargs={})
+
+        # Test if forward method is reproducible
+        downstream_mask = create_mask(sample_sizes={n: d.shape[0] for n, d in interpolated_input_data.items()},
+                                      to_include=interpolated_input_data.keys())
+        downstream_mask_tensor = {n: torch.tensor(d, dtype=torch.bool) for n, d in downstream_mask.items()}
+        model.eval()
+        try:
+            # Do some training of the model and get the outputs
+            model.train_model(
+                train_loader=train_loader, val_loader=val_loader, test_loader=None, mtl_strategy=strategy,
+                downstream_metrics="regression", pretext_metrics="regression", pretext_selection_metric="r2_score",
+                downstream_selection_metric="r2_score", num_epochs=2, pretext_criterion=pretext_criterion,
+                downstream_criterion=downstream_criterion, device=torch.device("cpu"), patience=3,
+                pretext_target_scaler=None, downstream_prediction_activation_function=None,
+                pretext_prediction_activation_function=None, verbose=False, target_scaler=None, sub_group_splits=None,
+                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None
+            )
+            outputs_1 = model(interpolated_input_data, pretext_y=pretext_target_data,
+                              downstream_mask=downstream_mask_tensor)
+            pretext_predictions_1, downstream_prediction_1 = outputs_1
+
+            # Save model and then load it
+            with TemporaryDirectory() as d:
+                model.save_model("my_test_model", path=Path(d))
+                loaded_model = MultiTaskFixedChannelsModel.load_model("my_test_model", path=Path(d))
+
+            outputs_2 = loaded_model(interpolated_input_data, pretext_y=pretext_target_data,
+                                     downstream_mask=downstream_mask_tensor)
+            pretext_predictions_2, downstream_prediction_2 = outputs_2
+
+            # Test
+            assert torch.equal(pretext_predictions_1, pretext_predictions_2), \
+                (f"Model pretext prediction were not the same before and after saving model ({i}) {model}\n"
+                 f"{pretext_predictions_1 - pretext_predictions_2}")
+            assert torch.equal(downstream_prediction_1, downstream_prediction_2), \
+                (f"Model downstream prediction were not the same before and after saving model ({i}) {model}\n"
+                 f"{downstream_prediction_1 - downstream_prediction_2}")
+
+        except (optuna.TrialPruned, NaNValueError, RuntimeError):
+            continue
+
+
+def test_mtl_forward_reproducibility(interpolated_input_data, interpolation_multi_task_models, pretext_target_data):
+    """Test if the model predictions are reproducible when model is set to evaluate mode"""
+    for i, model in enumerate(interpolation_multi_task_models):
+        assert isinstance(model, MultiTaskFixedChannelsModel)
+
+        # Test if forward method is reproducible (in eval mode. In train mode it is not expected)
+        downstream_mask = create_mask(sample_sizes={n: d.shape[0] for n, d in interpolated_input_data.items()},
+                                      to_include=interpolated_input_data.keys())
+        downstream_mask_tensor = {n: torch.tensor(d, dtype=torch.bool) for n, d in downstream_mask.items()}
+        model.eval()
+        try:
+            pretext_predictions_1, downstream_prediction_1 = model(
+                interpolated_input_data, pretext_y=pretext_target_data, downstream_mask=downstream_mask_tensor)
+            pretext_predictions_2, downstream_prediction_2 = model(
+                interpolated_input_data, pretext_y=pretext_target_data, downstream_mask=downstream_mask_tensor)
+        except (optuna.TrialPruned, RuntimeError):
+            continue
+
+        assert torch.equal(pretext_predictions_1, pretext_predictions_2), \
+            (f"Model pretext predictions were not reproducible for model ({i}) {model}\n"
+             f"{pretext_predictions_1 - pretext_predictions_2}")
+        assert torch.equal(downstream_prediction_1, downstream_prediction_2), \
+            (f"Model downstream predictions were not reproducible for model ({i}) {model}\n"
+             f"{downstream_prediction_1 - downstream_prediction_2}")
+
+
+def test_mtl_forward_manipulation(interpolated_input_data, interpolation_multi_task_models, pretext_target_data):
+    """Test if manipulating the input of an EEG changes the predictions made on that and only that EEG"""
+    for i, model in enumerate(interpolation_multi_task_models):
+        assert isinstance(model, MultiTaskFixedChannelsModel)
+
+        # --------------
+        # Test
+        # --------------
+        downstream_mask = create_mask(sample_sizes={n: d.shape[0] for n, d in interpolated_input_data.items()},
+                                      to_include=interpolated_input_data.keys())
+        downstream_mask_tensor = {n: torch.tensor(d, dtype=torch.bool) for n, d in downstream_mask.items()}
+        model.eval()
+        try:
+            pretext_predictions_1, downstream_prediction_1 = model(
+                interpolated_input_data, pretext_y=pretext_target_data, downstream_mask=downstream_mask_tensor)
+
+            # Make a change to the input data. The keys should ("DummyDataset", "DummyDataset2"), in that order
+            new_input_data = {"DummyDataset": interpolated_input_data["DummyDataset"].clone(),
+                              "DummyDataset2": interpolated_input_data["DummyDataset2"].clone()}
+            new_input_data["DummyDataset2"][-3] = torch.rand(size=(new_input_data["DummyDataset2"][-3].size()))
+
+            pretext_predictions_2, downstream_prediction_2 = model(
+                new_input_data, pretext_y=pretext_target_data, downstream_mask=downstream_mask_tensor)
+        except (optuna.TrialPruned, RuntimeError):
+            continue
+
+        # Pretext predictions
+        assert not torch.equal(pretext_predictions_1[-3], pretext_predictions_2[-3]), \
+            (f"Model pretext prediction was the same after changing the input in model ({i}) {model}\n"
+             f"{pretext_predictions_1-pretext_predictions_2}")
+        assert torch.equal(pretext_predictions_1[:-3], pretext_predictions_2[:-3]), \
+            (f"Changing the input of a subject lead to changes for other subjects for model ({i}) {model}\n"
+             f"{pretext_predictions_1-pretext_predictions_2}")
+        assert torch.equal(pretext_predictions_1[-2:], pretext_predictions_2[-2:]), \
+            (f"Changing the input of a subject lead to changes for other subjects for model ({i}) {model}\n"
+             f"{pretext_predictions_1-pretext_predictions_2}")
+
+        # Downstream predictions
+        assert not torch.equal(downstream_prediction_1[-3], downstream_prediction_2[-3]), \
+            (f"Model downstream prediction was the same after changing the input in model ({i}) {model}\n"
+             f"{downstream_prediction_1 - downstream_prediction_2}")
+        assert torch.equal(downstream_prediction_1[:-3], downstream_prediction_2[:-3]), \
+            (f"Changing the input of a subject lead to changes for other subjects for model ({i}) {model}\n"
+             f"{downstream_prediction_1 - downstream_prediction_2}")
+        assert torch.equal(downstream_prediction_1[-2:], downstream_prediction_2[-2:]), \
+            (f"Changing the input of a subject lead to changes for other subjects for model ({i}) {model}\n"
+             f"{downstream_prediction_1 - downstream_prediction_2}")
