@@ -131,12 +131,10 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
     Examples
     --------
     >>> my_mts_kwargs = {"in_channels": 19, "num_classes": 7, "num_res_blocks": 1, "cnn_units": 32}
-    >>> my_dd_kwargs = {"hidden_units": (8, 4), "num_classes": 3, "activation_function": "relu"}
     >>> my_cmmn_kwargs = {"kernel_size": 128}
-    >>> DownstreamFixedChannelsModel("InceptionNetwork", mts_module_kwargs=my_mts_kwargs,
-    ...                              domain_discriminator="FCModule", domain_discriminator_kwargs=my_dd_kwargs,
+    >>> DownstreamFixedChannelsModel(mts_module="InceptionNetwork", mts_module_kwargs=my_mts_kwargs,
     ...                              use_cmmn_layer=True, cmmn_kwargs=my_cmmn_kwargs, normalise=True)
-    MainFixedChannelsModel(
+    DownstreamFixedChannelsModel(
       (_mts_module): InceptionNetwork(
         (_inception_modules): ModuleList(
           (0): _InceptionModule(
@@ -169,15 +167,6 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
           )
         )
         (_fc_layer): Linear(in_features=128, out_features=7, bias=True)
-      )
-      (_domain_discriminator): FCModule(
-        (_model): ModuleList(
-          (0): Linear(in_features=128, out_features=8, bias=True)
-          (1): ReLU()
-          (2): Linear(in_features=8, out_features=4, bias=True)
-          (3): ReLU()
-          (4): Linear(in_features=4, out_features=3, bias=True)
-        )
       )
     )
     """
