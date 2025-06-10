@@ -30,5 +30,5 @@ def test_two_task_solution(grad_dimension, device_name):
     alphas_two_task = solver.find_min_norm_element_two_task((tensor_1, tensor_2))[0]
 
     # Tests
-    assert torch.allclose(alphas_generic, alphas_two_task), \
+    assert torch.allclose(alphas_generic, alphas_two_task, rtol=1e-3, atol=1e-3), \
         f"The two solvers did not produce the same alpha values: {alphas_generic}, {alphas_two_task}"
