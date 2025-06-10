@@ -104,6 +104,11 @@ class DataSplitBase(abc.ABC):
                     datasets.add(subject.dataset_name)
         return datasets
 
+    @property
+    def test_set(self) -> Set[Subject]:
+        """Not mandatory, but convenient for the splits which has a consistent test set"""
+        raise NotImplementedError
+
 
 # -----------------
 # 'Normal' classes
@@ -553,7 +558,11 @@ class KeepDatasetsOutRandomSplits(DataSplitBase):
     The test set will always be the same, and contain the entire test dataset
 
     >>> my_test_subjects = tuple(my_split[-1] for my_split in my_splits)  # type: ignore
+    >>> expected_subjects = KeepDatasetsOutRandomSplits(f1_drivers, left_out_datasets="McLaren", val_split=0.2,
+    ...                                                 num_random_splits=my_num_splits, seed=42,
+    ...                                                 sort_first=False).test_set
     >>> for test_subjects in my_test_subjects:
+    ...     assert set(test_subjects) == expected_subjects
     ...     test_subjects
     (Subject(subject_id='Norris', dataset_name='McLaren'), Subject(subject_id='Piastri', dataset_name='McLaren'))
     (Subject(subject_id='Norris', dataset_name='McLaren'), Subject(subject_id='Piastri', dataset_name='McLaren'))
@@ -632,11 +641,24 @@ class KeepDatasetsOutRandomSplits(DataSplitBase):
     def splits(self):
         return self._splits
 
+    @property
+    def test_set(self):
+        """Get the test set"""
+        # Get the test set per split (should be the same)
+        test_sets = {split[-1] for split in self.splits}
+
+        # Make check
+        if len(test_sets) != 1:
+            raise RuntimeError(f"Expected the test set to be consistent across splits, but found {len(test_sets)} "
+                               f"unique ones")
+
+        return set(next(iter(test_sets)))
+
 
 # -----------------
 # Classes for combining splits classes
 # -----------------
-class CombinedSplits(DataSplitBase):
+class CombinedTwoSplits(DataSplitBase):
     """
     This class can be used for multi-task learning when the data (and data splitting) can be different from task to
     task
@@ -644,22 +666,24 @@ class CombinedSplits(DataSplitBase):
     (unittest in test folder)
     """
 
-    __slots__ = ("_split_objects", "_num_splits")
+    __slots__ = ("_pretext_split", "_downstream_split", "_num_splits", "_remove_duplicates")
 
-    def __init__(self, *splits: DataSplitBase):
+    def __init__(self, *, pretext_split: DataSplitBase, downstream_split: DataSplitBase, remove_duplicates):
         # Input checks
-        if not all(isinstance(split, DataSplitBase) for split in splits):
-            _types = tuple(type(split) for split in splits)
+        if not all(isinstance(split, DataSplitBase) for split in (pretext_split, downstream_split)):
+            _types = tuple(type(split) for split in (pretext_split, downstream_split))
             raise TypeError(f"Expected all splits to inherit from DataSplitBase, but received {_types}")
 
-        num_splits = {len(split.splits) for split in splits}
+        num_splits = {len(split.splits) for split in (pretext_split, downstream_split)}
         if len(num_splits) != 1:
             raise ValueError(f"Expected the number of splits to be consistent, but found (N={len(num_splits)}) "
                              f"{num_splits}")
 
-        # Set attribute
-        self._split_objects: Tuple[DataSplitBase, ...] = splits
+        # Set attributes
+        self._pretext_split = pretext_split
+        self._downstream_split = downstream_split
         self._num_splits = next(iter(num_splits))
+        self._remove_duplicates = remove_duplicates
 
     # ---------------
     # Properties
@@ -668,13 +692,24 @@ class CombinedSplits(DataSplitBase):
     def splits(self) -> Sequence[Tuple[Tuple[Subject, ...], Tuple[Subject, ...], Tuple[Subject, ...]]]:
         all_splits: List[Tuple[List[Subject], List[Subject], List[Subject]]] = [
             ([], [], []) for _ in range(self._num_splits)]
-        for splits_object in self._split_objects:
+        for splits_object in (self._pretext_split, self._downstream_split):
             for i, split in enumerate(splits_object.splits):
                 train, val, test = split
                 all_splits[i][0].extend(train)
                 all_splits[i][1].extend(val)
                 all_splits[i][2].extend(test)
+        # Maybe remove duplicates (I know it's suboptimal, but quick to implement)
+        if self._remove_duplicates:
+            return tuple((tuple(set(train)), tuple(set(val)), tuple(set(test))) for train, val, test in all_splits)
         return tuple((tuple(train), tuple(val), tuple(test)) for train, val, test in all_splits)
+
+    @property
+    def downstream_test_set(self):
+        return self._downstream_split.test_set
+
+    @property
+    def pretext_test_set(self):
+        return self._pretext_split.test_set
 
 
 # -----------------

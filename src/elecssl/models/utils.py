@@ -531,7 +531,7 @@ def verified_performance_score(score, metric):
         return score
 
     # We set correlations to 0
-    if metric in ("pearson_r", "spearman_rho"):
+    if metric in ("pearson_r", "spearman_rho", "conc_cc"):
         return 0.0
 
     raise ValueError(f"Received the non-numeric score '{score}' for a metric '{metric}' without an implemented default")
