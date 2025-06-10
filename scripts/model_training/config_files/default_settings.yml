@@ -27,7 +27,7 @@ Saving:  # Plots are in general not smart to save as they take up an unnecessary
 HPO:
   HPOStudy:
     sampler: TPESampler
-    sampler_kwargs: { n_startup_trials: 10, multivariate: true, group: true }
+    sampler_kwargs: { n_startup_trials: 50, multivariate: true, group: true }
     direction: UNAVAILABLE  # this will be added at runtime. Inferred from the selected downstream main metric
   num_trials: 500
   num_jobs: 1
