@@ -970,12 +970,11 @@ class MultiTaskRBPModel(MainRBPModelBase):
                     mtl_strategy.backward(losses=(loss_1, loss_2))
                     mtl_strategy.step()
 
-            # Update history objects. Not masking pretext because it could be interesting to see for the downstream
-            # subjects too. Have to mask on the downstream because targets are not expected to be available for the
-            # masked ones
+            # Update history objects
+            _pretext_subjects = tuple(subject for subject, mask in zip(subjects, flattened_pretext_mask) if mask)
             self._updated_history_object(
-                history=pretext_history, subjects=subjects, output=pretext_yhat, y=flattened_pretext_y,
-                target_scaler=pretext_target_scaler,
+                history=pretext_history, subjects=_pretext_subjects, output=pretext_yhat[[flattened_pretext_mask]],
+                y=flattened_pretext_y[[flattened_pretext_mask]], target_scaler=pretext_target_scaler,
                 prediction_activation_function=pretext_prediction_activation_function)
             _downstream_subjects = tuple(subject for subject, mask in zip(subjects, flattened_downstream_mask) if mask)
             self._updated_history_object(
@@ -986,4 +985,5 @@ class MultiTaskRBPModel(MainRBPModelBase):
         # Finalise epoch for history objects. 'subjects_info' is no longer maintained
         pretext_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
                                      verbose_variables=verbose_variables)
-        downstream_history.on_epoch_end(verbose=verbose)
+        downstream_history.on_epoch_end(verbose=verbose, verbose_sub_groups=sub_groups_verbose,
+                                        verbose_variables=verbose_variables)
