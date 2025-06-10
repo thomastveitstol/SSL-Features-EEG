@@ -27,13 +27,13 @@ _NUM_TO_STR = ("input_length",)
 
 
 def main():
-    hp_1 = "architecture"
-    hp_2 = "input_length"
+    hp_1 = "out_freq_band"
+    hp_2 = "normalisation"
 
-    study_name = "prediction_models"
+    study_name = "simple_elecssl"
     random_only = False
 
-    experiment_time = "2025-04-08_173502"
+    experiment_time = "2025-05-20_141517"
 
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name)
@@ -108,6 +108,16 @@ def main():
         if log_x:
             pyplot.xscale("log")
         pyplot.ylim(*val_lim)
+        pyplot.legend()
+    elif isinstance(hp_type_1, (FHP, IHP)) and isinstance(hp_type_2, (FHP, IHP)):
+        log_x = hp_type_1.log
+        log_y = hp_type_2.log
+        seaborn.scatterplot(trials_df[trials_df[value_name] > 0], x=hp_1, y=hp_2, hue=value_name, palette='viridis')
+        if log_x:
+            pyplot.xscale("log")
+        if log_y:
+            pyplot.yscale("log")
+        # pyplot.ylim(*val_lim)
         pyplot.legend()
     else:
         raise NotImplementedError

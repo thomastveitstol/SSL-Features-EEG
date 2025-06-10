@@ -175,13 +175,16 @@ _NUMERICAL_ENCODING_ADDS = MappingProxyType({
     "eceoallalpha_input_length": {5: 0, 10: 1, 20: 2, 30: 3},
     "eceoallbeta_input_length": {5: 0, 10: 1, 20: 2, 30: 3},
     "eceoallgamma_input_length": {5: 0, 10: 1, 20: 2, 30: 3},
-    "sfreq_multiple": {2: 0, 3: 1},
-    "eceoalldelta_sfreq_multiple": {2: 0, 3: 1},
-    "eceoalltheta_sfreq_multiple": {2: 0, 3: 1},
-    "eceoallalpha_sfreq_multiple": {2: 0, 3: 1},
-    "eceoallbeta_sfreq_multiple": {2: 0, 3: 1},
-    "eceoallgamma_sfreq_multiple": {2: 0, 3: 1},
+    "sfreq_multiple": {2: 0, 3: 1, 4: 2},
+    "eceoalldelta_sfreq_multiple": {2: 0, 3: 1, 4: 2},
+    "eceoalltheta_sfreq_multiple": {2: 0, 3: 1, 4: 2},
+    "eceoallalpha_sfreq_multiple": {2: 0, 3: 1, 4: 2},
+    "eceoallbeta_sfreq_multiple": {2: 0, 3: 1, 4: 2},
+    "eceoallgamma_sfreq_multiple": {2: 0, 3: 1, 4: 2},
     "ocular_state": {"ec": 0, "eo": 1},
+    "GreenModel_pool_layer": {"RealCovariance": 0, "CrossCovariance": 1, "PW_PLV": 2, "CrossPW_PLV": 3,
+                              "CombinedPoolingNoCross": 4, "CombinedPoolingCross": 5},
+    "GreenModel_logref": {"identity": 0, "logeuclid": 1}
 })
 _PRETTY_NAME = {
     "prediction_models": "Prediction models", "pretraining": "Pretraining", "simple_elecssl": "S. Elecssl",
@@ -259,6 +262,9 @@ def _clean_dataframe(trials_df, *, selected_hps, study_name):
     trials_df.dropna(inplace=True)
     trials_df.reset_index(drop=True, inplace=True)
 
+    # Remove columns with zero variance
+    trials_df = trials_df.loc[:, trials_df.nunique() > 1]
+
     return trials_df
 
 
@@ -266,8 +272,8 @@ def main():
     # -------------
     # A few things to select
     # -------------
-    studies = ("prediction_models", "pretraining", "simple_elecssl", "multivariable_elecssl")
-    experiment_time = "2025-04-02_173237"
+    studies = ("multivariable_elecssl",)  # ("prediction_models", "pretraining", "simple_elecssl", "multivariable_elecssl")
+    experiment_time = "2025-05-20_141517"
 
     selected_hps: Optional[Dict[str, Tuple[str, ...]]] = None
     percentiles = (0, 50, 75, 90)
@@ -293,6 +299,9 @@ def main():
         study = optuna.load_study(study_name=f"{study_name}-study", storage=study_storage)
         trials_df: pandas.DataFrame = study.trials_dataframe()
         trials_df = _clean_dataframe(trials_df, selected_hps=selected_hps, study_name=study_name)
+
+        # Uncomment line below for debugging. All values must be numeric
+        # print(trials_df.select_dtypes(exclude=("number")))
 
         # Create the configuration space
         distributions = {param_name: param_dist for param_name, param_dist in study.trials[-1].distributions.items()
