@@ -26,7 +26,7 @@ Crop:
   tmin: 30
   cut: 10
 Epochs:
-  duration: 4
+  duration: 5
   preload: true
   overlap: 0
   verbose: false
