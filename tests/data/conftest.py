@@ -16,6 +16,13 @@ def dummy_dataset_subjects():
 
 
 @pytest.fixture
+def dummy_dataset_subjects_2():
+    """Get a dummy dict of subjects as they should be passed to the __init__ of the subject split classes"""
+    return {"D1": ("P1", "P2", "P3"), "D2": ("P1", "P2"), "D3": ("P1", "P2"), "D4": ("P1", "P2"), "D5": ("P1", "P2"),
+            "D6": ("P1", "P2"), "D7": ("P1", "P2", "P3", "P4", "P5")}
+
+
+@pytest.fixture
 def splits_and_kwargs(dummy_dataset_subjects):
     return (
         (RandomSplitsTVTestHoldout, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "test_split": 0.3,
@@ -28,6 +35,30 @@ def splits_and_kwargs(dummy_dataset_subjects):
         (KeepDatasetsOutRandomSplits, {"dataset_subjects": dummy_dataset_subjects, "val_split": 0.2, "seed": 42,
                                        "num_random_splits": 7, "sort_first": True, "left_out_datasets": "Mercedes"})
     )
+
+
+@pytest.fixture
+def combined_splits(dummy_dataset_subjects, dummy_dataset_subjects_2):
+    combined_splits = []
+
+    # Two splits
+    split_1 = RandomSplitsTVTestHoldout(dataset_subjects=dummy_dataset_subjects, val_split=0.2, test_split=0.3,
+                                        num_random_splits=7, seed=42, sort_first=True)
+    split_2 = RandomSplitsTVTestHoldout(dataset_subjects=dummy_dataset_subjects_2, val_split=0.3, test_split=0.25,
+                                        num_random_splits=7, seed=42, sort_first=True)
+    combined_splits.append((split_1, split_2))
+
+    # Three splits
+    split_1 = RandomSplitsTVTestHoldout(dataset_subjects=dummy_dataset_subjects, val_split=0.2, test_split=0.3,
+                                        num_random_splits=5, seed=3, sort_first=True)
+    split_2 = RandomSplitsTVTestHoldout(dataset_subjects=dummy_dataset_subjects_2, val_split=0.3, test_split=0.25,
+                                        num_random_splits=5, seed=4, sort_first=True)
+    split_3 = RandomSplitsTVTestHoldout(dataset_subjects=dummy_dataset_subjects, val_split=0.5, test_split=0.2,
+                                        num_random_splits=5, seed=1, sort_first=True)
+
+    combined_splits.append((split_1, split_2, split_3))
+
+    return tuple(combined_splits)
 
 
 @pytest.fixture
