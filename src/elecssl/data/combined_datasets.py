@@ -109,7 +109,7 @@ class CombinedDatasets:
         self._variable_availability = variables
 
     @classmethod
-    def from_config(cls, config, variables, target, required_target, all_subjects):
+    def from_config(cls, config, variables, targets, default_target, required_target, all_subjects):
         """
         Method for initialising directly from a config file
 
@@ -117,7 +117,9 @@ class CombinedDatasets:
         ----------
         config : dict[str, typing.Any]
         variables
-        target : str, optional
+        targets : str | typing.Sequence[str] | None
+        default_target : str
+            The target which should be loaded by default, when calling .get_targets()
         required_target : str, optional
         all_subjects : set[Subject]
             Must have the columns 'dataset' and 'sub_id'. All subjects are expected to be loaded without problems
@@ -125,6 +127,9 @@ class CombinedDatasets:
         Returns
         -------
         """
+        targets = tuple(targets) if isinstance(targets, str) else targets
+        assert default_target in targets
+
         # Initialise lists and dictionaries
         datasets_details: List[DatasetDetails] = []
 
@@ -136,31 +141,32 @@ class CombinedDatasets:
                                      if subject.dataset_name == dataset_name)
 
             # Get the targets to load, and ensure that the 'current_target' is loaded
-            dataset_targets = dataset_kwargs.get("targets", ())
+            dataset_targets = dataset_kwargs.get("targets", [])
             if isinstance(dataset_targets, str):
                 dataset_targets = (dataset_targets,)
             elif isinstance(dataset_targets, list):
-                dataset_targets = tuple(dataset_targets)
-            elif isinstance(dataset_targets, tuple):
                 pass
+            elif isinstance(dataset_targets, tuple):
+                dataset_targets = list(dataset_targets)
             else:
                 #  Better be conservative
                 raise TypeError(f"Unexpected datasets target type {type(dataset_targets)=}, {dataset_targets=}")
 
-            if target not in dataset_targets:
-                dataset_targets += (target,)
+            for target in targets:
+                if target not in dataset_targets:
+                    dataset_targets.append(target)
 
             # Construct dataset details
             load_details = LoadDetails(
                 subject_ids=dataset_subjects, time_series_start=dataset_kwargs["time_series_start"],
                 num_time_steps=dataset_kwargs["num_time_steps"],
                 pre_processed_version=dataset_kwargs["pre_processed_version"], channels=dataset_kwargs["channels"],
-                targets=dataset_targets
+                targets=tuple(dataset_targets)
             )
             datasets_details.append(DatasetDetails(dataset=dataset, details=load_details))
 
         # Load all data and return object
-        return cls(datasets_details=tuple(datasets_details), current_target=target,
+        return cls(datasets_details=tuple(datasets_details), current_target=default_target,
                    required_target=required_target, variables=variables)
 
     # --------------
@@ -201,11 +207,11 @@ class CombinedDatasets:
         return {dataset_name: numpy.concatenate(numpy.expand_dims(data_matrix, axis=0), axis=0)
                 for dataset_name, data_matrix in data.items()}
 
-    def get_targets(self, subjects: Tuple[Subject, ...]):
+    def get_targets(self, subjects: Tuple[Subject, ...], target: Optional[str] = None):
         """
         Method for getting targets. If modifying data after calling this method, the attribute 'self._data' will not be
-        changed. To modify which target is loaded, please change the 'current_target' by using the setter method of the
-        property (combined_dataset.current_target = "new_target")
+        changed. To modify which target is loaded by default, please change the 'current_target' by using the setter
+        method of the property (combined_dataset.current_target = "new_target")
 
         (unittests in test folder)
 
@@ -213,11 +219,15 @@ class CombinedDatasets:
         ----------
         subjects : tuple[elecssl.data.data_split.Subject, ...]
             Subjects to extract
+        target : str | None
+            The target to load. If not specified, it will load the 'current_target'
 
         Returns
         -------
         dict[str, numpy.ndarray]
         """
+        target_to_use = self.current_target if target is None else target
+
         # Input check
         if self._targets is None:
             raise ValueError("Tried to extract targets, but no targets are available")
@@ -229,7 +239,7 @@ class CombinedDatasets:
 
             # Get the target
             idx = self._subject_ids[dataset_name][subject.subject_id]
-            subject_data = self._targets[self.current_target][dataset_name][idx]  # type: ignore[index]
+            subject_data = self._targets[target_to_use][dataset_name][idx]  # type: ignore[index]
 
             # Add the subject data
             if dataset_name in data:
