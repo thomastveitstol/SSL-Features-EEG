@@ -12,10 +12,11 @@ from torch.utils.data import DataLoader
 
 from elecssl.data.combined_datasets import CombinedDatasets
 from elecssl.data.data_generators.data_generator import InterpolationDataGenerator, RBPDataGenerator, create_mask, \
-    MultiTaskRBPdataGenerator, RBPDataGenBase, InterpolationDataGenBase, MultiTaskInterpolationDataGenerator
+    MultiTaskRBPdataGenerator, RBPDataGenBase, InterpolationDataGenBase, MultiTaskInterpolationDataGenerator, \
+    create_subjects_mask
 from elecssl.data.datasets.getter import get_channel_system
 from elecssl.data.scalers.target_scalers import get_target_scaler
-from elecssl.data.subject_split import get_data_split, DataSplitBase
+from elecssl.data.subject_split import get_data_split, DataSplitBase, subjects_tuple_to_dict, CombinedTwoSplits
 from elecssl.models.losses import CustomWeightedLoss, get_activation_function
 from elecssl.models.main_models.main_base_class import MainModuleBase
 from elecssl.models.main_models.main_fixed_channels_model import MultiTaskFixedChannelsModel, \
@@ -266,16 +267,18 @@ class SingleExperiment:
             raise ValueError
 
     def _load_test_data_loader(self, *, model=None, test_subjects, combined_dataset, target_scaler,
-                               pretext_target_scaler):
+                               pretext_target_scaler, pretext_test_subjects, downstream_test_subjects):
         if self.spatial_method == SpatialMethod.RBP:
             return self._load_rbp_test_data_loader(
                 model=model, test_subjects=test_subjects, combined_dataset=combined_dataset,
-                target_scaler=target_scaler, pretext_target_scaler=pretext_target_scaler
+                target_scaler=target_scaler, pretext_target_scaler=pretext_target_scaler,
+                pretext_test_subjects=pretext_test_subjects, downstream_test_subjects=downstream_test_subjects
             )
         elif self.spatial_method == SpatialMethod.INTERPOLATION:
             return self._load_interpolation_test_data_loader(
                 test_subjects=test_subjects, combined_dataset=combined_dataset, target_scaler=target_scaler,
-                pretext_target_scaler=pretext_target_scaler
+                pretext_target_scaler=pretext_target_scaler, pretext_test_subjects=pretext_test_subjects,
+                downstream_test_subjects=downstream_test_subjects
             )
         else:
             raise ValueError
@@ -353,10 +356,9 @@ class SingleExperiment:
         return train_loader, val_loader, scalers
 
     def _load_interpolation_test_data_loader(self, *, test_subjects, combined_dataset, target_scaler,
-                                             pretext_target_scaler):
+                                             pretext_target_scaler, pretext_test_subjects, downstream_test_subjects):
         # Extract input data
-        test_data = combined_dataset.get_data(subjects=tuple(set(test_subjects)))
-        # todo: Maybe the subjects are duplicated if they are test subjects in both splits?
+        test_data = combined_dataset.get_data(subjects=test_subjects)
 
         # Extract scaled targets
         test_targets = combined_dataset.get_targets(subjects=test_subjects)
@@ -374,13 +376,12 @@ class SingleExperiment:
                 subjects=test_subjects, target=self.mtl_config["pretext_target"])
             pretext_test_targets = pretext_target_scaler.transform(pretext_test_targets)
 
-            # Create masks  # todo: should this be necessary?
-            pretext_mask = create_mask(
-                sample_sizes={name: data.shape[0] for name, data in test_data.items()},
-                to_include=self.mtl_config["pretext_datasets"])
-            downstream_mask = create_mask(
-                sample_sizes={name: data.shape[0] for name, data in test_data.items()},
-                to_include=self.mtl_config["downstream_datasets"])
+            # Create masks
+            test_subjects_dict = subjects_tuple_to_dict(test_subjects)
+
+            pretext_mask = create_subjects_mask(subjects_dict=test_subjects_dict, to_include=pretext_test_subjects)
+            downstream_mask = create_subjects_mask(subjects_dict=test_subjects_dict,
+                                                   to_include=downstream_test_subjects)
 
             # Create data generator
             test_gen = MultiTaskInterpolationDataGenerator(
@@ -481,10 +482,9 @@ class SingleExperiment:
         return train_loader, val_loader, scalers
 
     def _load_rbp_test_data_loader(self, *, model, test_subjects, combined_dataset, target_scaler,
-                                   pretext_target_scaler):
+                                   pretext_target_scaler, pretext_test_subjects, downstream_test_subjects):
         # Extract input data
-        test_data = combined_dataset.get_data(subjects=tuple(set(test_subjects)))
-        # todo: Maybe the subjects are duplicated if they are test subjects in both splits?
+        test_data = combined_dataset.get_data(subjects=test_subjects)
 
         # Compute the pre-computed features
         if model.supports_precomputing:
@@ -513,13 +513,12 @@ class SingleExperiment:
                 subjects=test_subjects, target=self.mtl_config["pretext_target"])
             pretext_test_targets = pretext_target_scaler.transform(pretext_test_targets)
 
-            # Create masks  # todo: should this be necessary?
-            pretext_mask = create_mask(
-                sample_sizes={name: data.shape[0] for name, data in test_data.items()},
-                to_include=self.mtl_config["pretext_datasets"])
-            downstream_mask = create_mask(
-                sample_sizes={name: data.shape[0] for name, data in test_data.items()},
-                to_include=self.mtl_config["downstream_datasets"])
+            # Create masks
+            test_subjects_dict = subjects_tuple_to_dict(test_subjects)
+
+            pretext_mask = create_subjects_mask(subjects_dict=test_subjects_dict, to_include=pretext_test_subjects)
+            downstream_mask = create_subjects_mask(subjects_dict=test_subjects_dict,
+                                                   to_include=downstream_test_subjects)
 
             # Create data generator
             test_gen = MultiTaskRBPdataGenerator(
@@ -537,7 +536,8 @@ class SingleExperiment:
 
         return test_loader
 
-    def _create_loaders(self, *, model, combined_dataset, train_subjects, val_subjects, test_subjects):
+    def _create_loaders(self, *, model, combined_dataset, train_subjects, val_subjects, test_subjects,
+                        mtl_pretext_test_subjects, mtl_downstream_test_subjects):
         train_loader, val_loader, scalers = self._load_train_val_data_loaders(
             model=model, train_subjects=train_subjects, val_subjects=val_subjects, combined_dataset=combined_dataset
         )
@@ -547,7 +547,8 @@ class SingleExperiment:
         if self.train_config["continuous_testing"]:
             test_loader = self._load_test_data_loader(
                 model=model, test_subjects=test_subjects, combined_dataset=combined_dataset,
-                target_scaler=scalers["target_scaler"], pretext_target_scaler=scalers.get("pretext_target_scaler")
+                target_scaler=scalers["target_scaler"], pretext_target_scaler=scalers.get("pretext_target_scaler"),
+                pretext_test_subjects=mtl_pretext_test_subjects, downstream_test_subjects=mtl_downstream_test_subjects
             )
         else:
             test_loader = None
@@ -724,7 +725,8 @@ class SingleExperiment:
     # Method for running experiments
     # -------------
     def _run_single_fold(self, *, train_subjects, val_subjects, test_subjects, channel_systems, channel_name_to_index,
-                         combined_dataset: CombinedDatasets, results_path):
+                         combined_dataset: CombinedDatasets, results_path, mtl_pretext_test_subjects,
+                         mtl_downstream_test_subjects):
         # -----------------
         # Define or load model
         # -----------------
@@ -746,7 +748,8 @@ class SingleExperiment:
         print("Creating data loaders...")
         (train_loader, val_loader, test_loader), target_scalers = self._create_loaders(
             model=model, combined_dataset=combined_dataset, train_subjects=train_subjects, val_subjects=val_subjects,
-            test_subjects=test_subjects
+            test_subjects=test_subjects, mtl_pretext_test_subjects=mtl_pretext_test_subjects,
+            mtl_downstream_test_subjects=mtl_downstream_test_subjects
         )
 
         # -----------------
@@ -803,7 +806,8 @@ class SingleExperiment:
             test_loader = self._load_test_data_loader(
                 model=model, test_subjects=test_subjects, combined_dataset=combined_dataset,
                 target_scaler=target_scalers["target_scaler"],
-                pretext_target_scaler=target_scalers.get("pretext_target_scaler"))
+                pretext_target_scaler=target_scalers.get("pretext_target_scaler"),
+                pretext_test_subjects=mtl_pretext_test_subjects, downstream_test_subjects=mtl_downstream_test_subjects)
 
             for best_model_state, epoch in zip(model_states, best_epochs):
                 model.load_state_dict({k: v.to(self._device) for k, v in best_model_state.items()})
@@ -838,7 +842,12 @@ class SingleExperiment:
                 prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
                 model.save_model(name=f"{prefix_name}model_epoch_{epoch}", path=results_path)
 
-    def _run(self, *, splits, channel_systems, channel_name_to_index, combined_dataset):
+    def _run(self, *, subject_split, channel_systems, channel_name_to_index, combined_dataset):
+        # -----------------
+        # Make subject split
+        # -----------------
+        splits = subject_split.splits
+
         # Loop through all splits (e.g, folds if k-fold cross validation)
         for i, (train_subjects, val_subjects, test_subjects) in enumerate(splits):
             print(f"\nSplit {i + 1}/{len(splits)}")
@@ -853,10 +862,15 @@ class SingleExperiment:
             # -----------------
             # Run the current split/fold
             # -----------------
+            if isinstance(subject_split, CombinedTwoSplits):
+                mtl_test_sets = {"mtl_pretext_test_subjects": subject_split.pretext_test_set,
+                                 "mtl_downstream_test_subjects": subject_split.downstream_test_set}
+            else:
+                mtl_test_sets = {"mtl_pretext_test_subjects": None, "mtl_downstream_test_subjects": None}
             self._run_single_fold(
                 train_subjects=train_subjects, val_subjects=val_subjects, test_subjects=test_subjects,
                 results_path=fold_path, channel_systems=channel_systems, channel_name_to_index=channel_name_to_index,
-                combined_dataset=combined_dataset
+                combined_dataset=combined_dataset, **mtl_test_sets
             )
 
     # -------------
@@ -893,15 +907,10 @@ class SingleExperiment:
         channel_name_to_index = dataset_details["channel_name_to_index"]
 
         # -----------------
-        # Make subject split
-        # -----------------
-        splits = subject_split.splits
-
-        # -----------------
         # Run the experiment
         # -----------------
         self._run(
-            splits=splits, channel_systems=channel_systems, channel_name_to_index=channel_name_to_index,
+            subject_split=subject_split, channel_systems=channel_systems, channel_name_to_index=channel_name_to_index,
             combined_dataset=combined_datasets
         )
 
