@@ -12,11 +12,11 @@ _STUDIES = Literal["prediction_models", "pretraining", "simple_elecssl", "multiv
 
 def main():
     effect: Literal["marginals", "interactions"] = "marginals"
-    study_name: _STUDIES = "pretraining"
+    study_name: _STUDIES = "multivariable_elecssl"
     percentile = 90
-    num_hps = 10  # Plotting only the top 'num_hps' HP effects
+    num_hps = 15  # Plotting only the top 'num_hps' HP effects
 
-    experiment_time = "2025-04-02_173237"
+    experiment_time = "2025-05-20_141517"
 
     experiment_name = f"experiments_{experiment_time}"
     file_name = f"{effect}_{study_name}_percentile_{percentile}"
