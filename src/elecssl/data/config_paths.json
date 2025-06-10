@@ -1,7 +1,7 @@
 {
   "MNEPath": "/media/thomas/AI-Mind - Anonymised data/ELECSSL/Data/Originals",
-  "PreprocessedDataPath": "/media/thomas/Expansion/ELECSSL/Data/newer_input_data",
-  "FeaturesDataPath": "/media/thomas/Expansion/ELECSSL/Data/new_features",
+  "PreprocessedDataPath": "/media/thomas/Expansion/ELECSSL/Data/newest_input_data",
+  "FeaturesDataPath": "/media/thomas/Expansion/ELECSSL/Data/newest_pseudo_targets",
   "MNEPathTDBrain": "/media/thomas/AI-Mind - Anonymised data/CDLDatasets/TDBrain",
   "AIMindPreCTADAIDevPath": "/tsd/p1504/data/durable/preliminary-pre-ctad-data/ai-development-data/eeg-sets",
   "AIMind": "/tsd/p1504/data/durable/TODO"

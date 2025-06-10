@@ -22,3 +22,16 @@ MultivariableElecsslHPO:
   MLModel:
     model: LinearRegression
     kwargs: { }
+MultiTaskHPO:
+  shared:
+    Strategy:
+      EqualWeighting: { }
+      PCGrad: { }
+      GradNorm:
+        alpha: { low: 0.0, high: 3.0, step: null, log: false }
+        learning_rate : { low: 0.001, high: 0.1, step: null, log: true }
+      MGDA: { }
+      UncertaintyWeighting: { }
+  pretext:
+    out_freq_band: *freq_bands_optuna_kwargs
+  downstream: { }

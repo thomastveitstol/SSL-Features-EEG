@@ -30,3 +30,9 @@ MultivariableElecsslHPO:
     tol: 0.00001
   num_additional_trials: 150
   include_pseudo_targets: true
+MultiTaskHPO:
+  in_freq_band: all
+  in_ocular_state: ec
+  out_ocular_state: eo
+  mtl_scores_aggregation_method: min  # How to aggregate the performance scores for the two tasks to provide a signal to
+  # the HPO algorithm. Currently, we aim to maximise the minimum performance on the two tasks
