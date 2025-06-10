@@ -26,15 +26,21 @@ def _get_strategy(trial_path: Path):
 
 def main():
     curve_mode = _CurveMode.VAL
-    experiment_time = "2025-06-08_100404"
+    experiment_time = "2025-06-09_172035"
     # "2025-06-07_210521"  # "2025-06-08_010835"  # "2025-06-08_033700"  # "2025-06-08_064801"
-    pretext_metric = "pearson_r"
+    pretext_metric = "conc_cc"
     downstream_metric = pretext_metric
     y_lim = (-1, 1)
 
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name / "multi_task")
 
+    # Make folder(s)
+    experiment_results_folder = Path(os.path.dirname(__file__)) / "curves" / experiment_name
+    if not os.path.isdir(experiment_results_folder):
+        os.mkdir(experiment_results_folder)
+    results_folder = experiment_results_folder / f"{curve_mode.value}_{pretext_metric}_{downstream_metric}"
+    os.mkdir(results_folder)
 
     # Loop through all trials
     _folders = (folder for folder in os.listdir(experiments_path) if os.path.isdir(experiments_path / folder)
@@ -59,13 +65,14 @@ def main():
              f"Epoch": list(range(len(pretext_scores))) + list(range(len(downstream_scores)))})
 
         # Make plot
+        pyplot.close()
         pyplot.figure()
         seaborn.lineplot(data=scores, x="Epoch", y="Score", hue="Metric")
-        pyplot.title(_get_strategy(Path(os.path.dirname(trial_path))))
+        strategy = _get_strategy(Path(os.path.dirname(trial_path)))
+        pyplot.title(f"Trial {trial_folder.split('_')[-1]}: {strategy}")
         pyplot.ylim(y_lim)
         pyplot.grid()
-
-    pyplot.show()
+        pyplot.savefig(results_folder / f"{trial_folder}.png")
 
 
 if __name__ == "__main__":
