@@ -744,3 +744,38 @@ def create_mask(*, sample_sizes, to_include):
      'Red Bull': array([ True,  True])}
     """
     return {name: numpy.array([(name in to_include)] * size) for name, size in sample_sizes.items()}
+
+
+def create_subjects_mask(subjects_dict, to_include):
+    """
+    Function for creating boolean masks based on a dict of subjects for evaluation, and a set of subjects to include
+
+    Parameters
+    ----------
+    subjects_dict : dict[str, typing.Sequence[Subject]] | dict[str, typing.Sequence[str]]
+    to_include : typing.Sequence[Subject] | set[Subject]
+
+    Returns
+    -------
+    dict[str, numpy.ndarray]
+
+    Examples
+    --------
+    >>> my_subjects = {"D1": ("S1", "S2", "S3", "S4", "S5"), "D2": ("S1", "S2", "S3"), "D3": ("S1", "S2")}
+    >>> my_to_include = {Subject(dataset_name="D1", subject_id="S3"), Subject(dataset_name="D1", subject_id="S1"),
+    ...                  Subject(dataset_name="D2", subject_id="S2"), Subject(dataset_name="D1", subject_id="S5")}
+    >>> create_subjects_mask(subjects_dict=my_subjects, to_include=my_to_include)  # doctest: +NORMALIZE_WHITESPACE
+    {'D1': array([ True, False,  True, False,  True]),
+     'D2': array([False,  True, False]),
+     'D3': array([False, False])}
+    """
+    mask: Dict[str, List[bool]] = dict()
+    for dataset_name, subjects in subjects_dict.items():
+        mask[dataset_name] = []
+        for subject in subjects:
+            if isinstance(subject, str):
+                subject = Subject(dataset_name=dataset_name, subject_id=subject)
+
+            mask[dataset_name].append(subject in to_include)
+
+    return {name: numpy.array(bool_arr) for name, bool_arr in mask.items()}
