@@ -60,6 +60,9 @@ src/elecssl/models/main_models/main_fixed_channels_model.py
 src/elecssl/models/main_models/main_rbp_model.py
 src/elecssl/models/ml_models/__init__.py
 src/elecssl/models/ml_models/ml_model_base.py
+src/elecssl/models/mtl_strategies/__init__.py
+src/elecssl/models/mtl_strategies/minimum_norm_solver.py
+src/elecssl/models/mtl_strategies/multi_task_strategies.py
 src/elecssl/models/mts_modules/__init__.py
 src/elecssl/models/mts_modules/braindecode_models.py
 src/elecssl/models/mts_modules/getter.py
