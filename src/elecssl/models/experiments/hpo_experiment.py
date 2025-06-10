@@ -26,12 +26,13 @@ from elecssl.data.paths import get_numpy_data_storage_path
 from elecssl.data.results_analysis.hyperparameters import to_hyperparameter
 from elecssl.data.results_analysis.utils import load_hpo_study
 from elecssl.data.subject_split import Subject, subjects_tuple_to_dict, KeepDatasetsOutRandomSplits, \
-    RandomSplitsTVTestHoldout, DataSplitBase
+    RandomSplitsTVTestHoldout, DataSplitBase, CombinedTwoSplits
 from elecssl.models.experiments.single_experiment import SingleExperiment
 from elecssl.models.hp_suggesting import make_trial_suggestion, suggest_spatial_dimension_mismatch, suggest_loss, \
     suggest_dl_architecture, get_optuna_sampler
 from elecssl.models.metrics import PlotNotSavedWarning, higher_is_better
 from elecssl.models.ml_models.ml_model_base import MLModel
+from elecssl.models.mtl_strategies.multi_task_strategies import suggest_multi_task_strategy
 from elecssl.models.utils import add_yaml_constructors, verify_type, verified_performance_score, \
     merge_dicts_strict, remove_prefix, remove_prefix_from_keys
 
@@ -888,7 +889,8 @@ class PredictionModelsHPO(HPOExperiment):
             # Get the performance
             # ---------------
             return _get_aggregated_val_score(trial_results_dir=results_dir, metric=self.train_config["main_metric"],
-                                             aggregation_method=self._experiments_config["val_scores_aggregation"])
+                                             aggregation_method=self._experiments_config["val_scores_aggregation"],
+                                             file_name="val_history_metrics.csv")
 
         return _objective
 
@@ -911,6 +913,9 @@ class PredictionModelsHPO(HPOExperiment):
         return {**self._sampling_config["Training"], **self._experiments_config["Training"]}
 
 
+# --------------
+# Self-supervised based HPO experiments
+# --------------
 class PretrainHPO(HPOExperiment):
     """
     Class for using the pretext task for pretraining
@@ -943,7 +948,7 @@ class PretrainHPO(HPOExperiment):
         # Set attributes
         # ---------------
         if is_continuation:
-            # Load the configurations files
+            # Load the configuration files
             with open(self._results_path / "downstream_experiments_config.yml") as file:
                 loaded_downstream_experiments_config = yaml.safe_load(file)
             with open(self._results_path / "downstream_hpd_config.yml") as file:
@@ -1098,7 +1103,8 @@ class PretrainHPO(HPOExperiment):
             # ---------------
             score = _get_aggregated_val_score(
                 trial_results_dir=results_dir, metric=self._downstream_experiments_config["Training"]["main_metric"],
-                aggregation_method=self._downstream_experiments_config["val_scores_aggregation"]
+                aggregation_method=self._downstream_experiments_config["val_scores_aggregation"],
+                file_name="val_history_metrics.csv"
             )
 
             # ---------------
@@ -1164,7 +1170,7 @@ class PretrainHPO(HPOExperiment):
 
         # Loss
         suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=hpd_config["Loss"],
-                                             num_datasets=len(datasets_for_pretraining))
+                                             num_datasets=len(datasets_for_pretraining))  # TODO: think this is wrong
 
         # Domain discriminator
         if self._experiments_config["enable_domain_discriminator"]:
@@ -2058,6 +2064,227 @@ class MultivariableElecsslHPO(HPOExperiment):
 
 
 # --------------
+# Multi-task learning/multi-objective optimisation
+# based HPO experiments
+# --------------
+class MultiTaskHPO(HPOExperiment):
+    """
+    Class for the multi-task learning models
+    """
+
+    __slots__ = ("_pretext_experiments_config", "_downstream_experiments_config", "_pretext_sampling_config")
+    _name = "multi_task"
+    _test_predictions_file_name = "test_history_predictions"
+    _optimisation_predictions_file_name = ("train_history_predictions", "val_history_predictions")
+
+    def __init__(self, *, pretext_experiments_config, downstream_experiments_config, experiments_config, hp_config,
+                 results_dir, is_continuation, pretext_subject_split, downstream_subject_split, pretext_hp_config):
+        super().__init__(experiments_config=experiments_config, hp_config=hp_config, results_dir=results_dir,
+                         is_continuation=is_continuation, pretext_subject_split=pretext_subject_split,
+                         downstream_subject_split=downstream_subject_split)
+
+        # ---------------
+        # Set attributes
+        # ---------------
+        if is_continuation:
+            # Load the configuration files
+            with open(self._results_path / "pretext_experiments_config.yml") as file:
+                loaded_pretext_experiments_config = yaml.safe_load(file)
+            with open(self._results_path / "downstream_experiments_config.yml") as file:
+                loaded_downstream_experiments_config = yaml.safe_load(file)
+            with open(self._results_path / "pretext_hpd_config.yml") as file:
+                loaded_pretext_sampling_config = yaml.safe_load(file)
+
+            self._pretext_experiments_config = loaded_pretext_experiments_config
+            self._downstream_experiments_config = loaded_downstream_experiments_config
+            self._pretext_sampling_config = loaded_pretext_sampling_config
+            return
+
+        assert pretext_experiments_config is not None
+        assert downstream_experiments_config is not None
+        assert pretext_hp_config is not None
+
+        self._pretext_experiments_config = pretext_experiments_config
+        self._downstream_experiments_config = downstream_experiments_config
+        self._pretext_sampling_config = pretext_hp_config
+
+        # ---------------
+        # Save the config file
+        # ---------------
+        _save_yaml_file(results_path=self._results_path, config_file_name="pretext_experiments_config.yml",
+                        config=self._pretext_experiments_config, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="downstream_experiments_config.yml",
+                        config=self._downstream_experiments_config, make_read_only=True)
+        _save_yaml_file(results_path=self._results_path, config_file_name="pretext_hpd_config.yml",
+                        config=self._pretext_sampling_config, make_read_only=True)
+
+    def _create_study(self):
+        """Creates and returns the study object"""
+        # Create sampler
+        sampler = get_optuna_sampler(self.hpo_study_config["HPOStudy"]["sampler"],
+                                     **self.hpo_study_config["HPOStudy"]["sampler_kwargs"])
+
+        # Create study
+        study_name, storage_path = self._get_study_name_and_storage_path(results_path=self._results_path)
+        directions = self.hpo_study_config["HPOStudy"]["MultiTaskDirections"]
+        return optuna.create_study(study_name=study_name, storage=storage_path, sampler=sampler,
+                                   directions=(directions["pretext"], directions["downstream"]),
+                                   load_if_exists=False)
+
+    def _create_objective(self):
+        def _objective(trial: optuna.Trial):
+            _log_sampler_state(trial)
+
+            # ---------------
+            # Suggest / sample hyperparameters
+            # ---------------
+            in_freq_band = self._experiments_config["in_freq_band"]
+            in_ocular_state = self._experiments_config["in_ocular_state"]
+            out_ocular_state = self._experiments_config["out_ocular_state"]
+
+            suggested_hps, datasets_to_use, pretext_datasets = self._suggest_hyperparameters(
+                name=None, trial=trial, in_freq_band=in_freq_band, in_ocular_state=in_ocular_state
+            )
+
+            # ---------------
+            # Just a little bit of adding stuff where it needs
+            # ---------------
+            incomplete_experiments_config = merge_dicts_strict(
+                self._experiments_config, self._downstream_experiments_config)
+
+            # Add some details from the pretext task (the first task in the MTL)
+            for dataset_name, dataset_info in datasets_to_use.items():
+                if dataset_name not in incomplete_experiments_config["Datasets"]:
+                    incomplete_experiments_config["Datasets"][dataset_name] = dataset_info
+
+            experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
+                experiments_config=incomplete_experiments_config, in_freq_band=in_freq_band,
+                in_ocular_state=in_ocular_state, suggested_hyperparameters=suggested_hps
+            )
+
+            # Some multi-task specifics
+            pretext_target = f"band_power_{suggested_hps['out_freq_band']}_{out_ocular_state}"
+            if self._pretext_experiments_config["Training"]["log_transform_targets"] is not None:
+                pretext_target = (f"{self._pretext_experiments_config['Training']['log_transform_targets']}_"
+                                  f"{pretext_target}")
+            _pretext_train_config = self._pretext_experiments_config["Training"]
+            _downstream_train_config = self._downstream_experiments_config["Training"]
+            mtl_config = {
+                "Scaler": self._pretext_experiments_config["Scalers"],
+                "pretext_datasets": pretext_datasets,
+                "downstream_datasets": tuple(self._downstream_experiments_config["Datasets"]),
+                "pretext_target": pretext_target,
+                "Strategy": suggested_hps["Strategy"],
+                "Metrics": {
+                    "downstream_metrics": _downstream_train_config["metrics"],
+                    "pretext_metrics": _pretext_train_config["metrics"],
+                    "downstream_selection_metric": _downstream_train_config["main_metric"],
+                    "pretext_selection_metric": _pretext_train_config["main_metric"]
+                },
+                "ActivationFunctions": {"pretext": _pretext_train_config["prediction_activation_function"],
+                                        "downstream": _downstream_train_config["prediction_activation_function"]}
+            }
+            experiments_config["MultiTaskLearning"] = mtl_config
+            experiments_config["Training"]["method"] = "multi_task"
+
+            # Merge the subjects for the two tasks
+            assert self._pretext_subject_split is not None
+            combined_splits = CombinedTwoSplits(
+                pretext_split=self._pretext_subject_split(experiments_config["Datasets"]),
+                downstream_split=self._downstream_subject_split, remove_duplicates=True)
+
+            # ---------------
+            # Train prediction model
+            # ---------------
+            # Make directory for current iteration
+            results_dir = self._get_hpo_folder_path(trial.number)
+            with SingleExperiment(hp_config=suggested_hps, pre_processing_config=preprocessing_config_file,
+                                  experiments_config=experiments_config, results_path=results_dir,
+                                  fine_tuning=None, experiment_name=None) as experiment:
+                experiment.run_experiment(combined_datasets=None, subject_split=combined_splits)
+
+            # ---------------
+            # Get the performance scores
+            # ---------------
+            # Let's just use the same aggregation method for the two tasks
+            splits_aggregation_method = self._downstream_experiments_config["val_scores_aggregation"]
+
+            # Converting to a single performance score across task is important for model selection (model state must be
+            # from the same epoch for all tasks)
+            _pretext_metric = self._pretext_experiments_config["Training"]["main_metric"]
+            _downstream_metric = self._downstream_experiments_config["Training"]["main_metric"]
+            assert _pretext_metric == _downstream_metric, \
+                ("Aggregating to a single score for model state selection is only implemented for pretext and "
+                 f"downstream using the same metric, but received {_pretext_metric!r} and {_downstream_metric!r}")
+            metric = _downstream_metric
+            pretext_score, downstream_score = _get_mtl_val_scores(
+                trial_results_dir=results_dir, metric=metric, splits_aggregation_method=splits_aggregation_method,
+                scores_aggregation_method=self._experiments_config["mtl_scores_aggregation_method"]
+            )
+            return pretext_score, downstream_score  # Pretext first, then downstream, as consistent with 'create_study'
+
+        return _objective
+
+    def _suggest_hyperparameters(self, *, trial, name, in_freq_band, in_ocular_state):
+        name_prefix = "" if name is None else f"{name}_"
+        suggested_hps = dict()
+
+        # Suggest e.g. alpha or beta band power
+        suggested_hps["out_freq_band"] = trial.suggest_categorical(
+            name=f"{name_prefix}out_freq_band", **self._pretext_sampling_config["out_freq_band"]
+        )
+
+        # -------------
+        # Pick the datasets to be used for the pretext task loss
+        # -------------
+        # The pretext excluded
+        datasets_to_use = dict()
+        if "left_out_datasets" in self._pretext_experiments_config["SubjectSplit"]:
+            pretext_excluded = self._pretext_experiments_config["SubjectSplit"]["left_out_datasets"]
+            for excluded_dataset in pretext_excluded:
+                datasets_to_use[excluded_dataset] = self._pretext_experiments_config["Datasets"][excluded_dataset]
+        else:
+            pretext_excluded = "NO_DATASET"  # convenient that the variable still exists
+
+        # The datasets for pretraining
+        datasets_for_pretext = tuple(dataset for dataset in self._pretext_experiments_config["Datasets"]
+                                     if dataset not in pretext_excluded)
+        possible_pretext_combinations = _generate_dataset_combinations(datasets_for_pretext)
+        pretext_combinations = trial.suggest_categorical(f"{name_prefix}datasets",
+                                                         choices=possible_pretext_combinations)
+        pretext_datasets = _datasets_str_to_tuple(pretext_combinations)
+
+        # Add pretext datasets to be loaded
+        for dataset_name in pretext_datasets:
+            datasets_to_use[dataset_name] = self._pretext_experiments_config["Datasets"][dataset_name]
+
+        # -------------
+        # Sample MTL strategy
+        # -------------
+        suggested_hps["Strategy"] = suggest_multi_task_strategy(
+            name=name, trial=trial, config=self._sampling_config["Strategy"])
+
+        # -------------
+        # Sample common HPCs
+        # -------------
+        suggested_hps.update(
+            self._suggest_common_hyperparameters(
+                trial=trial, name=name, in_freq_band=in_freq_band,
+                preprocessed_config_path=_get_preprocessing_config_path(ocular_state=in_ocular_state),
+                skip_training=False, skip_loss=True, num_datasets=None))
+
+        # Get the loss for the two tasks
+        loss = suggest_loss(name=name, trial=trial, config=self._sampling_config["Loss"], num_datasets=-1)
+        pretext_loss = suggest_loss(name=f"pretext_{name}", trial=trial, config=self._sampling_config["Loss"],
+                                    num_datasets=len(pretext_datasets), loss=loss["loss"])
+        downstream_loss = suggest_loss(name=f"downstream_{name}", trial=trial, config=self._sampling_config["Loss"],
+                                       num_datasets=len(self._downstream_experiments_config["Datasets"]),
+                                       loss=loss["loss"])
+        suggested_hps["Loss"] = {"pretext": pretext_loss, "downstream": downstream_loss}
+        return suggested_hps, datasets_to_use, pretext_datasets
+
+
+# --------------
 # Combining all HPO experiments (including baselines)
 # --------------
 class AllHPOExperiments:
@@ -2146,6 +2373,11 @@ class AllHPOExperiments:
         downstream_main_metric = experiments_config["DownstreamTraining"]["main_metric"]
         study_direction = "maximize" if higher_is_better(downstream_main_metric) else "minimize"
         defaults_config["HPO"]["HPOStudy"]["direction"] = study_direction
+
+        pretext_main_metric = experiments_config["PretextTraining"]["main_metric"]
+        pretext_study_direction = "maximize" if higher_is_better(pretext_main_metric) else "minimize"
+        defaults_config["HPO"]["HPOStudy"]["MultiTaskDirections"] = {
+            "downstream": study_direction, "pretext": pretext_study_direction}
 
         # ---------------
         # Set attributes
@@ -2298,7 +2530,7 @@ class AllHPOExperiments:
         # --------------
         # HPO experiments
         # --------------
-        # Feature extraction + ML
+        """# Feature extraction + ML
         ml_features = self.run_ml_features(subject_split=prediction_models_downstream_subject_split)
 
         # Prediction models
@@ -2315,13 +2547,17 @@ class AllHPOExperiments:
         # Multivariable Elecssl
         multivariable_elecssl = self.run_multivariable_elecssl_hpo(
             simple_elecssl, pretext_subject_split=pretext_subject_split_func,
-            downstream_subject_split=elecssl_downstream_subject_split)
+            downstream_subject_split=elecssl_downstream_subject_split)"""
+
+        # Multi-task learning
+        self.run_multi_task_hpo(pretext_subject_split=pretext_subject_split_func,
+                                downstream_subject_split=prediction_models_downstream_subject_split)
 
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((ml_features, prediction_models, pretrain, simple_elecssl,
-                                        multivariable_elecssl))
+        # self.verify_test_set_integrity((ml_features, prediction_models, pretrain, simple_elecssl,
+        #                                 multivariable_elecssl))
 
         # --------------
         # Dataframe creation
@@ -2425,6 +2661,19 @@ class AllHPOExperiments:
             experiment.continue_hyperparameter_optimisation(experiments_config["num_additional_trials"])
 
         return experiment
+
+    def run_multi_task_hpo(self, *,  pretext_subject_split, downstream_subject_split):
+        # Create merged config files
+        experiments_config = merge_dicts_strict(self.defaults_config, self.specific_experiments_config["MultiTaskHPO"])
+        hp_config = merge_dicts_strict(self.shared_hpds, self.specific_hpds["MultiTaskHPO"]["shared"])
+        with MultiTaskHPO(experiments_config=experiments_config, hp_config=hp_config,
+                          downstream_experiments_config=self.downstream_experiments_config,
+                          pretext_experiments_config=self.pretext_experiments_config,
+                          pretext_hp_config=self.specific_hpds["PretrainHPO"]["pretext"],
+                          results_dir=self._results_path, is_continuation=False,
+                          pretext_subject_split=pretext_subject_split,
+                          downstream_subject_split=downstream_subject_split) as experiment:
+            experiment.run_hyperparameter_optimisation()
 
     # --------------
     # Methods for continuing studies
@@ -2700,7 +2949,7 @@ class AllHPOExperiments:
         # Saving / documentation of included and excluded
         # -------------
         if not save_inclusion_exclusion:
-            return
+            return None
 
         path = self._results_path / "pretext_subjects"
         os.mkdir(path)
@@ -2768,7 +3017,7 @@ class AllHPOExperiments:
         # Saving / documentation of included and excluded
         # -------------
         if not save_inclusion_exclusion:
-            return
+            return None
 
         path = self._results_path / "downstream_subjects"
         os.mkdir(path)
@@ -3207,7 +3456,7 @@ def _get_delta_and_variable(path, *, target, downstream_target, deviation_method
     return subjects, delta, var
 
 
-def _get_aggregated_val_score(*, trial_results_dir, aggregation_method, metric):
+def _get_aggregated_val_score(*, trial_results_dir, aggregation_method, metric, file_name):
     """Get the validation score of a trial"""
     eval_method = max if higher_is_better(metric=metric) else min
 
@@ -3217,7 +3466,7 @@ def _get_aggregated_val_score(*, trial_results_dir, aggregation_method, metric):
         if not os.path.isdir(trial_results_dir / fold):
             # All folders are assumed to be folds, for allowing possible changes in the future
             continue
-        df = pandas.read_csv(trial_results_dir / fold / "val_history_metrics.csv")
+        df = pandas.read_csv(trial_results_dir / fold / file_name)
         score = eval_method(df[metric])
         scores.append(verified_performance_score(score=score, metric=metric))
 
@@ -3228,6 +3477,96 @@ def _get_aggregated_val_score(*, trial_results_dir, aggregation_method, metric):
         return numpy.median(scores)
     raise ValueError(f"Method for aggregating the validation scores across folds was not recognised: "
                      f"{aggregation_method}")
+
+
+def _get_mtl_val_scores(*, trial_results_dir, splits_aggregation_method, metric, scores_aggregation_method):
+    # Get scores from all folds. Using best scores
+    pretext_scores: List[float] = []
+    downstream_scores: List[float] = []
+    for fold in os.listdir(trial_results_dir):
+        if not os.path.isdir(trial_results_dir / fold):
+            # All folders are assumed to be folds, for allowing possible changes in the future
+            continue
+
+        # Get an aggregated score
+        pretext_df = pandas.read_csv(trial_results_dir / fold / "val_pretext_history_metrics.csv", usecols=[metric])
+        downstream_df = pandas.read_csv(trial_results_dir / fold / "val_history_metrics.csv", usecols=[metric])
+        aggregated_scores = _aggregate_scores(pretext_df[metric], downstream_df[metric],
+                                              method=scores_aggregation_method)
+
+        # Select 'best' epoch
+        if higher_is_better(metric=metric):
+            best_epoch = aggregated_scores.argmax()
+        else:
+            best_epoch = aggregated_scores.argmin()
+
+        # Add them
+        pretext_score = pretext_df[metric][best_epoch]
+        pretext_scores.append(verified_performance_score(score=pretext_score, metric=metric))
+
+        downstream_score = downstream_df[metric][best_epoch]
+        downstream_scores.append(verified_performance_score(score=downstream_score, metric=metric))
+
+    # Aggregate and return
+    if splits_aggregation_method == "mean":
+        return numpy.mean(pretext_scores), numpy.mean(downstream_scores)
+    elif splits_aggregation_method == "median":
+        return numpy.median(pretext_scores), numpy.median(downstream_scores)
+    raise ValueError(f"Method for aggregating the validation scores across folds was not recognised: "
+                     f"{splits_aggregation_method}")
+
+
+def _aggregate_scores(scores_1, scores_2, *, method):
+    """
+    Method for aggregating performance scores
+
+    Parameters
+    ----------
+    scores_1 : pandas.Series
+    scores_2 : pandas.Series
+    method : str
+
+    Returns
+    -------
+    pandas.Series
+
+    Examples
+    --------
+    >>> my_df = pandas.DataFrame({"scores_1": [0.0, 0.4, 0.2, 0.9, 0.7, 0.8, 0.8],
+    ...                           "scores_2": [0.4, -0.1, 0.6, 0.7, 0.3, 0.0, 0.1]})
+    >>> _aggregate_scores(my_df["scores_1"], my_df["scores_2"], method="mean").round(2).tolist()
+    [0.2, 0.15, 0.4, 0.8, 0.5, 0.4, 0.45]
+    >>> _aggregate_scores(my_df["scores_1"], my_df["scores_2"], method="min").tolist()
+    [0.0, -0.1, 0.2, 0.7, 0.3, 0.0, 0.1]
+    >>> _aggregate_scores(my_df["scores_1"], my_df["scores_1"], method="min").tolist()
+    [0.0, 0.4, 0.2, 0.9, 0.7, 0.8, 0.8]
+    >>> _aggregate_scores(my_df["scores_1"], my_df["scores_2"], method="max").tolist()
+    [0.4, 0.4, 0.6, 0.9, 0.7, 0.8, 0.8]
+    >>> for my_method in ("min", "max", "sum", "mean", "avg", "average"):
+    ...     outputs = _aggregate_scores(my_df["scores_1"], my_df["scores_2"], method=my_method)
+    ...     type(outputs), outputs.shape
+    (<class 'pandas.core.series.Series'>, (7,))
+    (<class 'pandas.core.series.Series'>, (7,))
+    (<class 'pandas.core.series.Series'>, (7,))
+    (<class 'pandas.core.series.Series'>, (7,))
+    (<class 'pandas.core.series.Series'>, (7,))
+    (<class 'pandas.core.series.Series'>, (7,))
+    >>> int(_aggregate_scores(my_df["scores_1"], my_df["scores_2"], method="max").argmin())
+    0
+    >>> int(_aggregate_scores(my_df["scores_1"], my_df["scores_2"], method="min").argmax())
+    3
+    """
+    if method == "min":
+        df = pandas.DataFrame({"scores_1": scores_1, "scores_2": scores_2})
+        return df.min(axis="columns")
+    elif method == "max":
+        df = pandas.DataFrame({"scores_1": scores_1, "scores_2": scores_2})
+        return df.max(axis="columns")
+    elif method == "sum":
+        return scores_1 + scores_2
+    elif method in ("mean", "avg", "average"):
+        return 0.5 * (scores_1 + scores_2)
+    raise ValueError(f"Aggregation {method!r} method not recognised")
 
 
 def _get_preprocessing_config_path(ocular_state):
