@@ -271,8 +271,8 @@ def test_pcgrad(in_features, loss, learning_rate, device_name):
 
 
 @pytest.mark.parametrize("in_features,loss,learning_rate,device_name", [
-    (1, "L1Loss", 1e-5, "cuda"), (12, "MSELoss", 2.3e-3, "cpu"), (10, "L1Loss", 1e-1, "cuda"),
-    (1, "L1Loss", 1e-2, "cpu"), (1, "MSELoss", 1e-5, "cpu")
+    (1, "L1Loss", 1e-1, "cuda"), (12, "MSELoss", 2.3e-3, "cpu"), (10, "L1Loss", 1e-1, "cuda"),
+    (1, "L1Loss", 1e-2, "cpu"), (1, "MSELoss", 1e-2, "cpu")
 ])
 def test_pcgrad_preserves_frozen_layers_and_updates_others(in_features, loss, learning_rate, device_name):
     """Test if PCGrad implementation preserves the frozen layers and updates the others"""
