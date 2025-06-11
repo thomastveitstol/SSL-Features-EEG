@@ -828,6 +828,7 @@ class SingleExperiment:
                     histories[f"test_epoch_{epoch}_pretext"] = test_histories[0]
                     histories[f"test_epoch_{epoch}_downstream"] = test_histories[1]
                 else:
+                    assert isinstance(test_histories, Histories)
                     histories[f"test_epoch_{epoch}"] = test_histories
 
         # -----------------
