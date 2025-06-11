@@ -36,7 +36,6 @@ def main():
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name / "multi_task")
 
-
     # Loop through all trials
     _folders = (folder for folder in os.listdir(experiments_path) if os.path.isdir(experiments_path / folder)
                 and folder.startswith("hpo_trial"))
