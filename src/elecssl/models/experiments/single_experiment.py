@@ -822,9 +822,11 @@ class SingleExperiment:
                     sub_groups_verbose=self.sub_groups_config["verbose"],
                     verbose_variables=self.train_config["verbose_variables"], variable_metrics=self.variables_metrics
                 )
-                if isinstance(test_histories, tuple):  # TODO: fix
-                    histories[f"test_epoch_{epoch}_downstream"] = test_histories[1]
+                if self.train_method == TrainMethod.MTL:
+                    assert isinstance(test_histories, tuple)
+                    assert len(test_histories) == 2
                     histories[f"test_epoch_{epoch}_pretext"] = test_histories[0]
+                    histories[f"test_epoch_{epoch}_downstream"] = test_histories[1]
                 else:
                     histories[f"test_epoch_{epoch}"] = test_histories
 

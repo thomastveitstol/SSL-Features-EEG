@@ -1160,8 +1160,9 @@ class PretrainHPO(HPOExperiment):
         possible_pretrain_combinations = _generate_dataset_combinations(datasets_for_pretraining)
         pretrain_combinations = trial.suggest_categorical(f"{name_prefix}datasets",
                                                           choices=possible_pretrain_combinations)
+        actual_pretext_datasets = _datasets_str_to_tuple(pretrain_combinations)
 
-        for dataset_name in _datasets_str_to_tuple(pretrain_combinations):
+        for dataset_name in actual_pretext_datasets:
             datasets_to_use[dataset_name] = self._pretext_experiments_config["Datasets"][dataset_name]
 
         # Training
@@ -1170,7 +1171,7 @@ class PretrainHPO(HPOExperiment):
 
         # Loss
         suggested_hps["Loss"] = suggest_loss(name=name, trial=trial, config=hpd_config["Loss"],
-                                             num_datasets=len(datasets_for_pretraining))  # TODO: think this is wrong
+                                             num_datasets=len(actual_pretext_datasets))
 
         # Domain discriminator
         if self._experiments_config["enable_domain_discriminator"]:

@@ -916,7 +916,6 @@ class MultiTaskRBPModel(MainRBPModelBase):
         # -------------
         for (x, pre_computed, (pretext_y, pretext_mask), (downstream_y, downstream_mask),
              subject_indices) in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
-            # TODO: Should masks be required? If validation or test set?
 
             # Strip the dictionaries for 'ghost tensors'
             x = strip_tensors(x)
