@@ -288,14 +288,15 @@ class SingleExperiment:
         train_data = combined_dataset.get_data(subjects=train_subjects)
         val_data = combined_dataset.get_data(subjects=val_subjects)
 
-        # Extract scaled target data and the scaler itself
-        (train_targets, val_targets), target_scaler = self._get_targets_and_scalers(
-            train_subjects=train_subjects, val_subjects=val_subjects, combined_dataset=combined_dataset,
-            is_mtl_pretext=False
-        )
         train_gen: InterpolationDataGenBase
         val_gen: InterpolationDataGenBase
         if self.train_method == TrainMethod.DOWNSTREAM:
+            # Extract scaled target data and the scaler itself
+            (train_targets, val_targets), target_scaler = self._get_targets_and_scalers(
+                train_subjects=train_subjects, val_subjects=val_subjects, combined_dataset=combined_dataset,
+                is_mtl_pretext=False, scale_subjects=None
+            )
+
             # Create data generators
             train_gen = InterpolationDataGenerator(
                 data=train_data, targets=train_targets, subjects=combined_dataset.get_subjects_dict(train_subjects),
@@ -309,9 +310,20 @@ class SingleExperiment:
             )
             scalers = {"target_scaler": target_scaler}
         elif self.train_method == TrainMethod.MTL:
+            # This is sufficient for how the experiments currently are
+            downstream_train_subjects = tuple(
+                subject for subject in train_subjects if subject.dataset_name in self.mtl_config["downstream_datasets"])
+            pretext_train_subjects = tuple(
+                subject for subject in train_subjects if subject.dataset_name in self.mtl_config["pretext_datasets"])
+
+            # Extract scaled target data and the scaler itself
+            (train_targets, val_targets), target_scaler = self._get_targets_and_scalers(
+                train_subjects=train_subjects, val_subjects=val_subjects, scale_subjects=downstream_train_subjects,
+                combined_dataset=combined_dataset, is_mtl_pretext=False
+            )
             (pretext_train_targets, pretext_val_targets), pretext_target_scaler = self._get_targets_and_scalers(
-                train_subjects=train_subjects, val_subjects=val_subjects, combined_dataset=combined_dataset,
-                is_mtl_pretext=True
+                train_subjects=train_subjects, val_subjects=val_subjects, scale_subjects=pretext_train_subjects,
+                combined_dataset=combined_dataset, is_mtl_pretext=True
             )
 
             # Create masks
@@ -412,14 +424,15 @@ class SingleExperiment:
         else:
             train_pre_computed, val_pre_computed = None, None
 
-        # Extract scaled target data and the scaler itself
-        (train_targets, val_targets), target_scaler = self._get_targets_and_scalers(
-            train_subjects=train_subjects, val_subjects=val_subjects, combined_dataset=combined_dataset,
-            is_mtl_pretext=False
-        )
         train_gen: RBPDataGenBase
         val_gen: RBPDataGenBase
         if self.train_method == TrainMethod.DOWNSTREAM:
+            # Extract scaled target data and the scaler itself
+            (train_targets, val_targets), target_scaler = self._get_targets_and_scalers(
+                train_subjects=train_subjects, val_subjects=val_subjects, combined_dataset=combined_dataset,
+                is_mtl_pretext=False, scale_subjects=None
+            )
+
             # Create data generators
             train_gen = RBPDataGenerator(
                 data=train_data, targets=train_targets, pre_computed=train_pre_computed,
@@ -435,9 +448,20 @@ class SingleExperiment:
             )
             scalers = {"target_scaler": target_scaler}
         elif self.train_method == TrainMethod.MTL:
+            # This is sufficient for how the experiments currently are
+            downstream_train_subjects = tuple(
+                subject for subject in train_subjects if subject.dataset_name in self.mtl_config["downstream_datasets"])
+            pretext_train_subjects = tuple(
+                subject for subject in train_subjects if subject.dataset_name in self.mtl_config["pretext_datasets"])
+
+            # Extract scaled target data and the scaler itself
+            (train_targets, val_targets), target_scaler = self._get_targets_and_scalers(
+                train_subjects=train_subjects, val_subjects=val_subjects, scale_subjects=downstream_train_subjects,
+                combined_dataset=combined_dataset, is_mtl_pretext=False
+            )
             (pretext_train_targets, pretext_val_targets), pretext_target_scaler = self._get_targets_and_scalers(
-                train_subjects=train_subjects, val_subjects=val_subjects, combined_dataset=combined_dataset,
-                is_mtl_pretext=True
+                train_subjects=train_subjects, val_subjects=val_subjects, scale_subjects=pretext_train_subjects,
+                combined_dataset=combined_dataset, is_mtl_pretext=True
             )
 
             # Create masks
@@ -583,7 +607,10 @@ class SingleExperiment:
 
         return train_pre_computed, val_pre_computed
 
-    def _get_targets_and_scalers(self, *, train_subjects, val_subjects, combined_dataset, is_mtl_pretext: bool):
+    def _get_targets_and_scalers(self, *, train_subjects, val_subjects, combined_dataset, is_mtl_pretext: bool,
+                                 scale_subjects):
+        """'train_scale_subjects' and 'val_scale_subjects' can be used if not all the 'train_subjects' and
+        'val_subjects' should be used for creating scalers."""
         target = self.mtl_config["pretext_target"] if is_mtl_pretext else None
 
         # Extract target data
@@ -597,7 +624,10 @@ class SingleExperiment:
 
         # Get, fit, and scale
         target_scaler = get_target_scaler(scaler_name, **scaler_kwargs)
-        target_scaler.fit(train_targets)
+        if scale_subjects is None:
+            target_scaler.fit(train_targets)
+        else:
+            target_scaler.fit(combined_dataset.get_targets(subjects=scale_subjects, target=target))
 
         train_targets = target_scaler.transform(train_targets)
         val_targets = target_scaler.transform(val_targets)

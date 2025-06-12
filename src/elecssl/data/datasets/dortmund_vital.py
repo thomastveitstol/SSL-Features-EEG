@@ -103,3 +103,13 @@ class DortmundVital(EEGDatasetBase):
     def age_availability(self):
         df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t", usecols=["participant_id", "age"])
         return tuple(df["participant_id"][df["age"].notna() & df["age"].notnull()])
+
+    @target_method
+    def fake_target(self, subject_ids):
+        """Used for debugging"""
+        return numpy.random.normal(loc=12, scale=4, size=(len(subject_ids),))
+
+    @fake_target.availability
+    def fake_target_availability(self):
+        df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t", usecols=["participant_id"])
+        return tuple(df["participant_id"])

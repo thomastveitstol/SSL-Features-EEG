@@ -710,7 +710,7 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
             # Strip the dictionaries for 'ghost tensors'
             x = strip_tensors(x)
             pretext_y = strip_tensors(pretext_y)
-            downstream_y = strip_tensors(downstream_y)  # todo: must skip input check for nans
+            downstream_y = strip_tensors(downstream_y, skip_nan_checks=True)
             pretext_mask = tensor_dict_to_boolean(strip_tensors(pretext_mask))
             downstream_mask = tensor_dict_to_boolean(strip_tensors(downstream_mask))
 

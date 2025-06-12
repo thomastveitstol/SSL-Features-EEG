@@ -49,9 +49,23 @@ class ZNormalisation(TargetScalerBase):
         >>> my_scaler.fit(my_data)
         >>> my_scaler.mean, my_scaler.std
         (array([20.25]), array([22.67570286]))
+
+        An error is raised if there are nan values
+
+        >>> my_data = {"d1": numpy.expand_dims(numpy.array([61, float("nan"), 9, 32]), axis=-1),
+        ...            "d2": numpy.expand_dims(numpy.array([8, 3, 65, 2, 5, 6]), axis=-1),
+        ...            "d3": numpy.expand_dims(numpy.array([7, 2]), axis=-1)}
+        >>> ZNormalisation().fit(my_data)
+        Traceback (most recent call last):
+        ...
+        ValueError: Found 'nan' values in the targets, which should not be the case
         """
         # Concatenate to a data matrix
         data_matrix = numpy.concatenate(list(data.values()), axis=0)
+
+        # Check array for nan values
+        if numpy.isnan(data_matrix).any():
+            raise ValueError("Found 'nan' values in the targets, which should not be the case")
 
         # Update parameters
         self._mean = numpy.mean(data_matrix, axis=0)
@@ -83,6 +97,16 @@ class ZNormalisation(TargetScalerBase):
         >>> {my_n: numpy.round(my_y, 2) for my_n, my_y in my_transformed_data.items()}  # type: ignore[attr-defined]
         ... # doctest: +NORMALIZE_WHITESPACE
         {'d4': array([[ 0.  ], [ 0.61], [-0.76]]),
+         'd5': array([[ 1.49], [-0.72], [ 0.08], [-0.58], [ 3.65]])}
+
+        NaN values are unchanged
+
+        >>> my_data = {"d4": numpy.expand_dims(numpy.array([20.25, float("nan"), 3]), axis=-1),
+        ...            "d5": numpy.expand_dims(numpy.array([54, 4, 22, 7, 103]), axis=-1)}
+        >>> my_nan_transformed = my_scaler.transform(my_data)
+        >>> {my_n: numpy.round(my_y, 2) for my_n, my_y in my_nan_transformed.items()}  # type: ignore[attr-defined]
+        ... # doctest: +NORMALIZE_WHITESPACE
+        {'d4': array([[ 0.  ], [ nan], [-0.76]]),
          'd5': array([[ 1.49], [-0.72], [ 0.08], [-0.58], [ 3.65]])}
         """
         return {dataset_name: (x - self._mean) / self._std for dataset_name, x in data.items()}

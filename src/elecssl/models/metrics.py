@@ -1409,7 +1409,8 @@ def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true):
         # its currently intended use)
         all_ground_truths = tuple(yyhat.y_true for yyhat in predictions_and_truths)
         if not all(torch.equal(all_ground_truths[0], ground_truth) for ground_truth in all_ground_truths):
-            raise ValueError("Expected all ground truths to be the same per subject, but that was not the case")
+            raise ValueError(f"Expected all ground truths to be the same per subject, but that was not the case for "
+                             f"{subject}: {all_ground_truths}")
 
         # Set prediction to the average of all predictions, and the ground truth to the only element in the set
         _pred = torch.mean(torch.cat([torch.unsqueeze(yyhat.y_pred, dim=0)

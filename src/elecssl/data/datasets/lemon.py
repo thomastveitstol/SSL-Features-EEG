@@ -245,6 +245,12 @@ class LEMON(EEGDatasetBase):
         df = pandas.read_csv(self.get_participants_tsv_path(), usecols=["ID", _gender_col_name])
         return tuple(df["ID"][df[_gender_col_name].notna() & df[_gender_col_name].isin((1, 2))])
 
+    @target_method
+    def fake_target(self, subject_ids):
+        """Used for debugging. Here, we pretend it is NOT implemented, but still required for multi-task learning.
+        Instead, masking is used during the training phase"""
+        return numpy.array([float("nan")] * len(subject_ids))
+
 
 # -------------
 # Functions

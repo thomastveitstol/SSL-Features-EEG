@@ -920,7 +920,7 @@ class MultiTaskRBPModel(MainRBPModelBase):
             # Strip the dictionaries for 'ghost tensors'
             x = strip_tensors(x)
             pretext_y = strip_tensors(pretext_y)
-            downstream_y = strip_tensors(downstream_y)  # todo: must skip input check for nans
+            downstream_y = strip_tensors(downstream_y, skip_nan_checks=True)
             pretext_mask = tensor_dict_to_boolean(strip_tensors(pretext_mask))
             downstream_mask = tensor_dict_to_boolean(strip_tensors(downstream_mask))
 
@@ -972,8 +972,8 @@ class MultiTaskRBPModel(MainRBPModelBase):
             # Update history objects
             _pretext_subjects = tuple(subject for subject, mask in zip(subjects, flattened_pretext_mask) if mask)
             self._updated_history_object(
-                history=pretext_history, subjects=_pretext_subjects, output=pretext_yhat[[flattened_pretext_mask]],
-                y=flattened_pretext_y[[flattened_pretext_mask]], target_scaler=pretext_target_scaler,
+                history=pretext_history, subjects=_pretext_subjects, output=pretext_yhat[flattened_pretext_mask],
+                y=flattened_pretext_y[flattened_pretext_mask], target_scaler=pretext_target_scaler,
                 prediction_activation_function=pretext_prediction_activation_function)
             _downstream_subjects = tuple(subject for subject, mask in zip(subjects, flattened_downstream_mask) if mask)
             self._updated_history_object(

@@ -629,7 +629,7 @@ def _select_dataset_and_index(item, dataset_shapes):
     raise IndexError(f"Index {item} exceeds the total size of the combined dataset {accumulated_sizes}")
 
 
-def strip_tensors(tensors, fill_val=-1):
+def strip_tensors(tensors, *, skip_nan_checks=False, fill_val=-1):
     """
     Function which may be used to remove unused tensors
 
@@ -642,6 +642,9 @@ def strip_tensors(tensors, fill_val=-1):
     tensors : dict[str, torch.Tensor]
     fill_val : int
         The value which was used to indicate that a tensor should not be there
+    skip_nan_checks : bool
+        To skip checks for nan values. Convenient in multi-task learning when the target of a task is unavailable and
+        loaded as nan, but masked later in the pipeline. But set to False unless nan values are expected
 
     Returns
     -------
@@ -680,21 +683,22 @@ def strip_tensors(tensors, fill_val=-1):
     # -------------
     # Maybe ignore all tensors
     # -------------
-    is_nan: List[bool] = []
-    for tensor in tensors.values():
-        # assert False, torch.isnan(tensor)
-        if torch.all(torch.isnan(tensor)):
-            is_nan.append(True)
-        elif torch.any(torch.isnan(tensor)):
-            _dict = {name: tensor for name, tensor in tensors.items()}
-            raise ValueError(f"Expected all  or none of the values in the tensor to be 'nan', but found both. {_dict}")
-        else:
-            is_nan.append(False)
+    if not skip_nan_checks:
+        is_nan: List[bool] = []
+        for tensor in tensors.values():
+            if torch.all(torch.isnan(tensor)):
+                is_nan.append(True)
+            elif torch.any(torch.isnan(tensor)):
+                _dict = {name: tensor for name, tensor in tensors.items()}
+                raise ValueError(f"Expected all or none of the values in the tensor to be 'nan', but found both: "
+                                 f"{_dict}")
+            else:
+                is_nan.append(False)
 
-    if all(is_nan):
-        return None
-    elif any(is_nan):
-        ValueError("Expected all all or none of the tensor to be 'nan', but found both")
+        if all(is_nan):
+            return None
+        elif any(is_nan):
+            ValueError("Expected all all or none of the tensor to be 'nan', but found both")
 
     # -------------
     # Remove ghost tensors
