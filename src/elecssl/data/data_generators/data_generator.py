@@ -264,8 +264,8 @@ class MultiTaskRBPdataGenerator(RBPDataGenBase):
                                                                      dtype=torch.float, requires_grad=False),
                                                         dim=-1)
 
-        mask[dataset_name] = torch.tensor(self._downstream_mask[dataset_name][subject_idx], dtype=torch.bool)
-        pretext_mask[dataset_name] = torch.tensor(self._pretext_mask[dataset_name][subject_idx], dtype=torch.bool)
+        mask[dataset_name] = torch.tensor(bool(self._downstream_mask[dataset_name][subject_idx]), dtype=torch.bool)
+        pretext_mask[dataset_name] = torch.tensor(bool(self._pretext_mask[dataset_name][subject_idx]), dtype=torch.bool)
 
         # Return
         if self._pre_computed is None:
@@ -539,8 +539,8 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
         pretext_targets[dataset_name] = torch.unsqueeze(torch.tensor(self._pretext_targets[dataset_name][subject_idx],
                                                                      dtype=torch.float, requires_grad=False),
                                                         dim=-1)
-        mask[dataset_name] = torch.tensor(self._downstream_mask[dataset_name][subject_idx], dtype=torch.bool)
-        pretext_mask[dataset_name] = torch.tensor(self._pretext_mask[dataset_name][subject_idx], dtype=torch.bool)
+        mask[dataset_name] = torch.tensor(bool(self._downstream_mask[dataset_name][subject_idx]), dtype=torch.bool)
+        pretext_mask[dataset_name] = torch.tensor(bool(self._pretext_mask[dataset_name][subject_idx]), dtype=torch.bool)
 
         # Return
         return data, (pretext_targets, pretext_mask), (targets, mask), item
