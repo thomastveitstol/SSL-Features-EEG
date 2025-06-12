@@ -197,7 +197,7 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
     # Methods for training and testing
     # --------------
     def train_model(self, *, train_loader, val_loader, test_loader, metrics, main_metric, num_epochs,
-                    classifier_criterion, optimiser, device, prediction_activation_function=None,
+                    criterion, optimiser, device, prediction_activation_function=None,
                     verbose=True, target_scaler, sub_group_splits, sub_groups_verbose, verbose_variables,
                     variable_metrics, patience):
         # Defining histories objects
@@ -223,8 +223,8 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
             # ---------------
             pbar_prefix = f"Train epoch {epoch + 1}/{num_epochs} "
             self._full_epoch_pass(
-                loader=train_loader, compute_loss=True, history=train_history, criterion=classifier_criterion,
-                optimiser=optimiser, target_scaler=target_scaler, pbar_prefix=pbar_prefix, device=device,
+                loader=train_loader, compute_loss=True, history=train_history, criterion=criterion, optimiser=optimiser,
+                target_scaler=target_scaler, pbar_prefix=pbar_prefix, device=device,
                 prediction_activation_function=prediction_activation_function, verbose=verbose,
                 verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
 
