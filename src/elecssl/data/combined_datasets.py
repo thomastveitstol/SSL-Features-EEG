@@ -127,8 +127,9 @@ class CombinedDatasets:
         Returns
         -------
         """
-        targets = tuple(targets) if isinstance(targets, str) else targets
-        assert default_target in targets
+        targets = (targets,) if isinstance(targets, str) else targets
+        assert default_target in targets, \
+            f"Expected the default target to be in targets, but {default_target!r} is not in {targets}"
 
         # Initialise lists and dictionaries
         datasets_details: List[DatasetDetails] = []
@@ -143,7 +144,7 @@ class CombinedDatasets:
             # Get the targets to load, and ensure that the 'current_target' is loaded
             dataset_targets = dataset_kwargs.get("targets", [])
             if isinstance(dataset_targets, str):
-                dataset_targets = (dataset_targets,)
+                dataset_targets = [dataset_targets]
             elif isinstance(dataset_targets, list):
                 pass
             elif isinstance(dataset_targets, tuple):
