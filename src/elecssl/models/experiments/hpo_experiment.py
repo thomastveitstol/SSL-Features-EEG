@@ -3,12 +3,13 @@ import copy
 import itertools
 import os
 import random
+import re
 import traceback
 import warnings
 from datetime import date, datetime
 from functools import reduce
 from pathlib import Path
-from typing import Dict, Any, Callable, Tuple, List, Literal, Set, Union, Optional, NamedTuple, Type, Iterable
+from typing import Dict, Any, Callable, Tuple, List, Literal, Set, Union, Optional, NamedTuple, Type, Iterable, Sequence
 
 import numpy
 import optuna
@@ -488,11 +489,8 @@ class HPOExperiment(MainExperiment):
         # Check if any of the test subjects were in training or validation
         cls._verify_test_set_exclusivity(path=path, test_subjects=test_subjects)
 
-    def integrity_check_test_set(self):
-        self.verify_test_set_integrity(path=self.results_path)
-
     @classmethod
-    def _verify_test_set_consistency(cls, path):
+    def _verify_test_set_consistency(cls, path, *, multiple_test_files=False):
         """
         Verify that the test set is consistent across trials and folds. If not, an 'InconsistentTestSetError' is raised
 
@@ -520,23 +518,34 @@ class HPOExperiment(MainExperiment):
                 fold_path = trial_path / fold_folder
 
                 # Load the subjects from the test predictions, but also accept that some trials may have been pruned
+                # Also, sometimes there may be multiple test history files instead of one. In that case
+                # 'cls._test_predictions_file_name' is a format of expected file names, not a file name itself
+                if multiple_test_files:
+                    test_predictions_file_names = _filter_strings_by_format(
+                        strings=os.listdir(fold_path), format_string=cls._test_predictions_file_name)
+                else:
+                    test_predictions_file_names = (cls._test_predictions_file_name,)
+
                 try:
-                    test_history_subjects = pandas.read_csv(
-                        (fold_path / cls._test_predictions_file_name).with_suffix(".csv"),
-                        usecols=("dataset", "sub_id"))
+                    for test_predictions_file_name in test_predictions_file_names:
+                        test_history_subjects = pandas.read_csv(
+                            (fold_path / test_predictions_file_name).with_suffix(".csv"),
+                            usecols=("dataset", "sub_id"))
+
+                        # Convert to set of 'Subject'
+                        subjects = set(
+                            Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
+                            for row in test_history_subjects.itertuples(index=False))
+
+                        # Check with expected subjects (or make it expected subjects, if it is the first)
+                        if expected_subjects:
+                            if subjects != expected_subjects:
+                                raise InconsistentTestSetError
+                        else:
+                            expected_subjects = subjects
+
                 except FileNotFoundError:
                     continue
-
-                # Convert to set of 'Subject'
-                subjects = set(Subject(dataset_name=row.dataset, subject_id=row.sub_id)  # type: ignore[attr-defined]
-                               for row in test_history_subjects.itertuples(index=False))
-
-                # Check with expected subjects (or make it expected subjects, if it is the first)
-                if expected_subjects:
-                    if subjects != expected_subjects:
-                        raise InconsistentTestSetError
-                else:
-                    expected_subjects = subjects
 
         return expected_subjects
 
@@ -1526,7 +1535,7 @@ class SimpleElecsslHPO(HPOExperiment):
     # Methods for checking if results were as expected
     # --------------
     @classmethod
-    def _verify_test_set_consistency(cls, path):
+    def _verify_test_set_consistency(cls, path, *, multiple_test_files=False):
         """This class stores test predictions differently, so need to override it"""
         expected_subjects: Set[Subject] = set()
 
@@ -1979,7 +1988,7 @@ class MultivariableElecsslHPO(HPOExperiment):
     # Methods for checking if results were as expected
     # --------------
     @classmethod
-    def _verify_test_set_consistency(cls, path):
+    def _verify_test_set_consistency(cls, path, *, multiple_test_files=False):
         """This class stores test predictions differently, so need to override it"""
         expected_subjects: Set[Subject] = set()
 
@@ -2075,8 +2084,9 @@ class MultiTaskHPO(HPOExperiment):
 
     __slots__ = ("_pretext_experiments_config", "_downstream_experiments_config", "_pretext_sampling_config")
     _name = "multi_task"
-    _test_predictions_file_name = "test_history_predictions"
-    _optimisation_predictions_file_name = ("train_history_predictions", "val_history_predictions")
+    _test_predictions_file_name = "test_epoch_*_downstream_history_predictions.csv"
+    _optimisation_predictions_file_name = ("train_history_predictions", "val_history_predictions",
+                                           "train_pretext_history_predictions", "val_pretext_history_predictions")
 
     def __init__(self, *, pretext_experiments_config, downstream_experiments_config, experiments_config, hp_config,
                  results_dir, is_continuation, pretext_subject_split, downstream_subject_split, pretext_hp_config):
@@ -2164,6 +2174,7 @@ class MultiTaskHPO(HPOExperiment):
             )
 
             # Some multi-task specifics
+            downstream_datasets = tuple(self._downstream_experiments_config["Datasets"])
             pretext_target = f"band_power_{suggested_hps['out_freq_band']}_{out_ocular_state}"
             if self._pretext_experiments_config["Training"]["log_transform_targets"] is not None:
                 pretext_target = (f"{self._pretext_experiments_config['Training']['log_transform_targets']}_"
@@ -2173,7 +2184,7 @@ class MultiTaskHPO(HPOExperiment):
             mtl_config = {
                 "Scaler": self._pretext_experiments_config["Scalers"],
                 "pretext_datasets": pretext_datasets,
-                "downstream_datasets": tuple(self._downstream_experiments_config["Datasets"]),
+                "downstream_datasets": downstream_datasets,
                 "pretext_target": pretext_target,
                 "Strategy": suggested_hps["Strategy"],
                 "Metrics": {
@@ -2187,6 +2198,8 @@ class MultiTaskHPO(HPOExperiment):
             }
             experiments_config["MultiTaskLearning"] = mtl_config
             experiments_config["Training"]["method"] = "multi_task"
+            experiments_config["SubGroups"]["sub_groups"]["dataset_name"] = set(
+                pretext_datasets).union(downstream_datasets)
 
             # Merge the subjects for the two tasks
             assert self._pretext_subject_split is not None
@@ -2283,6 +2296,22 @@ class MultiTaskHPO(HPOExperiment):
                                        loss=loss["loss"])
         suggested_hps["Loss"] = {"pretext": pretext_loss, "downstream": downstream_loss}
         return suggested_hps, datasets_to_use, pretext_datasets
+
+    # --------------
+    # Methods for checking if results were as expected
+    # --------------
+    @classmethod
+    def verify_test_set_integrity(cls, path):
+        # Check if the test set always contain the same set of subject.
+        test_subjects = cls._verify_test_set_consistency(path=path, multiple_test_files=True)
+
+        # Check if any of the test subjects were in training or validation
+        cls._verify_test_set_exclusivity(path=path, test_subjects=test_subjects)
+
+    @classmethod
+    def get_test_subjects(cls, path):
+        """Get the test subjects, while also checking consistency"""
+        return cls._verify_test_set_consistency(path=path, multiple_test_files=True)
 
 
 # --------------
@@ -2531,7 +2560,7 @@ class AllHPOExperiments:
         # --------------
         # HPO experiments
         # --------------
-        """# Feature extraction + ML
+        # Feature extraction + ML
         ml_features = self.run_ml_features(subject_split=prediction_models_downstream_subject_split)
 
         # Prediction models
@@ -2548,17 +2577,17 @@ class AllHPOExperiments:
         # Multivariable Elecssl
         multivariable_elecssl = self.run_multivariable_elecssl_hpo(
             simple_elecssl, pretext_subject_split=pretext_subject_split_func,
-            downstream_subject_split=elecssl_downstream_subject_split)"""
+            downstream_subject_split=elecssl_downstream_subject_split)
 
         # Multi-task learning
-        self.run_multi_task_hpo(pretext_subject_split=pretext_subject_split_func,
-                                downstream_subject_split=prediction_models_downstream_subject_split)
+        mtl_experiments = self.run_multi_task_hpo(pretext_subject_split=pretext_subject_split_func,
+                                                  downstream_subject_split=prediction_models_downstream_subject_split)
 
         # --------------
         # Test set integrity tests
         # --------------
-        # self.verify_test_set_integrity((ml_features, prediction_models, pretrain, simple_elecssl,
-        #                                 multivariable_elecssl))
+        self.verify_test_set_integrity((ml_features, prediction_models, pretrain, simple_elecssl, multivariable_elecssl,
+                                        mtl_experiments))
 
         # --------------
         # Dataframe creation
@@ -2676,6 +2705,8 @@ class AllHPOExperiments:
                           downstream_subject_split=downstream_subject_split) as experiment:
             experiment.run_hyperparameter_optimisation()
 
+        return experiment
+
     # --------------
     # Methods for continuing studies
     # (Particularly) convenient is something goes wrong on TSD
@@ -2753,7 +2784,7 @@ class AllHPOExperiments:
     # Test set integrity
     # --------------
     @staticmethod
-    def verify_test_set_integrity(experiments: Tuple[MainExperiment, ...]):
+    def verify_test_set_integrity(experiments: Sequence[MainExperiment]):
         # Individual checks
         for experiment in experiments:
             experiment.integrity_check_test_set()
@@ -3099,6 +3130,34 @@ class UnusedInputArgumentWarning(UserWarning):
 # --------------
 # Functions
 # --------------
+def _filter_strings_by_format(strings, format_string):
+    """
+    Filter a sequence of strings by a format, as in the Examples
+
+    Parameters
+    ----------
+    strings : Sequence[str]
+    format_string : str
+
+    Returns
+    -------
+    tuple[str, ...]
+
+    Examples
+    --------
+    >>> my_file_names = ("hello_test_world.txt", "hello_123_world.txt", "hello_world.txt", "my_big_little_ponies.txt",
+    ...                  "my__little_ponies.txt", "my_little_ponies.txt", "my_10_little_ponies.txt", "not_gonna_work")
+    >>> _filter_strings_by_format(my_file_names, "hello_*_world.txt")
+    ('hello_test_world.txt', 'hello_123_world.txt')
+    >>> _filter_strings_by_format(my_file_names, "my_*_little_ponies.txt")
+    ('my_big_little_ponies.txt', 'my_10_little_ponies.txt')
+    """
+    # Escape all regex special characters except the '*'
+    escaped = re.escape(format_string).replace('\\*', '(.+?)')  # non-greedy match
+    pattern = re.compile(f'^{escaped}$')
+    return tuple(s for s in strings if pattern.match(s))
+
+
 def _get_best_trial_and_folder_path(trials_and_folder_paths: Tuple[Tuple[FrozenTrial, Path], ...],
                                     study_direction: optuna.study.StudyDirection):
     best_trial = None
@@ -3431,14 +3490,6 @@ def _get_delta_and_variable(path, *, target, downstream_target, deviation_method
 
     # Get the clinical variable
     var = get_dataset(dataset_name).load_targets(target=downstream_target, subject_ids=subject_ids)
-
-    # Remove nan values  todo: should not be necessary...
-    mask = ~numpy.isnan(var).copy()
-
-    pseudo_targets = pseudo_targets[mask]  # type: ignore
-    predictions = predictions[mask]
-    var = var[mask]  # type: ignore
-    subject_ids = subject_ids[mask]
 
     # Get the deviation
     if deviation_method in ("delta", "gap", "diff", "difference"):
