@@ -815,6 +815,7 @@ class SingleExperiment:
                 # Test model on test data
                 metric_kwargs.pop("downstream_selection_metric", None)
                 metric_kwargs.pop("pretext_selection_metric", None)
+                metric_kwargs.pop("main_metric", None)
                 test_histories = model.test_model(
                     data_loader=test_loader, **metric_kwargs, verbose=self.train_config["verbose"],
                     **channel_name_to_index_kwarg, device=self._device, **target_scalers,
@@ -829,7 +830,7 @@ class SingleExperiment:
                     histories[f"test_epoch_{epoch}_downstream"] = test_histories[1]
                 else:
                     assert isinstance(test_histories, Histories)
-                    histories[f"test_epoch_{epoch}"] = test_histories
+                    histories["test"] = test_histories
 
         # -----------------
         # Save results
@@ -843,7 +844,14 @@ class SingleExperiment:
                 model.load_state_dict({k: v.to(self._device) for k, v in best_model_state.items()})
                 model = model.to(device=torch.device("cpu"))
                 prefix_name = "" if self._experiment_name is None else f"{self._experiment_name}_"
-                model.save_model(name=f"{prefix_name}model_epoch_{epoch}", path=results_path)
+                if self.train_method == TrainMethod.MTL:
+                    model_name = f"{prefix_name}model_epoch_{epoch}"
+                else:
+                    assert len(model_states) == len(best_epochs) == 1, \
+                        (f"For non multi-task experiments, only one best model state and epoch was expected, but "
+                         f"received {len(model_states)} and {len(best_epochs)}")
+                    model_name = f"{prefix_name}model"
+                model.save_model(model_name, path=results_path)
 
     def _run(self, *, subject_split, channel_systems, channel_name_to_index, combined_dataset):
         # -----------------
