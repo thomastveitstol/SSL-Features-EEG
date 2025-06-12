@@ -2540,7 +2540,7 @@ class AllHPOExperiments:
     # --------------
     # Main HPO experiments
     # --------------
-    def run_experiments(self):
+    def run_experiments(self, *, exclude=()):
         # --------------
         # Make subject splits
         # --------------
@@ -2560,34 +2560,53 @@ class AllHPOExperiments:
         # --------------
         # HPO experiments
         # --------------
-        # Feature extraction + ML
-        ml_features = self.run_ml_features(subject_split=prediction_models_downstream_subject_split)
+        experiments: List[MainExperiment] = []
+
+        if "ml_features" not in exclude:
+            # Feature extraction + ML
+            ml_features = self.run_ml_features(subject_split=prediction_models_downstream_subject_split)
+            experiments.append(ml_features)
 
         # Prediction models
-        prediction_models = self.run_prediction_models_hpo(subject_split=prediction_models_downstream_subject_split)
+        if "prediction_models" not in exclude:
+            prediction_models = self.run_prediction_models_hpo(subject_split=prediction_models_downstream_subject_split)
+            experiments.append(prediction_models)
 
         # Pretraining
-        pretrain = self.run_pretraining_hpo(pretext_subject_split=pretext_subject_split_func,
-                                            downstream_subject_split=prediction_models_downstream_subject_split)
+        if "pretraining" not in exclude:
+            pretrain = self.run_pretraining_hpo(pretext_subject_split=pretext_subject_split_func,
+                                                downstream_subject_split=prediction_models_downstream_subject_split)
+            experiments.append(pretrain)
+        else:
+            pretrain = None
 
         # Simple Elecssl
-        simple_elecssl = self.run_simple_elecssl_hpo(pretrain, pretext_subject_split=pretext_subject_split_func,
-                                                     downstream_subject_split=elecssl_downstream_subject_split)
+        if "simple_elecssl" not in exclude:
+            assert pretrain is not None
+            simple_elecssl = self.run_simple_elecssl_hpo(pretrain, pretext_subject_split=pretext_subject_split_func,
+                                                         downstream_subject_split=elecssl_downstream_subject_split)
+            experiments.append(simple_elecssl)
+        else:
+            simple_elecssl = None
 
         # Multivariable Elecssl
-        multivariable_elecssl = self.run_multivariable_elecssl_hpo(
-            simple_elecssl, pretext_subject_split=pretext_subject_split_func,
-            downstream_subject_split=elecssl_downstream_subject_split)
+        if "multivariable_elecssl" not in exclude:
+            assert simple_elecssl is not None
+            multivariable_elecssl = self.run_multivariable_elecssl_hpo(
+                simple_elecssl, pretext_subject_split=pretext_subject_split_func,
+                downstream_subject_split=elecssl_downstream_subject_split)
+            experiments.append(multivariable_elecssl)
 
         # Multi-task learning
-        mtl_experiments = self.run_multi_task_hpo(pretext_subject_split=pretext_subject_split_func,
-                                                  downstream_subject_split=prediction_models_downstream_subject_split)
+        if "multi_task" not in exclude:
+            multi_task = self.run_multi_task_hpo(pretext_subject_split=pretext_subject_split_func,
+                                                 downstream_subject_split=prediction_models_downstream_subject_split)
+            experiments.append(multi_task)
 
         # --------------
         # Test set integrity tests
         # --------------
-        self.verify_test_set_integrity((ml_features, prediction_models, pretrain, simple_elecssl, multivariable_elecssl,
-                                        mtl_experiments))
+        self.verify_test_set_integrity(tuple(experiments))
 
         # --------------
         # Dataframe creation
