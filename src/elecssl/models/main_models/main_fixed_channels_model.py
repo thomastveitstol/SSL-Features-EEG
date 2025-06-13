@@ -723,6 +723,15 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
             pretext_y = tensor_dict_to_device(pretext_y, device=device)
             downstream_y = flatten_targets(downstream_y).to(device)
 
+            # Flatten out mask (if some subjects should not count on the pretext loss)
+            flattened_pretext_mask = torch.cat(list(pretext_mask.values()), dim=0)
+            flattened_pretext_y = torch.cat(list(pretext_y.values()), dim=0)
+            flattened_downstream_mask = torch.cat(list(downstream_mask.values()))
+
+            # Extract subjects specific for pretext and downstream tasks
+            pretext_subjects = tuple(subject for subject, mask in zip(subjects, flattened_pretext_mask) if mask)
+            downstream_subjects = tuple(subject for subject, mask in zip(subjects, flattened_downstream_mask) if mask)
+
             # Forward, loss, and maybe apply optimiser
             with maybe_no_grad(apply_optimiser):
                 # Forward pass
@@ -731,11 +740,6 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
                 # -------------
                 # Compute losses
                 # -------------
-                # Flatten out mask (if some subjects should not count on the pretext loss)
-                flattened_pretext_mask = torch.cat(list(pretext_mask.values()), dim=0)
-                flattened_pretext_y = torch.cat(list(pretext_y.values()), dim=0)
-                flattened_downstream_mask = torch.cat(list(downstream_mask.values()))
-
                 # Maybe compute gradients and apply a step
                 if apply_optimiser:
                     assert pretext_criterion is not None
@@ -743,24 +747,21 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
                     assert mtl_strategy is not None
 
                     loss_1 = pretext_criterion(pretext_yhat[flattened_pretext_mask],
-                                               flattened_pretext_y[flattened_pretext_mask], subjects=subjects)
+                                               flattened_pretext_y[flattened_pretext_mask], subjects=pretext_subjects)
                     loss_2 = downstream_criterion(downstream_yhat, downstream_y[flattened_downstream_mask],
-                                                  subjects=subjects)
+                                                  subjects=downstream_subjects)
 
                     mtl_strategy.zero_grad()
                     mtl_strategy.backward(losses=(loss_1, loss_2))
                     mtl_strategy.step()
 
             # Update history objects
-            _pretext_subjects = tuple(subject for subject, mask in zip(subjects, flattened_pretext_mask) if mask)
             self._updated_history_object(
-                history=pretext_history, subjects=_pretext_subjects, output=pretext_yhat[flattened_pretext_mask],
+                history=pretext_history, subjects=pretext_subjects, output=pretext_yhat[flattened_pretext_mask],
                 y=flattened_pretext_y[flattened_pretext_mask], target_scaler=pretext_target_scaler,
                 prediction_activation_function=pretext_prediction_activation_function)
-            _downstream_subjects = tuple(
-                subject for subject, mask in zip(subjects, flattened_downstream_mask) if mask)
             self._updated_history_object(
-                history=downstream_history, subjects=_downstream_subjects, output=downstream_yhat,
+                history=downstream_history, subjects=downstream_subjects, output=downstream_yhat,
                 y=downstream_y[flattened_downstream_mask], target_scaler=downstream_target_scaler,
                 prediction_activation_function=downstream_prediction_activation_function)
 
