@@ -743,8 +743,9 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
                     assert mtl_strategy is not None
 
                     loss_1 = pretext_criterion(pretext_yhat[flattened_pretext_mask],
-                                               flattened_pretext_y[flattened_pretext_mask])
-                    loss_2 = downstream_criterion(downstream_yhat, downstream_y[flattened_downstream_mask])
+                                               flattened_pretext_y[flattened_pretext_mask], subjects=subjects)
+                    loss_2 = downstream_criterion(downstream_yhat, downstream_y[flattened_downstream_mask],
+                                                  subjects=subjects)
 
                     mtl_strategy.zero_grad()
                     mtl_strategy.backward(losses=(loss_1, loss_2))
