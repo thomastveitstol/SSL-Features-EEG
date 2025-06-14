@@ -1223,7 +1223,7 @@ class PretrainHPO(HPOExperiment):
     # --------------
     # Methods for assisting re-usage of runs
     # --------------
-    def get_trials_and_folders(self, pretrained_only, complete_only):
+    def get_trials_and_folders(self, *, pretrained_only, complete_only, strict_random_only):
         # Load study
         study = self.load_study(sampler=None)
 
@@ -1242,6 +1242,13 @@ class PretrainHPO(HPOExperiment):
             if verify_type(complete_only, bool) and trial.state != optuna.trial.TrialState.COMPLETE:
                 continue
             if verify_type(pretrained_only, bool) and not os.path.isfile(folder_name / "ssl_biomarkers.csv"):
+                # This should always be true for the current implementation, but at some point during development I
+                # sampled the datasets for pretext task differently which allowed no datasets, hence no pretraining.
+                # I won't remove the code, but FYI, it no longer make sense
+                continue
+
+            # Skip if (1) the HPCs were not sampled randomly and (2) random HPCs is a requirement
+            if verify_type(strict_random_only, bool) and trial.user_attrs["trial_sampler"] != "RandomSampler":
                 continue
 
             # Append
@@ -1409,8 +1416,9 @@ class SimpleElecsslHPO(HPOExperiment):
 
         # Re-use the trials
         reused_trials: List[FrozenTrial] = []
-        for i, (trial, trial_path) in enumerate(pretrain_hpo.get_trials_and_folders(complete_only=True,
-                                                                                    pretrained_only=True)):
+        for i, (trial, trial_path) in enumerate(pretrain_hpo.get_trials_and_folders(
+                complete_only=True, pretrained_only=True,
+                strict_random_only=self._experiments_config["reuse_random_only"])):
             trial_number = num_previous_studies + i
             folder_path = self._get_hpo_folder_path(trial_number)
 
@@ -1473,7 +1481,7 @@ class SimpleElecsslHPO(HPOExperiment):
     # --------------
     # Methods for assisting re-usage of runs
     # --------------
-    def get_trials_and_folders(self, completed_only):
+    def get_trials_and_folders(self, *, completed_only, random_and_reused_only):
         """
         Method for getting the trials and folder paths of all HPO trials conducted. It also includes the re-used ones,
         if any
@@ -1481,6 +1489,10 @@ class SimpleElecsslHPO(HPOExperiment):
         Parameters
         ----------
         completed_only : bool
+        random_and_reused_only : bool
+            To only return trials that were part of a random search or reused from pretraining. This returns the trials
+            employing random sampling of HPCs if and only if the re-used trials was constrained the the random search of
+            pretraining.
         """
         # Load study
         study = self.load_study(sampler=None)
@@ -1495,9 +1507,15 @@ class SimpleElecsslHPO(HPOExperiment):
                 raise FileNotFoundError(f"For trial number {trial.number}, the corresponding folder {folder_name} was "
                                         f"not found")
 
-            # (Maybe) skip
+            # (Maybe) skip due to unsuccessful run
             if verify_type(completed_only, bool) and trial.state != optuna.trial.TrialState.COMPLETE:
                 continue
+
+            if verify_type(random_and_reused_only, bool):
+                # One of the following must be true: Trial belongs to a Pretraining re-use or RandomSampler was employed
+                if "Pretraining" not in trial.user_attrs:  # Sufficient to check if the key exists
+                    if trial.user_attrs["trial_sampler"] != "RandomSampler":
+                        continue
 
             # Get the feature name
             feature_name = self._get_feature_name(path=folder_name)
@@ -1848,7 +1866,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         hp_distributions: Dict[str, Any] = dict()
         user_attrs: Dict[str, Any] = {"reuse": "score-based sampling"}
         for feature_name, trials_and_folder_paths in simple_elecssl_hpo.get_trials_and_folders(
-                completed_only=True).items():
+                completed_only=True, random_and_reused_only=self._experiments_config["random_and_reused_only"]).items():
             trial_values = tuple(trial.value for trial, _ in trials_and_folder_paths)
             trial_weights = _softmax_with_target_mass(
                 scores=trial_values, **self._experiments_config["score_based_kwargs"])
@@ -1883,7 +1901,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         hp_distributions: Dict[str, Any] = dict()
         user_attrs: Dict[str, Any] = {"reuse": "best individuals"}
         for feature_name, trials_and_folder_paths in simple_elecssl_hpo.get_trials_and_folders(
-                completed_only=True).items():
+                completed_only=True, random_and_reused_only=self._experiments_config["random_and_reused_only"]).items():
             # Select the best biomarker for this feature
             trial, folder_path = _get_best_trial_and_folder_path(trials_and_folder_paths, study.direction)
 
@@ -1920,7 +1938,7 @@ class MultivariableElecsslHPO(HPOExperiment):
         hp_distributions: Dict[str, Any] = dict()
         user_attrs: Dict[str, Any] = {"reuse": "random sampling"}
         for feature_name, trials_and_folder_paths in simple_elecssl_hpo.get_trials_and_folders(
-                completed_only=True).items():
+                completed_only=True, random_and_reused_only=self._experiments_config["random_and_reused_only"]).items():
             # Randomly select a trial and also get the corresponding path
             trial, folder_path = random.choice(trials_and_folder_paths)
 
