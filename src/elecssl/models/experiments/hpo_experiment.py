@@ -2106,6 +2106,12 @@ class MultiTaskHPO(HPOExperiment):
     _optimisation_predictions_file_name = ("train_history_predictions", "val_history_predictions",
                                            "train_pretext_history_predictions", "val_pretext_history_predictions")
 
+    @classmethod
+    def load_previous(cls, path, *, pretext_subject_split, downstream_subject_split):
+        return cls(results_dir=path, is_continuation=True, pretext_subject_split=pretext_subject_split,
+                   downstream_subject_split=downstream_subject_split, pretext_experiments_config=None,
+                   downstream_experiments_config=None, experiments_config=None, hp_config=None, pretext_hp_config=None)
+
     def __init__(self, *, pretext_experiments_config, downstream_experiments_config, experiments_config, hp_config,
                  results_dir, is_continuation, pretext_subject_split, downstream_subject_split, pretext_hp_config):
         super().__init__(experiments_config=experiments_config, hp_config=hp_config, results_dir=results_dir,
@@ -2764,6 +2770,7 @@ class AllHPOExperiments:
         self.continue_pretraining_hpo(num_trials=None)
         self.continue_simple_elecssl_hpo(num_trials=None)
         self.continue_multivariable_elecssl_hpo(num_trials=None)
+        self.continue_multi_task_hpo(num_trials=None)
 
     def continue_prediction_models_hpo(self, num_trials: Optional[int]):
         _, subject_split, _ = self.re_create_split()
@@ -2816,6 +2823,16 @@ class AllHPOExperiments:
                     path=self._results_path, pretext_subject_split=pretext_split,
                     downstream_subject_split=elecssl_downstream_split),
                 pretext_subject_split=pretext_split, downstream_subject_split=elecssl_downstream_split)
+
+    def continue_multi_task_hpo(self, num_trials: Optional[int]):
+        pretext_split, downstream_split, _ = self.re_create_split()
+        experiment_class = MultiTaskHPO
+        if experiment_class.is_existing_dir(self._results_path):
+            with experiment_class.load_previous(self._results_path, pretext_subject_split=pretext_split,
+                                                downstream_subject_split=downstream_split) as experiment:
+                experiment.continue_hyperparameter_optimisation(num_trials)
+        else:
+            self.run_multi_task_hpo(pretext_subject_split=pretext_split, downstream_subject_split=downstream_split)
 
     # --------------
     # Test set integrity
