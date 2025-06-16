@@ -58,7 +58,7 @@ def test_save_load_model_reproducibility(interpolation_downstream_models, interp
                 metrics="regression", main_metric="r2_score", num_epochs=2, criterion=criterion,
                 optimiser=optimiser, device=torch.device("cpu"), patience=3,
                 prediction_activation_function=None, verbose=False, target_scaler=None, sub_group_splits=None,
-                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None
+                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None, use_progressbar=False
             )
             outputs_1 = model(interpolated_input_data)
 
@@ -183,7 +183,7 @@ def test_mtl_save_load_model_reproducibility(interpolation_multi_task_models, in
                 downstream_criterion=downstream_criterion, device=torch.device("cpu"), patience=3,
                 pretext_target_scaler=None, downstream_prediction_activation_function=None,
                 pretext_prediction_activation_function=None, verbose=False, target_scaler=None, sub_group_splits=None,
-                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None
+                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None, use_progressbar=False
             )
             outputs_1 = model(interpolated_input_data, pretext_y=pretext_target_data,
                               downstream_mask=downstream_mask_tensor)

@@ -69,7 +69,8 @@ def test_save_load_model_reproducibility(input_data, target_data, subjects, rbp_
                 metrics="regression", main_metric="r2_score", num_epochs=2, criterion=criterion,
                 optimiser=optimiser, device=torch.device("cpu"), channel_name_to_index=channel_name_to_index,
                 prediction_activation_function=None, verbose=False, target_scaler=None, sub_group_splits=None,
-                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None, patience=3
+                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None, patience=3,
+                use_progressbar=False
             )
             outputs_1 = model(input_data, pre_computed=pre_computed, channel_name_to_index=channel_name_to_index)
 
@@ -218,7 +219,8 @@ def test_mtl_save_load_model_reproducibility(input_data, target_data, subjects, 
                 verbose=False, target_scaler=None, sub_group_splits=None, pretext_target_scaler=None,
                 pretext_prediction_activation_function=None, pretext_metrics="regression",
                 pretext_criterion=pretext_criterion, pretext_selection_metric="r2_score",
-                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None, patience=3
+                sub_groups_verbose=False, verbose_variables=False, variable_metrics=None, patience=3,
+                use_progressbar=False
             )
             outputs_1 = model(input_data, pre_computed=pre_computed, channel_name_to_index=channel_name_to_index,
                               pretext_y=pretext_target_data, downstream_mask=downstream_mask_tensor)

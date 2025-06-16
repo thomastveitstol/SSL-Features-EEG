@@ -199,7 +199,7 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
     def train_model(self, *, train_loader, val_loader, test_loader, metrics, main_metric, num_epochs,
                     criterion, optimiser, device, prediction_activation_function=None,
                     verbose=True, target_scaler, sub_group_splits, sub_groups_verbose, verbose_variables,
-                    variable_metrics, patience):
+                    variable_metrics, patience, use_progressbar):
         # Defining histories objects
         train_history = Histories(metrics=metrics, splits=sub_group_splits, variable_metrics=variable_metrics,
                                   expected_variables=train_loader.dataset.expected_variables)
@@ -226,8 +226,8 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
                 loader=train_loader, compute_loss=True, history=train_history, criterion=criterion, optimiser=optimiser,
                 target_scaler=target_scaler, pbar_prefix=pbar_prefix, device=device,
                 prediction_activation_function=prediction_activation_function, verbose=verbose,
-                verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
-
+                verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose,
+                use_progressbar=use_progressbar
             )
 
             # ---------------
@@ -239,7 +239,8 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
                     loader=val_loader, compute_loss=False, optimiser=None, criterion=None, history=val_history,
                     target_scaler=target_scaler, pbar_prefix=pbar_prefix, device=device,
                     prediction_activation_function=prediction_activation_function, verbose=verbose,
-                    verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
+                    verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose,
+                    use_progressbar=use_progressbar
                 )
 
             # ----------------
@@ -252,7 +253,8 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
                         loader=test_loader, compute_loss=False, optimiser=None, criterion=None, history=test_history,
                         target_scaler=target_scaler, pbar_prefix=pbar_prefix, device=device,
                         prediction_activation_function=prediction_activation_function, verbose=verbose,
-                        verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
+                        verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose,
+                        use_progressbar=use_progressbar
                     )
 
             # ----------------
@@ -309,7 +311,7 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
 
     def _full_epoch_pass(self, *, loader, compute_loss, device, prediction_activation_function, history, target_scaler,
                          optimiser: Optional[optim.Optimizer], criterion: Optional[CustomWeightedLoss], pbar_prefix,
-                         verbose, sub_groups_verbose, verbose_variables):
+                         verbose, sub_groups_verbose, verbose_variables, use_progressbar=False):
         # Set training/evaluation mode
         if verify_type(compute_loss, bool):
             self.train()
@@ -319,7 +321,11 @@ class DownstreamFixedChannelsModel(MainFixedChannelsModelBase):
         # -------------
         # Run for a full epoch
         # -------------
-        for x, y, subject_indices in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
+        if use_progressbar:
+            loop = progressbar(loader, redirect_stdout=True, prefix=pbar_prefix)
+        else:
+            loop = loader
+        for x, y, subject_indices in loop:
             # Strip the dictionaries for 'ghost tensors'
             x = strip_tensors(x)
             y = strip_tensors(y)
@@ -535,7 +541,7 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
                     pretext_prediction_activation_function, downstream_prediction_activation_function,
                     downstream_metrics, pretext_metrics, pretext_selection_metric, downstream_selection_metric,
                     patience, num_epochs, variable_metrics, sub_group_splits, verbose, verbose_variables,
-                    sub_groups_verbose):
+                    sub_groups_verbose, use_progressbar):
         # --------------
         # History objects
         # --------------
@@ -582,7 +588,8 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
                 downstream_prediction_activation_function=downstream_prediction_activation_function,
                 pretext_target_scaler=pretext_target_scaler, downstream_target_scaler=target_scaler,
                 pretext_history=pretext_train_history, downstream_history=train_history, verbose=verbose,
-                verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose, pbar_prefix=pbar_prefix
+                verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose, pbar_prefix=pbar_prefix,
+                use_progressbar=use_progressbar
             )
 
             # ----------------
@@ -597,7 +604,7 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
                     downstream_prediction_activation_function=downstream_prediction_activation_function,
                     pretext_target_scaler=pretext_target_scaler, downstream_target_scaler=target_scaler, device=device,
                     verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose,
-                    pbar_prefix=pbar_prefix
+                    pbar_prefix=pbar_prefix, use_progressbar=use_progressbar
                 )
 
             # ----------------
@@ -613,7 +620,7 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
                         downstream_prediction_activation_function=downstream_prediction_activation_function,
                         pretext_target_scaler=pretext_target_scaler, downstream_target_scaler=target_scaler,
                         device=device, verbose=verbose, verbose_variables=verbose_variables,
-                        sub_groups_verbose=sub_groups_verbose, pbar_prefix=pbar_prefix
+                        sub_groups_verbose=sub_groups_verbose, pbar_prefix=pbar_prefix, use_progressbar=use_progressbar
                     )
 
             # ----------------
@@ -694,7 +701,8 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
     def _full_epoch_pass(self, *, loader, apply_optimiser, pretext_criterion, downstream_criterion, pretext_history,
                          downstream_history, mtl_strategy: Optional[MultiTaskStrategy], device, pretext_target_scaler,
                          pbar_prefix, pretext_prediction_activation_function, downstream_target_scaler,
-                         downstream_prediction_activation_function, verbose, verbose_variables, sub_groups_verbose):
+                         downstream_prediction_activation_function, verbose, verbose_variables, sub_groups_verbose,
+                         use_progressbar=False):
         # Set training/evaluation mode
         if verify_type(apply_optimiser, bool):
             self.train()
@@ -704,8 +712,11 @@ class MultiTaskFixedChannelsModel(MainFixedChannelsModelBase):
         # -------------
         # Run for a full epoch
         # -------------
-        for (x, (pretext_y, pretext_mask), (downstream_y, downstream_mask),
-             subject_indices) in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
+        if use_progressbar:
+            loop = progressbar(loader, redirect_stdout=True, prefix=pbar_prefix)
+        else:
+            loop = loader
+        for x, (pretext_y, pretext_mask), (downstream_y, downstream_mask), subject_indices in loop:
 
             # Strip the dictionaries for 'ghost tensors'
             x = strip_tensors(x)

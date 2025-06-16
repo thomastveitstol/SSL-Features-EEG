@@ -204,7 +204,7 @@ class DownstreamRBPModel(MainRBPModelBase):
     def train_model(self, *, train_loader, val_loader, test_loader, metrics, main_metric, num_epochs,
                     criterion, optimiser, device, channel_name_to_index, prediction_activation_function=None,
                     verbose=True, target_scaler, sub_group_splits, sub_groups_verbose, verbose_variables,
-                    variable_metrics, patience: Optional[int]):
+                    variable_metrics, patience: Optional[int], use_progressbar):
         # Defining histories objects
         train_history = Histories(metrics=metrics, splits=sub_group_splits, variable_metrics=variable_metrics,
                                   expected_variables=train_loader.dataset.expected_variables)
@@ -232,7 +232,7 @@ class DownstreamRBPModel(MainRBPModelBase):
                 pbar_prefix=pbar_prefix, device=device, optimiser=optimiser, criterion=criterion,
                 prediction_activation_function=prediction_activation_function, target_scaler=target_scaler,
                 history=train_history, verbose=verbose, verbose_variables=verbose_variables,
-                sub_groups_verbose=sub_groups_verbose
+                sub_groups_verbose=sub_groups_verbose, use_progressbar=use_progressbar
             )
 
             # ----------------
@@ -244,7 +244,8 @@ class DownstreamRBPModel(MainRBPModelBase):
                     loader=val_loader, compute_loss=False, optimiser=None, criterion=None, history=val_history,
                     channel_name_to_index=channel_name_to_index, pbar_prefix=pbar_prefix, device=device,
                     target_scaler=target_scaler, prediction_activation_function=prediction_activation_function,
-                    verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
+                    verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose,
+                    use_progressbar=use_progressbar
                 )
 
             # ----------------
@@ -257,7 +258,8 @@ class DownstreamRBPModel(MainRBPModelBase):
                         loader=test_loader, compute_loss=False, optimiser=None, criterion=None, history=test_history,
                         channel_name_to_index=channel_name_to_index, pbar_prefix=pbar_prefix, device=device,
                         target_scaler=target_scaler, prediction_activation_function=prediction_activation_function,
-                        verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
+                        verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose,
+                        use_progressbar=use_progressbar
                     )
 
             # ----------------
@@ -316,7 +318,8 @@ class DownstreamRBPModel(MainRBPModelBase):
 
     def _full_epoch_pass(self, *, loader, compute_loss, channel_name_to_index, device, pbar_prefix, history,
                          optimiser: Optional[optim.Optimizer], criterion: Optional[CustomWeightedLoss],
-                         prediction_activation_function, target_scaler, verbose, sub_groups_verbose, verbose_variables):
+                         prediction_activation_function, target_scaler, verbose, sub_groups_verbose, verbose_variables,
+                         use_progressbar=False):
         # Set training/evaluation mode
         if verify_type(compute_loss, bool):
             self.train()
@@ -326,7 +329,11 @@ class DownstreamRBPModel(MainRBPModelBase):
         # -------------
         # Run for a full epoch
         # -------------
-        for x, pre_computed, y, subject_indices in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
+        if use_progressbar:
+            loop = progressbar(loader, redirect_stdout=True, prefix=pbar_prefix)
+        else:
+            loop = loader
+        for x, pre_computed, y, subject_indices in loop:
             # Strip the dictionaries for 'ghost tensors'
             x = strip_tensors(x)
             y = strip_tensors(y)
@@ -741,7 +748,8 @@ class MultiTaskRBPModel(MainRBPModelBase):
                     variable_metrics, sub_group_splits, patience, num_epochs, device, channel_name_to_index,
                     mtl_strategy, downstream_criterion, pretext_criterion, pretext_prediction_activation_function,
                     pretext_target_scaler, target_scaler, downstream_prediction_activation_function, verbose,
-                    verbose_variables, sub_groups_verbose, pretext_selection_metric, downstream_selection_metric):
+                    verbose_variables, sub_groups_verbose, pretext_selection_metric, downstream_selection_metric,
+                    use_progressbar):
         # --------------
         # History objects
         # --------------
@@ -789,7 +797,8 @@ class MultiTaskRBPModel(MainRBPModelBase):
                 downstream_prediction_activation_function=downstream_prediction_activation_function,
                 pretext_target_scaler=pretext_target_scaler, downstream_target_scaler=target_scaler,
                 pretext_history=pretext_train_history, downstream_history=train_history, verbose=verbose,
-                verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
+                verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose,
+                use_progressbar=use_progressbar
             )
 
             # ----------------
@@ -804,7 +813,8 @@ class MultiTaskRBPModel(MainRBPModelBase):
                     pretext_prediction_activation_function=pretext_prediction_activation_function,
                     downstream_prediction_activation_function=downstream_prediction_activation_function,
                     pretext_target_scaler=pretext_target_scaler, downstream_target_scaler=target_scaler,
-                    verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
+                    verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose,
+                    use_progressbar=use_progressbar
                 )
 
             # ----------------
@@ -821,7 +831,8 @@ class MultiTaskRBPModel(MainRBPModelBase):
                         pretext_prediction_activation_function=pretext_prediction_activation_function,
                         downstream_prediction_activation_function=downstream_prediction_activation_function,
                         pretext_target_scaler=pretext_target_scaler, downstream_target_scaler=target_scaler,
-                        verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose
+                        verbose=verbose, verbose_variables=verbose_variables, sub_groups_verbose=sub_groups_verbose,
+                        use_progressbar=use_progressbar
                     )
 
             # ----------------
@@ -904,7 +915,7 @@ class MultiTaskRBPModel(MainRBPModelBase):
                          downstream_history, mtl_strategy: Optional[MultiTaskStrategy], device, channel_name_to_index,
                          pretext_target_scaler, pbar_prefix, pretext_prediction_activation_function,
                          downstream_target_scaler, downstream_prediction_activation_function, verbose,
-                         verbose_variables, sub_groups_verbose):
+                         verbose_variables, sub_groups_verbose, use_progressbar=False):
         # Set training/evaluation mode
         if verify_type(apply_optimiser, bool):
             self.train()
@@ -914,8 +925,11 @@ class MultiTaskRBPModel(MainRBPModelBase):
         # -------------
         # Run for a full epoch
         # -------------
-        for (x, pre_computed, (pretext_y, pretext_mask), (downstream_y, downstream_mask),
-             subject_indices) in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
+        if use_progressbar:
+            loop = progressbar(loader, redirect_stdout=True, prefix=pbar_prefix)
+        else:
+            loop = loader
+        for x, pre_computed, (pretext_y, pretext_mask), (downstream_y, downstream_mask), subject_indices in loop:
 
             # Strip the dictionaries for 'ghost tensors'
             x = strip_tensors(x)
