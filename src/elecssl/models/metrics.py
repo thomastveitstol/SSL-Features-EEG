@@ -1412,12 +1412,12 @@ def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true, skip_s
     subjects_pred_and_true: Dict[Subject, YYhat] = dict()
     for subject, predictions_and_truths in subjects_predictions.items():
         if not skip_similar_ground_truths_check:
-            # Verify that the ground truth is the same (this is not necessarily true for all DL + EEG projects, but true for
-            # its currently intended use)
+            # Verify that the ground truth is the same (this is not necessarily true for all DL + EEG projects, but
+            # true for its currently intended use)
             all_ground_truths = tuple(yyhat.y_true for yyhat in predictions_and_truths)
             if not all(torch.equal(all_ground_truths[0], ground_truth) for ground_truth in all_ground_truths):
-                raise ValueError(f"Expected all ground truths to be the same per subject, but that was not the case for "
-                                 f"{subject}: {all_ground_truths}")
+                raise ValueError(f"Expected all ground truths to be the same per subject, but that was not the case "
+                                 f"for {subject}: {all_ground_truths}")
             truth = all_ground_truths[0]
         else:
             truth = predictions_and_truths[0].y_true
