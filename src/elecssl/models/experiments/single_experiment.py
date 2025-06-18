@@ -362,8 +362,10 @@ class SingleExperiment:
             raise RuntimeError(f"Train method {self.train_method} is not supported")
 
         # Create data loaders
-        train_loader = DataLoader(dataset=train_gen, batch_size=self.train_config["batch_size"], shuffle=True)
-        val_loader = DataLoader(dataset=val_gen, batch_size=self.train_config["batch_size"], shuffle=True)
+        train_loader = DataLoader(dataset=train_gen, batch_size=self.train_config["batch_size"], shuffle=True,
+                                  collate_fn=train_gen.collate_fn)
+        val_loader = DataLoader(dataset=val_gen, batch_size=self.train_config["batch_size"], shuffle=True,
+                                collate_fn=val_gen.collate_fn)
 
         return train_loader, val_loader, scalers
 
@@ -407,7 +409,8 @@ class SingleExperiment:
             raise RuntimeError(f"Train method {self.train_method} is not supported")
 
         # Create data loader
-        test_loader = DataLoader(dataset=test_gen, batch_size=self.train_config["batch_size"], shuffle=True)
+        test_loader = DataLoader(dataset=test_gen, batch_size=self.train_config["batch_size"], shuffle=True,
+                                 collate_fn=test_gen.collate_fn)
 
         return test_loader
 
@@ -500,8 +503,10 @@ class SingleExperiment:
             raise RuntimeError(f"Train method {self.train_method} is not supported")
 
         # Create data loaders
-        train_loader = DataLoader(dataset=train_gen, batch_size=self.train_config["batch_size"], shuffle=True)
-        val_loader = DataLoader(dataset=val_gen, batch_size=self.train_config["batch_size"], shuffle=True)
+        train_loader = DataLoader(dataset=train_gen, batch_size=self.train_config["batch_size"], shuffle=True,
+                                  collate_fn=train_gen.collate_fn)
+        val_loader = DataLoader(dataset=val_gen, batch_size=self.train_config["batch_size"], shuffle=True,
+                                collate_fn=val_gen.collate_fn)
 
         return train_loader, val_loader, scalers
 
@@ -556,7 +561,8 @@ class SingleExperiment:
             raise RuntimeError(f"Train method {self.train_method} is not supported")
 
         # Create data loader
-        test_loader = DataLoader(dataset=test_gen, batch_size=self.train_config["batch_size"], shuffle=True)
+        test_loader = DataLoader(dataset=test_gen, batch_size=self.train_config["batch_size"], shuffle=True,
+                                 collate_fn=test_gen.collate_fn)
 
         return test_loader
 

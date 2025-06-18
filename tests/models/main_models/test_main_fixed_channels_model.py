@@ -30,20 +30,17 @@ def test_save_load_model_reproducibility(interpolation_downstream_models, interp
         # Training preparations
         # -------------
         # Create dummy dataloaders. The dataloaders have en EEG epochs dimension too
-        train_loader = DataLoader(
-            InterpolationDataGenerator(data={name: numpy.expand_dims(inputs.numpy(), axis=1)
-                                             for name, inputs in interpolated_input_data.items()},
-                                       targets=target_data, subjects=subjects, subjects_info=dict(),
-                                       expected_variables=None),
-            batch_size=4, shuffle=True
+        train_gen = InterpolationDataGenerator(
+            data={name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in interpolated_input_data.items()},
+            targets=target_data, subjects=subjects, subjects_info=dict(), expected_variables=None
         )
-        val_loader = DataLoader(
-            InterpolationDataGenerator(data={name: numpy.expand_dims(inputs.numpy(), axis=1)
-                                             for name, inputs in interpolated_input_data.items()},
-                                       targets=target_data, subjects=subjects, subjects_info=dict(),
-                                       expected_variables=None),
-            batch_size=4, shuffle=True
+        train_loader = DataLoader(train_gen, batch_size=4, shuffle=True, collate_fn=train_gen.collate_fn)
+
+        val_gen = InterpolationDataGenerator(
+            data={name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in interpolated_input_data.items()},
+            targets=target_data, subjects=subjects, subjects_info=dict(), expected_variables=None
         )
+        val_loader = DataLoader(val_gen, batch_size=4, shuffle=True, collate_fn=val_gen.collate_fn)
 
         # Optimiser and criterion
         optimiser = optim.Adam(model.parameters(), lr=0.001, betas=(0.8, 0.9), eps=1e-8)
@@ -147,21 +144,18 @@ def test_mtl_save_load_model_reproducibility(interpolation_multi_task_models, in
         # -------------
         # Create dummy dataloaders. The dataloaders have en EEG epochs dimension too
         data = {name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in interpolated_input_data.items()}
-        train_loader = DataLoader(
-            MultiTaskInterpolationDataGenerator(
-                data=data, downstream_targets=target_data, subjects=subjects, subjects_info=dict(),
-                pretext_targets=pretext_target_data, downstream_mask=None, pretext_mask=None,
-                expected_variables=None
-            ), batch_size=4, shuffle=True
+        train_gen = MultiTaskInterpolationDataGenerator(
+            data=data, downstream_targets=target_data, subjects=subjects, subjects_info=dict(),
+            pretext_targets=pretext_target_data, downstream_mask=None, pretext_mask=None, expected_variables=None
         )
+        train_loader = DataLoader(train_gen, batch_size=4, shuffle=True, collate_fn=train_gen.collate_fn)
+
         data = {name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in interpolated_input_data.items()}
-        val_loader = DataLoader(
-            MultiTaskInterpolationDataGenerator(
-                data=data, downstream_targets=target_data, subjects=subjects, subjects_info=dict(),
-                pretext_targets=pretext_target_data, downstream_mask=None, pretext_mask=None,
-                expected_variables=None
-            ), batch_size=4, shuffle=True
+        val_gen = MultiTaskInterpolationDataGenerator(
+            data=data, downstream_targets=target_data, subjects=subjects, subjects_info=dict(),
+            pretext_targets=pretext_target_data, downstream_mask=None, pretext_mask=None, expected_variables=None
         )
+        val_loader = DataLoader(val_gen, batch_size=4, shuffle=True, collate_fn=val_gen.collate_fn)
 
         # Strategy and criterion
         optimiser = optim.Adam(model.parameters(), lr=0.001, betas=(0.8, 0.9), eps=1e-8)

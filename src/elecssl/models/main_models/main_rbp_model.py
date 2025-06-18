@@ -7,17 +7,16 @@ from progressbar import progressbar
 from torch import optim, nn
 from torch.nn import Parameter
 
-from elecssl.data.data_generators.data_generator import strip_tensors
 from elecssl.data.datasets.dataset_base import ChannelSystem
 from elecssl.models.domain_adaptation.domain_discriminators.getter import get_domain_discriminator
 from elecssl.models.losses import CustomWeightedLoss
-from elecssl.models.main_models.main_base_class import MainModuleBase, reorder_subjects
+from elecssl.models.main_models.main_base_class import MainModuleBase
 from elecssl.models.metrics import Histories, is_improved_model, PScore, is_pareto_optimal
 from elecssl.models.mtl_strategies.multi_task_strategies import MultiTaskStrategy
 from elecssl.models.mts_modules.getter import get_mts_module
 from elecssl.models.region_based_pooling.region_based_pooling import RegionBasedPooling, RBPDesign, RBPPoolType
 from elecssl.models.utils import tensor_dict_to_device, flatten_targets, ReverseLayerF, verify_type, \
-    tensor_dict_to_boolean, maybe_no_grad
+    maybe_no_grad
 
 
 class MainRBPModelBase(MainModuleBase, abc.ABC):
@@ -333,20 +332,7 @@ class DownstreamRBPModel(MainRBPModelBase):
             loop = progressbar(loader, redirect_stdout=True, prefix=pbar_prefix)
         else:
             loop = loader
-        for x, pre_computed, y, subject_indices in loop:
-            # Strip the dictionaries for 'ghost tensors'
-            x = strip_tensors(x)
-            y = strip_tensors(y)
-
-            if isinstance(pre_computed, torch.Tensor) and torch.all(torch.isnan(pre_computed)):
-                pre_computed = None
-            else:
-                pre_computed = [strip_tensors(pre_comp) for pre_comp in pre_computed]
-
-            # Extract subjects and correct the ordering
-            subjects = reorder_subjects(
-                order=tuple(x.keys()), subjects=loader.dataset.get_subjects_from_indices(subject_indices))
-
+        for x, pre_computed, y, subjects in loop:
             # Send data to the correct device
             x = tensor_dict_to_device(x, device=device)
             y = flatten_targets(y).to(device)
@@ -583,20 +569,7 @@ class DomainDiscriminatorRBPModel(MainRBPModelBase):
         # -------------
         # Run for a full epoch
         # -------------
-        for x, pre_computed, y, subject_indices in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
-            # Strip the dictionaries for 'ghost tensors'
-            x = strip_tensors(x)
-            y = strip_tensors(y)
-
-            if isinstance(pre_computed, torch.Tensor) and torch.all(torch.isnan(pre_computed)):
-                pre_computed = None
-            else:
-                pre_computed = [strip_tensors(pre_comp) for pre_comp in pre_computed]
-
-            # Extract subjects and correct the ordering
-            subjects = reorder_subjects(
-                order=tuple(x.keys()), subjects=loader.dataset.get_subjects_from_indices(subject_indices))
-
+        for x, pre_computed, y, subjects in progressbar(loader, redirect_stdout=True, prefix=pbar_prefix):
             # Send data to the correct device
             x = tensor_dict_to_device(x, device=device)
             y = flatten_targets(y).to(device)
@@ -929,24 +902,7 @@ class MultiTaskRBPModel(MainRBPModelBase):
             loop = progressbar(loader, redirect_stdout=True, prefix=pbar_prefix)
         else:
             loop = loader
-        for x, pre_computed, (pretext_y, pretext_mask), (downstream_y, downstream_mask), subject_indices in loop:
-
-            # Strip the dictionaries for 'ghost tensors'
-            x = strip_tensors(x)
-            pretext_y = strip_tensors(pretext_y)
-            downstream_y = strip_tensors(downstream_y, skip_nan_checks=True)
-            pretext_mask = tensor_dict_to_boolean(strip_tensors(pretext_mask))
-            downstream_mask = tensor_dict_to_boolean(strip_tensors(downstream_mask))
-
-            if isinstance(pre_computed, torch.Tensor) and torch.all(torch.isnan(pre_computed)):
-                pre_computed = None
-            else:
-                pre_computed = [strip_tensors(pre_comp) for pre_comp in pre_computed]
-
-            # Extract subjects and correct the ordering
-            subjects = reorder_subjects(
-                order=tuple(x.keys()), subjects=loader.dataset.get_subjects_from_indices(subject_indices))
-
+        for x, pre_computed, (pretext_y, pretext_mask), (downstream_y, downstream_mask), subjects in loop:
             # Send data to the correct device
             x = tensor_dict_to_device(x, device=device)
             pretext_y = tensor_dict_to_device(pretext_y, device=device)

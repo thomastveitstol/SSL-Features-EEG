@@ -41,20 +41,19 @@ def test_save_load_model_reproducibility(input_data, target_data, subjects, rbp_
         # Training preparations
         # -------------
         # Create dummy dataloaders. The dataloaders have en EEG epochs dimension too
-        train_loader = DataLoader(
-            RBPDataGenerator(data={name: numpy.expand_dims(inputs.numpy(), axis=1)
-                                   for name, inputs in input_data.items()},
-                             targets=target_data, subjects=subjects, pre_computed=data_gen_pre_computed,
-                             subjects_info=dict(), expected_variables=None),
-            batch_size=4, shuffle=True
+        train_gen = RBPDataGenerator(
+            data={name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in input_data.items()},
+            targets=target_data, subjects=subjects, pre_computed=data_gen_pre_computed, subjects_info=dict(),
+            expected_variables=None
         )
-        val_loader = DataLoader(
-            RBPDataGenerator(data={name: numpy.expand_dims(inputs.numpy(), axis=1)
-                                   for name, inputs in input_data.items()},
-                             targets=target_data, subjects=subjects, pre_computed=data_gen_pre_computed,
-                             subjects_info=dict(), expected_variables=None),
-            batch_size=4, shuffle=True
+        train_loader = DataLoader(train_gen, batch_size=4, shuffle=True, collate_fn=train_gen.collate_fn)
+
+        val_gen = RBPDataGenerator(
+            data={name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in input_data.items()},
+            targets=target_data, subjects=subjects, pre_computed=data_gen_pre_computed, subjects_info=dict(),
+            expected_variables=None
         )
+        val_loader = DataLoader(val_gen, batch_size=4, shuffle=True, collate_fn=val_gen.collate_fn)
 
         # Optimiser and criterion
         optimiser = optim.Adam(model.parameters(), lr=0.001, betas=(0.8, 0.9), eps=1e-8)
@@ -182,21 +181,20 @@ def test_mtl_save_load_model_reproducibility(input_data, target_data, subjects, 
         # -------------
         # Create dummy dataloaders. The dataloaders have en EEG epochs dimension too
         data = {name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in input_data.items()}
-        train_loader = DataLoader(
-            MultiTaskRBPdataGenerator(
-                data=data, downstream_targets=target_data, subjects=subjects, pre_computed=data_gen_pre_computed,
-                subjects_info=dict(), expected_variables=None, pretext_targets=pretext_target_data,
-                downstream_mask=None, pretext_mask=None
-            ), batch_size=4, shuffle=True
+        train_gen = MultiTaskRBPdataGenerator(
+            data=data, downstream_targets=target_data, subjects=subjects, pre_computed=data_gen_pre_computed,
+            subjects_info=dict(), expected_variables=None, pretext_targets=pretext_target_data, downstream_mask=None,
+            pretext_mask=None
         )
+        train_loader = DataLoader(train_gen, batch_size=4, shuffle=True, collate_fn=train_gen.collate_fn)
+
         data = {name: numpy.expand_dims(inputs.numpy(), axis=1) for name, inputs in input_data.items()}
-        val_loader = DataLoader(
-            MultiTaskRBPdataGenerator(
-                data=data, downstream_targets=target_data, subjects=subjects, pre_computed=data_gen_pre_computed,
-                subjects_info=dict(), expected_variables=None, pretext_targets=pretext_target_data,
-                downstream_mask=None, pretext_mask=None
-            ), batch_size=4, shuffle=True
+        val_gen = MultiTaskRBPdataGenerator(
+            data=data, downstream_targets=target_data, subjects=subjects, pre_computed=data_gen_pre_computed,
+            subjects_info=dict(), expected_variables=None, pretext_targets=pretext_target_data, downstream_mask=None,
+            pretext_mask=None
         )
+        val_loader = DataLoader(val_gen, batch_size=4, shuffle=True, collate_fn=val_gen.collate_fn)
 
         # Optimiser and criterion
         optimiser = optim.Adam(model.parameters(), lr=0.001, betas=(0.8, 0.9), eps=1e-8)

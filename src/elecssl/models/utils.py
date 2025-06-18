@@ -108,54 +108,6 @@ def flatten_targets(tensors):
     return targets
 
 
-def tensor_dict_to_boolean(tensors: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-    """
-    Convert a dictionary of tensors with 0/1 values into boolean tensors.
-
-    Each tensor must contain only 0 and 1. Raises a ValueError if any tensor contains
-    other values.
-
-
-    Notes
-    -----
-    Modifies in-place
-
-
-    Parameters
-    ----------
-    tensors : dict[str, torch.Tensor]
-
-    Returns
-    -------
-    dict[str, torch.Tensor]
-
-    Examples
-    --------
-    >>> my_tensors = {"a": torch.tensor([0, 1, 0]), "b": torch.tensor([[1, 0], [0, 1]])}
-    >>> my_result = tensor_dict_to_boolean(my_tensors)
-    >>> my_result  # doctest: +NORMALIZE_WHITESPACE
-    {'a': tensor([False, True, False]), 'b': tensor([[ True, False], [False,  True]])}
-
-    Modifies in-place
-
-    >>> my_tensors  # doctest: +NORMALIZE_WHITESPACE
-    {'a': tensor([False, True, False]), 'b': tensor([[ True, False], [False,  True]])}
-
-    Values must be 0 or 1
-
-    >>> my_tensors = {'bad': torch.tensor([0, 2, 1])}
-    >>> tensor_dict_to_boolean(my_tensors)  # doctest: +ELLIPSIS
-    Traceback (most recent call last):
-        ...
-    ValueError: Tensor with key 'bad' contains values other than 0 and 1: ...
-    """
-    for name, tensor in tensors.items():
-        if not torch.all(torch.logical_or(tensor == 0, tensor == 1)):
-            raise ValueError(f"Tensor with key {name!r} contains values other than 0 and 1: {tensor}")
-        tensors[name] = tensor.bool()
-    return tensors
-
-
 # -------------------------
 # Random number classes
 # -------------------------
