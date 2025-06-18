@@ -370,7 +370,9 @@ class Histories:
                                   f"{metric_value[-1]:.3f}\t\t", end="")
                 print()
 
-    def _update_metrics(self, subjects_info):
+    def _update_metrics(self, subjects_info, *, skip_similar_ground_truths_check=True):
+        """Method for updating metrics. Setting 'skip_similar_ground_truths_check' is advised as it can be
+        time-consuming to always make these checks"""
         # Concatenate torch tenors
         y_pred = torch.cat(self._epoch_y_pred, dim=0)
         y_true = torch.cat(self._epoch_y_true, dim=0)
@@ -401,17 +403,21 @@ class Histories:
 
             subjects_pred_and_true: Dict[Subject, YYhat] = dict()
             for subject, predictions_and_truths in subjects_predictions.items():
-                # Verify that the ground truth is the same (this is not necessarily true for all DL + EEG projects, but
-                # true for its currently intended use)
-                all_ground_truths = tuple(yyhat.y_true for yyhat in predictions_and_truths)
-                if not all(torch.equal(all_ground_truths[0], ground_truth) for ground_truth in all_ground_truths):
-                    raise ValueError("Expected all ground truths to be the same per subject, but that was not the case")
+                if not skip_similar_ground_truths_check:
+                    # Verify that the ground truth is the same (this is not necessarily true for all DL + EEG projects,
+                    # but true for its currently intended use)
+                    all_ground_truths = tuple(yyhat.y_true for yyhat in predictions_and_truths)
+                    if not all(torch.equal(all_ground_truths[0], ground_truth) for ground_truth in all_ground_truths):
+                        raise ValueError("Expected all ground truths to be the same per subject, but that was not the "
+                                         "case")
+                    truth = all_ground_truths[0]
+                else:
+                    truth = predictions_and_truths[0].y_true
 
                 # Set prediction to the average of all predictions, and the ground truth to the only element in the set
                 _pred = torch.mean(torch.cat([torch.unsqueeze(yyhat.y_pred, dim=0)
                                               for yyhat in predictions_and_truths], dim=0), dim=0, keepdim=True)
-                _true = all_ground_truths[0]
-                subjects_pred_and_true[subject] = YYhat(y_pred=_pred, y_true=_true)
+                subjects_pred_and_true[subject] = YYhat(y_pred=_pred, y_true=truth)
 
             # Loop through all splits
             for split_level, sub_groups in self._subgroup_histories.items():
