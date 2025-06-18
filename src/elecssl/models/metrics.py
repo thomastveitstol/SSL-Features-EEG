@@ -1397,10 +1397,10 @@ def higher_is_better(metric):
                          f"(higher or lower is better).")
 
 
-def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true):
+def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true, skip_similar_ground_truths_check=True):
     """Function for aggregating predictions when predictions have been made for multiple EEG epochs per subject. This
-    function computes the new prediction as the average of all, and also checks that the ground truth is always the same
-    per subject"""
+    function computes the new prediction as the average of all, and also maybe checks that the ground truth is always
+    the same per subject"""
     # Make dictionary containing subjects combined with the prediction and target
     subjects_predictions: Dict[Subject, List[YYhat]] = dict()
     for subject, y_hat, y in zip(subjects, y_pred, y_true):
@@ -1411,18 +1411,21 @@ def _aggregate_predictions_and_ground_truths(*, subjects, y_pred, y_true):
 
     subjects_pred_and_true: Dict[Subject, YYhat] = dict()
     for subject, predictions_and_truths in subjects_predictions.items():
-        # Verify that the ground truth is the same (this is not necessarily true for all DL + EEG projects, but true for
-        # its currently intended use)
-        all_ground_truths = tuple(yyhat.y_true for yyhat in predictions_and_truths)
-        if not all(torch.equal(all_ground_truths[0], ground_truth) for ground_truth in all_ground_truths):
-            raise ValueError(f"Expected all ground truths to be the same per subject, but that was not the case for "
-                             f"{subject}: {all_ground_truths}")
+        if not skip_similar_ground_truths_check:
+            # Verify that the ground truth is the same (this is not necessarily true for all DL + EEG projects, but true for
+            # its currently intended use)
+            all_ground_truths = tuple(yyhat.y_true for yyhat in predictions_and_truths)
+            if not all(torch.equal(all_ground_truths[0], ground_truth) for ground_truth in all_ground_truths):
+                raise ValueError(f"Expected all ground truths to be the same per subject, but that was not the case for "
+                                 f"{subject}: {all_ground_truths}")
+            truth = all_ground_truths[0]
+        else:
+            truth = predictions_and_truths[0].y_true
 
         # Set prediction to the average of all predictions, and the ground truth to the only element in the set
         _pred = torch.mean(torch.cat([torch.unsqueeze(yyhat.y_pred, dim=0)
                                       for yyhat in predictions_and_truths], dim=0), dim=0, keepdim=True)
-        _true = all_ground_truths[0]
-        subjects_pred_and_true[subject] = YYhat(y_pred=_pred, y_true=_true)
+        subjects_pred_and_true[subject] = YYhat(y_pred=_pred, y_true=truth)
 
     # Get as torch tensors
     all_y_pred = torch.cat([yyhat.y_pred for yyhat in subjects_pred_and_true.values()], dim=0)
