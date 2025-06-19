@@ -1,4 +1,5 @@
 import abc
+from collections import defaultdict
 from typing import List, Dict, Any, Tuple, Optional
 
 import numpy
@@ -17,8 +18,8 @@ class DataGenBase(Dataset):  # type: ignore[type-arg]
     def __init__(self, *, data, targets, subjects, subjects_info, expected_variables):
         super().__init__()
 
-        self._data = {name: torch.tensor(arr, dtype=torch.float) for name, arr in data.items()}
-        self._targets = {name: torch.tensor(arr, dtype=torch.float) for name, arr in targets.items()}
+        self._data = {name: torch.as_tensor(arr, dtype=torch.float) for name, arr in data.items()}
+        self._targets = {name: torch.as_tensor(arr, dtype=torch.float).unsqueeze(-1) for name, arr in targets.items()}
         self._subjects = subjects
         self._subjects_info = subjects_info
         self._expected_variables = expected_variables
@@ -187,7 +188,7 @@ class RBPDataGenerator(RBPDataGenBase):
 
         # Add the data which should be used
         data = self._data[dataset_name][subject_idx][epoch_idx]
-        targets = torch.unsqueeze(self._targets[dataset_name][subject_idx], dim=-1)
+        targets = self._targets[dataset_name][subject_idx]
         subject = Subject(subject_id=self._subjects[dataset_name][subject_idx], dataset_name=dataset_name)
 
         # Fix the pre-computed features and return
@@ -209,17 +210,14 @@ class RBPDataGenerator(RBPDataGenBase):
     @staticmethod
     def _collate_fn(batch: Tuple[Any, ...]) -> Any:
         # Collate
-        input_data: Dict[str, List[torch.Tensor]] = dict()
-        target_data: Dict[str, List[torch.Tensor]] = dict()
+        input_data: Dict[str, List[torch.Tensor]] = defaultdict(list)
+        target_data: Dict[str, List[torch.Tensor]] = defaultdict(list)
         pre_computed_data: Optional[List[Optional[Dict[str, List[torch.Tensor]]]]] = None
         unordered_subjects: List[Subject] = []
         all_none = all(features is None for _, features, *_ in batch)
         for i, (tensor, features, target, subject) in enumerate(batch):
             # Fix all the 'normal' stuff
             dataset_name = subject.dataset_name
-            if dataset_name not in input_data:
-                input_data[dataset_name] = []
-                target_data[dataset_name] = []
 
             input_data[dataset_name].append(tensor)
             target_data[dataset_name].append(target)
@@ -303,18 +301,19 @@ class MultiTaskRBPdataGenerator(RBPDataGenBase):
         super().__init__(data=data, targets=downstream_targets, subjects=subjects, pre_computed=pre_computed,
                          subjects_info=subjects_info, expected_variables=expected_variables)
 
-        self._pretext_targets = {name: torch.tensor(arr, dtype=torch.float) for name, arr in pretext_targets.items()}
+        self._pretext_targets = {name: torch.as_tensor(arr, dtype=torch.float).unsqueeze(-1)
+                                 for name, arr in pretext_targets.items()}
 
         # Fix masking if they are None
         if downstream_mask is None:
             downstream_mask = create_mask(
                 sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
-        self._downstream_mask = {name: torch.tensor(arr, dtype=torch.bool) for name, arr in downstream_mask.items()}
+        self._downstream_mask = {name: torch.as_tensor(arr, dtype=torch.bool) for name, arr in downstream_mask.items()}
 
         if pretext_mask is None:
             pretext_mask = create_mask(
                 sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
-        self._pretext_mask = {name: torch.tensor(arr, dtype=torch.bool) for name, arr in pretext_mask.items()}
+        self._pretext_mask = {name: torch.as_tensor(arr, dtype=torch.bool) for name, arr in pretext_mask.items()}
 
     def __len__(self):
         return sum(x.shape[0] * x.shape[1] for x in self._data.values())
@@ -325,8 +324,8 @@ class MultiTaskRBPdataGenerator(RBPDataGenBase):
 
         # Add the data which should be used. And the masks
         data = self._data[dataset_name][subject_idx][epoch_idx]
-        targets = torch.unsqueeze(self._targets[dataset_name][subject_idx], dim=-1)
-        pretext_targets = torch.unsqueeze(self._pretext_targets[dataset_name][subject_idx], dim=-1)
+        targets = self._targets[dataset_name][subject_idx]
+        pretext_targets = self._pretext_targets[dataset_name][subject_idx]
 
         mask = self._downstream_mask[dataset_name][subject_idx]
         pretext_mask = self._pretext_mask[dataset_name][subject_idx]
@@ -350,24 +349,18 @@ class MultiTaskRBPdataGenerator(RBPDataGenBase):
     @staticmethod
     def _collate_fn(batch: Tuple[Any, ...]) -> Any:
         # Collate
-        input_data: Dict[str, List[torch.Tensor]] = dict()
-        target_data: Dict[str, List[torch.Tensor]] = dict()
+        input_data: Dict[str, List[torch.Tensor]] = defaultdict(list)
+        target_data: Dict[str, List[torch.Tensor]] = defaultdict(list)
         pre_computed_data: Optional[List[Optional[Dict[str, List[torch.Tensor]]]]] = None
-        pretext_target_data: Dict[str, List[torch.Tensor]] = dict()
-        masks: Dict[str, List[torch.Tensor]] = dict()
-        pretext_masks: Dict[str, List[torch.Tensor]] = dict()
+        pretext_target_data: Dict[str, List[torch.Tensor]] = defaultdict(list)
+        masks: Dict[str, List[torch.Tensor]] = defaultdict(list)
+        pretext_masks: Dict[str, List[torch.Tensor]] = defaultdict(list)
         unordered_subjects: List[Subject] = []
         all_none = all(features is None for _, features, *_ in batch)
         for i, (input_tensor, features, (pretext_target, pretext_mask), (target, mask),
                 subject) in enumerate(batch):
             # Fix all the 'normal' stuff
             dataset_name = subject.dataset_name
-            if dataset_name not in input_data:
-                input_data[dataset_name] = []
-                target_data[dataset_name] = []
-                pretext_target_data[dataset_name] = []
-                masks[dataset_name] = []
-                pretext_masks[dataset_name] = []
 
             input_data[dataset_name].append(input_tensor)
             target_data[dataset_name].append(target)
@@ -512,7 +505,7 @@ class InterpolationDataGenerator(InterpolationDataGenBase):
 
         # Add the data which should be used
         data = self._data[dataset_name][subject_idx][epoch_idx]
-        targets = torch.unsqueeze(self._targets[dataset_name][subject_idx], dim=-1)
+        targets = self._targets[dataset_name][subject_idx]
         subject = Subject(subject_id=self._subjects[dataset_name][subject_idx], dataset_name=dataset_name)
 
         # Return input data, targets, and the Subject
@@ -521,22 +514,18 @@ class InterpolationDataGenerator(InterpolationDataGenBase):
     @staticmethod
     def _collate_fn(batch: Tuple[Any, ...]) -> Any:
         # Collate
-        input_data: Dict[str, List[torch.Tensor]] = dict()
-        target_data: Dict[str, List[torch.Tensor]] = dict()
+        input_data: Dict[str, List[torch.Tensor]] = defaultdict(list)
+        target_data: Dict[str, List[torch.Tensor]] = defaultdict(list)
         unordered_subjects: List[Subject] = []
         for tensor, target, subject in batch:
             dataset_name = subject.dataset_name
-
-            if dataset_name not in input_data:
-                input_data[dataset_name] = []
-                target_data[dataset_name] = []
 
             input_data[dataset_name].append(tensor)
             target_data[dataset_name].append(target)
             unordered_subjects.append(subject)
 
         # Reorder subjects and stack the tensors
-        subjects = reorder_subjects(tuple(input_data), subjects=tuple(unordered_subjects))
+        subjects = reorder_subjects(input_data, subjects=unordered_subjects)
         input_data_tensors = {name: torch.stack(tensor_list) for name, tensor_list in input_data.items()}
         target_data_tensors = {name: torch.stack(tensor_list) for name, tensor_list in target_data.items()}
         return input_data_tensors, target_data_tensors, subjects
@@ -559,18 +548,19 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
         # -------------
         # Set MTL-specific attributes
         # -------------
-        self._pretext_targets = {name: torch.tensor(arr, dtype=torch.float) for name, arr in pretext_targets.items()}
+        self._pretext_targets = {name: torch.as_tensor(arr, dtype=torch.float).unsqueeze(-1)
+                                 for name, arr in pretext_targets.items()}
 
         # Fix masking if they are None
         if downstream_mask is None:
             downstream_mask = create_mask(
                 sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
-        self._downstream_mask = {name: torch.tensor(arr, dtype=torch.bool) for name, arr in downstream_mask.items()}
+        self._downstream_mask = {name: torch.as_tensor(arr, dtype=torch.bool) for name, arr in downstream_mask.items()}
 
         if pretext_mask is None:
             pretext_mask = create_mask(
                 sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
-        self._pretext_mask = {name: torch.tensor(arr, dtype=torch.bool) for name, arr in pretext_mask.items()}
+        self._pretext_mask = {name: torch.as_tensor(arr, dtype=torch.bool) for name, arr in pretext_mask.items()}
 
     def __getitem__(self, item):
         # Select dataset and subject in the dataset
@@ -578,8 +568,8 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
 
         # Add the data which should be used
         data = self._data[dataset_name][subject_idx][epoch_idx]
-        targets = torch.unsqueeze(self._targets[dataset_name][subject_idx], dim=-1)
-        pretext_targets = torch.unsqueeze(self._pretext_targets[dataset_name][subject_idx], dim=-1)
+        targets = self._targets[dataset_name][subject_idx]
+        pretext_targets = self._pretext_targets[dataset_name][subject_idx]
         mask = self._downstream_mask[dataset_name][subject_idx]
         pretext_mask = self._pretext_mask[dataset_name][subject_idx]
         subject = Subject(subject_id=self._subjects[dataset_name][subject_idx], dataset_name=dataset_name)
@@ -590,21 +580,14 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
     @staticmethod
     def _collate_fn(batch: Tuple[Any, ...]) -> Any:
         # Collate
-        input_data: Dict[str, List[torch.Tensor]] = dict()
-        target_data: Dict[str, List[torch.Tensor]] = dict()
-        pretext_target_data: Dict[str, List[torch.Tensor]] = dict()
-        masks: Dict[str, List[torch.Tensor]] = dict()
-        pretext_masks: Dict[str, List[torch.Tensor]] = dict()
+        input_data: Dict[str, List[torch.Tensor]] = defaultdict(list)
+        target_data: Dict[str, List[torch.Tensor]] = defaultdict(list)
+        pretext_target_data: Dict[str, List[torch.Tensor]] = defaultdict(list)
+        masks: Dict[str, List[torch.Tensor]] = defaultdict(list)
+        pretext_masks: Dict[str, List[torch.Tensor]] = defaultdict(list)
         unordered_subjects: List[Subject] = []
         for input_tensor, (pretext_target, pretext_mask), (target, mask), subject in batch:
             dataset_name = subject.dataset_name
-
-            if dataset_name not in input_data:
-                input_data[dataset_name] = []
-                target_data[dataset_name] = []
-                pretext_target_data[dataset_name] = []
-                masks[dataset_name] = []
-                pretext_masks[dataset_name] = []
 
             input_data[dataset_name].append(input_tensor)
             target_data[dataset_name].append(target)
