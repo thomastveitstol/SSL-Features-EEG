@@ -33,7 +33,6 @@ class DataGenBase(Dataset):  # type: ignore[type-arg]
                     flat_index.append((dataset_name, sub_idx, epoch_idx))
         self._flat_idx = tuple(flat_index)
 
-
     def __len__(self):
         return sum(x.shape[0] * x.shape[1] for x in self._data.values())
 
@@ -431,7 +430,7 @@ class MultiTaskRBPdataGenerator(RBPDataGenBase):
         for dataset_name, mask in self._downstream_mask.items():
             sample_size = mask.sum().item()
             if sample_size > 0:
-                sizes[dataset_name] = sample_size
+                sizes[dataset_name] = int(sample_size)
         return sizes
 
     @property
@@ -442,7 +441,7 @@ class MultiTaskRBPdataGenerator(RBPDataGenBase):
         for dataset_name, mask in self._pretext_mask.items():
             sample_size = mask.sum().item()
             if sample_size > 0:
-                sizes[dataset_name] = sample_size
+                sizes[dataset_name] = int(sample_size)
         return sizes
 
 
@@ -636,7 +635,7 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
         for dataset_name, mask in self._downstream_mask.items():
             sample_size = mask.sum().item()
             if sample_size > 0:
-                sizes[dataset_name] = sample_size
+                sizes[dataset_name] = int(sample_size)
         return sizes
 
     @property
@@ -647,7 +646,7 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
         for dataset_name, mask in self._pretext_mask.items():
             sample_size = mask.sum().item()
             if sample_size > 0:
-                sizes[dataset_name] = sample_size
+                sizes[dataset_name] = int(sample_size)
         return sizes
 
 
