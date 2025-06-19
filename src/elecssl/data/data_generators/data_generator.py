@@ -17,11 +17,22 @@ class DataGenBase(Dataset):  # type: ignore[type-arg]
     def __init__(self, *, data, targets, subjects, subjects_info, expected_variables):
         super().__init__()
 
-        self._data = data
-        self._targets = targets
+        self._data = {name: torch.tensor(arr, dtype=torch.float) for name, arr in data.items()}
+        self._targets = {name: torch.tensor(arr, dtype=torch.float) for name, arr in targets.items()}
         self._subjects = subjects
         self._subjects_info = subjects_info
         self._expected_variables = expected_variables
+
+        # Create flat index, item -> (dataset_name, subject_idx, epoch_idx)
+        flat_index: List[Tuple[str, int, int]] = []
+        for dataset_name, tensor in self._data.items():
+            num_subjects = tensor.size()[0]
+            num_epochs = tensor.size()[1]
+            for sub_idx in range(num_subjects):
+                for epoch_idx in range(num_epochs):
+                    flat_index.append((dataset_name, sub_idx, epoch_idx))
+        self._flat_idx = tuple(flat_index)
+
 
     def __len__(self):
         return sum(x.shape[0] * x.shape[1] for x in self._data.values())
@@ -57,7 +68,7 @@ class DataGenBase(Dataset):  # type: ignore[type-arg]
         Subject
         """
         # Get the dataset name and index
-        dataset_name, subject_idx, _ = _select_dataset_and_index(item=int(item), dataset_shapes=self.dataset_shapes)
+        dataset_name, subject_idx, _ = self._flat_idx[item]
 
         # Use correct type and return
         return Subject(subject_id=self._subjects[dataset_name][subject_idx], dataset_name=dataset_name)
@@ -173,12 +184,11 @@ class RBPDataGenerator(RBPDataGenBase):
 
     def __getitem__(self, item):
         # Select dataset and subject in the dataset
-        dataset_name, subject_idx, epoch_idx = _select_dataset_and_index(item, dataset_shapes=self.dataset_shapes)
+        dataset_name, subject_idx, epoch_idx = self._flat_idx[item]
 
         # Add the data which should be used
-        data = torch.tensor(self._data[dataset_name][subject_idx][epoch_idx], dtype=torch.float)
-        targets = torch.unsqueeze(
-            torch.tensor(self._targets[dataset_name][subject_idx], dtype=torch.float, requires_grad=False), dim=-1)
+        data = self._data[dataset_name][subject_idx][epoch_idx]
+        targets = torch.unsqueeze(self._targets[dataset_name][subject_idx], dim=-1)
         subject = Subject(subject_id=self._subjects[dataset_name][subject_idx], dataset_name=dataset_name)
 
         # Fix the pre-computed features and return
@@ -294,38 +304,33 @@ class MultiTaskRBPdataGenerator(RBPDataGenBase):
         super().__init__(data=data, targets=downstream_targets, subjects=subjects, pre_computed=pre_computed,
                          subjects_info=subjects_info, expected_variables=expected_variables)
 
-        self._pretext_targets = pretext_targets
+        self._pretext_targets = {name: torch.tensor(arr, dtype=torch.float) for name, arr in pretext_targets.items()}
 
         # Fix masking if they are None
         if downstream_mask is None:
-            self._downstream_mask = create_mask(
+            downstream_mask = create_mask(
                 sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
-        else:
-            self._downstream_mask = downstream_mask
+        self._downstream_mask = {name: torch.tensor(arr, dtype=torch.bool) for name, arr in downstream_mask.items()}
 
         if pretext_mask is None:
-            self._pretext_mask = create_mask(
+            pretext_mask = create_mask(
                 sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
-        else:
-            self._pretext_mask = pretext_mask
+        self._pretext_mask = {name: torch.tensor(arr, dtype=torch.bool) for name, arr in pretext_mask.items()}
 
     def __len__(self):
         return sum(x.shape[0] * x.shape[1] for x in self._data.values())
 
     def __getitem__(self, item):
         # Select dataset and subject in the dataset
-        dataset_name, subject_idx, epoch_idx = _select_dataset_and_index(item, dataset_shapes=self.dataset_shapes)
+        dataset_name, subject_idx, epoch_idx = self._flat_idx[item]
 
         # Add the data which should be used. And the masks
-        data = torch.tensor(self._data[dataset_name][subject_idx][epoch_idx], dtype=torch.float)
-        targets = torch.unsqueeze(
-            torch.tensor(self._targets[dataset_name][subject_idx], dtype=torch.float, requires_grad=False), dim=-1)
-        pretext_targets = torch.unsqueeze(
-            torch.tensor(self._pretext_targets[dataset_name][subject_idx], dtype=torch.float, requires_grad=False),
-            dim=-1)
+        data = self._data[dataset_name][subject_idx][epoch_idx]
+        targets = torch.unsqueeze(self._targets[dataset_name][subject_idx], dim=-1)
+        pretext_targets = torch.unsqueeze(self._pretext_targets[dataset_name][subject_idx], dim=-1)
 
-        mask = torch.tensor(bool(self._downstream_mask[dataset_name][subject_idx]), dtype=torch.bool)
-        pretext_mask = torch.tensor(bool(self._pretext_mask[dataset_name][subject_idx]), dtype=torch.bool)
+        mask = self._downstream_mask[dataset_name][subject_idx]
+        pretext_mask = self._pretext_mask[dataset_name][subject_idx]
         subject = Subject(subject_id=self._subjects[dataset_name][subject_idx], dataset_name=dataset_name)
 
         # Fix the pre-computed features and return
@@ -424,7 +429,7 @@ class MultiTaskRBPdataGenerator(RBPDataGenBase):
         from the dictionary"""
         sizes: Dict[str, int] = {}
         for dataset_name, mask in self._downstream_mask.items():
-            sample_size = mask.sum()
+            sample_size = mask.sum().item()
             if sample_size > 0:
                 sizes[dataset_name] = sample_size
         return sizes
@@ -435,7 +440,7 @@ class MultiTaskRBPdataGenerator(RBPDataGenBase):
         from the dictionary"""
         sizes: Dict[str, int] = {}
         for dataset_name, mask in self._pretext_mask.items():
-            sample_size = mask.sum()
+            sample_size = mask.sum().item()
             if sample_size > 0:
                 sizes[dataset_name] = sample_size
         return sizes
@@ -504,13 +509,11 @@ class InterpolationDataGenerator(InterpolationDataGenBase):
 
     def __getitem__(self, item):
         # Select dataset and subject in the dataset
-        dataset_name, subject_idx, epoch_idx = _select_dataset_and_index(item, dataset_shapes=self.dataset_shapes)
+        dataset_name, subject_idx, epoch_idx = self._flat_idx[item]
 
         # Add the data which should be used
-        data = torch.tensor(self._data[dataset_name][subject_idx][epoch_idx], dtype=torch.float)
-        targets = torch.unsqueeze(
-            torch.tensor(self._targets[dataset_name][subject_idx], dtype=torch.float, requires_grad=False),
-            dim=-1)
+        data = self._data[dataset_name][subject_idx][epoch_idx]
+        targets = torch.unsqueeze(self._targets[dataset_name][subject_idx], dim=-1)
         subject = Subject(subject_id=self._subjects[dataset_name][subject_idx], dataset_name=dataset_name)
 
         # Return input data, targets, and the Subject
@@ -557,35 +560,29 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
         # -------------
         # Set MTL-specific attributes
         # -------------
-        self._pretext_targets = pretext_targets
+        self._pretext_targets = {name: torch.tensor(arr, dtype=torch.float) for name, arr in pretext_targets.items()}
 
         # Fix masking if they are None
         if downstream_mask is None:
-            self._downstream_mask = create_mask(
+            downstream_mask = create_mask(
                 sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
-        else:
-            self._downstream_mask = downstream_mask
+        self._downstream_mask = {name: torch.tensor(arr, dtype=torch.bool) for name, arr in downstream_mask.items()}
 
         if pretext_mask is None:
-            self._pretext_mask = create_mask(
+            pretext_mask = create_mask(
                 sample_sizes={name: d.shape[0] for name, d in data.items()}, to_include=data.keys())
-        else:
-            self._pretext_mask = pretext_mask
+        self._pretext_mask = {name: torch.tensor(arr, dtype=torch.bool) for name, arr in pretext_mask.items()}
 
     def __getitem__(self, item):
         # Select dataset and subject in the dataset
-        dataset_name, subject_idx, epoch_idx = _select_dataset_and_index(item, dataset_shapes=self.dataset_shapes)
+        dataset_name, subject_idx, epoch_idx = self._flat_idx[item]
 
         # Add the data which should be used
-        data = torch.tensor(self._data[dataset_name][subject_idx][epoch_idx], dtype=torch.float)
-        targets = torch.unsqueeze(
-            torch.tensor(self._targets[dataset_name][subject_idx], dtype=torch.float, requires_grad=False),
-            dim=-1)
-        pretext_targets = torch.unsqueeze(
-            torch.tensor(self._pretext_targets[dataset_name][subject_idx], dtype=torch.float, requires_grad=False),
-            dim=-1)
-        mask = torch.tensor(bool(self._downstream_mask[dataset_name][subject_idx]), dtype=torch.bool)
-        pretext_mask = torch.tensor(bool(self._pretext_mask[dataset_name][subject_idx]), dtype=torch.bool)
+        data = self._data[dataset_name][subject_idx][epoch_idx]
+        targets = torch.unsqueeze(self._targets[dataset_name][subject_idx], dim=-1)
+        pretext_targets = torch.unsqueeze(self._pretext_targets[dataset_name][subject_idx], dim=-1)
+        mask = self._downstream_mask[dataset_name][subject_idx]
+        pretext_mask = self._pretext_mask[dataset_name][subject_idx]
         subject = Subject(subject_id=self._subjects[dataset_name][subject_idx], dataset_name=dataset_name)
 
         # Return
@@ -637,7 +634,7 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
         from the dictionary"""
         sizes: Dict[str, int] = {}
         for dataset_name, mask in self._downstream_mask.items():
-            sample_size = mask.sum()
+            sample_size = mask.sum().item()
             if sample_size > 0:
                 sizes[dataset_name] = sample_size
         return sizes
@@ -648,7 +645,7 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
         from the dictionary"""
         sizes: Dict[str, int] = {}
         for dataset_name, mask in self._pretext_mask.items():
-            sample_size = mask.sum()
+            sample_size = mask.sum().item()
             if sample_size > 0:
                 sizes[dataset_name] = sample_size
         return sizes
@@ -657,61 +654,6 @@ class MultiTaskInterpolationDataGenerator(InterpolationDataGenBase):
 # ----------------
 # Functions
 # ----------------
-def _select_dataset_and_index(item, dataset_shapes):
-    """
-    Function for selecting dataset. Only works for positive integer items
-
-    Parameters
-    ----------
-    item : int
-    dataset_shapes : dict[str, tuple[int, ...]]
-
-    Returns
-    -------
-    tuple[str, int]
-
-    Examples
-    --------
-    >>> my_shapes = {"a": (3, 3, 19, 3000), "b": (4, 4, 19, 3000), "c": (6, 1, 19, 3000), "d": (7, 2, 19, 3000)}
-    >>> def _round(x): return x[0], int(x[1]), int(x[2])
-    >>> _round(_select_dataset_and_index(item=15, dataset_shapes=my_shapes))
-    ('b', 1, 2)
-    >>> _round(_select_dataset_and_index(item=27, dataset_shapes=my_shapes))
-    ('c', 2, 0)
-    >>> _round(_select_dataset_and_index(item=36, dataset_shapes=my_shapes))
-    ('d', 2, 1)
-    >>> _round(_select_dataset_and_index(item=44, dataset_shapes=my_shapes))
-    ('d', 6, 1)
-    >>> _select_dataset_and_index(item=45, dataset_shapes=my_shapes)
-    Traceback (most recent call last):
-    ...
-    IndexError: Index 45 exceeds the total size of the combined dataset 45
-    >>> _select_dataset_and_index(item=-1, dataset_shapes=my_shapes)
-    Traceback (most recent call last):
-    ...
-    ValueError: Expected item to be a positive integer, but found -1 (type=<class 'int'>)
-    """
-    # Input check
-    if not isinstance(item, int) or item < 0:
-        raise ValueError(f"Expected item to be a positive integer, but found {item} (type={type(item)})")
-
-    # Find the dataset name and position
-    accumulated_sizes = 0
-    for name, shape in dataset_shapes.items():
-        num_subjects, num_eeg_epochs, *_ = shape
-        size = num_subjects * num_eeg_epochs
-        accumulated_sizes += size
-        if item < accumulated_sizes:
-            # Now, the current dataset is the correct one. Need to extract the correct subject and EEG epoch indices
-            idx = item - (accumulated_sizes - size)
-
-            subject_idx, eeg_epoch_idx = numpy.divmod(idx, num_eeg_epochs)
-            return name, subject_idx, eeg_epoch_idx
-
-    # This should not happen...
-    raise IndexError(f"Index {item} exceeds the total size of the combined dataset {accumulated_sizes}")
-
-
 def create_mask(*, sample_sizes, to_include):
     """
     Function for creating boolean masks based on a dict of sample sizes and which keys to include

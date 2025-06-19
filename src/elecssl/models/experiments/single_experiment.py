@@ -719,12 +719,13 @@ class SingleExperiment:
             history.save_main_history(history_name=f"{prefix_name}{name}_history", path=results_path, decimals=decimals)
 
         # Save subgroup plots
-        sub_group_path = os.path.join(results_path, f"{prefix_name}sub_groups_plots")
-        os.mkdir(sub_group_path)
+        if self.sub_groups_config["sub_groups"] is not None:
+            sub_group_path = os.path.join(results_path, f"{prefix_name}sub_groups_plots")
+            os.mkdir(sub_group_path)
 
-        for name, history in histories.items():
-            history.save_subgroup_metrics(history_name=name, path=sub_group_path, decimals=decimals,
-                                          save_plots=self.saving_config["save_subgroups_plots"])
+            for name, history in histories.items():
+                history.save_subgroup_metrics(history_name=name, path=sub_group_path, decimals=decimals,
+                                              save_plots=self.saving_config["save_subgroups_plots"])
 
     # -------------
     # Methods for getting input arguments suited for the specific train_method

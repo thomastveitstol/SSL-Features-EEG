@@ -1047,8 +1047,9 @@ class PretrainHPO(HPOExperiment):
                 if dataset_name in self._downstream_experiments_config["Datasets"]:
                     incomplete_pretext_experiments_config["Datasets"][dataset_name]["targets"] = downstream_target
 
-            incomplete_pretext_experiments_config["SubGroups"]["sub_groups"]["dataset_name"] = tuple(
-                dataset_name for dataset_name in datasets_to_use)
+            if incomplete_pretext_experiments_config["SubGroups"]["sub_groups"] is not None:
+                incomplete_pretext_experiments_config["SubGroups"]["sub_groups"]["dataset_name"] = tuple(
+                    dataset_name for dataset_name in datasets_to_use)
 
             pretext_experiments_config, preprocessing_config_file = _get_prepared_experiments_config(
                 experiments_config=incomplete_pretext_experiments_config, in_freq_band=in_freq_band,
@@ -1354,8 +1355,9 @@ class SimpleElecsslHPO(HPOExperiment):
             experiment_config_file["Datasets"] = dict()
             for dataset_name, dataset_info in datasets_to_use.items():
                 experiment_config_file["Datasets"][dataset_name] = dataset_info
-            experiment_config_file["SubGroups"]["sub_groups"]["dataset_name"] = tuple(
-                dataset_name for dataset_name in datasets_to_use)
+            if experiment_config_file["SubGroups"]["sub_groups"] is not None:
+                experiment_config_file["SubGroups"]["sub_groups"]["dataset_name"] = tuple(
+                    dataset_name for dataset_name in datasets_to_use)
 
             # ---------------
             # Run pretext task
@@ -1732,8 +1734,9 @@ class MultivariableElecsslHPO(HPOExperiment):
                 experiment_config_file["Datasets"] = dict()
                 for dataset_name, dataset_info in datasets_to_use.items():
                     experiment_config_file["Datasets"][dataset_name] = dataset_info
-                experiment_config_file["SubGroups"]["sub_groups"]["dataset_name"] = tuple(
-                    dataset_name for dataset_name in datasets_to_use)
+                if experiment_config_file["SubGroups"]["sub_groups"] is not None:
+                    experiment_config_file["SubGroups"]["sub_groups"]["dataset_name"] = tuple(
+                        dataset_name for dataset_name in datasets_to_use)
 
                 # ---------------
                 # Initiate experiment
@@ -2222,8 +2225,9 @@ class MultiTaskHPO(HPOExperiment):
             }
             experiments_config["MultiTaskLearning"] = mtl_config
             experiments_config["Training"]["method"] = "multi_task"
-            experiments_config["SubGroups"]["sub_groups"]["dataset_name"] = set(
-                pretext_datasets).union(downstream_datasets)
+            if experiments_config["SubGroups"]["sub_groups"] is not None:
+                experiments_config["SubGroups"]["sub_groups"]["dataset_name"] = tuple(set(
+                    pretext_datasets).union(downstream_datasets))
 
             # Merge the subjects for the two tasks
             assert self._pretext_subject_split is not None

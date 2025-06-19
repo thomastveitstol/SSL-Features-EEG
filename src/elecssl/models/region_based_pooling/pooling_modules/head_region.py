@@ -229,7 +229,7 @@ class MultiMSSharedRocketHeadRegion(MultiMontageSplitsPoolingBase):
 
             # Initialise tensor which will contain all region representations of the montage split
             batch, _, time_steps = x.size()
-            region_representations = torch.empty(size=(batch, num_regions, time_steps)).to(x.device)
+            region_representations = torch.empty(size=(batch, num_regions, time_steps), device=x.device)
 
             # Compute channel indices of head region
             ch_names = tuple(channel_split.values())
