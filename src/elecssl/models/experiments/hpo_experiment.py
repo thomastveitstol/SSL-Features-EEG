@@ -1,5 +1,6 @@
 import abc
 import copy
+import enum
 import itertools
 import os
 import random
@@ -44,6 +45,15 @@ from elecssl.models.utils import add_yaml_constructors, verify_type, verified_pe
 class HPORun(NamedTuple):
     experiment: Type['HPOExperiment']
     path: Path
+
+
+class ExperimentType(enum.Enum):
+    ML_FEATURES = "ml_features"
+    PREDICTION_MODELS = "prediction_models"
+    PRETRAINING = "pretraining"
+    SIMPLE_ELECSSL = "simple_elecssl"
+    MULTIVARIABLE_ELECSSL = "multivariable_elecssl"
+    MULTI_TASK = "multi_task"
 
 
 # --------------
@@ -2763,18 +2773,23 @@ class AllHPOExperiments:
         """Method for loading a previous study"""
         return cls(results_dir=path, config_path=None, is_continuation=True)
 
-    def resume_experiments(self):
+    def resume_experiments(self, *, include):
         """Method for resuming HPO. It has been designed for resuming a study automatically after if something goes
         wrong"""
         # Logging is probably preferred...
         with open(self._results_path / f"resuming_hpo_{date.today()}_{datetime.now().strftime('%H%M%S')}.txt",  "w"):
             pass
 
-        self.continue_prediction_models_hpo(num_trials=None)
-        self.continue_pretraining_hpo(num_trials=None)
-        self.continue_simple_elecssl_hpo(num_trials=None)
-        self.continue_multivariable_elecssl_hpo(num_trials=None)
-        self.continue_multi_task_hpo(num_trials=None)
+        if ExperimentType.PREDICTION_MODELS in include:
+            self.continue_prediction_models_hpo(num_trials=None)
+        if ExperimentType.PRETRAINING in include:
+            self.continue_pretraining_hpo(num_trials=None)
+        if ExperimentType.SIMPLE_ELECSSL in include:
+            self.continue_simple_elecssl_hpo(num_trials=None)
+        if ExperimentType.MULTIVARIABLE_ELECSSL in include:
+            self.continue_multivariable_elecssl_hpo(num_trials=None)
+        if ExperimentType.MULTI_TASK in include:
+            self.continue_multi_task_hpo(num_trials=None)
 
     def continue_prediction_models_hpo(self, num_trials: Optional[int]):
         _, subject_split, _ = self.re_create_split()
