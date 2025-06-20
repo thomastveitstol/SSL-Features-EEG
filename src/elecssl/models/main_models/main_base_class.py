@@ -90,9 +90,9 @@ def reorder_subjects(order, subjects):
 
     Parameters
     ----------
-    order : tuple[str, ...]
+    order : typing.Sequence[str]
         Ordering of the datasets
-    subjects : tuple[Subject, ...]
+    subjects : typing.Sequence[Subject]
         Subjects to re-order
 
     Returns
