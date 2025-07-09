@@ -17,4 +17,4 @@ The code is organised as follows:
 
 ## Notes
 - Although this code was primarily developed for the eyes-closed/eyes-open transitions, the methods and code can easily be adapted for other stimulations as well. Although this implementation has currently not been made, it should not be too much work (and feel free to hit me up for guidance if you're interested)!
-- This code used a former repo of mine as a starting point, which is located at https://github.com/thomastveitstol/CrossDatasetLearningEEG/tree/master. For that reason, some unused code (such as unused datasets and domain adaptation methods) may still be present.
+- This code used a former repo of mine as a starting point, which is located at https://github.com/thomastveitstol/CrossDatasetLearningEEG. For that reason, some unused code (such as unused datasets and domain adaptation methods) may still be present.
