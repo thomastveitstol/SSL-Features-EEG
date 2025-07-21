@@ -89,13 +89,17 @@ def main():
                 continue
 
             # Get the test performance
-            trial_path = experiments_path / study_name / f"hpo_trial_{trial.number}" / "split_0"
+            trial_path = experiments_path / study_name / f"hpo_trial_{trial.number}"
 
-            if study_name != "multi_task":
-                test_score = pandas.read_csv(trial_path / "test_history_metrics.csv", usecols=[metric])[metric].item()
+            if study_name == "multi_task":
+                best_epoch = _get_epoch(trial_path=trial_path / "split_0", metric=metric)
+                test_score = pandas.read_csv(
+                    trial_path / "split_0" / f"test_epoch_{best_epoch}_downstream_history_metrics.csv",
+                    usecols=[metric])[metric].item()
+            elif study_name in ("simple_elecssl", "multivariable_elecssl"):
+                test_score = pandas.read_csv(trial_path / "test_scores.csv", usecols=[metric])[metric].item()
             else:
-                best_epoch = _get_epoch(trial_path=trial_path, metric=metric)
-                test_score = pandas.read_csv(trial_path / f"test_epoch_{best_epoch}_downstream_history_metrics.csv",
+                test_score = pandas.read_csv(trial_path / "split_0" / "test_history_metrics.csv",
                                              usecols=[metric])[metric].item()
 
             # Add test performance
