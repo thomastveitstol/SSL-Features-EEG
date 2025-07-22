@@ -4,6 +4,7 @@ Script for plotting all pareto optimal solutions for all trials
 import os
 from pathlib import Path
 
+import matplotlib
 import optuna
 import pandas
 import seaborn
@@ -11,7 +12,7 @@ from matplotlib import pyplot
 
 from elecssl.data.paths import get_results_dir
 from elecssl.models.experiments.hpo_experiment import ExperimentType
-from elecssl.models.metrics import is_pareto_optimal, higher_is_better
+from elecssl.models.metrics import higher_is_better
 
 
 _PRETTY_NAME = {"pearson_r": "Pearson's r", "spearman_rho": "Spearman's rho", "r2_score": r"$R^2$",
@@ -131,9 +132,7 @@ def main():
 
             # Add the pseudo target and if the trial was pareto optimal
             results["Pseudo-target"].append(pseudo_target)
-
     df = pandas.DataFrame(results)
-    print(df)
 
     # --------------
     # Get pareto-optimal scores
@@ -142,13 +141,14 @@ def main():
         df, col_1="Val. downstream", metric_1=_SELECTION_METRIC["downstream"], col_2="Val. pretext",
         metric_2=_SELECTION_METRIC["pretext"]
     )
-    print(pareto_optimal_df)
 
     # --------------
     # Plotting
     # --------------
     fontsize = 12
     title_fontsize = fontsize + 3
+
+    matplotlib.rcParams.update({'font.size': fontsize})
     pyplot.figure(figsize=(7, 5))
     pyplot.grid()
 
@@ -160,6 +160,12 @@ def main():
                         edgecolor="black", legend=False, hue_order=_FREQ_BAND_ORDER)
 
     # Cosmetics
+    seaborn.move_legend(pyplot.gca(), loc="upper left")
+    legend = pyplot.gca().get_legend()
+    for handle in legend.legend_handles:
+        handle.set_alpha(1)
+        handle.set_markersize(7)
+
     pyplot.title("Downstream performance vs. pretext performance", fontsize=title_fontsize)
     pyplot.xticks(fontsize=fontsize)
     pyplot.yticks(fontsize=fontsize)
@@ -173,6 +179,8 @@ def main():
 
     pyplot.xlim((x0, x1))
     pyplot.ylim((y0, y1))
+
+    pyplot.tight_layout()
 
     pyplot.show()
 
