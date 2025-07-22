@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 import matplotlib
+import numpy
 import optuna
 import pandas
 import seaborn
@@ -19,6 +20,7 @@ _PRETTY_NAME = {"pearson_r": "Pearson's r", "spearman_rho": "Spearman's rho", "r
                 "conc_cc": "Conc. CC", "explained_variance": "Explained variance"}
 _FREQ_BAND_ORDER = ("Delta", "Theta", "Alpha", "Beta", "Gamma")
 _SELECTION_METRIC = {"pretext": "r2_score", "downstream": "r2_score"}
+_CORR_COEFFICIENTS = ("conc_cc", "spearman_rho", "pearson_r")
 
 
 def _find_pareto_optimal_solutions(df, *, col_1, col_2, metric_1, metric_2):
@@ -44,7 +46,7 @@ def main():
     experiments_path = Path(get_results_dir() / experiment_name)
     metrics_to_plot = {"pretext": "r2_score", "downstream": "r2_score"}
 
-    performance_thresholds = {"r2_score": (-0.4, 1), "explained_variance": (-0.4, 1), "spearman_rho": (-0.2, 1),
+    performance_thresholds = {"r2_score": (-1, 1), "explained_variance": (-1, 1), "spearman_rho": (-0.2, 1),
                               "pearson_r": (-0.2, 1), "conc_cc": (-0.2, 1)}
     threshold_d = performance_thresholds[metrics_to_plot["downstream"]]
     threshold_p = performance_thresholds[metrics_to_plot["pretext"]]
@@ -115,6 +117,8 @@ def main():
 
             # Pretext (from validation set)
             pretext_validation_score = pretext_validation_scores[metrics_to_plot["pretext"]][epoch].item()
+            if numpy.isnan(pretext_validation_score) and metrics_to_plot["pretext"] in _CORR_COEFFICIENTS:
+                pretext_validation_score = 0.0
             if threshold_p[0] <= pretext_validation_score <= threshold_p[1]:
                 results["Pretext"].append(pretext_validation_score)
                 results["Pretext truncated"].append(False)
@@ -125,7 +129,8 @@ def main():
                 elif pretext_validation_score > threshold_p[1]:
                     results["Pretext"].append(threshold_p[1])
                 else:
-                    raise RuntimeError("This should never happen...")
+                    raise RuntimeError(f"This should never happen. Thresholds are {threshold_p} and the score is "
+                                       f"{pretext_validation_score}")
             results["Val. pretext"].append(
                 pretext_validation_scores[_SELECTION_METRIC["pretext"]][epoch].item()
             )
@@ -148,7 +153,7 @@ def main():
     fontsize = 12
     title_fontsize = fontsize + 3
 
-    matplotlib.rcParams.update({'font.size': fontsize})
+    matplotlib.rcParams.update({'font.size': fontsize - 1})
     pyplot.figure(figsize=(7, 5))
     pyplot.grid()
 
