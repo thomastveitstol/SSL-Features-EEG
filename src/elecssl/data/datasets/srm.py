@@ -73,7 +73,7 @@ class SRM(EEGDatasetBase):
         epochs = self.load_single_cleaned_epochs_object(subject_id, session=kwargs["session"])
 
         # Concatenate in time
-        data = epochs.get_data(copy=True)
+        data = epochs.get_data()
         num_epochs, channels, timesteps = data.shape
         data = numpy.reshape(numpy.transpose(data, (1, 0, 2)), (channels, num_epochs * timesteps))
 

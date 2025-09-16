@@ -67,13 +67,14 @@ PretextScalers: *Scaler
 # -----------------
 _Training: &Training
   batch_size: 64
-  num_epochs: 250
-  verbose: true
+  num_epochs: 500
+  verbose: false
   verbose_variables: false
   continuous_testing: false  # too time-consuming I think, not worth it
   metrics: regression
   prediction_activation_function: null
   main_metric: *main_metric
+  use_progressbar: false  # Time-consuming
 DownstreamTraining:
   target: age
   <<: *Training
@@ -85,10 +86,10 @@ PretextTraining:  # The pseudo-target is added at run time
 # Configurations for computing metrics
 # -----------------
 DownstreamSubGroups:
-  sub_groups:
-    dataset_name: !GetKeys { <<: *DownstreamDatasets }
+  sub_groups: null  # Time-consuming
+    # dataset_name: !GetKeys { <<: *DownstreamDatasets }
   verbose: false
 PretextSubGroups:
-  sub_groups:
-    dataset_name: !GetKeys { <<: *PretextDatasets }
+  sub_groups: null
+    # dataset_name: !GetKeys { <<: *PretextDatasets }
   verbose: false

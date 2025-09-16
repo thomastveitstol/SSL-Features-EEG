@@ -26,11 +26,8 @@ module load Python/3.12.3-GCCcore-13.3.0
 # ---------------
 # Activate virtual environment
 # ---------------
-# Get the directory where the .sm script is located
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-
-# Go up three levels to get to the project root
-PROJECT_ROOT="$(dirname "$(dirname "$(dirname "$SCRIPT_DIR")")")"
+# Hard-code the project root
+PROJECT_ROOT="/tsd/p1504/cluster/thomastveitstol/PycharmProjects/SSL-Features-EEG"
 
 # Activate the virtual environment
 source "$PROJECT_ROOT/.venv/bin/activate"

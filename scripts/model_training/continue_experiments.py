@@ -2,6 +2,7 @@
 Script which can be used to resume experiments. Hopefully it won't be used though...
 """
 import os
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -16,7 +17,11 @@ def _extract_datetime_func(*, prefix):
 
 
 def _get_newest_experiment_name(results_dir: Path, *, prefix: str):
-    return max(os.listdir(results_dir), key=_extract_datetime_func(prefix=prefix))
+    experiments = os.listdir(results_dir)
+    if not experiments:
+        # The first script (which must be submitted first) has not yet started, try again in 60 seconds
+        time.sleep(60)
+    return max(experiments, key=_extract_datetime_func(prefix=prefix))
 
 
 def main():
@@ -28,7 +33,7 @@ def main():
     experiment_name = _get_newest_experiment_name(results_dir=results_dir, prefix="experiments_")
 
     with AllHPOExperiments.load_previous(results_dir / experiment_name) as experiments:
-        experiments.resume_experiments()
+        experiments.continue_prediction_models_hpo(num_trials=None)
 
 
 if __name__ == "__main__":

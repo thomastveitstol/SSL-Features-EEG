@@ -16,8 +16,8 @@ from elecssl.models.metrics import higher_is_better
 
 
 _PRETTY_NAME = {
-    "prediction_models": "Prediction\nmodels", "pretraining": "Pretraining", "simple_elecssl": "S. Elecssl",
-    "multivariable_elecssl": "M. Elecssl", "multi_task": "Multi Task"
+    "prediction_models": "Prediction\nmodels", "pretraining": "Pretraining", "simple_elecssl": "Simple supervised HPO",
+    "multivariable_elecssl": "Multivariable supervised HPO", "multi_task": "MTL"
 }
 
 

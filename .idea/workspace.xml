@@ -4,8 +4,26 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="automatic updates">
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="improvements to plot script">
+      <change afterPath="$PROJECT_DIR$/scripts/milp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/.coverage" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/check_profiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/check_profiles.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/specific_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/specific_settings.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/continue_experiments.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/continue_experiments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/multiple_scripts.bash" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/multiple_scripts.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/model_training/tsd_job_script.sm" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/tsd_job_script.sm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/experiments_comparisons.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/experiments_comparisons.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/multi_task/multi_task_curves.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/multi_task/multi_task_curves.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/multi_task/multi_task_scatter_plots.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/multi_task/multi_task_scatter_plots.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/sandbox.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/sandbox.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/data/datasets/srm.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/data/datasets/srm.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/elecssl/models/metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/elecssl/models/metrics.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,6 +120,7 @@
     "Python tests.Doctest project_to_2d.executor": "Run",
     "Python tests.Doctest remove_prefix.executor": "Run",
     "Python tests.Doctest remove_prefix_from_keys.executor": "Run",
+    "Python tests.Doctest reorder_subjects.executor": "Run",
     "Python tests.Doctest sample_hyperparameter.executor": "Run",
     "Python tests.Doctest sex_to_int.executor": "Run",
     "Python tests.Doctest simple_random_split.executor": "Run",
@@ -198,6 +217,13 @@
     "Python tests.Python tests for test_combined_datasets.test_get_target_copy.executor": "Run",
     "Python tests.Python tests for test_combined_datasets.test_remove_and_switch_targets.executor": "Run",
     "Python tests.Python tests for test_combined_datasets.test_remove_data.executor": "Run",
+    "Python tests.Python tests for test_data_generator.test_multi_task_interpolation_data_gen.executor": "Run",
+    "Python tests.Python tests for test_data_generator.test_multi_task_rbp_data_gen_with_precomputed.executor": "Run",
+    "Python tests.Python tests for test_data_generator.test_multi_task_rbp_data_gen_without_precomputed.executor": "Run",
+    "Python tests.Python tests for test_data_generator.test_new_normal_interpolation_data_gen.executor": "Run",
+    "Python tests.Python tests for test_data_generator.test_normal_interpolation_data_gen.executor": "Run",
+    "Python tests.Python tests for test_data_generator.test_normal_rbp_data_gen_with_precomputed.executor": "Run",
+    "Python tests.Python tests for test_data_generator.test_normal_rbp_data_gen_without_precomputed.executor": "Run",
     "Python tests.Python tests for test_datasets.test_channel_names_ordering.executor": "Run",
     "Python tests.Python tests for test_datasets.test_channel_names_ordering_lemon.executor": "Run",
     "Python tests.Python tests for test_green_model.test_forward.executor": "Run",
@@ -227,16 +253,21 @@
     "Python tests.Python tests for test_subject_split.test_seeding.executor": "Run",
     "Python tests.Python tests for test_subject_split.test_subject_split_equality.executor": "Run",
     "Python tests.Python tests in test_combined_datasets.py.executor": "Run",
+    "Python tests.Python tests in test_data_generator.py.executor": "Run",
     "Python tests.Python tests in test_hpo_experiment.py.executor": "Run",
     "Python tests.Python tests in test_input_data.py.executor": "Run",
+    "Python tests.Python tests in test_main_fixed_channels_model.py.executor": "Run",
+    "Python tests.Python tests in test_main_rbp_model.py.executor": "Run",
     "Python tests.Python tests in test_metrics.py.executor": "Run",
     "Python tests.Python tests in test_models.py.executor": "Run",
     "Python tests.Python tests in test_paths.py.executor": "Run",
     "Python tests.Python tests in test_region_based_pooling.py.executor": "Run",
     "Python tests.Python tests in test_subject_split.py.executor": "Run",
+    "Python.actual_vs_predicted.executor": "Run",
     "Python.band_pass.executor": "Run",
     "Python.band_power.executor": "Run",
     "Python.centroid_polygon.executor": "Run",
+    "Python.check_profiles.executor": "Run",
     "Python.combined_datasets.executor": "Run",
     "Python.continue_experiments.executor": "Run",
     "Python.debugging.executor": "Run",
@@ -254,8 +285,12 @@
     "Python.lemon.executor": "Run",
     "Python.linear_regresison.executor": "Run",
     "Python.metrics.executor": "Run",
+    "Python.milp.executor": "Run",
     "Python.ml_model_base.executor": "Run",
+    "Python.mtl_pretext_vs_downstream_scores.executor": "Run",
     "Python.mts_module_base.executor": "Run",
+    "Python.multi_task_curves.executor": "Run",
+    "Python.multi_task_scatter_plots.executor": "Run",
     "Python.pl_utils.executor": "Run",
     "Python.plot_channel_positions.executor": "Run",
     "Python.plot_eeg_data.executor": "Run",
@@ -268,10 +303,11 @@
     "Python.test_paths.executor": "Run",
     "Python.wang.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/CrossDatasetLearningEEG",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG-ValidCopy",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
@@ -291,8 +327,8 @@
       <recent name="$PROJECT_DIR$/scripts/model_training/elecssl_method" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctest _softmax_with_target_mass">
-    <configuration name="plot_eeg_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.mtl_pretext_vs_downstream_scores">
+    <configuration name="actual_vs_predicted" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -301,11 +337,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/visualise_data" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results_scripts/multi_task" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/visualise_data/plot_eeg_data.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results_scripts/multi_task/actual_vs_predicted.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -314,99 +350,115 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctest _softmax_with_target_mass" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="experiments_comparisons" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/models/experiments" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results_scripts" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/models/experiments/hpo_experiment.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="_softmax_with_target_mass" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_FUNCTION" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results_scripts/experiments_comparisons.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in AIMind" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="mtl_pretext_vs_downstream_scores" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results_scripts/multi_task" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/ai_mind.py" />
-      <option name="CLASS_NAME" value="AIMind" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_CLASS" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results_scripts/multi_task/mtl_pretext_vs_downstream_scores.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Doctests in ai_mind" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="multi_task_curves" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/elecssl/data/datasets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results_scripts/multi_task" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/elecssl/data/datasets/ai_mind.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results_scripts/multi_task/multi_task_curves.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_datasets.test_channel_names_ordering" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="multi_task_scatter_plots" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SSL-Features-EEG" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/data/datasets" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/results_scripts/multi_task" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_datasets.test_channel_names_ordering&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/results_scripts/multi_task/multi_task_scatter_plots.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.plot_eeg_data" />
-      <item itemvalue="Python tests.Doctest _softmax_with_target_mass" />
-      <item itemvalue="Python tests.Doctests in AIMind" />
-      <item itemvalue="Python tests.Doctests in ai_mind" />
-      <item itemvalue="Python tests.Python tests for test_datasets.test_channel_names_ordering" />
+      <item itemvalue="Python.actual_vs_predicted" />
+      <item itemvalue="Python.experiments_comparisons" />
+      <item itemvalue="Python.mtl_pretext_vs_downstream_scores" />
+      <item itemvalue="Python.multi_task_curves" />
+      <item itemvalue="Python.multi_task_scatter_plots" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Doctest _softmax_with_target_mass" />
-        <item itemvalue="Python tests.Doctests in AIMind" />
-        <item itemvalue="Python tests.Doctests in ai_mind" />
-        <item itemvalue="Python tests.Python tests for test_datasets.test_channel_names_ordering" />
-        <item itemvalue="Python.plot_eeg_data" />
+        <item itemvalue="Python.mtl_pretext_vs_downstream_scores" />
+        <item itemvalue="Python.multi_task_scatter_plots" />
+        <item itemvalue="Python.experiments_comparisons" />
+        <item itemvalue="Python.actual_vs_predicted" />
+        <item itemvalue="Python.multi_task_curves" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-348a24fa61fa-5312c7369657-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.23774.444" />
+        <option value="bundled-python-sdk-d9fa9deec7cb-d902c0275401-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-252.23892.515" />
       </set>
     </attachedChunks>
   </component>
@@ -418,150 +470,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00613" summary="config files">
-      <option name="closed" value="true" />
-      <created>1744205815485</created>
-      <option name="number" value="00613" />
-      <option name="presentableId" value="LOCAL-00613" />
-      <option name="project" value="LOCAL" />
-      <updated>1744205815485</updated>
-    </task>
-    <task id="LOCAL-00614" summary="added basic channel systems to getter function">
-      <option name="closed" value="true" />
-      <created>1744210032973</created>
-      <option name="number" value="00614" />
-      <option name="presentableId" value="LOCAL-00614" />
-      <option name="project" value="LOCAL" />
-      <updated>1744210032973</updated>
-    </task>
-    <task id="LOCAL-00615" summary="added comments">
-      <option name="closed" value="true" />
-      <created>1744210111241</created>
-      <option name="number" value="00615" />
-      <option name="presentableId" value="LOCAL-00615" />
-      <option name="project" value="LOCAL" />
-      <updated>1744210111241</updated>
-    </task>
-    <task id="LOCAL-00616" summary="updates for improved interpolation">
-      <option name="closed" value="true" />
-      <created>1744210470275</created>
-      <option name="number" value="00616" />
-      <option name="presentableId" value="LOCAL-00616" />
-      <option name="project" value="LOCAL" />
-      <updated>1744210470275</updated>
-    </task>
-    <task id="LOCAL-00617" summary="updates for improved interpolation structure">
-      <option name="closed" value="true" />
-      <created>1744210575333</created>
-      <option name="number" value="00617" />
-      <option name="presentableId" value="LOCAL-00617" />
-      <option name="project" value="LOCAL" />
-      <updated>1744210575334</updated>
-    </task>
-    <task id="LOCAL-00618" summary="flake8 fixes">
-      <option name="closed" value="true" />
-      <created>1744210792723</created>
-      <option name="number" value="00618" />
-      <option name="presentableId" value="LOCAL-00618" />
-      <option name="project" value="LOCAL" />
-      <updated>1744210792723</updated>
-    </task>
-    <task id="LOCAL-00619" summary="added saving metadata">
-      <option name="closed" value="true" />
-      <created>1746017765549</created>
-      <option name="number" value="00619" />
-      <option name="presentableId" value="LOCAL-00619" />
-      <option name="project" value="LOCAL" />
-      <updated>1746017765549</updated>
-    </task>
-    <task id="LOCAL-00620" summary="added script for TSD">
-      <option name="closed" value="true" />
-      <created>1746026038063</created>
-      <option name="number" value="00620" />
-      <option name="presentableId" value="LOCAL-00620" />
-      <option name="project" value="LOCAL" />
-      <updated>1746026038063</updated>
-    </task>
-    <task id="LOCAL-00621" summary="flake8 fix">
-      <option name="closed" value="true" />
-      <created>1746026111488</created>
-      <option name="number" value="00621" />
-      <option name="presentableId" value="LOCAL-00621" />
-      <option name="project" value="LOCAL" />
-      <updated>1746026111488</updated>
-    </task>
-    <task id="LOCAL-00622" summary="configs">
-      <option name="closed" value="true" />
-      <created>1746026741707</created>
-      <option name="number" value="00622" />
-      <option name="presentableId" value="LOCAL-00622" />
-      <option name="project" value="LOCAL" />
-      <updated>1746026741707</updated>
-    </task>
-    <task id="LOCAL-00623" summary="added test for channel consistency">
-      <option name="closed" value="true" />
-      <created>1746090540742</created>
-      <option name="number" value="00623" />
-      <option name="presentableId" value="LOCAL-00623" />
-      <option name="project" value="LOCAL" />
-      <updated>1746090540743</updated>
-    </task>
-    <task id="LOCAL-00624" summary="reordered channels for consistency">
-      <option name="closed" value="true" />
-      <created>1746090552154</created>
-      <option name="number" value="00624" />
-      <option name="presentableId" value="LOCAL-00624" />
-      <option name="project" value="LOCAL" />
-      <updated>1746090552154</updated>
-    </task>
-    <task id="LOCAL-00625" summary="added fake AI-Mind path">
-      <option name="closed" value="true" />
-      <created>1746090587119</created>
-      <option name="number" value="00625" />
-      <option name="presentableId" value="LOCAL-00625" />
-      <option name="project" value="LOCAL" />
-      <updated>1746090587119</updated>
-    </task>
-    <task id="LOCAL-00626" summary="removed AI-Mind doctest">
-      <option name="closed" value="true" />
-      <created>1746090903319</created>
-      <option name="number" value="00626" />
-      <option name="presentableId" value="LOCAL-00626" />
-      <option name="project" value="LOCAL" />
-      <updated>1746090903319</updated>
-    </task>
-    <task id="LOCAL-00627" summary="removed skipping pytest">
-      <option name="closed" value="true" />
-      <created>1746090958515</created>
-      <option name="number" value="00627" />
-      <option name="presentableId" value="LOCAL-00627" />
-      <option name="project" value="LOCAL" />
-      <updated>1746090958516</updated>
-    </task>
-    <task id="LOCAL-00628" summary="removed unused script">
-      <option name="closed" value="true" />
-      <created>1746093286974</created>
-      <option name="number" value="00628" />
-      <option name="presentableId" value="LOCAL-00628" />
-      <option name="project" value="LOCAL" />
-      <updated>1746093286974</updated>
-    </task>
-    <task id="LOCAL-00629" summary="removed unused scripts">
-      <option name="closed" value="true" />
-      <created>1746093547586</created>
-      <option name="number" value="00629" />
-      <option name="presentableId" value="LOCAL-00629" />
-      <option name="project" value="LOCAL" />
-      <updated>1746093547587</updated>
-    </task>
-    <task id="LOCAL-00630" summary="removed Wang from dataset preprocessing">
-      <option name="closed" value="true" />
-      <created>1746095372672</created>
-      <option name="number" value="00630" />
-      <option name="presentableId" value="LOCAL-00630" />
-      <option name="project" value="LOCAL" />
-      <updated>1746095372672</updated>
     </task>
     <task id="LOCAL-00631" summary="removed Wang from dataset preprocessing">
       <option name="closed" value="true" />
@@ -811,7 +719,151 @@
       <option name="project" value="LOCAL" />
       <updated>1746276097353</updated>
     </task>
-    <option name="localTasksCounter" value="662" />
+    <task id="LOCAL-00662" summary="made progressbar optional">
+      <option name="closed" value="true" />
+      <created>1750069114587</created>
+      <option name="number" value="00662" />
+      <option name="presentableId" value="LOCAL-00662" />
+      <option name="project" value="LOCAL" />
+      <updated>1750069114588</updated>
+    </task>
+    <task id="LOCAL-00663" summary="major improvements to data generators">
+      <option name="closed" value="true" />
+      <created>1750250618841</created>
+      <option name="number" value="00663" />
+      <option name="presentableId" value="LOCAL-00663" />
+      <option name="project" value="LOCAL" />
+      <updated>1750250618841</updated>
+    </task>
+    <task id="LOCAL-00664" summary="made time-consuming check optional and defaulted to skipping">
+      <option name="closed" value="true" />
+      <created>1750250676134</created>
+      <option name="number" value="00664" />
+      <option name="presentableId" value="LOCAL-00664" />
+      <option name="project" value="LOCAL" />
+      <updated>1750250676134</updated>
+    </task>
+    <task id="LOCAL-00665" summary="added cProfile">
+      <option name="closed" value="true" />
+      <created>1750252050472</created>
+      <option name="number" value="00665" />
+      <option name="presentableId" value="LOCAL-00665" />
+      <option name="project" value="LOCAL" />
+      <updated>1750252050472</updated>
+    </task>
+    <task id="LOCAL-00666" summary="speed-up for metrics class">
+      <option name="closed" value="true" />
+      <created>1750253804332</created>
+      <option name="number" value="00666" />
+      <option name="presentableId" value="LOCAL-00666" />
+      <option name="project" value="LOCAL" />
+      <updated>1750253804332</updated>
+    </task>
+    <task id="LOCAL-00667" summary="flake8 fixes">
+      <option name="closed" value="true" />
+      <created>1750253940935</created>
+      <option name="number" value="00667" />
+      <option name="presentableId" value="LOCAL-00667" />
+      <option name="project" value="LOCAL" />
+      <updated>1750253940935</updated>
+    </task>
+    <task id="LOCAL-00668" summary="speed improvements">
+      <option name="closed" value="true" />
+      <created>1750321368745</created>
+      <option name="number" value="00668" />
+      <option name="presentableId" value="LOCAL-00668" />
+      <option name="project" value="LOCAL" />
+      <updated>1750321368745</updated>
+    </task>
+    <task id="LOCAL-00669" summary="mypy and flake8 fixes">
+      <option name="closed" value="true" />
+      <created>1750321534673</created>
+      <option name="number" value="00669" />
+      <option name="presentableId" value="LOCAL-00669" />
+      <option name="project" value="LOCAL" />
+      <updated>1750321534673</updated>
+    </task>
+    <task id="LOCAL-00670" summary="performance improvements">
+      <option name="closed" value="true" />
+      <created>1750342140330</created>
+      <option name="number" value="00670" />
+      <option name="presentableId" value="LOCAL-00670" />
+      <option name="project" value="LOCAL" />
+      <updated>1750342140330</updated>
+    </task>
+    <task id="LOCAL-00671" summary="improvement for continuing study">
+      <option name="closed" value="true" />
+      <created>1750417377439</created>
+      <option name="number" value="00671" />
+      <option name="presentableId" value="LOCAL-00671" />
+      <option name="project" value="LOCAL" />
+      <updated>1750417377439</updated>
+    </task>
+    <task id="LOCAL-00672" summary="improved type hint">
+      <option name="closed" value="true" />
+      <created>1750417518229</created>
+      <option name="number" value="00672" />
+      <option name="presentableId" value="LOCAL-00672" />
+      <option name="project" value="LOCAL" />
+      <updated>1750417518229</updated>
+    </task>
+    <task id="LOCAL-00673" summary="changed from validation scores to test scores in plot script">
+      <option name="closed" value="true" />
+      <created>1753111589250</created>
+      <option name="number" value="00673" />
+      <option name="presentableId" value="LOCAL-00673" />
+      <option name="project" value="LOCAL" />
+      <updated>1753111589250</updated>
+    </task>
+    <task id="LOCAL-00674" summary="fixes to plot script">
+      <option name="closed" value="true" />
+      <created>1753113462269</created>
+      <option name="number" value="00674" />
+      <option name="presentableId" value="LOCAL-00674" />
+      <option name="project" value="LOCAL" />
+      <updated>1753113462269</updated>
+    </task>
+    <task id="LOCAL-00675" summary="added script for plotting pretext performance vs downstream performance">
+      <option name="closed" value="true" />
+      <created>1753184360039</created>
+      <option name="number" value="00675" />
+      <option name="presentableId" value="LOCAL-00675" />
+      <option name="project" value="LOCAL" />
+      <updated>1753184360039</updated>
+    </task>
+    <task id="LOCAL-00676" summary="improvements to plot script">
+      <option name="closed" value="true" />
+      <created>1753190714669</created>
+      <option name="number" value="00676" />
+      <option name="presentableId" value="LOCAL-00676" />
+      <option name="project" value="LOCAL" />
+      <updated>1753190714669</updated>
+    </task>
+    <task id="LOCAL-00677" summary="fixes to finding pareto optimal solutions in plot script">
+      <option name="closed" value="true" />
+      <created>1753195204109</created>
+      <option name="number" value="00677" />
+      <option name="presentableId" value="LOCAL-00677" />
+      <option name="project" value="LOCAL" />
+      <updated>1753195204109</updated>
+    </task>
+    <task id="LOCAL-00678" summary="improved plot cosmetics in plot script">
+      <option name="closed" value="true" />
+      <created>1753198467224</created>
+      <option name="number" value="00678" />
+      <option name="presentableId" value="LOCAL-00678" />
+      <option name="project" value="LOCAL" />
+      <updated>1753198467224</updated>
+    </task>
+    <task id="LOCAL-00679" summary="improvements to plot script">
+      <option name="closed" value="true" />
+      <created>1753199462859</created>
+      <option name="number" value="00679" />
+      <option name="presentableId" value="LOCAL-00679" />
+      <option name="project" value="LOCAL" />
+      <updated>1753199462859</updated>
+    </task>
+    <option name="localTasksCounter" value="680" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -826,23 +878,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed unused script" />
-    <MESSAGE value="removed unused scripts" />
-    <MESSAGE value="removed Wang from dataset preprocessing" />
-    <MESSAGE value="fixed ch system selection when interpolating" />
-    <MESSAGE value="added property to channel system dataclass" />
-    <MESSAGE value="fix" />
-    <MESSAGE value="added doctest" />
-    <MESSAGE value="removed unused yaml files" />
-    <MESSAGE value="minor improvements" />
-    <MESSAGE value="config file" />
-    <MESSAGE value="flake8 fix" />
-    <MESSAGE value="fix for not using reqeighting when only one dataset is used" />
-    <MESSAGE value="paths" />
-    <MESSAGE value="removed todos and fixed type hint" />
-    <MESSAGE value="changed expection from runtimeerror to optuna trialpruned" />
-    <MESSAGE value="removed todo" />
-    <MESSAGE value="removed unused key and todos" />
     <MESSAGE value="configs" />
     <MESSAGE value="fix in case of numerical issues" />
     <MESSAGE value="muted mypy" />
@@ -851,6 +886,23 @@
     <MESSAGE value="removed todos" />
     <MESSAGE value="removed automatic continuation of HPO" />
     <MESSAGE value="automatic updates" />
-    <option name="LAST_COMMIT_MESSAGE" value="automatic updates" />
+    <MESSAGE value="made progressbar optional" />
+    <MESSAGE value="major improvements to data generators" />
+    <MESSAGE value="made time-consuming check optional and defaulted to skipping" />
+    <MESSAGE value="added cProfile" />
+    <MESSAGE value="speed-up for metrics class" />
+    <MESSAGE value="flake8 fixes" />
+    <MESSAGE value="speed improvements" />
+    <MESSAGE value="mypy and flake8 fixes" />
+    <MESSAGE value="performance improvements" />
+    <MESSAGE value="improvement for continuing study" />
+    <MESSAGE value="improved type hint" />
+    <MESSAGE value="changed from validation scores to test scores in plot script" />
+    <MESSAGE value="fixes to plot script" />
+    <MESSAGE value="added script for plotting pretext performance vs downstream performance" />
+    <MESSAGE value="fixes to finding pareto optimal solutions in plot script" />
+    <MESSAGE value="improved plot cosmetics in plot script" />
+    <MESSAGE value="improvements to plot script" />
+    <option name="LAST_COMMIT_MESSAGE" value="improvements to plot script" />
   </component>
 </project>
