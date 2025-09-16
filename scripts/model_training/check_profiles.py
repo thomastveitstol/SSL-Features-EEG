@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def main():
-    profile = "cprofile_20250620_062401"
+    profile = "cprofile_20250619_115223"
 
     path = (Path(os.path.dirname(__file__)) / "cprofiles" / profile).with_suffix(".prof")
     p = pstats.Stats(str(path))

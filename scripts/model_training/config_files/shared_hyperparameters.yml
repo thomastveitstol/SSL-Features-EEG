@@ -2,9 +2,9 @@
 # Preprocessing
 # -----------------
 Preprocessing:
-  autoreject: !NotAHyperparameterScalar true
-  input_length: !Categorical { choices: [ 5, 10 ] }
-  sfreq_multiple: !Categorical { choices: [ 2, 3 ] }
+  autoreject: !NotAHyperparameterScalar True
+  input_length: !Categorical { choices: [ 5, 10, 20, 30 ] }
+  sfreq_multiple: !Categorical { choices: [ 2, 3, 4 ] }
 
 # -----------------
 # Domain adaptation
@@ -40,7 +40,7 @@ Loss:
 DLArchitectures:
   InceptionNetwork:
     num_classes: 1
-    cnn_units: { low: 4, high: 64, log: true }  # { low: 8, high: 64, log: true }
+    cnn_units: { low: 4, high: 64, log: true }
     num_res_blocks: { low: 1, high: 12, log: true }
   ShallowFBCSPNetMTS:
     num_classes: 1
@@ -58,7 +58,7 @@ DLArchitectures:
   TCNMTS:
     num_classes: 1
     n_blocks: { low: 1, high: 5, step: 1, log: false }
-    n_filters:  { low: 4, high: 128, step: 1, log: True }
+    n_filters: { low: 4, high: 128, step: 1, log: True }
     kernel_size: { low: 3, high: 8, step: 1, log: False }
     drop_prob: { low: 0.0, high: 0.5, log: false }
   GreenModel:
@@ -66,20 +66,18 @@ DLArchitectures:
     num_classes: 1
     sampling_freq: UNAVAILABLE
     # Parameterised convolutions
-    # n_freqs: { low: 1, high: 32, step: 1, log: true }
     n_freqs: { low: 1, high: 10, step: 1, log: true }
     kernel_width_s: { low: 2, high: 4, step: null, log: false }
     conv_stride: { low: 1, high: 5, step: 1, log: false }
-    oct_min: 0.0  # { low: 0.0, high: 0.2, step: null, log: false }
-    oct_max_addition: 5.5  # { low: 5.5, high: 5.7, step: null, log: false }
+    oct_min: 0.0
+    oct_max_addition: 5.5
     random_f_init: { choices: [ False, True ] }
-    # wconv_gain: { low: 10, high: 10000, step: null, log: true }
     # Pooling layer
     pool_layer: { choices: [ RealCovariance, CrossCovariance, PW_PLV, CrossPW_PLV, CombinedPoolingNoCross,
                              CombinedPoolingCross ] }
     pool_layer_kwargs:
-      RealCovariance: &RC {}
-      CrossCovariance: &CC {}
+      RealCovariance: &RC { }
+      CrossCovariance: &CC { }
       PW_PLV: &PWPLV { reg: { low: 0.0000001, high: 0.00001, log: true } }
       CrossPW_PLV: &CPWPLV { reg: { low: 0.0000001, high: 0.00001, log: true } }
       CombinedPoolingNoCross: { RealCovariance: *RC, PW_PLV: *PWPLV }
@@ -97,23 +95,24 @@ DLArchitectures:
     num_fc_layers: { low: 1, high: 3, step: 1, log: false }
     num_first_fc_filters: { low: 16, high: 128, step: 1, log: true }
     drop_prob: { low: 0.0, high: 0.5, log: false }
+
 normalisation: { choices: [ true, false ] }
 
 # -----------------
 # HPs for varied numbers of channels
 # -----------------
 Interpolation:
-  main_channel_system: { choices: [ Standard19, Standard32 ] }
+  main_channel_system: { choices: [ Standard19, Standard32, Standard64, Standard126 ] }
   methods: { choices: [ MNE, spline ] }
 
 _num_kernels: &num_kernels !Int { low: 10, high: 500, log: true }
-_max_receptive_field: &max_receptive_field !Int { low: 15, high: 100, log: true }  # { low: 15, high: 100, log: true }
+_max_receptive_field: &max_receptive_field !Int { low: 15, high: 100, log: true }
 RegionBasedPooling:
   num_montage_splits: { low: 1, high: 8, log: true }
   share_all_pooling_modules: { choices: [ true, false ] }
   num_pooling_modules_percentage: { low: 0.0, high: 0.5, step: null, log: false }
   num_designs: 1
-  pooling_type: multi_cs  # this shouldn't be necessary
+  pooling_type: multi_cs
   PoolingMethods:
     MultiMSMean: {}
     MultiMSSharedRocket:
@@ -122,7 +121,7 @@ RegionBasedPooling:
     MultiMSSharedRocketHeadRegion:
       num_kernels: *num_kernels
       max_receptive_field: *max_receptive_field
-      latent_search_features: !Int { low: 8, high: 32, log: true }
+      latent_search_features: !Int { low: 4, high: 32, log: true }
       share_search_receiver_modules: !Categorical { choices: [ true, false ] }
       bias: !Categorical { choices: [ true, false ] }
   MontageSplits:
@@ -134,6 +133,6 @@ RegionBasedPooling:
         k_4: [ 4, 3, 2, 3, 4, 3, 2, 3, 4 ]
       min_nodes: !Int { low: 1, high: 6, step: 1, log: false }
       channel_positions: !NotAHyperparameterList
-        [ LEMON, DortmundVital ]
+        [ LEMON, DortmundVital, AIMind ]
 
 SpatialDimensionMismatch: { choices: [ RegionBasedPooling, Interpolation ] }

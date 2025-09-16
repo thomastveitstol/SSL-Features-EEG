@@ -28,7 +28,7 @@ def _single_ocular_state(config):
         # Add dataset info
         datasets.append(
             DatasetInfo(dataset=dataset, subjects=subjects,
-                        kwargs={"ocular_state": OcularState(config["OcularState"]),**info["kwargs"]})
+                        kwargs={"ocular_state": OcularState(config["OcularState"]), **info["kwargs"]})
         )
 
     # ---------------
@@ -38,7 +38,7 @@ def _single_ocular_state(config):
         datasets=tuple(datasets), frequency_bands=config["FrequencyBands"], verbose=config["verbose"],
         aggregation_method=config["AggregationMethod"], average_reference=config["AverageReference"],
         autoreject=config["Autoreject"], epochs=config["Epochs"], crop=config["Crop"], min_epochs=config["min_epochs"],
-        band_pass=tuple(config["band_pass"]), notch_filter=config["notch_filter"], # type: ignore
+        band_pass=tuple(config["band_pass"]), notch_filter=config["notch_filter"],  # type: ignore
         resample=config["resample"], max_workers=config["max_workers"]
     )
 

@@ -6,10 +6,7 @@ import pandas
 import seaborn
 import torch
 from matplotlib import pyplot
-from mne.time_frequency import Spectrum
 
-from elecssl.data.datasets.dataset_base import OcularState
-from elecssl.data.datasets.srm import SRM
 from elecssl.data.paths import get_results_dir
 from elecssl.data.results_analysis.utils import load_hpo_study
 from elecssl.models.experiments.hpo_experiment import PredictionModelsHPO, PretrainHPO, HPOExperiment, \
@@ -182,49 +179,8 @@ def save_green():
                Path(os.path.dirname(__file__)) / "green_model.pt")
 
 
-def plot_srm():
-    """Used this for making a plot to the Ph.D. thesis"""
-    # -------------
-    # Choices
-    # -------------
-    subject = 7
-    ocular_state = OcularState.EC
-    session = "t1"
-
-    preload = True
-
-    if isinstance(subject, int):
-        subject_id = SRM().get_subject_ids()[subject]
-    else:
-        subject_id = subject
-
-    # -------------
-    # Get data
-    # -------------
-    eeg = SRM().load_single_mne_object(
-        subject_id=subject_id, ocular_state=ocular_state, session=session, preload=preload, derivatives=True
-    )
-    # Crop
-    # eeg.filter(1, 45, verbose=False)
-    # eeg.notch_filter(50, verbose=False)
-
-    # -------------
-    # Plot
-    # -------------
-    eeg.plot()
-    psd: Spectrum = eeg.compute_psd(verbose=False)
-    print(psd.get_data().shape)
-    fig = psd.plot()
-    # Remove default subplot titles
-    for ax in fig.get_axes():
-        ax.set_title("")  # Clear individual subplot titles
-    fig.suptitle("Power spectral density (PSD)")
-
-    pyplot.show()
-
-
 def main():
-    plot_srm()
+    make_boxplots()
 
 
 if __name__ == "__main__":

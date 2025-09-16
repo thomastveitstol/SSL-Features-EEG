@@ -75,7 +75,8 @@ def _create_plots(*, datasets, diag_kind, dpi, height, log_transform, lower_kind
     power = _get_power_distributions(datasets, targets, log_transform=log_transform)
     if print_above_thresholds:
         above_thresholds = _get_above_threshold(datasets, targets, log_transform, thresholds)
-        for dataset_name, subject_id, freq_band, value in zip(above_thresholds["Dataset"], above_thresholds["Subject-ID"],
+        for dataset_name, subject_id, freq_band, value in zip(above_thresholds["Dataset"],
+                                                              above_thresholds["Subject-ID"],
                                                               above_thresholds["Freq band"], above_thresholds["Value"]):
             print(f"{dataset_name} ({freq_band} = {value:.2f}): {subject_id}")
 
@@ -86,7 +87,7 @@ def _create_plots(*, datasets, diag_kind, dpi, height, log_transform, lower_kind
     df.reset_index(inplace=True)
     df.sort_values(by="Dataset", inplace=True)
 
-    # Maybe normalise
+    # Maybe normalise (such that the band powers sum to one)
     if normalise:
         pseudo_targets = [col for col in df.columns if col not in ("Dataset", "Subject-ID")]
         df[pseudo_targets] = df[pseudo_targets].div(df[pseudo_targets].sum(axis=1), axis=0)
@@ -112,14 +113,14 @@ def main():
     # --------------
     # Make selections
     # --------------
-    datasets = ("DortmundVital", "LEMON", "Wang")
+    datasets = ("AIMind", "DortmundVital", "LEMON")
     ocular_state = "eo"
-    thresholds = {f"band_power_delta_{ocular_state}": 4.5, f"band_power_theta_{ocular_state}": 4.5,
-                  f"band_power_alpha_{ocular_state}": 4.5, f"band_power_beta_{ocular_state}": 4.5,
-                  f"band_power_gamma_{ocular_state}": 4.5}
+    thresholds = {f"band_power_delta_{ocular_state}": 2, f"band_power_theta_{ocular_state}": 2,
+                  f"band_power_alpha_{ocular_state}": 2, f"band_power_beta_{ocular_state}": 2,
+                  f"band_power_gamma_{ocular_state}": 2}
     targets = tuple(thresholds)
 
-    print_above_thresholds = False
+    print_above_thresholds = True
     lower_kind = {"func": seaborn.scatterplot, "hue_order": datasets, "s": 30, "alpha": 1}
     upper_kind = {"func": seaborn.kdeplot, "alpha": 1, "levels": 5}
     diag_kind = {"func": seaborn.kdeplot, "fill": True}
@@ -132,8 +133,8 @@ def main():
     for log_transform, normalise in itertools.product((True, False), repeat=2):
         _create_plots(
             datasets=datasets, diag_kind=diag_kind, dpi=dpi, height=height, log_transform=log_transform,
-            lower_kind=lower_kind, normalise=normalise, ocular_state=ocular_state, targets=targets, thresholds=thresholds,
-            upper_kind=upper_kind, print_above_thresholds=print_above_thresholds
+            lower_kind=lower_kind, normalise=normalise, ocular_state=ocular_state, targets=targets,
+            thresholds=thresholds, upper_kind=upper_kind, print_above_thresholds=print_above_thresholds
         )
 
 

@@ -1,21 +1,27 @@
 OcularStates:
   EO:
     Datasets:
+      LEMON:
+        num_subjects: all
+        kwargs:
+          derivatives: false
+          interpolation_method: MNE
       DortmundVital:
         num_subjects: all
         kwargs:
           derivatives: false
           session: 1
           acquisition: pre
-      LEMON:
+      AIMind:
         num_subjects: all
         kwargs:
+          recording: null
           derivatives: false
-          interpolation_method: MNE
+          visit: 1
 FrequencyBands:
   delta: [ 1, 4 ]
-  theta: [ 4, 8 ]
-  alpha: [ 8, 12 ]
+  theta: [ 4, 7 ]
+  alpha: [ 7, 12 ]
   beta: [ 12, 30 ]
   gamma: [ 30, 45 ]
 AggregationMethod: median
@@ -35,6 +41,8 @@ Autoreject:
   default_num_splits: 10
 resample: 180
 band_pass: [ 1, 45 ]
-notch_filter: null
+notch_filter:
+  AIMind: 50
+  DortmundVital: 50
 min_epochs: 15
 max_workers: 1

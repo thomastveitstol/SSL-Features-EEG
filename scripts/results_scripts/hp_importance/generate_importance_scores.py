@@ -272,8 +272,8 @@ def main():
     # -------------
     # A few things to select
     # -------------
-    studies = ("multivariable_elecssl",)  # ("prediction_models", "pretraining", "simple_elecssl", "multivariable_elecssl")
-    experiment_time = "2025-05-20_141517"
+    studies = ("prediction_models",)  # ("prediction_models", "pretraining", "simple_elecssl", "multivariable_elecssl")
+    experiment_time = "2025-06-23_104856"
 
     selected_hps: Optional[Dict[str, Tuple[str, ...]]] = None
     percentiles = (0, 50, 75, 90)

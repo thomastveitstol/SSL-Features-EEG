@@ -1,5 +1,7 @@
 """
 Script for plotting training or validation curves
+
+Not used in the paper
 """
 import enum
 import os
@@ -26,7 +28,7 @@ def _get_strategy(trial_path: Path):
 
 def main():
     curve_mode = _CurveMode.VAL
-    experiment_time = "2025-06-21_192244"
+    experiment_time = "2025-06-23_104856"
     # "2025-06-07_210521"  # "2025-06-08_010835"  # "2025-06-08_033700"  # "2025-06-08_064801"
     pretext_metric = "r2_score"
     downstream_metric = pretext_metric

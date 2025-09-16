@@ -1,4 +1,5 @@
 from pathlib import Path
+import random
 
 import optuna
 import pandas
@@ -27,13 +28,13 @@ _NUM_TO_STR = ("input_length",)
 
 
 def main():
-    hp_1 = "out_freq_band"
-    hp_2 = "normalisation"
+    hp_1 = "architecture"
+    hp_2 = "ocular_state"
 
-    study_name = "simple_elecssl"
-    random_only = False
+    study_name = "prediction_models"
+    random_only = True
 
-    experiment_time = "2025-05-20_141517"
+    experiment_time = "2025-06-23_104856"
 
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name)
@@ -77,10 +78,19 @@ def main():
     trials_df = trials_df[mask]
 
     # Make plot based on the type
-    distributions = study.trials[-1].distributions
+    for _ in range(100):
+        try:
+            distributions = random.choice(study.trials).distributions
+            hp_type_1 = distributions[old_hp_1]
+            hp_type_2 = distributions[old_hp_2]
+            break
+        except KeyError:
+            pass
+    else:
+        raise KeyError
 
-    hp_type_1 = distributions[old_hp_1]
-    hp_type_2 = distributions[old_hp_2]
+    # hp_type_1 = distributions[old_hp_1]
+    # hp_type_2 = distributions[old_hp_2]
     if isinstance(hp_type_1, CHP) and isinstance(hp_type_2, CHP):
         seaborn.boxplot(trials_df, x=value_name, y=hp_1, hue=hp_2, linewidth=1.2, showfliers=False, fill=False,
                         dodge=True)

@@ -15,12 +15,18 @@ _DortmundVital: &DortmundVital
   num_time_steps: null
   time_series_start: null
   channels: null
+_AIMind: &AIMind
+  num_subjects: all
+  num_time_steps: null
+  time_series_start: null
+  channels: null
 
 DownstreamDatasets: &DownstreamDatasets
-  DortmundVital: *DortmundVital
+  AIMind: *AIMind
 PretextDatasets: &PretextDatasets
   LEMON: *LEMON
   DortmundVital: *DortmundVital
+  AIMind: *AIMind
 
 # -----------------
 # Configuration for subject splitting
@@ -74,9 +80,9 @@ _Training: &Training
   metrics: regression
   prediction_activation_function: null
   main_metric: *main_metric
-  use_progressbar: false  # Time-consuming
+  use_progressbar: false
 DownstreamTraining:
-  target: age
+  target: safe_log_ptau217
   <<: *Training
 PretextTraining:  # The pseudo-target is added at run time
   log_transform_targets: log10

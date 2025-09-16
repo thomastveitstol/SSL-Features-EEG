@@ -1,5 +1,5 @@
 """
-Script which can be used to resume experiments. Hopefully it won't be used though...
+Script for continuing with multitask learning experiments.
 """
 import os
 import time
@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 from elecssl.data.paths import get_results_dir
-from elecssl.models.experiments.hpo_experiment import AllHPOExperiments
+from elecssl.models.experiments.hpo_experiment import AllHPOExperiments, ExperimentType
 
 
 def _extract_datetime_func(*, prefix):
@@ -33,7 +33,7 @@ def main():
     experiment_name = _get_newest_experiment_name(results_dir=results_dir, prefix="experiments_")
 
     with AllHPOExperiments.load_previous(results_dir / experiment_name) as experiments:
-        experiments.continue_prediction_models_hpo(num_trials=None)
+        experiments.resume_experiments(include=(ExperimentType.MULTI_TASK,))
 
 
 if __name__ == "__main__":

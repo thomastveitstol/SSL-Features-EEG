@@ -1,8 +1,10 @@
 """
-Script for plotting all pareto optimal solutions for all trials
+Script for plotting all pareto optimal solutions for all trials. In addition, this script prints the performance range
+of the estimated Pareto front
 """
 import os
 from pathlib import Path
+from typing import Literal
 
 import matplotlib
 import numpy
@@ -41,11 +43,14 @@ def _find_pareto_optimal_solutions(df, *, col_1, col_2, metric_1, metric_2):
 
 
 def main():
-    experiment_time = "2025-06-21_192244"
+    experiment_time = "2025-06-23_104856"
     experiment_name = f"experiments_{experiment_time}"
     experiments_path = Path(get_results_dir() / experiment_name)
-    metrics_to_plot = {"pretext": "r2_score", "downstream": "r2_score"}
+    _metric: Literal["explained_variance", "r2_score", "conc_cc", "pearson_r", "spearman_rho"] = "r2_score"
+    metrics_to_plot = {"pretext": _metric, "downstream": _metric}
 
+    decimals_to_print = 2
+    dpi = 300
     performance_thresholds = {"r2_score": (-1, 1), "explained_variance": (-1, 1), "spearman_rho": (-0.2, 1),
                               "pearson_r": (-0.2, 1), "conc_cc": (-0.2, 1)}
     threshold_d = performance_thresholds[metrics_to_plot["downstream"]]
@@ -147,6 +152,16 @@ def main():
         metric_2=_SELECTION_METRIC["pretext"]
     )
 
+    # And print details
+    downstream_min = round(min(pareto_optimal_df['Downstream']), decimals_to_print)
+    downstream_max = round(max(pareto_optimal_df['Downstream']), decimals_to_print)
+    pretext_min = round(min(pareto_optimal_df['Pretext']), decimals_to_print)
+    pretext_max = round(max(pareto_optimal_df['Pretext']), decimals_to_print)
+
+    print(f"Downstream {metrics_to_plot['downstream']} (min, max): {downstream_min, downstream_max}")
+    print(f"Pretext {metrics_to_plot['pretext']} (min, max): {pretext_min, pretext_max}")
+    print(pareto_optimal_df.round(decimals_to_print))
+
     # --------------
     # Plotting
     # --------------
@@ -187,6 +202,10 @@ def main():
 
     pyplot.tight_layout()
 
+    pyplot.savefig(
+        Path(os.path.dirname(os.path.dirname(__file__))) /
+        f"pareto_front_{metrics_to_plot['pretext']}_{metrics_to_plot['downstream']}.png", dpi=dpi
+    )
     pyplot.show()
 
 

@@ -1,0 +1,225 @@
+#!/bin/bash
+
+# ---------------
+# For the queue system
+# ---------------
+#SBATCH --job-name=aimind-prediction_models-thomas
+#SBATCH --account=p1504_tsd
+#SBATCH --time=10-00:00:00
+#SBATCH --partition=accel
+#SBATCH --gres=gpu:1
+#SBATCH --mem-per-cpu=32G
+#SBATCH --ntasks=1  # Number of tasks (parallel processes)
+#SBATCH --cpus-per-task=8  # Number of CPUs/cores per task
+#SBATCH --output=job_%x_%j.log
+
+# ---------------
+# Fail on errors and unset variables
+# ---------------
+set -o errexit
+set -o nounset
+
+# ---------------
+# Required loading
+# ---------------
+module purge
+module load Python/3.12.3-GCCcore-13.3.0
+
+# ---------------
+# Paths
+# ---------------
+PROJECT_DIR="/tsd/p1504/cluster/thomastveitstol/PycharmProjects/SSL-Features-EEG"
+VENV_NAME="thomas-venv"
+VENV_PATH="$HOME/$VENV_NAME"
+CONTAINER="/tsd/p1504/data/durable/AI-container/pytorch_23.05-py3.sif"
+
+# ---------------
+# Printing some details
+# ---------------
+echo "=== STARTING JOB ==="
+echo "Running on host: $(hostname)"
+echo "Current time: $(date)"
+
+echo "=== Checking GPU status ==="
+nvidia-smi || echo "No GPU found or nvidia-smi not available"
+
+# ---------------
+# Start container shell
+# ---------------
+# Start GPU monitoring in the background
+nvidia-smi --query-gpu=timestamp,name,utilization.gpu,utilization.memory,memory.total,memory.used --format=csv,nounits --loop-ms=1000 -f gpu_usage_prediction_models.csv & gpu_monitor_pid=$!
+
+apptainer shell --nv --bind /tsd/p1504:/tsd/p1504 "$CONTAINER" << EOF
+# Go to your project directory
+cd "$PROJECT_DIR"
+
+# Install virtualenv if needed
+pip3 install --user --index-url https://pypi.tsd.usit.no/simple virtualenv
+
+# Create new virtualenv (wipe old if needed)
+rm -rf "$VENV_PATH"
+python3 -m virtualenv --system-site-packages "$VENV_PATH"
+
+# Activate it
+source "$VENV_PATH/bin/activate"
+
+# Configure pip to use internal TSD repo
+mkdir -p "\$HOME/.pip"
+cat > "\$HOME/.pip/pip.conf" <<PIPCONF
+[global]
+index = https://pypi.tsd.usit.no/simple
+index-url = https://pypi.tsd.usit.no/simple
+extra-index-url = https://pypi.tsd.usit.no/simple
+PIPCONF
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements_dev.txt
+pip install -e .
+
+# Run training
+echo "Running training script..."
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/run_experiments.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+python3 -m cProfile -o "scripts/model_training/cprofiles/cprofile_$(date +'%Y%m%d_%H%M%S').prof" scripts/model_training/continue_experiments_prediction_models.py
+EOF
+
+kill $gpu_monitor_pid

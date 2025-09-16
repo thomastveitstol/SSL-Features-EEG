@@ -10,7 +10,8 @@ def main():
     # Make paths
     # ---------------
     save_to = get_numpy_data_storage_path()
-    config_path = Path(os.path.dirname(__file__)) / "config_files" / "band_pass.yml"
+    # config_path = Path(os.path.dirname(__file__)) / "config_files" / "band_pass.yml"
+    config_path = Path(os.path.dirname(__file__)) / "config_files" / "rerun_band_pass.yml"
 
     # ---------------
     # Loop through the ocular states
