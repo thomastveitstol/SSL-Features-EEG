@@ -4,36 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="random old updates that were never pushed/commited">
-      <change afterPath="$PROJECT_DIR$/scripts/model_training/continue_experiments_elecssl.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/model_training/continue_experiments_prediction_models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/model_training/submit_script_1.sm" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/model_training/submit_script_2.sm" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/model_training/submit_script_3.sm" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/prepare_input_data/config_files/rerun_band_pass.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/.coverage" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/band_power.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compute_pseudo_targets/config_files/band_power.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/debugging/check_lemon.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/debugging/check_lemon.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/check_profiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/check_profiles.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/default_settings.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/experiments_config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/shared_hyperparameters.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/config_files/specific_settings.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/config_files/specific_settings.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/continue_experiments.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/continue_experiments_multi_task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/multiple_scripts.bash" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/run_experiments.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/model_training/run_experiments.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/model_training/tsd_job_script.sm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/prepare_input_data/band_pass.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/prepare_input_data/band_pass.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/prepare_input_data/config_files/band_pass.yml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/prepare_input_data/config_files/band_pass.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/experiments_comparisons.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/experiments_comparisons.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/hp_importance/generate_importance_scores.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/hp_importance/generate_importance_scores.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/hp_importance/hp_visualisation.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/hp_importance/hp_visualisation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/multi_task/mtl_pretext_vs_downstream_scores.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/multi_task/mtl_pretext_vs_downstream_scores.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/multi_task/multi_task_curves.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/multi_task/multi_task_curves.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/results_scripts/multi_task/multi_task_scatter_plots.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/results_scripts/multi_task/multi_task_scatter_plots.py" afterDir="false" />
-    </list>
+    <list default="true" id="99d1f776-f2e1-4743-9a31-cb264184fa52" name="Changes" comment="copies from TSD" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -316,17 +287,17 @@
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/scripts/visualise_data/power",
+    "last_opened_file_path": "/home/thomas/PycharmProjects/SSL-Features-EEG/tests",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/tests" />
+      <recent name="$PROJECT_DIR$/src/elecssl" />
+      <recent name="$PROJECT_DIR$/src/elecssl/data" />
       <recent name="$PROJECT_DIR$/scripts" />
       <recent name="$PROJECT_DIR$/scripts/visualise_data" />
-      <recent name="$PROJECT_DIR$/scripts/visualise_data/power" />
-      <recent name="$PROJECT_DIR$/scripts/results_scripts" />
-      <recent name="$PROJECT_DIR$/scripts/prepare_input_data" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/scripts/model_training" />
@@ -479,22 +450,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723628372208</updated>
-    </task>
-    <task id="LOCAL-00632" summary="fixed ch system selection when interpolating">
-      <option name="closed" value="true" />
-      <created>1746096394866</created>
-      <option name="number" value="00632" />
-      <option name="presentableId" value="LOCAL-00632" />
-      <option name="project" value="LOCAL" />
-      <updated>1746096394866</updated>
-    </task>
-    <task id="LOCAL-00633" summary="added property to channel system dataclass">
-      <option name="closed" value="true" />
-      <created>1746097823428</created>
-      <option name="number" value="00633" />
-      <option name="presentableId" value="LOCAL-00633" />
-      <option name="project" value="LOCAL" />
-      <updated>1746097823428</updated>
     </task>
     <task id="LOCAL-00634" summary="fix">
       <option name="closed" value="true" />
@@ -872,7 +827,23 @@
       <option name="project" value="LOCAL" />
       <updated>1758048466288</updated>
     </task>
-    <option name="localTasksCounter" value="681" />
+    <task id="LOCAL-00681" summary="copies from TSD">
+      <option name="closed" value="true" />
+      <created>1758049203152</created>
+      <option name="number" value="00681" />
+      <option name="presentableId" value="LOCAL-00681" />
+      <option name="project" value="LOCAL" />
+      <updated>1758049203152</updated>
+    </task>
+    <task id="LOCAL-00682" summary="copies from TSD">
+      <option name="closed" value="true" />
+      <created>1758049391373</created>
+      <option name="number" value="00682" />
+      <option name="presentableId" value="LOCAL-00682" />
+      <option name="project" value="LOCAL" />
+      <updated>1758049391373</updated>
+    </task>
+    <option name="localTasksCounter" value="683" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -887,7 +858,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix in case of numerical issues" />
     <MESSAGE value="muted mypy" />
     <MESSAGE value="minor improvement to test" />
     <MESSAGE value="changes to config files" />
@@ -912,6 +882,7 @@
     <MESSAGE value="improved plot cosmetics in plot script" />
     <MESSAGE value="improvements to plot script" />
     <MESSAGE value="random old updates that were never pushed/commited" />
-    <option name="LAST_COMMIT_MESSAGE" value="random old updates that were never pushed/commited" />
+    <MESSAGE value="copies from TSD" />
+    <option name="LAST_COMMIT_MESSAGE" value="copies from TSD" />
   </component>
 </project>

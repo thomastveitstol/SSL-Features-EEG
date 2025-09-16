@@ -11,7 +11,8 @@ boto3~=1.34.160
 botocore~=1.34.160
 pymatreader>=0.0.32
 scipy>=1.10.1
-scikit-learn>=1.3.2
+scikit-learn==1.7.0  # Trying for Colossus
+numba~=0.61.0  # Trying for Colossus
 PyYAML~=6.0.2
 progressbar2~=4.4.2
 seaborn~=0.13.2

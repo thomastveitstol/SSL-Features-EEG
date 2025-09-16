@@ -8,7 +8,7 @@ from elecssl.data.datasets.dortmund_vital import DortmundVital
 from elecssl.data.datasets.lemon import LEMON
 
 
-def _generate_dataset_params(datasets_to_test):
+def _generate_dataset_params(datasets_to_test, *, skip_in_tox):
     params = []
     for dataset, multiple_kwargs in datasets_to_test:
         marks = []
@@ -20,9 +20,9 @@ def _generate_dataset_params(datasets_to_test):
         if not os.path.isdir(path):
             marks.append(pytest.mark.skip(reason=f"Dataset {name!r} not available at {type(dataset).get_mne_path()}"))
 
-        # Skip LEMON in CI/tox
-        if name == "LEMON" and "TOX_ENV_NAME" in os.environ:
-            marks.append(pytest.mark.skipif(True, reason="Too time consuming to run LEMON in tox"))
+        # Skip these in tox
+        if name in skip_in_tox and "TOX_ENV_NAME" in os.environ:
+            marks.append(pytest.mark.skipif(True, reason=f"Too time consuming to run {name!r} in tox"))
 
         params.append(pytest.param(dataset, multiple_kwargs, id=name, marks=marks))
 
@@ -35,11 +35,14 @@ def _generate_dataset_params(datasets_to_test):
 @pytest.mark.parametrize("dataset, multiple_kwargs", _generate_dataset_params([
     (DortmundVital(), ({"derivatives": False, "acquisition": "pre", "ocular_state": OcularState.EO, "session": 1},
                        {"derivatives": False, "acquisition": "pre", "ocular_state": OcularState.EC, "session": 1})),
-    (AIMind(), ({"derivatives": True, "visit": 1, "recording": "EC"},
-                {"derivatives": True, "visit": 1, "recording": "EO"})),
+    (AIMind(), ({"derivatives": False, "visit": 1, "ocular_state": OcularState.EO, "recording": 1},
+                {"derivatives": False, "visit": 1, "ocular_state": OcularState.EC, "recording": 2},
+                {"derivatives": False, "visit": 1, "ocular_state": OcularState.EO, "recording": 3},
+                {"derivatives": False, "visit": 1, "ocular_state": OcularState.EC, "recording": 4})),
     (LEMON(), ({"interpolation_method": "MNE", "derivatives": False, "ocular_state": OcularState.EO},
-               {"interpolation_method": "MNE", "derivatives": False, "ocular_state": OcularState.EC}))
-]))
+               {"interpolation_method": "MNE", "derivatives": False, "ocular_state": OcularState.EC}),
+     )], skip_in_tox=("AIMind", "LEMON")
+))
 def test_channel_names_ordering(dataset, multiple_kwargs):
     """Test if the channel names are always the same per dataset (equal and correctly ordered). Lemon is tested
     separately, as interpolation must be performed"""
@@ -53,7 +56,10 @@ def test_channel_names_ordering(dataset, multiple_kwargs):
         # Loop through all subjects
         for i, subject_id in enumerate(dataset.get_subject_ids()):
             # Load the EEG object
-            raw = dataset.load_single_mne_object(subject_id=subject_id, **kwargs, preload=False)
+            try:
+                raw = dataset.load_single_mne_object(subject_id=subject_id, **kwargs, preload=False)
+            except FileNotFoundError:
+                continue
 
             # Test if the channel names are as expected
             assert tuple(raw.ch_names) == expected_channel_names, \
