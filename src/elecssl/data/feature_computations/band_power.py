@@ -9,7 +9,7 @@ from progressbar import progressbar
 from scipy import integrate
 
 from elecssl.data.data_preparation.data_prep_base import run_autoreject
-from elecssl.data.datasets.dataset_base import MNELoadingError
+from elecssl.data.datasets.dataset_base import MNELoadingError, DatasetInfo
 
 
 # -------------------
@@ -85,8 +85,9 @@ def _compute_band_power(eeg, frequency_bands, aggregation_method, verbose):
     return power
 
 
-def _compute_band_power_single_subject(*, subject, info, crop, band_pass, notch_filter, resample, epochs, min_epochs,
-                                       autoreject, average_reference, frequency_bands, verbose, aggregation_method):
+def _compute_band_power_single_subject(*, subject, info: DatasetInfo, crop, band_pass, notch_filter, resample, epochs,
+                                       min_epochs, autoreject, average_reference, frequency_bands, verbose,
+                                       aggregation_method):
     results = {"Subject-ID": subject, "Dataset": type(info.dataset).__name__}
 
     # Load the EEG
@@ -103,8 +104,9 @@ def _compute_band_power_single_subject(*, subject, info, crop, band_pass, notch_
     if band_pass is not None:
         eeg.filter(*band_pass, verbose=False)
 
-    if notch_filter is not None:
-        eeg.notch_filter(notch_filter, verbose=False)
+    dataset_name = info.dataset.__class__.__name__
+    if dataset_name in notch_filter:
+        eeg.notch_filter(notch_filter[dataset_name], verbose=False)
 
     # Maybe resample
     if resample is not None:

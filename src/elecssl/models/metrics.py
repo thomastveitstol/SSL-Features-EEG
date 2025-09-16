@@ -290,7 +290,7 @@ class Histories:
         self._update_metrics(subjects_info=subjects_info)
 
         # Create an empty list for the next epoch for the prediction history
-        if self._subgroup_histories is not None:  # omg, why does this not always run???
+        if self._subgroup_histories is not None:
             for epoch_history in self._prediction_history.values():
                 epoch_history.append([])
 

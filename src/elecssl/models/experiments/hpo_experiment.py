@@ -2777,7 +2777,7 @@ class AllHPOExperiments:
         """Method for resuming HPO. It has been designed for resuming a study automatically after if something goes
         wrong"""
         # Logging is probably preferred...
-        with open(self._results_path / f"resuming_hpo_{date.today()}_{datetime.now().strftime('%H%M%S')}.txt",  "w"):
+        with open(self._results_path / f"resuming_hpo_{date.today()}_{datetime.now().strftime('%H%M%S')}.txt", "w"):
             pass
 
         if ExperimentType.PREDICTION_MODELS in include:
@@ -3697,24 +3697,29 @@ def _aggregate_scores(scores_1, scores_2, *, method):
 def _get_preprocessing_config_path(ocular_state):
     # Get file names
     preprocessing_path = get_numpy_data_storage_path() / f"preprocessed_band_pass_{ocular_state}"
-    config_files = tuple(file_name for file_name in os.listdir(preprocessing_path) if file_name.startswith("config"))
+    config_files = tuple(file_name for file_name in os.listdir(preprocessing_path) if file_name.startswith(
+        ("config", "resume_config")))
 
-    # Make sure there is only one and return it
-    assert len(config_files) == 1, f"Expected only one config file, but found {len(config_files)}: {config_files}"
+    # There should be no difference, so just selecting the first
     return preprocessing_path / config_files[0]
 
 
 def _get_num_eeg_epochs(ocular_state):
     # Get file names
     preprocessing_path = get_numpy_data_storage_path() / f"preprocessed_band_pass_{ocular_state}"
-    config_files = tuple(file_name for file_name in os.listdir(preprocessing_path) if file_name.startswith("config"))
+    config_files = (file_name for file_name in os.listdir(preprocessing_path) if file_name.startswith(
+        ("config", "resume_config")))
 
-    # Make sure there is only one and return it
-    assert len(config_files) == 1, f"Expected only one config file, but found {len(config_files)}: {config_files}"
-    with open(preprocessing_path / config_files[0]) as file:
-        preprocessing_config = yaml.safe_load(file)
+    # Make sure numbers of epochs is consistent if multiple config files exists
+    num_epochs: Set[int] = set()
+    for config_file in config_files:
+        with open(preprocessing_path / config_file) as file:
+            preprocessing_config = yaml.safe_load(file)
+        num_epochs.add(preprocessing_config["Details"]["num_epochs"])
 
-    return preprocessing_config["Details"]["num_epochs"]
+    assert len(num_epochs) == 1, (f"Expected the number of EEG epochs to be consistent through the config files, but "
+                                  f"found (N={len(num_epochs)}) {num_epochs}")
+    return next(iter(num_epochs))
 
 
 def _get_best_val_epoch(path, experiment_name, *, pretext_main_metric):

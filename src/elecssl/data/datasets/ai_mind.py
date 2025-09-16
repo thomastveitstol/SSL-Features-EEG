@@ -1,13 +1,14 @@
 import os
-import pickle
+from pathlib import Path
 from typing import Tuple
 
 import mne
 import numpy
 import pandas
 
-from elecssl.data.datasets.dataset_base import EEGDatasetBase, OcularState, target_method
-from elecssl.data.paths import get_ai_mind_path
+from elecssl.data.datasets.dataset_base import EEGDatasetBase, OcularState, target_method, MNELoadingError
+from elecssl.data.paths import get_ai_mind_path, get_ai_mind_cantab_and_sociodemographic_path, \
+    get_ai_mind_cantab_and_sociodemographic_ai_dev_path
 
 _ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -56,64 +57,120 @@ class AIMind(EEGDatasetBase):
     # ----------------
     @classmethod
     def get_participants_tsv_path(cls):
-        # It will actually be a .csv file. Maybe I'll fix it at some point...
-        return cls.get_mne_path().parent / "ai_scd_crf_corr_apoe_ptau217_ptau181_data_2024-09-16.csv"
+        # It will actually be a .csv file
+        return cls._get_cantab_and_sociodemographic_path() / "ai-mind_scd-clinical-data_med-sci_2025-03-12.csv"
+
+    @classmethod
+    def get_participants_ai_dev_tsv_path(cls):
+        # Path for the AI-Dev dataset
+        return cls._get_cantab_and_sociodemographic_ai_dev_path() / "ai-mind_scd-clinical-data_ai-dev_2025-03-12.csv"
 
     @classmethod
     def get_mne_path(cls):
         """The original data is stored in TSD, in a completely different folder than the other external datasets"""
         return get_ai_mind_path()
 
+    @classmethod
+    def _get_cantab_and_sociodemographic_path(cls):
+        """This is where clinical data variables and CANTAB data is stored"""
+        return get_ai_mind_cantab_and_sociodemographic_path()
+
+    @classmethod
+    def _get_cantab_and_sociodemographic_ai_dev_path(cls):
+        """This is where clinical data variables and CANTAB data is stored"""
+        return get_ai_mind_cantab_and_sociodemographic_ai_dev_path()
+
     # ----------------
     # Loading methods
     # ----------------
-    def _get_subject_ids(self) -> Tuple[str, ...]:
-        # Get path to all the pickle files
-        path_to_pickle_files = self.get_mne_path() / "1-continuous"
+    @classmethod
+    def _get_subject_ids(cls) -> Tuple[str, ...]:
+        # Infer subject IDs from the EEG folders
+        return tuple(folder_name for folder_name in os.listdir(cls.get_mne_path())
+                     if os.path.isdir(cls.get_mne_path() / folder_name))
 
-        # Get all pickle file names. Also, remove.pickle and safety character (e.g., 1-111)
-        file_names = {file_name[:5] for file_name in os.listdir(path_to_pickle_files)}
-
-        # Manually remove 4-257 because not all files exist
-        file_names.remove("4-257")
-
-        # Get subjects from csv file
-        subject_ids = tuple(pandas.read_csv(self.get_participants_tsv_path(), sep=";",
-                                            encoding="latin-1")["participant_id"])
-
-        # Return only the ones with associated pickle files
-        return tuple(sub_id for sub_id in subject_ids if sub_id[:5] in file_names)
-
-    def _get_subject_path(self, *, set_name, subject_id, visit, recording, ocular_state):
+    def _get_subject_path(self, *, subject_id, visit, recording, ocular_state):
         """Method for getting the absolute path. I don't know the algorithm for computing the safety character, so
         trying them all instead"""
+        path_to_eegs = self.get_mne_path()
         for security_character in _ALPHABET:
             # Try the current safety character
-            path = (self.get_mne_path() / set_name / f"{subject_id[:-2]}-{visit}-{security_character}_{recording}-"
-                                                     f"{ocular_state.value}").with_suffix(".pickle")
+            _visit_folder = f"{subject_id}-{visit}-{security_character}"
+            recording_path = Path("sensors") / f"{str(_visit_folder)}_{recording}-{ocular_state.value}_eeg"
+            path = (path_to_eegs / subject_id / _visit_folder / recording_path).with_suffix(".fif")
 
             # If the file exists, return the current path
             if os.path.isfile(path):
                 return path
 
         raise FileNotFoundError(f"Found no file with any security character in the alphabet for {subject_id=}, "
-                                f"{ocular_state=}, {visit=}, {set_name=}, {recording=}")
+                                f"{ocular_state=}, {visit=}, {recording=}.")
 
-    def _load_single_raw_mne_object(self, subject_id, *, ocular_state, visit, recording, set_name):
+    @staticmethod
+    def _get_ocular_state(recording: int):
+        return {1: OcularState.EO, 2: OcularState.EC, 3: OcularState.EO, 4: OcularState.EC}[recording]
+
+    def _get_first_available_recording(self, subject_id, *, visit, ocular_state):
+        if ocular_state == OcularState.EO:
+            for recording in (1, 3):
+                try:
+                    _ = self._get_subject_path(subject_id=subject_id, visit=visit, recording=recording,
+                                               ocular_state=OcularState.EO)
+                    return recording
+                except FileNotFoundError:
+                    pass
+        elif ocular_state == OcularState.EC:
+            for recording in (2, 4):
+                try:
+                    _ = self._get_subject_path(subject_id=subject_id, visit=visit, recording=recording,
+                                               ocular_state=OcularState.EC)
+                    return recording
+                except FileNotFoundError:
+                    pass
+        else:
+            raise ValueError(f"Unexpected ocular state: {ocular_state!r}")
+
+        # No recording available
+        raise MNELoadingError(f"No recording is available for {subject_id=}, {visit=}, {ocular_state=}")
+
+    def _load_single_raw_mne_object(self, subject_id, *, ocular_state, visit, recording, preload=True):
+        """
+        Loading raw object
+
+        Parameters
+        ----------
+        subject_id : str
+        ocular_state : OcularState
+        visit : int
+        recording : int | None
+            If None, the first available is used (prioritising 1-EO for eyes open and 2-EC for eyes closed)
+        preload : bool
+
+        Returns
+        -------
+        mne.io.RawArray
+        """
+        # -------------
+        # Input checks
+        # -------------
+        if recording is not None:
+            # Verify the ocular state of recording
+            assert self._get_ocular_state(recording) == ocular_state, \
+                f"The recording {recording!r} does not match the ocular state {ocular_state!r}"
+
         # -------------
         # Load object
         # -------------
+        # (Maybe) get the first available recording
+        if recording is None:
+            recording = self._get_first_available_recording(subject_id, visit=visit, ocular_state=ocular_state)
+
         # Create path
-        path = self._get_subject_path(set_name=set_name, subject_id=subject_id, visit=visit, recording=recording,
-                                      ocular_state=ocular_state)
+        path = self._get_subject_path(subject_id=subject_id, visit=visit, recording=recording,
+                                      ocular_state=self._get_ocular_state(recording))
 
-        # Load pickle file object
-        with open(path, "rb") as file:
-            epochs: mne.Epochs = pickle.load(file)
-
-        # Make a type check
-        if not isinstance(epochs, mne.Epochs):
-            raise TypeError(f"Unexpected type of loaded data: {type(epochs)}")
+        # Load MNE object
+        epochs = mne.read_epochs(path)
 
         # -------------
         # Make raw object
@@ -122,6 +179,11 @@ class AIMind(EEGDatasetBase):
 
         # Remove non EEG channels
         raw = raw.drop_channels(self._non_eeg_channels)
+
+        # Verify that the channels are as expected
+        if tuple(raw.ch_names) != self._channel_names:
+            raise RuntimeWarning(f"The channel names were not as expected."
+                                 f"\nActual: {raw.ch_names}\nExpected: {self._channel_names}")
 
         return raw
 
@@ -146,7 +208,10 @@ class AIMind(EEGDatasetBase):
     def age(self, subject_ids):
         """Age at the first visit"""
         # Read the .csv file
-        df = pandas.read_csv(self.get_participants_tsv_path())
+        df = pandas.read_csv(self.get_participants_tsv_path(), usecols=("participant_id", "age"))
+
+        # Remove safety character to match EEG folder names
+        df["participant_id"] = df["participant_id"].apply(_strip_sub_id)
 
         # Check if all subjects in the csv are unique (should not really be needed here, so I might remove this in the
         # future)
@@ -157,6 +222,18 @@ class AIMind(EEGDatasetBase):
 
         # Select the ones passed in the subjects list, and return as numpy array
         return numpy.array([sub_id_to_age[sub_id] for sub_id in subject_ids])
+
+    @age.availability
+    def age_availability(self):
+        """Returns the available subject IDs that have a valid age value"""
+        df = pandas.read_csv(self.get_participants_tsv_path(), usecols=("participant_id", "age"))
+
+        # Remove safety character to match EEG folder names
+        df["participant_id"] = df["participant_id"].apply(_strip_sub_id)
+
+        # Extract valid ones
+        valid_subjects = df["participant_id"][df["age"].notna()]
+        return tuple(valid_subjects)
 
     @target_method
     def ravlt_del_recall(self, subject_ids):
@@ -183,13 +260,51 @@ class AIMind(EEGDatasetBase):
     @target_method
     def ptau_181(self, subject_ids):
         # Read the .csv file
-        df = pandas.read_csv(self.get_participants_tsv_path(), encoding="latin-1", sep=";")
+        df = pandas.read_csv(self.get_participants_tsv_path())
 
         # Convert to dict
         dict_ = {sub_id: var for sub_id, var in zip(df["participant_id"], df["ptau181"])}
 
         # Select the ones passed in the subjects list, and return as numpy array
         return numpy.array([dict_[sub_id] for sub_id in subject_ids])
+
+    @target_method
+    def fake_target(self, subject_ids):
+        """Used for debugging"""
+        return numpy.random.normal(loc=12, scale=4, size=(len(subject_ids),))
+
+    @fake_target.availability
+    def fake_target_availability(self):
+        # Read the .csv file
+        df = pandas.read_csv(self.get_participants_ai_dev_tsv_path(), usecols=["participant_id", "ptau217"])
+        df["participant_id"] = df["participant_id"].apply(_strip_sub_id)
+
+        # Extract valid ones
+        valid_subjects = df["participant_id"][df["ptau217"].notna()]
+        return tuple(valid_subjects)
+
+    @target_method
+    def safe_log_ptau217(self, subject_ids):
+        # Read the .csv file
+        df = pandas.read_csv(self.get_participants_ai_dev_tsv_path(), usecols=["participant_id", "ptau217"])
+        df["participant_id"] = df["participant_id"].apply(_strip_sub_id)
+        df["log_ptau217"] = numpy.log(df["ptau217"])
+
+        # Convert to dict
+        dict_ = {sub_id: var for sub_id, var in zip(df["participant_id"], df["log_ptau217"])}
+
+        # Select the ones passed in the subjects list, and return as numpy array
+        return numpy.array([dict_[sub_id] for sub_id in subject_ids])
+
+    @safe_log_ptau217.availability
+    def safe_log_ptau217_availability(self):
+        # Read the .csv file
+        df = pandas.read_csv(self.get_participants_ai_dev_tsv_path(), usecols=["participant_id", "ptau217"])
+        df["participant_id"] = df["participant_id"].apply(_strip_sub_id)
+
+        # Extract valid ones
+        valid_subjects = df["participant_id"][df["ptau217"].notna()]
+        return tuple(valid_subjects)
 
     # ----------------
     # Target methods which is meant to be used with groups metrics in Histories class
@@ -210,3 +325,42 @@ class AIMind(EEGDatasetBase):
         combinations = ("E2E2", "E2E3", "E2E4", "E3E3", "E3E4", "E4E4")
         mapping = {combination: i for i, combination in enumerate(combinations)}
         return mapping[apoe]
+
+
+# ----------------
+# Small helpful functions
+# ----------------
+def _strip_sub_id(sub_id):
+    """
+    Method for removing the safety character of a subject ID, if any
+
+    Parameters
+    ----------
+    sub_id : str
+
+    Returns
+    -------
+    str
+
+    Examples
+    --------
+    >>> _strip_sub_id("1-502-K")
+    '1-502'
+    >>> _strip_sub_id("1-502")
+    '1-502'
+
+    Visit IDs gives error
+
+    >>> _strip_sub_id("1-502-1-K")
+    Traceback (most recent call last):
+    ...
+    ValueError: Unexpected subject ID format of subject id '1-502-1-K'
+    """
+    split_sub_id = sub_id.split("-")
+
+    if len(split_sub_id) == 2:
+        return sub_id
+    elif len(split_sub_id) == 3:
+        return "-".join(split_sub_id[:-1])
+    else:
+        raise ValueError(f"Unexpected subject ID format of subject id {sub_id!r}")

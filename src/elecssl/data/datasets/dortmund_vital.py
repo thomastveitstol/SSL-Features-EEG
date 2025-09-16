@@ -107,9 +107,9 @@ class DortmundVital(EEGDatasetBase):
     @target_method
     def fake_target(self, subject_ids):
         """Used for debugging"""
-        return numpy.random.normal(loc=12, scale=4, size=(len(subject_ids),))
+        return numpy.array([float("nan")] * len(subject_ids))
 
-    @fake_target.availability
-    def fake_target_availability(self):
-        df = pandas.read_csv(self.get_participants_tsv_path(), sep="\t", usecols=["participant_id"])
-        return tuple(df["participant_id"])
+    @target_method
+    def safe_log_ptau217(self, subject_ids):
+        """Required for multi-task learning, but masking is used during the training phase"""
+        return numpy.array([float("nan")] * len(subject_ids))

@@ -51,7 +51,10 @@ class BandPass(TransformationBase):
                 raise e
 
         # Save the config file
-        with open(save_to / f"config_{date.today()}_{datetime.now().strftime('%H%M%S')}.yml", "w") as file:
+        config_file_name = f"config_{date.today()}_{datetime.now().strftime('%H%M%S')}.yml"
+        if "ConfigFilePrefix" in config:
+            config_file_name = f"{config['ConfigFilePrefix']}_{config_file_name}"
+        with open(save_to / config_file_name, "w") as file:
             yaml.safe_dump(config, file)
 
         # --------------
@@ -79,9 +82,11 @@ class BandPass(TransformationBase):
 
             # Create folder for all datasets
             for dataset_name in config["Datasets"]:
-                # Ignoring existing folders is meant to avoid having to upload all original data to TSD, and prepare
-                # only AI-Mind data on TSD. So can't ignore if the AI-Mind dataset already exist
-                os.mkdir(folder_path / dataset_name)
+                try:
+                    os.mkdir(folder_path / dataset_name)
+                except FileExistsError as e:
+                    if not config["IgnoreExistingFolder"]:
+                        raise e
 
     # ---------------
     # Methods for preprocessing, transforming, and saving

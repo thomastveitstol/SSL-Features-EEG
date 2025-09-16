@@ -102,3 +102,35 @@ def get_ai_mind_path():
         config = json.load(f)
 
     return Path(config["AIMind"])
+
+
+def get_ai_mind_cantab_and_sociodemographic_path():
+    """
+    Gives the path to where the AI-Mind data is stored
+
+    Returns
+    -------
+    Path
+    """
+    # Load the config file for paths
+    config_path = os.path.join(os.path.dirname(__file__), "config_paths.json")
+    with open(config_path) as f:
+        config = json.load(f)
+
+    return Path(config["AIMindSocioCantab"])
+
+
+def get_ai_mind_cantab_and_sociodemographic_ai_dev_path():
+    """
+    Gives the path to where the AI-Mind sociodemographic AI-dev data is stored
+
+    Returns
+    -------
+    Path
+    """
+    # Load the config file for paths
+    config_path = os.path.join(os.path.dirname(__file__), "config_paths.json")
+    with open(config_path) as f:
+        config = json.load(f)
+
+    return Path(config["AIMindAIDev"])

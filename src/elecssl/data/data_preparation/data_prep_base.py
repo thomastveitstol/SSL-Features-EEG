@@ -1,5 +1,7 @@
 import abc
 import json
+import os.path
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Dict, Tuple, List, Optional
 
@@ -78,8 +80,12 @@ class TransformationBase(abc.ABC):
 
             # Make dataset info object
             subjects = dataset.get_subject_ids()
-            if info["num_subjects"] != "all":
+            if isinstance(info["num_subjects"], int):
                 subjects = subjects[:info["num_subjects"]]
+            elif isinstance(info["num_subjects"], list):
+                # This is a quick-fix
+                assert all(isinstance(sub_id, str) for sub_id in info["num_subjects"])
+                subjects = tuple(info["num_subjects"])
 
             # Add dataset info
             datasets.append(
@@ -114,10 +120,18 @@ class TransformationBase(abc.ABC):
         rejected_epochs: Dict[int, Dict[str, Tuple[int, ...]]] = {  # {5 seconds: {"LEMON|sub-003": (3, 4, 9)}}
             input_length: dict() for input_length in config["Details"]["input_length"]}
         for i, info in enumerate(datasets):
-            print(f"\t({i + 1}/{num_datasets}) {type(info.dataset).__name__}")
+            dataset_name = type(info.dataset).__name__
+            print(f"\t({i + 1}/{num_datasets}) {dataset_name}")
 
             # Loop through all provided subjects for the dataset
-            for subject in progressbar(info.subjects, prefix=f"{type(info.dataset).__name__} ", redirect_stdout=True):
+            for subject in progressbar(info.subjects, prefix=f"{dataset_name} ", redirect_stdout=True):
+                # Maybe skip subject (just checking one of the versions, which has all 608 in DortmundVital)
+                _sub_path = (save_to / ("data--band_pass-all--input_length-5s--autoreject-True--sfreq-2fmax--"
+                                        "interpolation-MNE--ch_system-self") / dataset_name
+                             / f"{subject}.npy")
+                if os.path.isfile(_sub_path) and config["SkipExistingSubjects"]:
+                    continue
+
                 # Load the EEG
                 try:
                     eeg = info.dataset.load_single_mne_object(subject_id=subject, **info.kwargs)
@@ -129,9 +143,9 @@ class TransformationBase(abc.ABC):
                 # Save the data
                 try:
                     rejects = self._apply_and_save_single_data(
-                        eeg, subject=Subject(subject_id=subject, dataset_name=type(info.dataset).__name__),
+                        eeg, subject=Subject(subject_id=subject, dataset_name=dataset_name),
                         config=config, plot_data=plot_data, save_data=save_data, save_to=save_to,
-                        preprocessing=config["InitialPreprocessing"][type(info.dataset).__name__],
+                        preprocessing=config["InitialPreprocessing"][dataset_name],
                         return_rejected_epochs=True
                     )
 
@@ -147,9 +161,10 @@ class TransformationBase(abc.ABC):
         # --------------
         # Document failures and rejected epochs
         # --------------
-        pandas.DataFrame(loading_fails).to_csv(save_to / "loading_fails.csv", index=False)
-        pandas.DataFrame(insufficient_data).to_csv(save_to / "insufficient_data.csv", index=False)
-        with open(save_to / "dropped_epochs.json", "w") as file:
+        curr_time = f"{date.today()}_{datetime.now().strftime('%H%M%S')}"
+        pandas.DataFrame(loading_fails).to_csv(save_to / f"loading_fails_{curr_time}.csv", index=False)
+        pandas.DataFrame(insufficient_data).to_csv(save_to / f"insufficient_data_{curr_time}.csv", index=False)
+        with open(save_to / f"dropped_epochs_{curr_time}.json", "w") as file:
             json.dump(rejected_epochs, file, indent=4)  # type: ignore[arg-type]
 
     # -----------------

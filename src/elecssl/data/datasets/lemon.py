@@ -251,6 +251,11 @@ class LEMON(EEGDatasetBase):
         Instead, masking is used during the training phase"""
         return numpy.array([float("nan")] * len(subject_ids))
 
+    @target_method
+    def safe_log_ptau217(self, subject_ids):
+        """Required for multi-task learning, but masking is used during the training phase"""
+        return numpy.array([float("nan")] * len(subject_ids))
+
 
 # -------------
 # Functions
